@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+	"outDir": "public/js",
+	"target": "es6",
+	"esModuleInterop": true,
+	"lib": ["es6", "dom"],	
+	"sourceMap": true,
+	"allowJs": true,
+	"jsx": "react",
+	"moduleResolution": "node",
+	"rootDir": "src",
+	"noImplicitReturns": true,
+	"noImplicitThis": true,
+	"strictNullChecks": true,
+	"resolveJsonModule": true
+    },
+    "exclude": [
+	"node_modules",
+	"build",
+	"public",
+	"scripts",
+	"acceptance-tests",
+	"jest",
+	"src/setupTests.ts"
+    ],
+    "types": [
+	"typePatches"
+    ]
+}
