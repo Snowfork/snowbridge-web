@@ -2,5 +2,4 @@
 node_modules
 src/react-app-env.d.ts
 public/js/bundle.js
-yarn.lock
 build
