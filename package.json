@@ -4,19 +4,32 @@
   "version": "0.59.0-beta.7",
   "description": "A basic app that interacts with Ethereum based smart contracts via metamask",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "build": "browserify src/index.tsx -p tsify > public/js/bundle.js",
+    "clean": "rm /public/js/bundle.js",
+      "release": "browserify src/index.tsx -p tsify -p tinyify > public/js/bundle.js"
+  },
   "author": "Snowfork",
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/runtime": "^7.11.2",
     "@material-ui/core": "^4.11.0",
     "@metamask/detect-provider": "^1.1.0",
+    "@polkadot/api": "^2.3.1",
+    "@polkadot/api-contract": "^2.3.1",
+    "@polkadot/jsonrpc": "^1.7.1",
     "@polkadot/react-components": "0.59.0-beta.7",
+    "@polkadot/react-hooks": "^0.39.1",
     "bignumber.js": "^9.0.0",
-    "web3": "^1.2.9",
-    "@polkadot/api": "^2.3.1"
+    "web3": "^1.2.9"
   },
   "devDependencies": {
-    "json-loader": "^0.5.7"
+    "@types/react": "^16.9.53",
+    "browserify": "^17.0.0",
+    "json-loader": "^0.5.7",
+    "tinyify": "^3.0.0",
+    "ts-loader": "^8.0.6",
+    "tsify": "^5.0.2",
+    "typescript": "^4.0.3"
   }
 }
