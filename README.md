@@ -1,4 +1,4 @@
-# asset-transfer-ui
+# @snowfork/ethereum-bridge
 
 A Bridge UI that enables the transfer of ETH and ERC20 tokens from Ethereum to Substrate via Metamask.
 
@@ -29,7 +29,7 @@ truffle migrate
 
 After migrating, plug the deployed ETHApp and ERC20App contract addresses into the app-polkadot-ethereum-bridge config.
 
-### Start asset-transfer-ui
+### Start @snowfork/ethereum-bridge
 
 First, install project dependencies.
 ```bash

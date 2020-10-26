@@ -1,5 +1,5 @@
 {
-    "name": "ethereum-bridge",
+    "name": "@snowfork/ethereum-bridge",
     "private": true,
     "version": "0.1.1",
     "description": "A basic app that interacts with Ethereum based smart contracts via metamask",
