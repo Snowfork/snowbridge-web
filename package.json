@@ -1,7 +1,7 @@
 {
     "name": "ethereum-bridge",
     "private": true,
-    "version": "0.59.0-beta.7",
+    "version": "0.1.1",
     "description": "A basic app that interacts with Ethereum based smart contracts via metamask",
     "main": "index.js",
     "author": "Snowfork",
