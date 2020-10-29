@@ -7,11 +7,11 @@ import styled from 'styled-components';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 
-const { Keyring } = require('@polkadot/keyring');
-const {u8aToHex} = require('@polkadot/util');
-
 import { Box, Typography, TextField, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+
+const { Keyring } = require('@polkadot/keyring');
+const {u8aToHex} = require('@polkadot/util');
 
 // ------------------------------------------
 //                  Props

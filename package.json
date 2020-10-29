@@ -1,35 +1,57 @@
 {
-  "name": "@polkadot/app-ethereum-bridge",
-  "private": true,
-  "version": "0.59.0-beta.7",
-  "description": "A basic app that interacts with Ethereum based smart contracts via metamask",
-  "main": "index.js",
-  "scripts": {
-    "build": "browserify src/index.tsx -p tsify > public/js/bundle.js",
-    "clean": "rm /public/js/bundle.js",
-      "release": "browserify src/index.tsx -p tsify -p tinyify > public/js/bundle.js"
-  },
-  "author": "Snowfork",
-  "license": "Apache-2.0",
-  "dependencies": {
-    "@babel/runtime": "^7.11.2",
-    "@material-ui/core": "^4.11.0",
-    "@metamask/detect-provider": "^1.1.0",
-    "@polkadot/api": "^2.3.1",
-    "@polkadot/api-contract": "^2.3.1",
-    "@polkadot/jsonrpc": "^1.7.1",
-    "@polkadot/react-components": "0.59.0-beta.7",
-    "@polkadot/react-hooks": "^0.39.1",
-    "bignumber.js": "^9.0.0",
-    "web3": "^1.2.9"
-  },
-  "devDependencies": {
-    "@types/react": "^16.9.53",
-    "browserify": "^17.0.0",
-    "json-loader": "^0.5.7",
-    "tinyify": "^3.0.0",
-    "ts-loader": "^8.0.6",
-    "tsify": "^5.0.2",
-    "typescript": "^4.0.3"
-  }
+    "name": "@snowfork/ethereum-bridge",
+    "private": true,
+    "version": "0.1.1",
+    "description": "A basic app that interacts with Ethereum based smart contracts via metamask",
+    "main": "index.js",
+    "author": "Snowfork",
+    "license": "Apache-2.0",
+    "dependencies": {
+	"@babel/runtime": "^7.11.2",
+	"@material-ui/core": "^4.11.0",
+	"@metamask/detect-provider": "^1.1.0",
+	"@polkadot/api": "^2.3.1",
+	"@polkadot/api-contract": "^2.3.1",
+	"@polkadot/jsonrpc": "^1.7.1",
+	"@polkadot/react-components": "0.40.0-beta.53",
+	"@polkadot/react-hooks": "^0.39.1",
+	"@testing-library/jest-dom": "^4.2.4",
+	"@testing-library/react": "^9.3.2",
+	"@testing-library/user-event": "^7.1.2",
+	"@types/jest": "^24.0.0",
+	"@types/material-ui": "^0.21.8",
+	"@types/node": "^12.0.0",
+	"@types/react": "^16.9.0",
+	"@types/react-dom": "^16.9.0",
+	"@types/styled-components": "^5.1.4",
+	"bignumber.js": "^9.0.0",
+	"react": "^17.0.1",
+	"react-dom": "^17.0.1",
+	"react-i18next": "^11.7.3",
+	"react-scripts": "3.4.4",
+	"styled-components": "^5.2.0",
+	"typescript": "~3.7.2",
+	"web3": "^1.2.9"
+    },
+    "scripts": {
+	"start": "react-scripts start",
+	"build": "react-scripts build",
+	"test": "react-scripts test",
+	"eject": "react-scripts eject"
+    },
+    "eslintConfig": {
+	"extends": "react-app"
+    },
+    "browserslist": {
+	"production": [
+	    ">0.2%",
+	    "not dead",
+	    "not op_mini all"
+	],
+	"development": [
+	    "last 1 chrome version",
+	    "last 1 firefox version",
+	    "last 1 safari version"
+	]
+    }
 }
