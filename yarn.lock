@@ -1837,12 +1837,29 @@
     "@babel/runtime" "^7.8.4"
     "@polkadot/extension-inject" "0.22.1"
 
+"@polkadot/extension-dapp@^0.34.1":
+  version "0.34.1"
+  resolved "https://registry.yarnpkg.com/@polkadot/extension-dapp/-/extension-dapp-0.34.1.tgz#5dd84bc24d33d36ea5d2b97826a93f1a48370aa4"
+  integrity sha512-/wHAEpAxmlX5yq9t9a5EuXZEBSksreL7wH+h7XX5970v0XTAOFp+gyvDaWSThbLembq1Xq6eAkM1qrtemLXJLQ==
+  dependencies:
+    "@babel/runtime" "^7.11.2"
+    "@polkadot/extension-inject" "0.34.1"
+    "@polkadot/util" "^3.4.1"
+    "@polkadot/util-crypto" "^3.4.1"
+
 "@polkadot/extension-inject@0.22.1":
   version "0.22.1"
   resolved "https://registry.yarnpkg.com/@polkadot/extension-inject/-/extension-inject-0.22.1.tgz#ddab02f87027e11a6063a1ea34585ef3220a564b"
   integrity sha512-r5iaCp+KxqJcBtw9CX6qvCU2pkQqq8IE902ARfCObpLGdAK8VsrIzJ4MwLkupyP3LZikRoFabYnGvuy6simKZw==
   dependencies:
     "@babel/runtime" "^7.8.4"
+
+"@polkadot/extension-inject@0.34.1":
+  version "0.34.1"
+  resolved "https://registry.yarnpkg.com/@polkadot/extension-inject/-/extension-inject-0.34.1.tgz#b62e131bf5398d07790ad2c5a39b0eece1d6065d"
+  integrity sha512-d5tCFtQuZTyMUx81h4u9KTJLWwBITRXoZEaM2oOfIUb1585tl/hIvb1jgRrc4YWghnCOAb4j2iqfQWl0dvaiQA==
+  dependencies:
+    "@babel/runtime" "^7.11.2"
 
 "@polkadot/jsonrpc@^1.7.1":
   version "1.7.1"
@@ -13006,10 +13023,10 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@~3.7.2:
-  version "3.7.5"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.5.tgz#0692e21f65fd4108b9330238aac11dd2e177a1ae"
-  integrity sha512-/P5lkRXkWHNAbcJIiHPfRoKqyd7bsyCma1hZNUGfn20qm64T6ZBlrzprymeu918H+mB/0rIg2gGK/BXkhhYgBw==
+typescript@^4.0.5:
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.0.5.tgz#ae9dddfd1069f1cb5beb3ef3b2170dd7c1332389"
+  integrity sha512-ywmr/VrTVCmNTJ6iV2LwIrfG1P+lv6luD8sUJs+2eI9NLGigaN+nUQc13iHqisq7bra9lnmUSYqbJvegraBOPQ==
 
 u2f-api@0.2.7:
   version "0.2.7"
