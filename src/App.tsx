@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // external imports
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import Web3 from 'web3';
 
 // local imports and components
@@ -15,20 +15,22 @@ type MyWindow = (typeof window) & {
 }
 
 function BridgeApp () {
+  const [web3Enabled, enableWeb3] = useState(false);
 
-  const ethEnabled = () => {
+  // Connect to Web3
+  useEffect ( () => {
     let locWindow = (window as MyWindow);
+
     if (locWindow.ethereum) {
       locWindow.web3 = new Web3(locWindow.ethereum);
       locWindow.ethereum.enable();
-      return true;
-    }
-    return false;
-  }
+      enableWeb3(true);
+    }  
 
-  if (!ethEnabled()) {
-    alert("Please install MetaMask to use this application!");
-    return(<div><p>Please install MetaMask to use this application!</p></div>)
+  }, []);
+
+  if(!web3Enabled) {
+    return <p style={{textAlign: 'center'}}>Please install MetaMask to use this application!</p>
   }
 
   return (
