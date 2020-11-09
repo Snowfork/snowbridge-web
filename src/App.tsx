@@ -9,6 +9,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 
 // local imports and components
 import Bridge from './Bridge';
+import Nav from './Nav';
 import {POLKADOT_API_PROVIDER} from './config'
 
 type MyWindow = (typeof window) & {
@@ -114,9 +115,11 @@ function BridgeApp () {
 
   return (
     <main>
+      <Nav web3={(window as MyWindow).web3} polkadotApi={polkadotEnabled}/>
       <Bridge web3={(window as MyWindow).web3}/>
     </main>
   );
+
 }
 
 export default BridgeApp;
