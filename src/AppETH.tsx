@@ -52,6 +52,10 @@ function AppETH ({ contract, defaultAccount, web3 }: Props): React.ReactElement<
   const [polkadotRecipient, setPolkadotRecipient] = useState(String);
   const [depositAmount, setDepositAmount] = useState(String);
 
+  if(!defaultAccount || defaultAccount === "") {
+    return(<p>Default MetaMask Account is undefined!</p>)
+  }
+
   // Handlers
   const handleSendETH = () => {
     const execute = async (ss58Recipient: string, amount: string) => {
