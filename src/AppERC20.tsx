@@ -9,7 +9,7 @@ import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 
 // External
-import { Box, Typography, TextField, Button, Divider } from '@material-ui/core';
+import { Box, Typography, TextField, Button, Divider, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 
 // Local
@@ -47,7 +47,6 @@ const useStyles = makeStyles((theme) => ({
   },
   paper: {
     backgroundColor: theme.palette.background.paper,
-    border: '1px solid #000000',
     boxShadow: theme.shadows[5],
     padding: theme.spacing(2, 4, 3)
   }
@@ -83,7 +82,6 @@ function LoadERC20Token ({ onContractInstance, web3 }: LoadERC20TokenProps): Rea
         InputProps={{
           value: tokenAddress
         }}
-        fullWidth={true}
         id='erc-input-token-address'
         margin='normal'
         onChange={(e) => setTokenAddress(e.target.value)}
@@ -274,22 +272,30 @@ function AppERC20 ({ contract, defaultAccount, web3 }: Props): React.ReactElemen
 
   // Render
   return (
-    <Box className={classes.paper}>
-      <Box>
-        <Typography align='center'
-          gutterBottom
-          variant='h5'>
+    <Grid container>
+      <Grid container item xs={10} md={8} justify='center' spacing={3}
+        style={{
+          margin: '2em auto',
+    padding: '2em 0',
+    border: 'thin solid #E0E0E0'
+  }}>
+
+        <Grid item xs={10}>
+          <Typography gutterBottom variant='h5'>
             ERC20 App
-        </Typography>
-        <LoadERC20Token onContractInstance={(e: any) => setTokenContract(e)}
-          web3={web3}/>
-        { tokenContract &&
-          <ApproveAndSendERC20 contract={contract}
-            contractERC20={tokenContract}
-            defaultAccount={defaultAccount}/>
-        }
-      </Box>
-    </Box>
+          </Typography>
+        </Grid>
+        <Grid item xs={10}>
+          <LoadERC20Token onContractInstance={(e: any) => setTokenContract(e)}
+            web3={web3}/>
+            { tokenContract &&
+              <ApproveAndSendERC20 contract={contract}
+              contractERC20={tokenContract}
+              defaultAccount={defaultAccount}/>
+            }
+        </Grid>
+      </Grid>
+    </Grid>
   );
 }
 

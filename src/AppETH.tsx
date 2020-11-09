@@ -7,8 +7,15 @@ import styled from 'styled-components';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 
-import { Box, Typography, TextField, Button } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import {
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  FormControl,
+  FormHelperText,
+  Divider
+} from '@material-ui/core';
 
 const { Keyring } = require('@polkadot/keyring');
 const {u8aToHex} = require('@polkadot/util');
@@ -23,27 +30,9 @@ type Props = {
 }
 
 // ------------------------------------------
-//                  Styles
-// ------------------------------------------
-const useStyles = makeStyles((theme) => ({
-  modal: {
-    alignItems: 'center',
-    display: 'flex',
-    justifyContent: 'center'
-  },
-  paper: {
-    backgroundColor: theme.palette.background.paper,
-    border: '1px solid #000000',
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 3)
-  }
-}));
-
-// ------------------------------------------
 //               AppETH component
 // ------------------------------------------
 function AppETH ({ contract, defaultAccount, web3 }: Props): React.ReactElement<Props> {
-  const classes = useStyles();
 
   // State
   const [balance, setBalance] = useState(String);
@@ -53,7 +42,7 @@ function AppETH ({ contract, defaultAccount, web3 }: Props): React.ReactElement<
   const [depositAmount, setDepositAmount] = useState(String);
 
   if(!defaultAccount || defaultAccount === "") {
-    return(<p>Default MetaMask Account is undefined!</p>)
+    return(<p>Default MetaMask Account is undefined!</p>);
   }
 
   // Handlers
@@ -82,11 +71,11 @@ function AppETH ({ contract, defaultAccount, web3 }: Props): React.ReactElement<
 
     execute(polkadotRecipient, depositAmount);
   };
-  
+
+  // Get Ethereum Balance
   const getBalance = () => {
     const execute = async () => {
       const currBalance = await web3.eth.getBalance(defaultAccount.toString());
-
       setBalance(web3.utils.fromWei(currBalance, 'ether'));
     };
 
@@ -105,75 +94,80 @@ function AppETH ({ contract, defaultAccount, web3 }: Props): React.ReactElement<
   }
 
   getBalance();
+  //getPolkaEthBalance();
 
   // Render
   return (
-    <Box>
-      <Box className={classes.paper}
-        display='flex'
-        flexDirection='column'>
-        <Typography align='center'
-          gutterBottom
-          variant='h5'>
-            ETH App
-        </Typography>
-        <Box padding={1}/>
-        <Typography gutterBottom>
-            What account would you like to fund on Polkadot?
-        </Typography>
-        <TextField
-          InputProps={{
-            value: polkadotRecipient
-          }}
-          id='eth-input-recipient'
-          margin='normal'
-          onChange={(e) => setPolkadotRecipient(e.target.value)}
-          placeholder={'38j4dG5GzsL1bw...'}
-          style={{ margin: 5 }}
-          variant='outlined'
-        />
-        <Box padding={1}/>
-        <Typography gutterBottom>
-            How much ETH would you like to deposit
-        </Typography>
-        <TextField
-          InputProps={{
-            value: depositAmount
-          }}
-          id='eth-input-amount'
-          margin='normal'
-          onChange={(e) => setDepositAmount(e.target.value)}
-          placeholder='0.00 ETH'
-          style={{ margin: 5 }}
-          variant='outlined'
-        />
-        <Box alignItems='center'
-          display='flex'
-          justifyContent='space-around'>
-          <Box>
-            <Typography>
-            Current balance: {balance} ETH
+      <Grid container >
+        <Grid container item xs={10} md={8} justify='center' spacing={3}
+          style={{margin: '0 auto', padding: '2em 0', border: 'thin solid #E0E0E0'}}>
+
+          <Grid item xs={10}>
+            <Typography gutterBottom variant='h5'>
+              ETH App
             </Typography>
-          </Box>
-          <Box alignItems='center'
-            display='flex'
-            height='100px'
-            paddingBottom={1}
-            paddingTop={2}
-            width='300px'>
-            <Button
-              color='primary'
-              fullWidth={true}
-              onClick={() => handleSendETH()}
-              variant='outlined'>
-              <Typography variant='button'>
-                      Send ETH
+          </Grid>
+
+          { /* SS58 Address Input */ }
+          <Grid item xs={10} >
+            <FormControl>
+              <Typography gutterBottom>
+                To
               </Typography>
-            </Button>
-          </Box>
-        </Box>
-      </Box>
-    </Box>
+              <TextField
+                InputProps={{
+                  value: polkadotRecipient
+                }}
+                id='eth-input-recipient'
+                margin='normal'
+                onChange={(e) => setPolkadotRecipient(e.target.value)}
+                placeholder={'38j4dG5GzsL1bw...'}
+                style={{ margin: 5}}
+                variant='outlined'
+              />
+             <FormHelperText id="ss58InputDesc">
+               What account would you like to fund on Polkadot?
+             </FormHelperText>
+           </FormControl>
+         </Grid>
+
+         { /* ETH Deposit Amount Input */ }
+         <Grid item xs={10}>
+           <FormControl>
+             <Typography gutterBottom>
+               Amount
+             </Typography>
+             <TextField
+               InputProps={{
+                 value: depositAmount
+               }}
+               id='eth-input-amount'
+               margin='normal'
+               onChange={(e) => setDepositAmount(e.target.value)}
+               placeholder='0.00 ETH'
+               style={{ margin: 5 }}
+               variant='outlined'
+             />
+             <FormHelperText id="ethAmountDesc">
+               How much ETH would you like to deposit?
+             </FormHelperText>
+           </FormControl>
+         </Grid>
+
+         { /* Send ETH */ }
+         <Grid item xs={10}>
+           <Button
+             color='primary'
+             onClick={() => handleSendETH()}
+             variant='outlined'>
+             <Typography variant='button'>
+               Send ETH
+             </Typography>
+           </Button>
+         </Grid>
+       </Grid>
+       <Divider />
+     </Grid>
   );
 }
 

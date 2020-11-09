@@ -10,6 +10,7 @@ import { Box } from '@material-ui/core';
 
 // Local imports
 import { APP_ETH_CONTRACT_ADDRESS, APP_ERC20_CONTRACT_ADDRESS } from './config';
+
 import AppEthereum from './AppETH';
 import AppERC20 from './AppERC20';
 
@@ -68,7 +69,7 @@ function Bridge ({ web3 }: Props): React.ReactElement<Props> {
 
   // Render
   return (
-    <Box>
+    <Box style={{padding: '2em 0'}}>
       <AppEthereum contract={appETHContract}
         defaultAccount={defaultAccount}
         web3={web3}/>
