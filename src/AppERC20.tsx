@@ -3,48 +3,61 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // General
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
+import React, {useState, useEffect} from "react";
+import styled from "styled-components";
+import Web3 from "web3";
+import {Contract} from "web3-eth-contract";
 
 // External
-import { Box, Typography, TextField, Button, Divider, Grid } from '@material-ui/core';
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Divider,
+  Grid,
+} from "@material-ui/core";
 
 // Local
-import * as ERC20 from './contracts/ERC20.json';
-import { REFRESH_INTERVAL_MILLISECONDS } from './config';
+import * as ERC20 from "./contracts/ERC20.json";
+import {REFRESH_INTERVAL_MILLISECONDS} from "./config";
 
 // ------------------------------------------
 //                  Props
 // ------------------------------------------
 type Props = {
-  web3: Web3,
-  contract: Contract,
-  defaultAccount: string
-}
+  web3: Web3;
+  contract: Contract;
+  defaultAccount: string;
+};
 
 type LoadERC20TokenProps = {
-  web3: Web3,
-  onContractInstance: any,
-}
+  web3: Web3;
+  onContractInstance: any;
+};
 
 type ApproveAndSendProps = {
-  defaultAccount: string,
-  contract: any,
-  contractERC20: any,
-}
+  defaultAccount: string;
+  contract: any;
+  contractERC20: any;
+};
 
 // ------------------------------------------
 //           LoadERC20Token component
 // ------------------------------------------
-function LoadERC20Token ({ onContractInstance, web3 }: LoadERC20TokenProps): React.ReactElement<Props> {
+function LoadERC20Token({
+  onContractInstance,
+  web3,
+}: LoadERC20TokenProps): React.ReactElement<Props> {
   const [tokenAddress, setTokenAddress] = useState(String);
 
   // Fetch ERC20 token contract
   useEffect(() => {
     const fetchTokenContract = async () => {
-      const tokenContractInstance = new web3.eth.Contract(ERC20.abi as any, tokenAddress);
+      const tokenContractInstance = new web3.eth.Contract(
+        ERC20.abi as any,
+        tokenAddress,
+      );
 
       onContractInstance(tokenContractInstance);
     };
@@ -63,14 +76,14 @@ function LoadERC20Token ({ onContractInstance, web3 }: LoadERC20TokenProps): Rea
       </Typography>
       <TextField
         InputProps={{
-          value: tokenAddress
+          value: tokenAddress,
         }}
-        id='erc-input-token-address'
-        margin='normal'
+        id="erc-input-token-address"
+        margin="normal"
         onChange={(e) => setTokenAddress(e.target.value)}
-        placeholder='0xbeddb07...'
-        style={{ margin: 5 }}
-        variant='outlined'
+        placeholder="0xbeddb07..."
+        style={{margin: 5}}
+        variant="outlined"
       />
     </Box>
   );
@@ -79,7 +92,11 @@ function LoadERC20Token ({ onContractInstance, web3 }: LoadERC20TokenProps): Rea
 // ------------------------------------------
 //           ApproveAndSendERC20 component
 // ------------------------------------------
-function ApproveAndSendERC20 ({ contract, contractERC20, defaultAccount }: ApproveAndSendProps): React.ReactElement<Props> {
+function ApproveAndSendERC20({
+  contract,
+  contractERC20,
+  defaultAccount,
+}: ApproveAndSendProps): React.ReactElement<Props> {
   // Blockchain state from blockchain
   const [allowance, setAllowance] = useState(Number);
   const [balance, setBalance] = useState(Number);
@@ -91,150 +108,157 @@ function ApproveAndSendERC20 ({ contract, contractERC20, defaultAccount }: Appro
 
   useEffect(() => {
     const fetchChainData = async () => {
-      const decimals = Number(await contractERC20.methods.decimals().call())
+      const decimals = Number(await contractERC20.methods.decimals().call());
       const conversionFactor = 10 * 10 ** decimals;
 
-      const appAllowance = Number(await contractERC20.methods.allowance(defaultAccount, contract._address).call());
-      setAllowance(appAllowance/conversionFactor);
+      const appAllowance = Number(
+        await contractERC20.methods
+          .allowance(defaultAccount, contract._address)
+          .call(),
+      );
+      setAllowance(appAllowance / conversionFactor);
 
-      const userBalance = Number(await contractERC20.methods.balanceOf(defaultAccount).call());
-      setBalance(userBalance/conversionFactor);
+      const userBalance = Number(
+        await contractERC20.methods.balanceOf(defaultAccount).call(),
+      );
+      setBalance(userBalance / conversionFactor);
     };
-      
+
     fetchChainData();
-    setInterval(() => { fetchChainData(); }, REFRESH_INTERVAL_MILLISECONDS);
+    setInterval(() => {
+      fetchChainData();
+    }, REFRESH_INTERVAL_MILLISECONDS);
   }, [contract._address, contractERC20.methods, defaultAccount]);
 
   // Handlers
   const handleApproveERC20 = async () => {
     // Approve ERC20 token to bank contract
-    await contractERC20.methods.approve(contract._address, approvalAmount).send({
-      from: defaultAccount
-    });
+    await contractERC20.methods
+      .approve(contract._address, approvalAmount)
+      .send({
+        from: defaultAccount,
+      });
   };
 
   const handleSendERC20 = async () => {
-    const polkadotRecipientBytes = Buffer.from(polkadotRecipient, 'hex');
+    const polkadotRecipientBytes = Buffer.from(polkadotRecipient, "hex");
 
     // Send ERC20 token to bank contract
-    await contract.methods.sendERC20(polkadotRecipientBytes, contractERC20._address, depositAmount).send({
-      from: defaultAccount,
-      gas: 500000,
-      value: 0
-    });
+    await contract.methods
+      .sendERC20(polkadotRecipientBytes, contractERC20._address, depositAmount)
+      .send({
+        from: defaultAccount,
+        gas: 500000,
+        value: 0,
+      });
   };
 
   // Render
   return (
     <Box>
-      <Box marginTop={'15px'}/>
+      <Box marginTop={"15px"} />
       <Divider />
-      <Box marginTop={'15px'}/>
-      <Typography gutterBottom
-        variant='h5'>
-          1. Approve
+      <Box marginTop={"15px"} />
+      <Typography gutterBottom variant="h5">
+        1. Approve
       </Typography>
       <Typography gutterBottom>
         How many ERC20 tokens would you like to approve to the ERC20 App?
       </Typography>
       <TextField
         InputProps={{
-          value: approvalAmount
+          value: approvalAmount,
         }}
-        id='erc-input-approval'
-        margin='normal'
+        id="erc-input-approval"
+        margin="normal"
         onChange={(e) => setApprovalAmount(Number(e.target.value))}
-        placeholder='20'
-        style={{ margin: 5 }}
-        variant='outlined'
+        placeholder="20"
+        style={{margin: 5}}
+        variant="outlined"
       />
-      <Box alignItems='center'
-        display='flex'
-        justifyContent='space-around'>
+      <Box alignItems="center" display="flex" justifyContent="space-around">
         <Box>
           <Typography>
             Current ERC20 token balance: {balance.toFixed(18)} TEST
           </Typography>
         </Box>
-        <Box alignItems='center'
-          display='flex'
-          height='100px'
+        <Box
+          alignItems="center"
+          display="flex"
+          height="100px"
           paddingBottom={1}
           paddingTop={2}
-          width='300px'>
+          width="300px"
+        >
           <Button
-            color='primary'
+            color="primary"
             fullWidth={true}
             onClick={() => handleApproveERC20()}
-            variant='outlined'>
-            <Typography variant='button'>
-              Approve
-            </Typography>
+            variant="outlined"
+          >
+            <Typography variant="button">Approve</Typography>
           </Button>
         </Box>
       </Box>
       <Divider />
-      <Box marginTop={'15px'}>
-        <Typography gutterBottom
-          variant='h5'>
-            2. Send
+      <Box marginTop={"15px"}>
+        <Typography gutterBottom variant="h5">
+          2. Send
         </Typography>
       </Box>
-      <Box display='flex'
-        flexDirection='column'>
-        <Box padding={1}/>
+      <Box display="flex" flexDirection="column">
+        <Box padding={1} />
         <Typography gutterBottom>
-            What account would you like to fund on Polkadot?
+          What account would you like to fund on Polkadot?
         </Typography>
         <TextField
           InputProps={{
-            value: polkadotRecipient
+            value: polkadotRecipient,
           }}
-          id='erc-input-recipient'
-          margin='normal'
+          id="erc-input-recipient"
+          margin="normal"
           onChange={(e) => setPolkadotRecipient(e.target.value)}
-          placeholder={'38j4dG5GzsL1bw...'}
-          style={{ margin: 5 }}
-          variant='outlined'
+          placeholder={"38j4dG5GzsL1bw..."}
+          style={{margin: 5}}
+          variant="outlined"
         />
-        <Box padding={1}/>
+        <Box padding={1} />
         <Typography gutterBottom>
-            How many ERC20 tokens would you like to deposit
+          How many ERC20 tokens would you like to deposit
         </Typography>
         <TextField
           InputProps={{
-            value: depositAmount
+            value: depositAmount,
           }}
-          id='erc-input-amount'
-          margin='normal'
+          id="erc-input-amount"
+          margin="normal"
           onChange={(e) => setDepositAmount(e.target.value)}
-          placeholder='20'
-          style={{ margin: 5 }}
-          variant='outlined'
+          placeholder="20"
+          style={{margin: 5}}
+          variant="outlined"
         />
-        <Box alignItems='center'
-          display='flex'
-          justifyContent='space-around'>
+        <Box alignItems="center" display="flex" justifyContent="space-around">
           <Box>
             <Typography>
-            Current ERC20 App allowance: {allowance.toFixed(18)} TEST
+              Current ERC20 App allowance: {allowance.toFixed(18)} TEST
             </Typography>
           </Box>
-          <Box alignItems='center'
-            display='flex'
-            height='100px'
+          <Box
+            alignItems="center"
+            display="flex"
+            height="100px"
             paddingBottom={1}
             paddingTop={2}
-            width='300px'>
+            width="300px"
+          >
             <Button
-              color='primary'
+              color="primary"
               disabled={allowance === 0}
               fullWidth={true}
               onClick={() => handleSendERC20()}
-              variant='outlined'>
-              <Typography variant='button'>
-                Send
-              </Typography>
+              variant="outlined"
+            >
+              <Typography variant="button">Send</Typography>
             </Button>
           </Box>
         </Box>
@@ -246,7 +270,11 @@ function ApproveAndSendERC20 ({ contract, contractERC20, defaultAccount }: Appro
 // ------------------------------------------
 //               AppERC20 component
 // ------------------------------------------
-function AppERC20 ({ contract, defaultAccount, web3 }: Props): React.ReactElement<Props> {
+function AppERC20({
+  contract,
+  defaultAccount,
+  web3,
+}: Props): React.ReactElement<Props> {
   // ERC20 token contract instance
   const initialContract: any = null;
   const [tokenContract, setTokenContract] = useState(initialContract);
@@ -254,26 +282,36 @@ function AppERC20 ({ contract, defaultAccount, web3 }: Props): React.ReactElemen
   // Render
   return (
     <Grid container>
-      <Grid container item xs={10} md={8} justify='center' spacing={3}
+      <Grid
+        container
+        item
+        xs={10}
+        md={8}
+        justify="center"
+        spacing={3}
         style={{
-          margin: '2em auto',
-    padding: '2em 0',
-    border: 'thin solid #E0E0E0'
-  }}>
-
+          margin: "2em auto",
+          padding: "2em 0",
+          border: "thin solid #E0E0E0",
+        }}
+      >
         <Grid item xs={10}>
-          <Typography gutterBottom variant='h5'>
+          <Typography gutterBottom variant="h5">
             ERC20 App
           </Typography>
         </Grid>
         <Grid item xs={10}>
-          <LoadERC20Token onContractInstance={(e: any) => setTokenContract(e)}
-            web3={web3}/>
-            { tokenContract &&
-              <ApproveAndSendERC20 contract={contract}
+          <LoadERC20Token
+            onContractInstance={(e: any) => setTokenContract(e)}
+            web3={web3}
+          />
+          {tokenContract && (
+            <ApproveAndSendERC20
+              contract={contract}
               contractERC20={tokenContract}
-              defaultAccount={defaultAccount}/>
-            }
+              defaultAccount={defaultAccount}
+            />
+          )}
         </Grid>
       </Grid>
     </Grid>
