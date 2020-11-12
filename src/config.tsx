@@ -9,3 +9,6 @@ export const APP_ERC20_CONTRACT_ADDRESS = '0xF1becfDcA540605451553b4d5f80ACF17C7
 
 // Fetch chain data interval
 export const REFRESH_INTERVAL_MILLISECONDS = 10000;
+
+// Polkadotjs API Provider
+export const POLKADOT_API_PROVIDER = 'wss://parachain-rpc.snowfork.network';
