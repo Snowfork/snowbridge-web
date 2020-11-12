@@ -10,7 +10,6 @@ import { Contract } from 'web3-eth-contract';
 
 // External
 import { Box, Typography, TextField, Button, Divider, Grid } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
 
 // Local
 import * as ERC20 from './contracts/ERC20.json';
@@ -37,22 +36,6 @@ type ApproveAndSendProps = {
 }
 
 // ------------------------------------------
-//                  Styles
-// ------------------------------------------
-const useStyles = makeStyles((theme) => ({
-  modal: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  paper: {
-    backgroundColor: theme.palette.background.paper,
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 3)
-  }
-}));
-
-// ------------------------------------------
 //           LoadERC20Token component
 // ------------------------------------------
 function LoadERC20Token ({ onContractInstance, web3 }: LoadERC20TokenProps): React.ReactElement<Props> {
@@ -67,10 +50,10 @@ function LoadERC20Token ({ onContractInstance, web3 }: LoadERC20TokenProps): Rea
     };
 
     // All valid contract addresses have 42 characters ('0x' + address)
-    if (tokenAddress.length == 42) {
+    if (tokenAddress.length === 42) {
       fetchTokenContract();
     }
-  }, [web3, tokenAddress]);
+  }, [web3, tokenAddress, onContractInstance]);
 
   // Render
   return (
@@ -106,21 +89,21 @@ function ApproveAndSendERC20 ({ contract, contractERC20, defaultAccount }: Appro
   const [polkadotRecipient, setPolkadotRecipient] = useState(String);
   const [depositAmount, setDepositAmount] = useState(String);
 
-  const fetchChainData = async () => {
-    const decimals = Number(await contractERC20.methods.decimals().call())
-    const conversionFactor = 10 * 10 ** decimals;
-
-    const appAllowance = Number(await contractERC20.methods.allowance(defaultAccount, contract._address).call());
-    setAllowance(appAllowance/conversionFactor);
-
-    const userBalance = Number(await contractERC20.methods.balanceOf(defaultAccount).call());
-    setBalance(userBalance/conversionFactor);
-  };
-
   useEffect(() => {
+    const fetchChainData = async () => {
+      const decimals = Number(await contractERC20.methods.decimals().call())
+      const conversionFactor = 10 * 10 ** decimals;
+
+      const appAllowance = Number(await contractERC20.methods.allowance(defaultAccount, contract._address).call());
+      setAllowance(appAllowance/conversionFactor);
+
+      const userBalance = Number(await contractERC20.methods.balanceOf(defaultAccount).call());
+      setBalance(userBalance/conversionFactor);
+    };
+      
     fetchChainData();
     setInterval(() => { fetchChainData(); }, REFRESH_INTERVAL_MILLISECONDS);
-  }, [REFRESH_INTERVAL_MILLISECONDS]);
+  }, [contract._address, contractERC20.methods, defaultAccount]);
 
   // Handlers
   const handleApproveERC20 = async () => {
@@ -264,8 +247,6 @@ function ApproveAndSendERC20 ({ contract, contractERC20, defaultAccount }: Appro
 //               AppERC20 component
 // ------------------------------------------
 function AppERC20 ({ contract, defaultAccount, web3 }: Props): React.ReactElement<Props> {
-  const classes = useStyles();
-
   // ERC20 token contract instance
   const initialContract: any = null;
   const [tokenContract, setTokenContract] = useState(initialContract);

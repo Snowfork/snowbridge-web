@@ -34,7 +34,6 @@ function Nav({ web3, polkadotApi}: Props): React.ReactElement<Props> {
   const [web3Balance, setWeb3Balance] = useState(String);
 
   const [polkadotDefaultAcc, setPolkadotDefaultAcc] = useState(String);
-  const [polkadotBalance, setPolkadotBalance] = useState(String);
 
   // Get default Web3 Account
   useEffect(() => {

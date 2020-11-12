@@ -47,7 +47,7 @@ function Bridge ({ web3 }: Props): React.ReactElement<Props> {
     };
 
     fetchAccounts();
-  }, []);
+  }, [web3.eth]);
 
   // Fetch contracts
   useEffect(() => {

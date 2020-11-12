@@ -34,10 +34,7 @@ type Props = {
 // ------------------------------------------
 function AppETH ({ contract, defaultAccount, web3 }: Props): React.ReactElement<Props> {
 
-  // State
-  const [balance, setBalance] = useState(String);
-  const [fetchBalance, setFetchBalance] = useState(Boolean);
-
+  // State    
   const [polkadotRecipient, setPolkadotRecipient] = useState(String);
   const [depositAmount, setDepositAmount] = useState(String);
 
@@ -63,38 +60,11 @@ function AppETH ({ contract, defaultAccount, web3 }: Props): React.ReactElement<
           from: defaultAccount,
           gas: 500000,
           value: web3.utils.toWei(amount, 'ether')
-      });
-      
-      await sleep(5000);
-      getBalance();
+      });           
     };
 
     execute(polkadotRecipient, depositAmount);
   };
-
-  // Get Ethereum Balance
-  const getBalance = () => {
-    const execute = async () => {
-      const currBalance = await web3.eth.getBalance(defaultAccount.toString());
-      setBalance(web3.utils.fromWei(currBalance, 'ether'));
-    };
-
-    execute();
-  };
-
-  // Sleep is a wait function
-  function sleep (ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  // On load
-  if (!fetchBalance) {
-    getBalance();
-    setFetchBalance(true);
-  }
-
-  getBalance();
-  //getPolkaEthBalance();
 
   // Render
   return (
