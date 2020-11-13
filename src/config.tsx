@@ -13,3 +13,6 @@ export const REFRESH_INTERVAL_MILLISECONDS = 10000;
 
 // Polkadotjs API Provider
 export const POLKADOT_API_PROVIDER = "wss://parachain-rpc.snowfork.network";
+
+// ETH asset ID
+export const ETH_ASSET_ID = "0x00";
