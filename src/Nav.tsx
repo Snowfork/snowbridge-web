@@ -7,6 +7,9 @@ import Web3 from "web3";
 import {ApiPromise} from "@polkadot/api";
 import {web3Accounts, web3Enable} from "@polkadot/extension-dapp";
 
+import queryPolkaEthBalance from "./common";
+import {ETH_ASSET_ID} from "./config";
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -34,6 +37,7 @@ function Nav({web3, polkadotApi}: Props): React.ReactElement<Props> {
   const [web3Balance, setWeb3Balance] = useState(String);
 
   const [polkadotDefaultAcc, setPolkadotDefaultAcc] = useState(String);
+  const [polkadotBalance, setPolkadotBalance] = useState(String);
 
   // Get default Web3 Account
   useEffect(() => {
@@ -73,10 +77,19 @@ function Nav({web3, polkadotApi}: Props): React.ReactElement<Props> {
 
       const allAccounts = await web3Accounts();
       setPolkadotDefaultAcc(allAccounts[0].address);
+
+      // Get PolkaETH Balance
+      let bal = await queryPolkaEthBalance(
+        polkadotApi,
+        ETH_ASSET_ID,
+        allAccounts[0].address,
+      );
+
+      setPolkadotBalance(bal.toString(10));
     };
 
     exe();
-  }, []);
+  }, [polkadotApi]);
 
   const handleClick = (event: React.MouseEvent<any>) => {
     setAnchorEl(event.currentTarget);
@@ -100,7 +113,10 @@ function Nav({web3, polkadotApi}: Props): React.ReactElement<Props> {
     if (polkadotDefaultAcc) {
       return (
         <span>
-          {0 + " PolkaETH " + polkadotDefaultAcc.substr(0, 7) + "..."}
+          {polkadotBalance +
+            " PolkaETH " +
+            polkadotDefaultAcc.substr(0, 7) +
+            "..."}
         </span>
       );
     } else {
