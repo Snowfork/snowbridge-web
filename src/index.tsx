@@ -1,11 +1,17 @@
-import ReactDOM from "react-dom";
-import React, {Suspense} from "react";
+import ReactDOM from 'react-dom';
+import React, { Suspense } from 'react';
 
-import App from "./App";
+import Theme from './styles/theme';
+import GlobalStyle from './styles/globaStyle';
+
+import App from './App';
 
 ReactDOM.render(
-  <Suspense fallback="...">
-    <App />
-  </Suspense>,
-  document.getElementById("root"),
+  <Theme>
+    <GlobalStyle />
+    <Suspense fallback="...">
+      <App />
+    </Suspense>
+  </Theme>,
+  document.getElementById('root'),
 );

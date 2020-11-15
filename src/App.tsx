@@ -3,25 +3,30 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // external imports
-import React, {useState, useEffect} from "react";
-import Web3 from "web3";
-import {ApiPromise, WsProvider} from "@polkadot/api";
+import React, { useState, useEffect } from 'react';
+import ReactModal from 'react-modal';
+
+import Web3 from 'web3';
+import { ApiPromise, WsProvider } from '@polkadot/api';
 
 // local imports and components
-import Bridge from "./Bridge";
-import Nav from "./Nav";
-import {POLKADOT_API_PROVIDER} from "./config";
+import Bridge from './Bridge';
+import Nav from './components/Nav';
+import { POLKADOT_API_PROVIDER } from './config';
 
 type MyWindow = typeof window & {
   ethereum: any;
   web3: Web3;
 };
 
+// Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
+ReactModal.setAppElement('#root');
+
 function BridgeApp() {
   const [web3Enabled, enableWeb3] = useState(false);
   const [polkadotEnabled, enablePolkadotApi] = useState<
-    null | ApiPromise | "loading"
-  >("loading");
+    null | ApiPromise | 'loading'
+  >('loading');
 
   // Connect to Web3
   useEffect(() => {
@@ -43,27 +48,27 @@ function BridgeApp() {
         const api = await ApiPromise.create({
           provider: wsProvider,
           types: {
-            Address: "AccountId",
-            LookupSource: "AccountId",
-            AppId: "[u8; 20]",
+            Address: 'AccountId',
+            LookupSource: 'AccountId',
+            AppId: '[u8; 20]',
             Message: {
-              payload: "Vec<u8>",
-              verification: "VerificationInput",
+              payload: 'Vec<u8>',
+              verification: 'VerificationInput',
             },
             VerificationInput: {
               _enum: {
-                Basic: "VerificationBasic",
+                Basic: 'VerificationBasic',
                 None: null,
               },
             },
             VerificationBasic: {
-              blockNumber: "u64",
-              eventIndex: "u32",
+              blockNumber: 'u64',
+              eventIndex: 'u32',
             },
-            TokenId: "H160",
-            BridgedAssetId: "H160",
+            TokenId: 'H160',
+            BridgedAssetId: 'H160',
             AssetAccountData: {
-              free: "U256",
+              free: 'U256',
             },
           },
         });
@@ -80,7 +85,7 @@ function BridgeApp() {
 
   if (!web3Enabled) {
     return (
-      <p style={{textAlign: "center"}}>
+      <p style={{ textAlign: 'center' }}>
         Please install MetaMask to use this application!
       </p>
     );
@@ -88,12 +93,12 @@ function BridgeApp() {
 
   if (!polkadotEnabled) {
     return (
-      <p style={{textAlign: "center"}}>
+      <p style={{ textAlign: 'center' }}>
         Something went wrong while connecting the Polkadotjs API.
       </p>
     );
-  } else if (polkadotEnabled === "loading") {
-    return <p style={{textAlign: "center"}}>Connecting Polkadotjs API...</p>;
+  } else if (polkadotEnabled === 'loading') {
+    return <p style={{ textAlign: 'center' }}>Connecting Polkadotjs API...</p>;
   }
 
   return (
