@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as S from './Nav.style';
-import { AppBar, Toolbar, Typography, Menu, MenuItem } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 
 import Web3 from 'web3';
 import { ApiPromise } from '@polkadot/api';
