@@ -6,37 +6,31 @@
 import React, { useState, useEffect } from 'react';
 import ReactModal from 'react-modal';
 
-import Web3 from 'web3';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 
 // local imports and components
 import Bridge from './Bridge';
 import Nav from './components/Nav';
 import { POLKADOT_API_PROVIDER } from './config';
-
-type MyWindow = typeof window & {
-  ethereum: any;
-  web3: Web3;
-};
+import Net from './net/';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
 function BridgeApp() {
-  const [web3Enabled, enableWeb3] = useState(false);
   const [polkadotEnabled, enablePolkadotApi] = useState<
     null | ApiPromise | 'loading'
   >('loading');
 
-  // Connect to Web3
+  // Start Network
+  const [net, initNet] = useState<null | Net>(null);
   useEffect(() => {
-    let locWindow = window as MyWindow;
+    const init = async () => {
+      const net = new Net(await Net.start());
+      initNet(net);
+    };
 
-    if (locWindow.ethereum) {
-      locWindow.web3 = new Web3(locWindow.ethereum);
-      locWindow.ethereum.enable();
-      enableWeb3(true);
-    }
+    init();
   }, []);
 
   // Connect to Polkadotjs
@@ -83,12 +77,17 @@ function BridgeApp() {
     exe();
   }, []);
 
-  if (!web3Enabled) {
-    return (
-      <p style={{ textAlign: 'center' }}>
-        Please install MetaMask to use this application!
-      </p>
-    );
+  if (net === null) {
+    return <p style={{ textAlign: 'center' }}>Starting Network</p>;
+  }
+
+  switch (net!.eth!.state) {
+    case 'loading':
+      return <p>Web3 loading</p>;
+    case 'success':
+      break;
+    case 'failed':
+      return <p>Failed to connect to Web3</p>;
   }
 
   if (!polkadotEnabled) {
@@ -101,10 +100,12 @@ function BridgeApp() {
     return <p style={{ textAlign: 'center' }}>Connecting Polkadotjs API...</p>;
   }
 
+  console.log(net!.eth!.account!.address);
+
   return (
     <main>
-      <Nav web3={(window as MyWindow).web3} polkadotApi={polkadotEnabled} />
-      <Bridge web3={(window as MyWindow).web3} />
+      <Nav net={net} polkadotApi={polkadotEnabled} />
+      <Bridge net={net} />
     </main>
   );
 }

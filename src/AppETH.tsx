@@ -2,10 +2,10 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React, {useState} from "react";
-import styled from "styled-components";
-import Web3 from "web3";
-import {Contract} from "web3-eth-contract";
+import React, { useState } from 'react';
+import styled from 'styled-components';
+
+import Net from './net/';
 
 import {
   Typography,
@@ -15,58 +15,26 @@ import {
   FormControl,
   FormHelperText,
   Divider,
-} from "@material-ui/core";
-
-const {Keyring} = require("@polkadot/keyring");
-const {u8aToHex} = require("@polkadot/util");
+} from '@material-ui/core';
 
 // ------------------------------------------
 //                  Props
 // ------------------------------------------
 type Props = {
-  web3: Web3;
-  contract: Contract;
-  defaultAccount: string;
+  net: Net;
 };
 
 // ------------------------------------------
 //               AppETH component
 // ------------------------------------------
-function AppETH({
-  contract,
-  defaultAccount,
-  web3,
-}: Props): React.ReactElement<Props> {
+function AppETH({ net }: Props): React.ReactElement<Props> {
   // State
   const [polkadotRecipient, setPolkadotRecipient] = useState(String);
   const [depositAmount, setDepositAmount] = useState(String);
 
-  if (!defaultAccount || defaultAccount === "") {
-    return <p>Default MetaMask Account is undefined!</p>;
-  }
-
-  // Handlers
-  const handleSendETH = () => {
-    const execute = async (ss58Recipient: string, amount: string) => {
-      // create a keyring with default options
-      const keyring = new Keyring();
-
-      // SS58 formated address to hexadecimal format
-      const hexRecipient = keyring.decodeAddress(ss58Recipient);
-
-      // hexadecimal formated Address to raw bytes
-      const rawRecipient = u8aToHex(hexRecipient, -1, false);
-
-      const recipientBytes = Buffer.from(rawRecipient, "hex");
-      await contract.methods.sendETH(recipientBytes).send({
-        from: defaultAccount,
-        gas: 500000,
-        value: web3.utils.toWei(amount, "ether"),
-      });
-    };
-
-    execute(polkadotRecipient, depositAmount);
-  };
+  //if (!defaultAccount || defaultAccount === '') {
+  //return <p>Default MetaMask Account is undefined!</p>;
+  //  }
 
   // Render
   return (
@@ -79,9 +47,9 @@ function AppETH({
         justify="center"
         spacing={3}
         style={{
-          margin: "0 auto",
-          padding: "2em 0",
-          border: "thin solid #E0E0E0",
+          margin: '0 auto',
+          padding: '2em 0',
+          border: 'thin solid #E0E0E0',
         }}
       >
         <Grid item xs={10}>
@@ -101,8 +69,8 @@ function AppETH({
               id="eth-input-recipient"
               margin="normal"
               onChange={(e) => setPolkadotRecipient(e.target.value)}
-              placeholder={"38j4dG5GzsL1bw..."}
-              style={{margin: 5}}
+              placeholder={'38j4dG5GzsL1bw...'}
+              style={{ margin: 5 }}
               variant="outlined"
             />
             <FormHelperText id="ss58InputDesc">
@@ -123,7 +91,7 @@ function AppETH({
               margin="normal"
               onChange={(e) => setDepositAmount(e.target.value)}
               placeholder="0.00 ETH"
-              style={{margin: 5}}
+              style={{ margin: 5 }}
               variant="outlined"
             />
             <FormHelperText id="ethAmountDesc">
@@ -136,7 +104,7 @@ function AppETH({
         <Grid item xs={10}>
           <Button
             color="primary"
-            onClick={() => handleSendETH()}
+            onClick={() => net?.eth?.send_eth(polkadotRecipient, depositAmount)}
             variant="outlined"
           >
             <Typography variant="button">Send ETH</Typography>

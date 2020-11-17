@@ -3,10 +3,10 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // General
-import React, {useState, useEffect} from "react";
-import styled from "styled-components";
-import Web3 from "web3";
-import {Contract} from "web3-eth-contract";
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import Web3 from 'web3';
+import { Contract } from 'web3-eth-contract';
 
 // External
 import {
@@ -16,11 +16,11 @@ import {
   Button,
   Divider,
   Grid,
-} from "@material-ui/core";
+} from '@material-ui/core';
 
 // Local
-import * as ERC20 from "./contracts/ERC20.json";
-import {REFRESH_INTERVAL_MILLISECONDS} from "./config";
+import * as ERC20 from './contracts/ERC20.json';
+import { REFRESH_INTERVAL_MILLISECONDS } from './config';
 
 // ------------------------------------------
 //                  Props
@@ -28,7 +28,7 @@ import {REFRESH_INTERVAL_MILLISECONDS} from "./config";
 type Props = {
   web3: Web3;
   contract: Contract;
-  defaultAccount: string;
+  defaultAccount: string | null | undefined;
 };
 
 type LoadERC20TokenProps = {
@@ -82,7 +82,7 @@ function LoadERC20Token({
         margin="normal"
         onChange={(e) => setTokenAddress(e.target.value)}
         placeholder="0xbeddb07..."
-        style={{margin: 5}}
+        style={{ margin: 5 }}
         variant="outlined"
       />
     </Box>
@@ -141,7 +141,7 @@ function ApproveAndSendERC20({
   };
 
   const handleSendERC20 = async () => {
-    const polkadotRecipientBytes = Buffer.from(polkadotRecipient, "hex");
+    const polkadotRecipientBytes = Buffer.from(polkadotRecipient, 'hex');
 
     // Send ERC20 token to bank contract
     await contract.methods
@@ -156,9 +156,9 @@ function ApproveAndSendERC20({
   // Render
   return (
     <Box>
-      <Box marginTop={"15px"} />
+      <Box marginTop={'15px'} />
       <Divider />
-      <Box marginTop={"15px"} />
+      <Box marginTop={'15px'} />
       <Typography gutterBottom variant="h5">
         1. Approve
       </Typography>
@@ -173,7 +173,7 @@ function ApproveAndSendERC20({
         margin="normal"
         onChange={(e) => setApprovalAmount(Number(e.target.value))}
         placeholder="20"
-        style={{margin: 5}}
+        style={{ margin: 5 }}
         variant="outlined"
       />
       <Box alignItems="center" display="flex" justifyContent="space-around">
@@ -201,7 +201,7 @@ function ApproveAndSendERC20({
         </Box>
       </Box>
       <Divider />
-      <Box marginTop={"15px"}>
+      <Box marginTop={'15px'}>
         <Typography gutterBottom variant="h5">
           2. Send
         </Typography>
@@ -218,8 +218,8 @@ function ApproveAndSendERC20({
           id="erc-input-recipient"
           margin="normal"
           onChange={(e) => setPolkadotRecipient(e.target.value)}
-          placeholder={"38j4dG5GzsL1bw..."}
-          style={{margin: 5}}
+          placeholder={'38j4dG5GzsL1bw...'}
+          style={{ margin: 5 }}
           variant="outlined"
         />
         <Box padding={1} />
@@ -234,7 +234,7 @@ function ApproveAndSendERC20({
           margin="normal"
           onChange={(e) => setDepositAmount(e.target.value)}
           placeholder="20"
-          style={{margin: 5}}
+          style={{ margin: 5 }}
           variant="outlined"
         />
         <Box alignItems="center" display="flex" justifyContent="space-around">
@@ -279,6 +279,10 @@ function AppERC20({
   const initialContract: any = null;
   const [tokenContract, setTokenContract] = useState(initialContract);
 
+  if (defaultAccount === null || !defaultAccount) {
+    return <p>Empty Account</p>;
+  }
+
   // Render
   return (
     <Grid container>
@@ -290,9 +294,9 @@ function AppERC20({
         justify="center"
         spacing={3}
         style={{
-          margin: "2em auto",
-          padding: "2em 0",
-          border: "thin solid #E0E0E0",
+          margin: '2em auto',
+          padding: '2em 0',
+          border: 'thin solid #E0E0E0',
         }}
       >
         <Grid item xs={10}>
