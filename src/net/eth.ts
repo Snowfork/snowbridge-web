@@ -1,5 +1,11 @@
 import Web3 from 'web3';
+import { Contract } from 'web3-eth-contract';
+import { Keyring } from '@polkadot/keyring';
+import { u8aToHex } from '@polkadot/util';
 
+import Api, { ApiState } from './api';
+
+// Import Contracts
 import {
   APP_ETH_CONTRACT_ADDRESS,
   APP_ERC20_CONTRACT_ADDRESS,
@@ -10,21 +16,19 @@ import * as ETHApp from '../contracts/ETHApp.json';
 import * as ERC20App from '../contracts/ERC20App.json';
 /* tslint:enable */
 
-import Api, { ApiState } from './api';
-import { Contract } from 'web3-eth-contract';
-const { Keyring } = require('@polkadot/keyring');
-const { u8aToHex } = require('@polkadot/util');
+// Eth API connector
+type Connector = (e: Eth) => void;
 
+// window wrapper
 type MyWindow = typeof window & {
   ethereum: any;
   web3: Web3;
 };
 
-type Connector = (e: Eth) => void;
-
 export default class Eth extends Api {
-  eth_contract: Contract | null = null;
-  erc20_contract: Contract | null = null;
+  public conn?: Web3;
+  public eth_contract?: Contract;
+  public erc20_contract?: Contract;
 
   constructor(connecter: Connector) {
     super();
@@ -33,19 +37,25 @@ export default class Eth extends Api {
 
   // Get default web3 account
   // ------------------------
-  public async get_account() {
-    if (this?.web3) {
+  public async get_account(): Promise<string> {
+    if (this!.conn) {
       try {
-        const accs = await this.web3.eth.getAccounts();
+        const accs = await this.conn.eth.getAccounts();
 
         if (accs) {
           const defaultAcc = accs[0];
-          this.account = { address: defaultAcc, balance: null };
+          this.account.address = defaultAcc;
+          return defaultAcc;
+        } else {
+          return '';
         }
       } catch (err) {
         //TODO: handle 'No default Account Error'
         console.log(err);
+        return '';
       }
+    } else {
+      return '';
     }
   }
 
@@ -54,8 +64,8 @@ export default class Eth extends Api {
   public async get_balance(): Promise<string | undefined> {
     if (this.account!.address) {
       const acc = this.account!.address;
-      const currBalance = await this.web3!.eth.getBalance(acc);
-      this.account!.balance = this.web3!.utils.fromWei(currBalance, 'ether');
+      const currBalance = await this.conn!.eth.getBalance(acc);
+      this.account!.balance = this.conn!.utils.fromWei(currBalance, 'ether');
       return currBalance;
     } else {
       return undefined;
@@ -80,7 +90,7 @@ export default class Eth extends Api {
       await this.eth_contract!.methods.sendETH(recipientBytes).send({
         from: this!.account!.address,
         gas: 500000,
-        value: this!.web3!.utils.toWei(amount, 'ether'),
+        value: this!.conn!.utils.toWei(amount, 'ether'),
       });
     } catch (err) {
       //Todo: Error Sending Ethereum
@@ -92,7 +102,7 @@ export default class Eth extends Api {
   // ----------------
   public set_eth_contract() {
     try {
-      const contract = new this!.web3!.eth.Contract(
+      const contract = new this!.conn!.eth.Contract(
         ETHApp.abi as any,
         APP_ETH_CONTRACT_ADDRESS,
       );
@@ -108,7 +118,7 @@ export default class Eth extends Api {
   // ------------------
   public set_erc20_contract() {
     try {
-      const contract = new this!.web3!.eth.Contract(
+      const contract = new this!.conn!.eth.Contract(
         ERC20App.abi as any,
         APP_ERC20_CONTRACT_ADDRESS,
       );
@@ -119,8 +129,8 @@ export default class Eth extends Api {
     }
   }
 
-  // web3 connector
-  // ---------------
+  // Web3 API connector
+  // ------------------
   public static async connect(): Promise<Connector> {
     let locWindow = window as MyWindow;
 
@@ -159,11 +169,11 @@ export default class Eth extends Api {
     }
 
     return async (eth: Eth) => {
-      eth.web3 = web3;
+      eth.conn = web3;
       eth.state = state;
       eth.enabled = enabled;
 
-      // Load web3 account
+      // get web3 account
       await eth.get_account();
 
       // Set contracts
