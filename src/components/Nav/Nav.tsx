@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import * as S from './Nav.style';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-
-import { ApiPromise } from '@polkadot/api';
-import { web3Accounts, web3Enable } from '@polkadot/extension-dapp';
 
 import CurrencyDisplay from '../CurrencyDisplay';
 
@@ -12,60 +8,55 @@ import IconPolkadot from '../../assets/images/icon-polkadot.svg';
 
 import Net from '../../net/';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      flexGrow: 1,
-    },
-    menuButton: {
-      marginRight: theme.spacing(2),
-    },
-    title: {
-      flexGrow: 1,
-    },
-  }),
-);
-
 type Props = {
   net: Net;
-  polkadotApi: ApiPromise;
 };
 
-function Nav({ net, polkadotApi }: Props): React.ReactElement<Props> {
-  const [polkadotDefaultAcc, setPolkadotDefaultAcc] = useState(String);
+function Nav({ net }: Props): React.ReactElement<Props> {
+  const [polkadotAddress, setPolkadotAddress] = useState(String);
+  const [ethAddress, setEthAddress] = useState(String);
 
-  // Get default Polkadotjs Account
   useEffect(() => {
-    const exe = async () => {
-      const extensions = await web3Enable('Ethereum Bridge');
+    const await_polkadotAddress = async () => {
+      let address = await net?.polkadot?.get_account();
 
-      if (extensions.length === 0) {
-        return;
+      if (!address) {
+        setPolkadotAddress('');
+      } else {
+        setPolkadotAddress(address);
       }
-
-      const allAccounts = await web3Accounts();
-      setPolkadotDefaultAcc(allAccounts[0].address);
     };
 
-    exe();
-  }, []);
+    const await_ethAddress = async () => {
+      let address = await net?.eth?.get_account();
+
+      if (!address) {
+        setEthAddress('');
+      } else {
+        setEthAddress(address);
+      }
+    };
+
+    await_polkadotAddress();
+    await_ethAddress();
+  }, [net]);
 
   return (
     <S.Wrapper>
       <S.Heading>Ethereum Bridge</S.Heading>
       <S.CurrencyList>
         <CurrencyDisplay
-          balance={net!.eth!.account!.balance!}
+          balance={net?.eth?.account?.balance!}
           currencyCode="ETH"
-          address={net!.eth!.account!.address!}
+          address={ethAddress}
           icon={IconMetamask}
           provider="Metamask"
         />
-        )
+
         <CurrencyDisplay
           balance={0.5}
           currencyCode="PolkaETH"
-          address={polkadotDefaultAcc}
+          address={polkadotAddress}
           icon={IconPolkadot}
           provider="Polkadot.js"
         />

@@ -29,7 +29,7 @@ function Bridge({ net }: Props): React.ReactElement<Props> {
     <Box style={{ padding: '2em 0' }}>
       <AppEthereum net={net} />
       <AppERC20
-        web3={net?.eth?.web3 as Web3}
+        web3={net?.eth?.conn as Web3}
         contract={net?.eth?.erc20_contract as Contract}
         defaultAccount={net?.eth?.account?.address}
       />
