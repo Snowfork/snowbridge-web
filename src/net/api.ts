@@ -1,21 +1,18 @@
 import Web3 from 'web3';
+import { ApiPromise } from '@polkadot/api';
 
 export type ApiState = 'loading' | 'success' | 'failed';
-
-export type Conn = Web3;
 
 type ApiOption = (e: Api) => void;
 
 type Account = {
   address?: string;
-  balance: string | null;
+  balance?: string;
 };
 
-type Connector = (a: Api) => void;
-
 export default class Api {
-  public web3?: Conn;
+  public conn?: Web3 | ApiPromise;
   public enabled: boolean = false;
   public state: ApiState = 'loading';
-  public account?: Account;
+  public account: Account = { address: undefined, balance: undefined };
 }
