@@ -9,7 +9,7 @@ import ReactModal from 'react-modal';
 // local imports and components
 import Bridge from './Bridge';
 import Nav from './components/Nav';
-import Net from './net/';
+import Net from './net';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');

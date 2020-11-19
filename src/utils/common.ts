@@ -32,7 +32,7 @@ export function shortenWalletAddress(str: String, prefix = 6, suffix = 4) {
  *
  */
 export function formatToDecimalString(
-  value: Number | String,
+  value: number | string,
   decimalPlaces = 2,
 ) {
   return Number(

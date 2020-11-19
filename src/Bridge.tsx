@@ -12,7 +12,7 @@ import { Box } from '@material-ui/core';
 import AppEthereum from './AppETH';
 import AppERC20 from './AppERC20';
 
-import Net from './net/';
+import Net from './net';
 
 // ------------------------------------------
 //                  Props

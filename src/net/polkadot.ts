@@ -40,6 +40,16 @@ export default class Polkadot extends Api {
     return '';
   }
 
+  public async get_accounts(): Promise<object[] | string> {
+    const allAccounts = await web3Accounts();
+
+    if (allAccounts.length > 0) {
+      return allAccounts;
+    }
+
+    return '';
+  }
+
   // Polkadotjs API connector
   // ------------------------
   public static async connect(): Promise<Connector> {
