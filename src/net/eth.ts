@@ -44,7 +44,6 @@ export default class Eth extends Api {
 
         if (accs) {
           const defaultAcc = accs[0];
-          this.account.address = defaultAcc;
           return defaultAcc;
         } else {
           return '';
@@ -62,36 +61,43 @@ export default class Eth extends Api {
   // Get ETH balance
   // ---------------
   public async get_balance(): Promise<string | undefined> {
-    if (this.account!.address) {
-      const acc = this.account!.address;
-      const currBalance = await this.conn!.eth.getBalance(acc);
-      this.account!.balance = this.conn!.utils.fromWei(currBalance, 'ether');
-      return currBalance;
-    } else {
-      return undefined;
+    let acc = await this.get_account();
+
+    if (acc && this.conn) {
+      const currBalance = await this.conn.eth.getBalance(acc);
+
+      if (currBalance) {
+        return currBalance;
+      }
     }
+
+    return undefined;
   }
 
   // Send ETH
   // --------
   public async send_eth(recipient: string, amount: string) {
     try {
-      // create a keyring with default options
-      const keyring = new Keyring();
+      const acc = await this.get_account();
 
-      // SS58 formated address to hexadecimal format
-      const hexRecipient = keyring.decodeAddress(recipient);
+      if (acc && this.conn && this.eth_contract) {
+        // create a keyring with default options
+        const keyring = new Keyring();
 
-      // hexadecimal formated Address to raw bytes
-      const rawRecipient = u8aToHex(hexRecipient, -1, false);
+        // SS58 formated address to hexadecimal format
+        const hexRecipient = keyring.decodeAddress(recipient);
 
-      const recipientBytes = Buffer.from(rawRecipient, 'hex');
+        // hexadecimal formated Address to raw bytes
+        const rawRecipient = u8aToHex(hexRecipient, -1, false);
 
-      await this.eth_contract!.methods.sendETH(recipientBytes).send({
-        from: this!.account!.address,
-        gas: 500000,
-        value: this!.conn!.utils.toWei(amount, 'ether'),
-      });
+        const recipientBytes = Buffer.from(rawRecipient, 'hex');
+
+        await this.eth_contract.methods.sendETH(recipientBytes).send({
+          from: acc,
+          gas: 500000,
+          value: this.conn.utils.toWei(amount, 'ether'),
+        });
+      }
     } catch (err) {
       //Todo: Error Sending Ethereum
       console.log(err);
@@ -118,11 +124,14 @@ export default class Eth extends Api {
   // ------------------
   public set_erc20_contract() {
     try {
-      const contract = new this!.conn!.eth.Contract(
-        ERC20App.abi as any,
-        APP_ERC20_CONTRACT_ADDRESS,
-      );
-      this.erc20_contract = contract;
+      if (this.conn) {
+        const contract = new this.conn.eth.Contract(
+          ERC20App.abi as any,
+          APP_ERC20_CONTRACT_ADDRESS,
+        );
+
+        this.erc20_contract = contract;
+      }
     } catch (err) {
       //Todo: Error fetching ERC20 contract
       console.log(err);
@@ -172,9 +181,6 @@ export default class Eth extends Api {
       eth.conn = web3;
       eth.state = state;
       eth.enabled = enabled;
-
-      // get web3 account
-      await eth.get_account();
 
       // Set contracts
       eth.set_eth_contract();

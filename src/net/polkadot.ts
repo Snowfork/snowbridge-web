@@ -34,7 +34,6 @@ export default class Polkadot extends Api {
     const allAccounts = await web3Accounts();
 
     if (allAccounts.length > 0) {
-      this.account.address = allAccounts[0].address;
       return allAccounts[0].address;
     }
 
@@ -79,13 +78,7 @@ export default class Polkadot extends Api {
         polkadot.conn = api;
         polkadot.state = 'success';
         await polkadot.enable_extension();
-
-        // Get polkadot account
-        await polkadot.get_account();
-
-        console.log(
-          '-------- Fetched polka Account:' + polkadot.account.address,
-        );
+        console.log('----- Polkadot connected ------');
       };
     } catch (err) {
       return (polkadot: Polkadot) => {
