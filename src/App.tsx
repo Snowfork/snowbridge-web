@@ -6,105 +6,58 @@
 import React, { useState, useEffect } from 'react';
 import ReactModal from 'react-modal';
 
-import Web3 from 'web3';
-import { ApiPromise, WsProvider } from '@polkadot/api';
-
 // local imports and components
 import Bridge from './Bridge';
 import Nav from './components/Nav';
-import { POLKADOT_API_PROVIDER } from './config';
-
-type MyWindow = typeof window & {
-  ethereum: any;
-  web3: Web3;
-};
+import Net from './net/';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
 function BridgeApp() {
-  const [web3Enabled, enableWeb3] = useState(false);
-  const [polkadotEnabled, enablePolkadotApi] = useState<
-    null | ApiPromise | 'loading'
-  >('loading');
+  const [polkadotAddress, setPolkadotAddress] = useState(String);
+  const [ethAddress, setEthAddress] = useState(String);
+  const [ethBalance, setEthBalance] = useState(String);
 
-  // Connect to Web3
+  // Start Network
+  const [net, initNet] = useState<Net>();
   useEffect(() => {
-    let locWindow = window as MyWindow;
+    const init = async () => {
+      const net = new Net(await Net.start());
 
-    if (locWindow.ethereum) {
-      locWindow.web3 = new Web3(locWindow.ethereum);
-      locWindow.ethereum.enable();
-      enableWeb3(true);
-    }
-  }, []);
+      if (net && net.polkadot && net.eth) {
+        const eAddress = await net.eth.get_account();
+        const pAddress = await net.polkadot.get_account();
+        const eBalance = await net.eth.get_balance();
 
-  // Connect to Polkadotjs
-  useEffect(() => {
-    let exe = async () => {
-      const wsProvider = new WsProvider(POLKADOT_API_PROVIDER);
+        if (eAddress) setEthAddress(eAddress);
+        if (pAddress) setPolkadotAddress(pAddress);
+        if (eBalance && eBalance !== undefined) setEthBalance(eBalance);
 
-      try {
-        const api = await ApiPromise.create({
-          provider: wsProvider,
-          types: {
-            Address: 'AccountId',
-            LookupSource: 'AccountId',
-            AppId: '[u8; 20]',
-            Message: {
-              payload: 'Vec<u8>',
-              verification: 'VerificationInput',
-            },
-            VerificationInput: {
-              _enum: {
-                Basic: 'VerificationBasic',
-                None: null,
-              },
-            },
-            VerificationBasic: {
-              blockNumber: 'u64',
-              eventIndex: 'u32',
-            },
-            TokenId: 'H160',
-            BridgedAssetId: 'H160',
-            AssetAccountData: {
-              free: 'U256',
-            },
-          },
-        });
-
-        enablePolkadotApi(api);
-      } catch (err) {
-        console.log(err);
-        enablePolkadotApi(null);
+        initNet(net);
       }
     };
 
-    exe();
+    init();
   }, []);
 
-  if (!web3Enabled) {
-    return (
-      <p style={{ textAlign: 'center' }}>
-        Please install MetaMask to use this application!
-      </p>
-    );
-  }
-
-  if (!polkadotEnabled) {
-    return (
-      <p style={{ textAlign: 'center' }}>
-        Something went wrong while connecting the Polkadotjs API.
-      </p>
-    );
-  } else if (polkadotEnabled === 'loading') {
-    return <p style={{ textAlign: 'center' }}>Connecting Polkadotjs API...</p>;
+  if (net && net.state) {
+    switch (net.state) {
+      case 'loading':
+        return <p style={{ textAlign: 'center' }}>Starting Network</p>;
+      case 'failed':
+        return <p style={{ textAlign: 'center' }}>Failed to start Network</p>;
+    }
   }
 
   return (
     <main>
-      <Nav web3={(window as MyWindow).web3} polkadotApi={polkadotEnabled} />
-      <Bridge web3={(window as MyWindow).web3} />
+      <Nav
+        polkadotAddress={polkadotAddress}
+        ethAddress={ethAddress}
+        ethBalance={ethBalance}
+      />
+      <Bridge net={net!} />
     </main>
   );
 }

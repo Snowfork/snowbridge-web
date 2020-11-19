@@ -2,90 +2,49 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React, {useState, useEffect} from "react";
-import styled from "styled-components";
-import Web3 from "web3";
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import Web3 from 'web3';
+import { Contract } from 'web3-eth-contract';
 
-import {Box} from "@material-ui/core";
+import { Box } from '@material-ui/core';
 
-// Local imports
-import {APP_ETH_CONTRACT_ADDRESS, APP_ERC20_CONTRACT_ADDRESS} from "./config";
+import AppEthereum from './AppETH';
+import AppERC20 from './AppERC20';
 
-import AppEthereum from "./AppETH";
-import AppERC20 from "./AppERC20";
-
-/* tslint:disable */
-import * as ETHApp from "./contracts/ETHApp.json";
-import * as ERC20App from "./contracts/ERC20App.json";
-/* tslint:enable */
+import Net from './net/';
 
 // ------------------------------------------
 //                  Props
 // ------------------------------------------
 type Props = {
-  web3: Web3;
+  net: Net;
 };
 
 // ------------------------------------------
 //               Bank component
 // ------------------------------------------
-function Bridge({web3}: Props): React.ReactElement<Props> {
-  // State
-  const initialContract: any = null;
-  const [appETHContract, setAppETHContract] = useState(initialContract);
-  const [appERC20Contract, setAppERC20Contract] = useState(initialContract);
-  const [defaultAccount, setDefaultAccount] = useState(String);
+function Bridge({ net }: Props): React.ReactElement<Props> {
+  const [ethAddress, setEthAddress] = useState(String);
 
-  // Effects
   useEffect(() => {
-    const fetchAccounts = async () => {
-      const accs = await web3.eth.getAccounts();
-      const defaultAcc = accs[0];
-
-      web3.eth.defaultAccount = defaultAcc;
-      setDefaultAccount(defaultAcc);
+    const await_ethAddress = async () => {
+      let address = await net?.eth?.get_account();
+      if (address) setEthAddress(address);
     };
 
-    fetchAccounts();
-  }, [web3.eth]);
+    await_ethAddress();
+  }, [net]);
 
-  // Fetch contracts
-  useEffect(() => {
-    const fetchAppEthereumContract = async () => {
-      const appETHContractInstance = new web3.eth.Contract(
-        ETHApp.abi as any,
-        APP_ETH_CONTRACT_ADDRESS,
-      );
-
-      setAppETHContract(appETHContractInstance);
-    };
-
-    const fetchAppERC20Contract = async () => {
-      const appERC20ContractInstance = new web3.eth.Contract(
-        ERC20App.abi as any,
-        APP_ERC20_CONTRACT_ADDRESS,
-      );
-
-      setAppERC20Contract(appERC20ContractInstance);
-    };
-
-    fetchAppEthereumContract();
-    fetchAppERC20Contract();
-  }, [web3]);
-
-  // Render
   return (
-    <Box style={{padding: "2em 0"}}>
-      <AppEthereum
-        contract={appETHContract}
-        defaultAccount={defaultAccount}
-        web3={web3}
-      />
+    <Box style={{ padding: '2em 0' }}>
+      <AppEthereum net={net} />
       <AppERC20
-        contract={appERC20Contract}
-        defaultAccount={defaultAccount}
-        web3={web3}
+        web3={net?.eth?.conn as Web3}
+        contract={net?.eth?.erc20_contract as Contract}
+        defaultAccount={ethAddress}
       />
+      ;
     </Box>
   );
 }
