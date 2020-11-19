@@ -32,10 +32,6 @@ function AppETH({ net }: Props): React.ReactElement<Props> {
   const [polkadotRecipient, setPolkadotRecipient] = useState(String);
   const [depositAmount, setDepositAmount] = useState(String);
 
-  //if (!defaultAccount || defaultAccount === '') {
-  //return <p>Default MetaMask Account is undefined!</p>;
-  //  }
-
   // Render
   return (
     <Grid container>
