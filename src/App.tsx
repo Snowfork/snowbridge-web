@@ -6,21 +6,31 @@
 import React, { useState, useEffect } from 'react';
 import ReactModal from 'react-modal';
 
+import { connect } from 'react-redux';
+
 // local imports and components
 import Bridge from './Bridge';
 import Nav from './components/Nav';
 import Net from './net';
 
+import { setNet } from './redux/actions';
+
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
-function BridgeApp() {
+type Props = {
+  net: Net;
+  setNet: (net: Net) => void;
+};
+
+function BridgeApp(props: Props) {
+  const { net, setNet } = props;
+  console.log(net);
   const [polkadotAddress, setPolkadotAddress] = useState(String);
   const [ethAddress, setEthAddress] = useState(String);
   const [ethBalance, setEthBalance] = useState(String);
 
   // Start Network
-  const [net, initNet] = useState<Net>();
   useEffect(() => {
     const init = async () => {
       const net = new Net(await Net.start());
@@ -34,7 +44,7 @@ function BridgeApp() {
         if (pAddress) setPolkadotAddress(pAddress);
         if (eBalance && eBalance !== undefined) setEthBalance(eBalance);
 
-        initNet(net);
+        setNet(net);
       }
     };
 
@@ -62,4 +72,8 @@ function BridgeApp() {
   );
 }
 
-export default BridgeApp;
+const mapStateToProps = (state: any) => {
+  return { net: state.net, setNet: state.setNet };
+};
+
+export default connect(mapStateToProps, { setNet })(BridgeApp);
