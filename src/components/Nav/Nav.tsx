@@ -43,7 +43,7 @@ function Nav({
 
   const [polkadotAccIndex, setPolkadotAccIndex] = useState(0);
 
-  let eBalance;
+  let eBalance: string;
 
   if (!ethBalance) eBalance = '';
   else eBalance = ethBalance;
@@ -66,16 +66,12 @@ function Nav({
 
   return (
     <S.Wrapper>
-      {console.log(ethAddress)}
       <S.Heading>Ethereum Bridge</S.Heading>
       <S.CurrencyList>
         <S.DisplayWrapper>
           <S.DisplayTitle>Ethereum Wallet</S.DisplayTitle>
           <S.DisplayContainer>
-            <S.Amount>
-              {ethBalance !== undefined && formatToDecimalString(ethBalance, 3)}{' '}
-              ETH
-            </S.Amount>
+            <S.Amount>{formatToDecimalString(eBalance, 3)} ETH</S.Amount>
             <S.Address
               as="a"
               href={`https://etherscan.com/ropsten.etherscan.io/address/${ethAddress}`}
