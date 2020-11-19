@@ -12,7 +12,6 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 
@@ -123,29 +122,6 @@ function Nav({
       </S.CurrencyList>
     </S.Wrapper>
   );
-
-  /* return (
-    <S.Wrapper>
-      <S.Heading>Ethereum Bridge</S.Heading>
-      <S.CurrencyList>
-        <CurrencyDisplay
-          balance={eBalance}
-          currencyCode="ETH"
-          address={ethAddress}
-          icon={IconMetamask}
-          provider="Metamask"
-        />
-
-        <CurrencyDisplay
-          balance={0.5}
-          currencyCode="PolkaETH"
-          address={polkadotAddress}
-          icon={IconPolkadot}
-          provider="Polkadot.js"
-        />
-      </S.CurrencyList>
-    </S.Wrapper>
-  ); */
 }
 
 export default Nav;
