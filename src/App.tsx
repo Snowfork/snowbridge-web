@@ -15,24 +15,48 @@ import Net from './net/';
 ReactModal.setAppElement('#root');
 
 function BridgeApp() {
+  const [polkadotAddress, setPolkadotAddress] = useState(String);
+  const [ethAddress, setEthAddress] = useState(String);
+  const [ethBalance, setEthBalance] = useState(String);
+
   // Start Network
-  const [net, initNet] = useState<null | Net>(null);
+  const [net, initNet] = useState<Net>();
   useEffect(() => {
     const init = async () => {
       const net = new Net(await Net.start());
-      initNet(net);
+
+      if (net && net.polkadot && net.eth) {
+        const eAddress = await net.eth.get_account();
+        const pAddress = await net.polkadot.get_account();
+        const eBalance = await net.eth.get_balance();
+
+        if (eAddress) setEthAddress(eAddress);
+        if (pAddress) setPolkadotAddress(pAddress);
+        if (eBalance && eBalance !== undefined) setEthBalance(eBalance);
+
+        initNet(net);
+      }
     };
 
     init();
   }, []);
 
-  if (net?.state === 'loading') {
-    return <p style={{ textAlign: 'center' }}>Starting Network</p>;
+  if (net && net.state) {
+    switch (net.state) {
+      case 'loading':
+        return <p style={{ textAlign: 'center' }}>Starting Network</p>;
+      case 'failed':
+        return <p style={{ textAlign: 'center' }}>Failed to start Network</p>;
+    }
   }
 
   return (
     <main>
-      <Nav net={net!} />
+      <Nav
+        polkadotAddress={polkadotAddress}
+        ethAddress={ethAddress}
+        ethBalance={ethBalance}
+      />
       <Bridge net={net!} />
     </main>
   );

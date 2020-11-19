@@ -15,14 +15,19 @@ export default class Net {
 
   public static async start(): Promise<StartNet> {
     try {
-      const eth = new Eth(await Eth.connect());
       const polkadot = new Polkadot(await Polkadot.connect());
-      return (net: Net): void => {
-        console.log('----- Network started ------');
-        net.eth = eth;
-        net.polkadot = polkadot;
-        net.state = 'connected';
-      };
+      const eth = new Eth(await Eth.connect());
+
+      if (eth && polkadot) {
+        return (net: Net): void => {
+          net.eth = eth;
+          net.polkadot = polkadot;
+          net.state = 'connected';
+          console.log('----- Network started ------');
+        };
+      }
+
+      throw new Error('Network Error');
     } catch (err) {
       return (net: Net): void => {
         console.log('----- Network Error ------');
