@@ -35,7 +35,7 @@ function BridgeApp(props: Props) {
     const init = async () => {
       const net = new Net(await Net.start());
 
-      if (net && net.polkadot && net.eth) {
+      if (net.polkadot && net.eth) {
         const eAddress = await net.eth.get_account();
         const pAddress = await net.polkadot.get_account();
         const eBalance = await net.eth.get_balance();
