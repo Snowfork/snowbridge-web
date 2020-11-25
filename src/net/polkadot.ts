@@ -5,9 +5,14 @@ import Api from './api';
 
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
+import { ETH_ASSET_ID } from '../config';
 
 // Polkadot API connector
 type Connector = (p: Polkadot) => void;
+
+interface AssetAccountData {
+  [free: string]: any;
+}
 
 export default class Polkadot extends Api {
   public conn?: ApiPromise;
@@ -29,8 +34,7 @@ export default class Polkadot extends Api {
   }
 
   // Get default polkadot account
-  // ------------------------
-  public async get_account(): Promise<string> {
+  public async get_account(): Promise<any> {
     const allAccounts = await web3Accounts();
 
     if (allAccounts.length > 0) {
@@ -40,7 +44,7 @@ export default class Polkadot extends Api {
     return '';
   }
 
-  public async get_accounts(): Promise<object[] | string> {
+  public async get_accounts(): Promise<object[] | any> {
     const allAccounts = await web3Accounts();
 
     if (allAccounts.length > 0) {
@@ -50,8 +54,23 @@ export default class Polkadot extends Api {
     return '';
   }
 
+  // Query account balance for bridged assets (ETH and ERC20)
+  public async get_balance(account: any) {
+    if (this.conn) {
+      let accountData = await this.conn.query.asset.account(
+        ETH_ASSET_ID,
+        account,
+      );
+
+      if ((accountData as AssetAccountData).free) {
+        return (accountData as AssetAccountData).free;
+      }
+    }
+
+    return null;
+  }
+
   // Polkadotjs API connector
-  // ------------------------
   public static async connect(): Promise<Connector> {
     try {
       const wsProvider = new WsProvider(POLKADOT_API_PROVIDER);
