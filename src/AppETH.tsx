@@ -57,7 +57,7 @@ function AppETH({ net, polkadotAddress }: Props): React.ReactElement<Props> {
         {/* SS58 Address Input */}
         <Grid item xs={10}>
           <FormControl>
-            <Typography gutterBottom>To</Typography>
+            <Typography gutterBottom>Polkadot Address (Receiving)</Typography>
             <SelectedAccount address={polkadotAddress} />
           </FormControl>
         </Grid>
@@ -86,7 +86,7 @@ function AppETH({ net, polkadotAddress }: Props): React.ReactElement<Props> {
 
         {/* Send ETH */}
         <Grid item xs={10}>
-          {Number(depositAmount) ? (
+          {Number(depositAmount) > 0 ? (
             <Button
               color="primary"
               onClick={() => net?.eth?.send_eth(polkadotAddress, depositAmount)}
