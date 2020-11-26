@@ -67,7 +67,11 @@ function BridgeApp(props: Props) {
         ethAddress={ethAddress}
         ethBalance={ethBalance}
       />
-      <Bridge net={net!} />
+      <Bridge
+        net={net!}
+        polkadotAddress={polkadotAddress}
+        ethAddress={ethAddress}
+      />
     </main>
   );
 }

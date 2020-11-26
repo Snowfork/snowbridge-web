@@ -19,26 +19,21 @@ import Net from './net';
 // ------------------------------------------
 type Props = {
   net: Net;
+  polkadotAddress: string;
+  ethAddress: string;
 };
 
 // ------------------------------------------
 //               Bank component
 // ------------------------------------------
-function Bridge({ net }: Props): React.ReactElement<Props> {
-  const [ethAddress, setEthAddress] = useState(String);
-
-  useEffect(() => {
-    const await_ethAddress = async () => {
-      let address = await net?.eth?.get_account();
-      if (address) setEthAddress(address);
-    };
-
-    await_ethAddress();
-  }, [net]);
-
+function Bridge({
+  net,
+  polkadotAddress,
+  ethAddress,
+}: Props): React.ReactElement<Props> {
   return (
     <Box style={{ padding: '2em 0' }}>
-      <AppEthereum net={net} />
+      <AppEthereum net={net} polkadotAddress={polkadotAddress} />
       <AppERC20
         web3={net?.eth?.conn as Web3}
         contract={net?.eth?.erc20_contract as Contract}
