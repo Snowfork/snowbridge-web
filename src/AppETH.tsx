@@ -71,6 +71,7 @@ function AppETH({ net, polkadotAddress }: Props): React.ReactElement<Props> {
                 value: depositAmount,
               }}
               id="eth-input-amount"
+              type="number"
               margin="normal"
               onChange={(e) => setDepositAmount(e.target.value)}
               placeholder="0.00 ETH"
@@ -85,7 +86,7 @@ function AppETH({ net, polkadotAddress }: Props): React.ReactElement<Props> {
 
         {/* Send ETH */}
         <Grid item xs={10}>
-          {depositAmount.length > 0 ? (
+          {Number(depositAmount) ? (
             <Button
               color="primary"
               onClick={() => net?.eth?.send_eth(polkadotAddress, depositAmount)}
