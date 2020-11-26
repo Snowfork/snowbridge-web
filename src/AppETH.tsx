@@ -57,9 +57,11 @@ function AppETH({ net, polkadotAddress }: Props): React.ReactElement<Props> {
         {/* SS58 Address Input */}
         <Grid item xs={10}>
           <FormControl>
-            <Typography gutterBottom>Polkadot Address (Receiving)</Typography>
             <SelectedAccount address={polkadotAddress} />
           </FormControl>
+          <FormHelperText id="ethAmountDesc">
+            Polkadot Receiving Address
+          </FormHelperText>
         </Grid>
 
         {/* ETH Deposit Amount Input */}
