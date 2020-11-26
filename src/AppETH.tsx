@@ -85,13 +85,19 @@ function AppETH({ net, polkadotAddress }: Props): React.ReactElement<Props> {
 
         {/* Send ETH */}
         <Grid item xs={10}>
-          <Button
-            color="primary"
-            onClick={() => net?.eth?.send_eth(polkadotAddress, depositAmount)}
-            variant="outlined"
-          >
-            <Typography variant="button">Send ETH</Typography>
-          </Button>
+          {depositAmount.length > 0 ? (
+            <Button
+              color="primary"
+              onClick={() => net?.eth?.send_eth(polkadotAddress, depositAmount)}
+              variant="outlined"
+            >
+              <Typography variant="button">Send ETH</Typography>
+            </Button>
+          ) : (
+            <Button disabled color="primary" variant="outlined">
+              <Typography variant="button">Send ETH</Typography>
+            </Button>
+          )}
         </Grid>
       </Grid>
       <Divider />
