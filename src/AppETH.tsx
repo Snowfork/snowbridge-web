@@ -30,7 +30,6 @@ type Props = {
 // ------------------------------------------
 function AppETH({ net, polkadotAddress }: Props): React.ReactElement<Props> {
   // State
-  const [polkadotRecipient, setPolkadotRecipient] = useState(String);
   const [depositAmount, setDepositAmount] = useState(String);
 
   // Render
@@ -88,7 +87,7 @@ function AppETH({ net, polkadotAddress }: Props): React.ReactElement<Props> {
         <Grid item xs={10}>
           <Button
             color="primary"
-            onClick={() => net?.eth?.send_eth(polkadotRecipient, depositAmount)}
+            onClick={() => net?.eth?.send_eth(polkadotAddress, depositAmount)}
             variant="outlined"
           >
             <Typography variant="button">Send ETH</Typography>
