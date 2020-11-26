@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
-
+import SelectedAccount from './components/SelectedAccount/';
 import Net from './net';
 
 import {
@@ -22,12 +22,13 @@ import {
 // ------------------------------------------
 type Props = {
   net: Net;
+  polkadotAddress: string;
 };
 
 // ------------------------------------------
 //               AppETH component
 // ------------------------------------------
-function AppETH({ net }: Props): React.ReactElement<Props> {
+function AppETH({ net, polkadotAddress }: Props): React.ReactElement<Props> {
   // State
   const [polkadotRecipient, setPolkadotRecipient] = useState(String);
   const [depositAmount, setDepositAmount] = useState(String);
@@ -58,20 +59,7 @@ function AppETH({ net }: Props): React.ReactElement<Props> {
         <Grid item xs={10}>
           <FormControl>
             <Typography gutterBottom>To</Typography>
-            <TextField
-              InputProps={{
-                value: polkadotRecipient,
-              }}
-              id="eth-input-recipient"
-              margin="normal"
-              onChange={(e) => setPolkadotRecipient(e.target.value)}
-              placeholder={'38j4dG5GzsL1bw...'}
-              style={{ margin: 5 }}
-              variant="outlined"
-            />
-            <FormHelperText id="ss58InputDesc">
-              What account would you like to fund on Polkadot?
-            </FormHelperText>
+            <SelectedAccount address={polkadotAddress} />
           </FormControl>
         </Grid>
 
