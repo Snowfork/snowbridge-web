@@ -1,9 +1,8 @@
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
-import { Keyring } from '@polkadot/keyring';
-import { u8aToHex } from '@polkadot/util';
 
-import Api, { ApiState } from './api';
+import Api, { ss58_to_u8 } from './api';
+import Net from './';
 
 // Import Contracts
 import {
@@ -17,7 +16,7 @@ import * as ERC20App from '../contracts/ERC20App.json';
 /* tslint:enable */
 
 // Eth API connector
-type Connector = (e: Eth) => void;
+type Connector = (e: Eth, net: any) => void;
 
 // window wrapper
 type MyWindow = typeof window & {
@@ -29,74 +28,77 @@ export default class Eth extends Api {
   public conn?: Web3;
   public eth_contract?: Contract;
   public erc20_contract?: Contract;
+  private net: Net;
 
-  constructor(connecter: Connector) {
+  constructor(connecter: Connector, net: Net) {
     super();
-    connecter(this);
+    this.net = net;
+    connecter(this, net);
   }
 
   // Get default web3 account
-  // ------------------------
-  public async get_account(): Promise<string> {
+  async get_address() {
     if (this!.conn) {
       try {
         const accs = await this.conn.eth.getAccounts();
 
         if (accs) {
-          const defaultAcc = accs[0];
-          return defaultAcc;
+          return accs[0];
         } else {
-          return '';
+          throw new Error('Ethereum Account Not Set');
         }
       } catch (err) {
         //TODO: handle 'No default Account Error'
         console.log(err);
-        return '';
       }
-    } else {
-      return '';
     }
   }
 
-  // Get ETH balance
-  // ---------------
+  // Get ETH balance of default Ethereum Account
   public async get_balance(): Promise<string | undefined> {
-    let acc = await this.get_account();
+    try {
+      if (this.conn) {
+        let default_address = await this.get_address();
 
-    if (acc && this.conn) {
-      const currBalance = await this.conn.eth.getBalance(acc);
+        if (default_address) {
+          const currBalance = await this.conn.eth.getBalance(default_address);
 
-      if (currBalance) {
-        return currBalance;
+          if (currBalance) {
+            return currBalance;
+          }
+
+          return undefined;
+        }
+
+        throw new Error('Default Address not found');
+      } else {
+        throw new Error('Web3 API not connected');
       }
+    } catch (err) {
+      //TODO: handle properly
+      console.log(err);
     }
-
-    return undefined;
   }
 
-  // Send ETH
-  // --------
-  public async send_eth(recipient: string, amount: string) {
+  // Send ETH To Default Polkadot Account
+  public async send_eth(amount: string) {
     try {
-      const acc = await this.get_account();
+      const self: Eth = this;
+      let default_address = await self.get_address();
+      if (default_address) {
+        if (self.conn && self.eth_contract) {
+          const polkadotAddress: Uint8Array = ss58_to_u8(
+            self.net.polkadotAddress,
+          );
 
-      if (acc && this.conn && this.eth_contract) {
-        // create a keyring with default options
-        const keyring = new Keyring();
-
-        // SS58 formated address to hexadecimal format
-        const hexRecipient = keyring.decodeAddress(recipient);
-
-        // hexadecimal formated Address to raw bytes
-        const rawRecipient = u8aToHex(hexRecipient, -1, false);
-
-        const recipientBytes = Buffer.from(rawRecipient, 'hex');
-
-        await this.eth_contract.methods.sendETH(recipientBytes).send({
-          from: acc,
-          gas: 500000,
-          value: this.conn.utils.toWei(amount, 'ether'),
-        });
+          await self.eth_contract.methods.sendETH(polkadotAddress).send({
+            from: default_address,
+            gas: 500000,
+            value: self.conn.utils.toWei(amount, 'ether'),
+          });
+        }
+      } else {
+        throw new Error('Default Address not found');
       }
     } catch (err) {
       //Todo: Error Sending Ethereum
@@ -105,7 +107,6 @@ export default class Eth extends Api {
   }
 
   // Set Eth contract
-  // ----------------
   public set_eth_contract() {
     try {
       const contract = new this!.conn!.eth.Contract(
@@ -121,7 +122,6 @@ export default class Eth extends Api {
   }
 
   // Set ERC20 contract
-  // ------------------
   public set_erc20_contract() {
     try {
       if (this.conn) {
@@ -139,13 +139,10 @@ export default class Eth extends Api {
   }
 
   // Web3 API connector
-  // ------------------
   public static async connect(): Promise<Connector> {
     let locWindow = window as MyWindow;
 
     let web3: Web3;
-    let enabled: boolean = false;
-    let state: ApiState;
 
     if (locWindow.ethereum) {
       web3 = new Web3(locWindow.ethereum);
@@ -153,38 +150,31 @@ export default class Eth extends Api {
       try {
         // Request account access if needed
         await locWindow.ethereum.enable();
-        enabled = true;
-        state = 'success';
-        console.log('----- Eth connected ------');
       } catch (error) {
-        state = 'failed';
         console.error(error);
       }
     }
+
     // Legacy dapp browsers...
     else if (locWindow.web3) {
       web3 = locWindow.web3;
-      state = 'success';
-      enabled = true;
-      console.log('----- Injected web3 detected. ------');
+      console.log('- Injected web3 detected');
     }
     // Fallback to localhost; use dev console port by default...
     else {
       const provider = new Web3.providers.HttpProvider('http://127.0.0.1:9545');
       web3 = new Web3(provider);
-      state = 'success';
-      enabled = true;
-      console.log('----- No web3 instance injected, using Local web3. ------');
+      console.log('- No web3 instance injected, using Local web3');
     }
 
-    return async (eth: Eth) => {
-      eth.conn = web3;
-      eth.state = state;
-      eth.enabled = enabled;
-
-      // Set contracts
-      eth.set_eth_contract();
-      eth.set_erc20_contract();
+    return (eth: Eth) => {
+      if (web3) {
+        eth.conn = web3;
+        // Set contracts
+        eth.set_eth_contract();
+        eth.set_erc20_contract();
+        console.log('- Eth connected');
+      }
     };
   }
 }
