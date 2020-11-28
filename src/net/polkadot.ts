@@ -46,19 +46,30 @@ export default class Polkadot extends Api {
   }
 
   // Query account balance for bridged assets (ETH and ERC20)
-  public async get_balance(account: any) {
-    if (this.conn) {
-      let accountData = await this.conn.query.asset.account(
-        ETH_ASSET_ID,
-        account,
-      );
+  public async get_balance() {
+    try {
+      if (this.conn) {
+        let default_address = await this.get_address();
 
-      if ((accountData as AssetAccountData).free) {
-        return (accountData as AssetAccountData).free;
+        if (default_address) {
+          let accountData = await this.conn.query.asset.account(
+            ETH_ASSET_ID,
+            default_address,
+          );
+
+          if ((accountData as AssetAccountData).free) {
+            return (accountData as AssetAccountData).free;
+          }
+        }
+
+        throw new Error('Default account not found');
       }
-    }
 
-    return null;
+      return null;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
 
   // Polkadotjs API connector

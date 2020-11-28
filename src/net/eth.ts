@@ -55,7 +55,7 @@ export default class Eth extends Api {
   }
 
   // Get ETH balance of default Ethereum Account
-  public async get_balance(): Promise<string | undefined> {
+  public async get_balance() {
     try {
       if (this.conn) {
         let default_address = await this.get_address();
@@ -67,7 +67,7 @@ export default class Eth extends Api {
             return currBalance;
           }
 
-          return undefined;
+          throw new Error('Balance not found');
         }
 
         throw new Error('Default Address not found');
