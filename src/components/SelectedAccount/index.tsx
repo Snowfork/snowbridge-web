@@ -1,5 +1,4 @@
 import React from 'react';
-import Net from '../../net/';
 import Identicon from '@polkadot/react-identicon';
 import { shortenWalletAddress } from '../../utils/common';
 

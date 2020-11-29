@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import * as S from './Nav.style';
+import Net from '../../net';
 
 import {
   formatToDecimalString,
@@ -16,9 +17,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 
 type Props = {
-  polkadotAddress: string;
-  ethAddress: string;
-  ethBalance: string | undefined;
+  net: Net;
 };
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -33,21 +32,13 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-function Nav({
-  polkadotAddress,
-  ethAddress,
-  ethBalance,
-}: Props): React.ReactElement<Props> {
+function Nav({ net }: Props): React.ReactElement<Props> {
   const classes = useStyles();
 
   const [polkadotAccIndex, setPolkadotAccIndex] = useState(0);
 
-  let eBalance: string;
-
-  if (!ethBalance) eBalance = '';
-  else eBalance = ethBalance;
-
   const [isOpen, setIsOpen] = useState(false);
+  const pBalance = net?.polkadotBalance!;
 
   function openModal() {
     setIsOpen(true);
@@ -70,24 +61,24 @@ function Nav({
         <S.DisplayWrapper>
           <S.DisplayTitle>Ethereum Wallet</S.DisplayTitle>
           <S.DisplayContainer>
-            <S.Amount>{formatToDecimalString(eBalance, 3)} ETH</S.Amount>
+            <S.Amount>{net.ethBalance} ETH</S.Amount>
             <S.Address
               as="a"
-              href={`https://etherscan.com/ropsten.etherscan.io/address/${ethAddress}`}
+              href={`https://etherscan.com/ropsten.etherscan.io/address/${net.ethAddress}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              {shortenWalletAddress(ethAddress)}
+              {shortenWalletAddress(net.ethAddress)}
             </S.Address>
           </S.DisplayContainer>
         </S.DisplayWrapper>
         <S.DisplayWrapper>
           <S.DisplayTitle>Polkadot Wallet</S.DisplayTitle>
           <S.DisplayContainer>
-            <S.Amount>{formatToDecimalString(0.5, 3)} PolkaETH</S.Amount>
+            <S.Amount>{net.polkadotBalance!.toString()} PolkaETH</S.Amount>
             <S.Address onClick={openModal}>
               {polkadotAccs.length > 0 &&
-                shortenWalletAddress(polkadotAccs[polkadotAccIndex].address)}
+                shortenWalletAddress(net.polkadotAddress!)}
             </S.Address>
           </S.DisplayContainer>
           {isOpen && polkadotAccs.length > 0 && (
