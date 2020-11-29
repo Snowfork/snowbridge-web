@@ -81,7 +81,13 @@ export default class Eth extends Api {
   }
 
   // Send ETH To Default Polkadot Account
-  public async send_eth(amount: string) {
+  public async send_eth(
+    amount: string,
+    transactionHashCb: any,
+    transactionStatusCb: any,
+    confirmationsCb: any,
+    transactionErrorCb: any,
+  ) {
     try {
       const self: Eth = this;
       let default_address = await self.get_address();
@@ -91,11 +97,45 @@ export default class Eth extends Api {
             self.net.polkadotAddress,
           );
 
-          await self.eth_contract.methods.sendETH(polkadotAddress).send({
-            from: default_address,
-            gas: 500000,
-            value: self.conn.utils.toWei(amount, 'ether'),
-          });
+          await self.eth_contract.methods
+            .sendETH(polkadotAddress)
+            .send({
+              from: default_address,
+              gas: 500000,
+              value: self.conn.utils.toWei(amount, 'ether'),
+            })
+            .on('sending', function (payload: any) {
+              transactionStatusCb('sending');
+            })
+            .on('sent', function (payload: any) {
+              transactionStatusCb('sent');
+            })
+            .on('transactionHash', function (hash: string) {
+              transactionHashCb(hash);
+              transactionStatusCb('confirming');
+            })
+            .on('confirmation', function (
+              confirmation: number,
+              receipt: any,
+              latestBlockHash: string,
+            ) {
+              if (confirmation <= 12) {
+                console.log('----------- Receipt ----------');
+                console.log(receipt);
+                console.log('----------- Block ------------');
+                console.log(latestBlockHash);
+
+                confirmationsCb(confirmation);
+                if (confirmation === 12) {
+                  transactionStatusCb('success');
+                  return;
+                }
+              }
+            })
+            .on('error', function (error: Error) {
+              transactionStatusCb('error');
+              transactionErrorCb(error);
+            });
         }
       } else {
         throw new Error('Default Address not found');
