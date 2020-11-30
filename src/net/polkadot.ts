@@ -2,13 +2,14 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { web3Accounts, web3Enable } from '@polkadot/extension-dapp';
 
 import Api from './api';
+import Net from './';
 
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
 import { ETH_ASSET_ID } from '../config';
 
 // Polkadot API connector
-type Connector = (p: Polkadot) => void;
+type Connector = (p: Polkadot, net: any) => void;
 
 interface AssetAccountData {
   [free: string]: any;
@@ -16,58 +17,59 @@ interface AssetAccountData {
 
 export default class Polkadot extends Api {
   public conn?: ApiPromise;
+  public net: Net;
 
-  constructor(connector: Connector) {
+  constructor(connector: Connector, net: any) {
     super();
-    connector(this);
+    this.net = net;
+    connector(this, net);
   }
 
-  // Enable polkadotjs extension
-  public async enable_extension() {
+  // Get default polkadot address
+  public async get_address() {
+    // returns an array of all the injected sources
     const extensions = await web3Enable('Ethereum Bridge');
 
     if (extensions.length === 0) {
-      this.enabled = false;
-    } else {
-      this.enabled = true;
+      // TODO: handle properly
+      throw new Error('Polkadotjs Extension Not Found');
     }
-  }
 
-  // Get default polkadot account
-  public async get_account(): Promise<any> {
     const allAccounts = await web3Accounts();
 
     if (allAccounts.length > 0) {
       return allAccounts[0].address;
+    } else {
+      // TODO: handle properly?
+      throw new Error('Default Ethereum Account not set!');
     }
-
-    return '';
-  }
-
-  public async get_accounts(): Promise<object[] | any> {
-    const allAccounts = await web3Accounts();
-
-    if (allAccounts.length > 0) {
-      return allAccounts;
-    }
-
-    return '';
   }
 
   // Query account balance for bridged assets (ETH and ERC20)
-  public async get_balance(account: any) {
-    if (this.conn) {
-      let accountData = await this.conn.query.asset.account(
-        ETH_ASSET_ID,
-        account,
-      );
+  public async get_balance() {
+    try {
+      if (this.conn) {
+        let default_address = await this.get_address();
 
-      if ((accountData as AssetAccountData).free) {
-        return (accountData as AssetAccountData).free;
+        if (default_address) {
+          let accountData = await this.conn.query.asset.account(
+            ETH_ASSET_ID,
+            default_address,
+          );
+
+          if ((accountData as AssetAccountData).free) {
+            return (accountData as AssetAccountData).free;
+          }
+        }
+
+        throw new Error('Default account not found');
       }
-    }
 
-    return null;
+      return null;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
 
   // Polkadotjs API connector
@@ -105,16 +107,11 @@ export default class Polkadot extends Api {
 
       return async (polkadot: Polkadot) => {
         polkadot.conn = api;
-        polkadot.state = 'success';
-        await polkadot.enable_extension();
-        console.log('----- Polkadot connected ------');
+        console.log('- Polkadot connected');
       };
     } catch (err) {
-      return (polkadot: Polkadot) => {
-        polkadot.enabled = false;
-        polkadot.state = 'failed';
-        console.log('-------- Failed to connect Polkadot API');
-      };
+      console.log(err);
+      throw new Error('Poldotjs not Connected');
     }
   }
 }

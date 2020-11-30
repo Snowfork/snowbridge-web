@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // external imports
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import ReactModal from 'react-modal';
 
 import { connect } from 'react-redux';
@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 // local imports and components
 import Bridge from './Bridge';
 import Nav from './components/Nav';
-import Net from './net';
+import Net, { isConnected } from './net';
 
 import { setNet } from './redux/actions';
 
@@ -25,49 +25,32 @@ type Props = {
 
 function BridgeApp(props: Props) {
   const { net, setNet } = props;
-  console.log(net);
-  const [polkadotAddress, setPolkadotAddress] = useState(String);
-  const [ethAddress, setEthAddress] = useState(String);
-  const [ethBalance, setEthBalance] = useState(String);
 
   // Start Network
   useEffect(() => {
-    const init = async () => {
-      const net = new Net(await Net.start());
+    const start = async () => {
+      const net = await new Net();
+      await net.start();
 
-      if (net && net.polkadot && net.eth) {
-        const eAddress = await net.eth.get_account();
-        const pAddress = await net.polkadot.get_account();
-        const eBalance = await net.eth.get_balance();
-
-        if (eAddress) setEthAddress(eAddress);
-        if (pAddress) setPolkadotAddress(pAddress);
-        if (eBalance && eBalance !== undefined) setEthBalance(eBalance);
-
-        setNet(net);
-      }
+      setNet(net);
     };
 
-    init();
+    start();
   }, []);
 
-  if (net && net.state) {
-    switch (net.state) {
-      case 'loading':
-        return <p style={{ textAlign: 'center' }}>Starting Network</p>;
-      case 'failed':
-        return <p style={{ textAlign: 'center' }}>Failed to start Network</p>;
-    }
+  // Check if Network has been started
+  if (!isConnected(net)) {
+    return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
   }
 
   return (
     <main>
-      <Nav
-        polkadotAddress={polkadotAddress}
-        ethAddress={ethAddress}
-        ethBalance={ethBalance}
+      <Nav net={net} />
+      <Bridge
+        net={net!}
+        polkadotAddress={net.polkadotAddress}
+        ethAddress={net.ethAddress}
       />
-      <Bridge net={net!} />
     </main>
   );
 }

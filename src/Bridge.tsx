@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
@@ -19,23 +19,18 @@ import Net from './net';
 // ------------------------------------------
 type Props = {
   net: Net;
+  polkadotAddress: string;
+  ethAddress: string;
 };
 
 // ------------------------------------------
 //               Bank component
 // ------------------------------------------
-function Bridge({ net }: Props): React.ReactElement<Props> {
-  const [ethAddress, setEthAddress] = useState(String);
-
-  useEffect(() => {
-    const await_ethAddress = async () => {
-      let address = await net?.eth?.get_account();
-      if (address) setEthAddress(address);
-    };
-
-    await_ethAddress();
-  }, [net]);
-
+function Bridge({
+  net,
+  polkadotAddress,
+  ethAddress,
+}: Props): React.ReactElement<Props> {
   return (
     <Box style={{ padding: '2em 0' }}>
       <AppEthereum net={net} />

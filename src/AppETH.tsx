@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
-
+import SelectedAccount from './components/SelectedAccount/';
 import Net from './net';
 
 import {
@@ -15,6 +15,8 @@ import {
   FormControl,
   FormHelperText,
   Divider,
+  Card,
+  CardContent,
 } from '@material-ui/core';
 
 // ------------------------------------------
@@ -29,9 +31,109 @@ type Props = {
 // ------------------------------------------
 function AppETH({ net }: Props): React.ReactElement<Props> {
   // State
-  const [polkadotRecipient, setPolkadotRecipient] = useState(String);
   const [depositAmount, setDepositAmount] = useState(String);
+  const [transactionHash, setTransactionHash] = useState(undefined);
+  const [confirmations, setConfirmations] = useState<undefined | number>();
+  const [transactionError, setTransactionError] = useState<undefined | Error>();
+  const [transactionStatus, setTransactionStatus] = useState<
+    'sending' | 'sent' | 'confirming' | 'success'
+  >();
 
+  function TransactionStatusCb() {
+    let status;
+
+    switch (transactionStatus) {
+      case 'sending':
+        status = <small>Transmitting transaction...</small>;
+        break;
+      case 'sent':
+        status = <small>Transmited transactions, waiting for hash</small>;
+        break;
+      case 'confirming':
+        status = <small>Listening for confirmations...</small>;
+        break;
+      case 'success':
+        status = (
+          <small style={{ color: 'green' }}>Transaction was successful.</small>
+        );
+        break;
+    }
+
+    if (transactionStatus !== undefined) {
+      return (
+        <CardContent>
+          <Typography color="textSecondary" gutterBottom>
+            Trasaction Status
+          </Typography>
+          <small>{status}</small>
+        </CardContent>
+      );
+    }
+  }
+
+  function TransactionHashCb() {
+    if (transactionHash) {
+      return (
+        <CardContent>
+          <Typography color="textSecondary" gutterBottom>
+            Trasaction Hash
+          </Typography>
+          <small>{transactionHash}</small>
+        </CardContent>
+      );
+    }
+  }
+
+  function ConfirmationsCb() {
+    if (confirmations) {
+      return (
+        <CardContent>
+          <Typography color="textSecondary" gutterBottom>
+            Confirmations
+          </Typography>
+          <small>{confirmations}</small>
+        </CardContent>
+      );
+    }
+  }
+
+  function TransactionErrorCb() {
+    if (transactionError) {
+      throw transactionError;
+    }
+  }
+
+  function SendButton() {
+    if (transactionStatus === undefined) {
+      if (Number(depositAmount) > 0) {
+        return (
+          <Button
+            color="primary"
+            onClick={() =>
+              net?.eth?.send_eth(
+                depositAmount,
+                setTransactionHash,
+                setTransactionStatus,
+                setConfirmations,
+                setTransactionError,
+              )
+            }
+            variant="outlined"
+          >
+            <Typography variant="button">Send ETH</Typography>
+          </Button>
+        );
+      } else {
+        return (
+          <Button disabled color="primary" variant="outlined">
+            <Typography variant="button">Send ETH</Typography>
+          </Button>
+        );
+      }
+    } else {
+      return <br />;
+    }
+  }
   // Render
   return (
     <Grid container>
@@ -57,22 +159,11 @@ function AppETH({ net }: Props): React.ReactElement<Props> {
         {/* SS58 Address Input */}
         <Grid item xs={10}>
           <FormControl>
-            <Typography gutterBottom>To</Typography>
-            <TextField
-              InputProps={{
-                value: polkadotRecipient,
-              }}
-              id="eth-input-recipient"
-              margin="normal"
-              onChange={(e) => setPolkadotRecipient(e.target.value)}
-              placeholder={'38j4dG5GzsL1bw...'}
-              style={{ margin: 5 }}
-              variant="outlined"
-            />
-            <FormHelperText id="ss58InputDesc">
-              What account would you like to fund on Polkadot?
-            </FormHelperText>
+            <SelectedAccount address={net.polkadotAddress} />
           </FormControl>
+          <FormHelperText id="ethAmountDesc">
+            Polkadot Receiving Address
+          </FormHelperText>
         </Grid>
 
         {/* ETH Deposit Amount Input */}
@@ -84,6 +175,7 @@ function AppETH({ net }: Props): React.ReactElement<Props> {
                 value: depositAmount,
               }}
               id="eth-input-amount"
+              type="number"
               margin="normal"
               onChange={(e) => setDepositAmount(e.target.value)}
               placeholder="0.00 ETH"
@@ -98,13 +190,15 @@ function AppETH({ net }: Props): React.ReactElement<Props> {
 
         {/* Send ETH */}
         <Grid item xs={10}>
-          <Button
-            color="primary"
-            onClick={() => net?.eth?.send_eth(polkadotRecipient, depositAmount)}
-            variant="outlined"
-          >
-            <Typography variant="button">Send ETH</Typography>
-          </Button>
+          {transactionStatus !== undefined ? (
+            <Card variant="outlined">
+              {TransactionStatusCb()}
+              {TransactionHashCb()}
+              {ConfirmationsCb()}
+            </Card>
+          ) : (
+            <SendButton />
+          )}
         </Grid>
       </Grid>
       <Divider />
