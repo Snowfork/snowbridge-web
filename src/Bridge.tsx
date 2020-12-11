@@ -7,8 +7,6 @@ import styled from 'styled-components';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 
-import { Box } from '@material-ui/core';
-
 import AppEthereum from './AppETH';
 import AppERC20 from './AppERC20';
 
@@ -32,7 +30,7 @@ function Bridge({
   ethAddress,
 }: Props): React.ReactElement<Props> {
   return (
-    <Box style={{ padding: '2em 0' }}>
+    <div style={{ padding: '2em 0' }}>
       <AppEthereum net={net} />
       <AppERC20
         web3={net?.eth?.conn as Web3}
@@ -40,7 +38,7 @@ function Bridge({
         defaultAccount={ethAddress}
       />
       ;
-    </Box>
+    </div>
   );
 }
 

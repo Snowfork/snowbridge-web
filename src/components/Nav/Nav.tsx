@@ -56,7 +56,7 @@ function Nav({ net }: Props): React.ReactElement<Props> {
 
   return (
     <S.Wrapper>
-      <S.Heading>Ethereum Bridge</S.Heading>
+      <S.Heading>Snowbridge</S.Heading>
       <S.CurrencyList>
         <S.DisplayWrapper>
           <S.DisplayTitle>Ethereum Wallet</S.DisplayTitle>
