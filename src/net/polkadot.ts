@@ -1,8 +1,10 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { web3Accounts, web3Enable } from '@polkadot/extension-dapp';
+import { Dispatch } from 'redux';
 
 import Api from './api';
 import Net from './';
+import { setPolkadotJSFound, setPolkadotJSMissing } from '../redux/actions';
 
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
@@ -25,36 +27,29 @@ export default class Polkadot extends Api {
     connector(this, net);
   }
 
-  // Get default polkadot address
-  public async get_address() {
+  // Get all polkadot addresses
+  public async get_addresses(dispatch: Dispatch) {
     // returns an array of all the injected sources
-    const extensions = await web3Enable('Ethereum Bridge');
+    const extensions = await web3Enable('Snowbridge');
 
     if (extensions.length === 0) {
-      // TODO: handle properly
-      throw new Error('Polkadotjs Extension Not Found');
+      dispatch(setPolkadotJSMissing());
+      return null;
     }
+    dispatch(setPolkadotJSFound());
 
     const allAccounts = await web3Accounts();
-
-    if (allAccounts.length > 0) {
-      return allAccounts[0].address;
-    } else {
-      // TODO: handle properly?
-      throw new Error('Default Ethereum Account not set!');
-    }
+    return allAccounts;
   }
 
   // Query account balance for bridged assets (ETH and ERC20)
-  public async get_balance() {
+  public async get_balance(polkadotAddress:any) {
     try {
       if (this.conn) {
-        let default_address = await this.get_address();
-
-        if (default_address) {
+        if (polkadotAddress) {
           let accountData = await this.conn.query.asset.account(
             ETH_ASSET_ID,
-            default_address,
+            polkadotAddress,
           );
 
           if ((accountData as AssetAccountData).free) {
@@ -73,7 +68,7 @@ export default class Polkadot extends Api {
   }
 
   // Polkadotjs API connector
-  public static async connect(): Promise<Connector> {
+  public static async connect(dispatch: Dispatch): Promise<Connector> {
     try {
       const wsProvider = new WsProvider(POLKADOT_API_PROVIDER);
 
@@ -107,11 +102,11 @@ export default class Polkadot extends Api {
 
       return async (polkadot: Polkadot) => {
         polkadot.conn = api;
-        console.log('- Polkadot connected');
+        console.log('- Polkadot API endpoint connected');
       };
     } catch (err) {
       console.log(err);
-      throw new Error('Poldotjs not Connected');
+      throw new Error('Poldotjs API endpoint not Connected');
     }
   }
 }

@@ -1,7 +1,7 @@
 import Eth from './eth';
 import Polkadot from './polkadot';
 
-type StartNet = (n: Net) => void;
+import { Dispatch } from 'redux';
 
 export default class Net {
   eth?: Eth;
@@ -11,31 +11,35 @@ export default class Net {
   polkadotAddress: string = '';
   polkadotBalance?: string;
 
-  public async start() {
-    let eth = new Eth(await Eth.connect(), this);
+  public async start(dispatch: Dispatch) {
+    let eth = new Eth(await Eth.connect(dispatch), this);
     let ethAddress = await eth.get_address();
     let ethBalance = await eth.get_balance();
-    let polkadot = new Polkadot(await Polkadot.connect(), this);
-    let polkadotAddress = await polkadot.get_address();
-    let polkadotBalance = await polkadot.get_balance();
+    let polkadot = new Polkadot(await Polkadot.connect(dispatch), this);
+    let polkadotAddresses = await polkadot.get_addresses(dispatch);
+    let firstPolkadotAddress = polkadotAddresses && polkadotAddresses[0] && polkadotAddresses[0].address;
+    let polkadotBalance;
+    if(firstPolkadotAddress) {
+      polkadotBalance = await polkadot.get_balance(firstPolkadotAddress);
+    }
 
     if (
       eth &&
       ethAddress &&
       ethBalance &&
       polkadot &&
-      polkadotAddress &&
+      firstPolkadotAddress &&
       polkadotBalance
     ) {
       this.eth = eth;
       this.ethAddress = ethAddress;
       this.ethBalance = ethBalance;
       this.polkadot = polkadot;
-      this.polkadotAddress = polkadotAddress;
+      this.polkadotAddress = firstPolkadotAddress;
       this.polkadotBalance = polkadotBalance;
 
       console.log('- Network Started');
-      console.log(`  Polkadot Address: ${this.polkadotAddress}`);
+      console.log(`  Polkadot Address: ${firstPolkadotAddress}`);
       console.log(`  Ethereum Address: ${this.ethAddress}`);
       console.log(`  Ethereum Balance: ${this.ethBalance}`);
       console.log(`  Polkadot Balance: ${this.polkadotBalance}`);
