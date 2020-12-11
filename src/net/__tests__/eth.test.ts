@@ -25,5 +25,4 @@ test('Get balance of the default Address', async () => {
   let balance = await eth.get_balance();
 
   expect(typeof balance).toBe('string');
-  expect(balance.length).toBe(21);
 });
