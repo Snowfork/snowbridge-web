@@ -12,6 +12,7 @@ import { connect } from 'react-redux';
 import Bridge from './Bridge';
 import Nav from './components/Nav';
 import Net, { isConnected } from './net';
+import { useDispatch } from 'react-redux';
 
 import { setNet } from './redux/actions';
 
@@ -19,44 +20,45 @@ import { setNet } from './redux/actions';
 ReactModal.setAppElement('#root');
 
 type Props = {
-  net: Net;
-  setNet: (net: Net) => void;
+  netClient: Net;
 };
 
 function BridgeApp(props: Props) {
-  const { net, setNet } = props;
+  const { netClient } = props;
+
+  const dispatch = useDispatch()
 
   // Start Network
   useEffect(() => {
     const start = async () => {
       const net = await new Net();
-      await net.start();
+      await net.start(dispatch);
 
-      setNet(net);
+      dispatch(setNet(net));
     };
 
     start();
   }, []);
 
   // Check if Network has been started
-  if (!isConnected(net)) {
+  if (!isConnected(netClient)) {
     return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
   }
 
   return (
     <main>
-      <Nav net={net} />
+      <Nav net={netClient} />
       <Bridge
-        net={net!}
-        polkadotAddress={net.polkadotAddress}
-        ethAddress={net.ethAddress}
+        net={netClient!}
+        polkadotAddress={netClient.polkadotAddress}
+        ethAddress={netClient.ethAddress}
       />
     </main>
   );
 }
 
 const mapStateToProps = (state: any) => {
-  return { net: state.net };
+  return { netClient: state.net.client };
 };
 
-export default connect(mapStateToProps, { setNet })(BridgeApp);
+export default connect(mapStateToProps)(BridgeApp);

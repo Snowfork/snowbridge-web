@@ -15,6 +15,9 @@ import * as ETHApp from '../contracts/ETHApp.json';
 import * as ERC20App from '../contracts/ERC20App.json';
 /* tslint:enable */
 
+import { Dispatch } from 'redux';
+import { setMetamaskFound, setMetamaskMissing } from '../redux/actions';
+
 // Eth API connector
 type Connector = (e: Eth, net: any) => void;
 
@@ -179,14 +182,15 @@ export default class Eth extends Api {
   }
 
   // Web3 API connector
-  public static async connect(): Promise<Connector> {
+  public static async connect(dispatch: Dispatch): Promise<Connector> {
     let locWindow = window as MyWindow;
 
     let web3: Web3;
 
     if (locWindow.ethereum) {
       web3 = new Web3(locWindow.ethereum);
-
+      dispatch(setMetamaskFound());
+      
       try {
         // Request account access if needed
         await locWindow.ethereum.enable();
@@ -198,13 +202,12 @@ export default class Eth extends Api {
     // Legacy dapp browsers...
     else if (locWindow.web3) {
       web3 = locWindow.web3;
+      dispatch(setMetamaskFound());
       console.log('- Injected web3 detected');
     }
     // Fallback to localhost; use dev console port by default...
     else {
-      const provider = new Web3.providers.HttpProvider('http://127.0.0.1:9545');
-      web3 = new Web3(provider);
-      console.log('- No web3 instance injected, using Local web3');
+      dispatch(setMetamaskMissing());
     }
 
     return (eth: Eth) => {
