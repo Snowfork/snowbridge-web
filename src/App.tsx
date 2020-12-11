@@ -56,7 +56,7 @@ function BridgeApp(props: Props) {
 }
 
 const mapStateToProps = (state: any) => {
-  return { net: state.net, setNet: state.setNet };
+  return { net: state.net };
 };
 
 export default connect(mapStateToProps, { setNet })(BridgeApp);
