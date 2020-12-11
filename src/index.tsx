@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 import React, { Suspense } from 'react';
 
 import Theme from './styles/theme';
-import GlobalStyle from './styles/globaStyle';
+import GlobalStyle from './styles/globalStyle';
 
 import App from './App';
 

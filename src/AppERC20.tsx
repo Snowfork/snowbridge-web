@@ -294,6 +294,7 @@ function AppERC20({
         justify="center"
         spacing={3}
         style={{
+          background: 'white',
           margin: '2em auto',
           padding: '2em 0',
           border: 'thin solid #E0E0E0',

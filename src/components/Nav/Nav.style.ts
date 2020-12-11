@@ -9,8 +9,10 @@ export const Wrapper = styled.div`
 `;
 
 export const Heading = styled.h1`
-  font-size: 20px;
   color: white;
+  -webkit-text-stroke: 1px rgba(199, 159, 34, 0.81);
+  font-size: 52px;
+  font-weight: 500;
 `;
 
 export const CurrencyList = styled.ul`

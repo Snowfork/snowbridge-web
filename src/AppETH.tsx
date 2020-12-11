@@ -145,6 +145,7 @@ function AppETH({ net }: Props): React.ReactElement<Props> {
         justify="center"
         spacing={3}
         style={{
+          background: 'white',
           margin: '0 auto',
           padding: '2em 0',
           border: 'thin solid #E0E0E0',
