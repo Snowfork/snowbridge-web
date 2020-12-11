@@ -10,10 +10,18 @@ import App from './App';
 
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
+import { devToolsEnhancer } from 'redux-devtools-extension';
+
 import reducers from './redux/reducers';
 
+const store = createStore(
+  reducers,
+  devToolsEnhancer({})
+);
+
+
 ReactDOM.render(
-  <Provider store={createStore(reducers)}>
+  <Provider store={store}>
     <Theme>
       <GlobalStyle />
       <Suspense fallback="...">
