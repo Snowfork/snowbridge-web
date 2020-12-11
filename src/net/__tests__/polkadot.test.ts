@@ -1,3 +1,5 @@
+import { checkAddress } from '@polkadot/util-crypto';
+
 import Polkadot from '../polkadot.ts';
 let polkadot;
 
@@ -16,8 +18,7 @@ test('Polkadot Api connection', () => {
 
 test('Get default Polkadot address', async () => {
   let address = await polkadot.get_address();
-
-  expect(typeof address).toBe('string');
+  expect(checkAddress(address, 42)).toEqual([true, null]);
 });
 
 test('Get balance of the default Polkadot Address', async () => {
