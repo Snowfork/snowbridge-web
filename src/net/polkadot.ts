@@ -1,5 +1,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { web3Accounts, web3Enable } from '@polkadot/extension-dapp';
+import { formatBalance } from '@polkadot/util';
 import { Dispatch } from 'redux';
 
 import Api from './api';
@@ -43,7 +44,7 @@ export default class Polkadot extends Api {
   }
 
   // Query account balance for bridged assets (ETH and ERC20)
-  public async get_balance(polkadotAddress:any) {
+  public async get_balance(polkadotAddress: any) {
     try {
       if (this.conn) {
         if (polkadotAddress) {
@@ -53,7 +54,11 @@ export default class Polkadot extends Api {
           );
 
           if ((accountData as AssetAccountData).free) {
-            return (accountData as AssetAccountData).free;
+            return formatBalance(
+              (accountData as AssetAccountData).free,
+              { withSi: false },
+              12,
+            );
           }
         }
 

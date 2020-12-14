@@ -67,7 +67,7 @@ export default class Eth extends Api {
           const currBalance = await this.conn.eth.getBalance(default_address);
 
           if (currBalance) {
-            return currBalance;
+            return parseFloat(this.conn.utils.fromWei(currBalance)).toFixed(4);
           }
 
           throw new Error('Balance not found');
@@ -117,24 +117,27 @@ export default class Eth extends Api {
               transactionHashCb(hash);
               transactionStatusCb('confirming');
             })
-            .on('confirmation', function (
-              confirmation: number,
-              receipt: any,
-              latestBlockHash: string,
-            ) {
-              if (confirmation <= 12) {
-                console.log('----------- Receipt ----------');
-                console.log(receipt);
-                console.log('----------- Block ------------');
-                console.log(latestBlockHash);
+            .on(
+              'confirmation',
+              function (
+                confirmation: number,
+                receipt: any,
+                latestBlockHash: string,
+              ) {
+                if (confirmation <= 12) {
+                  console.log('----------- Receipt ----------');
+                  console.log(receipt);
+                  console.log('----------- Block ------------');
+                  console.log(latestBlockHash);
 
-                confirmationsCb(confirmation);
-                if (confirmation === 12) {
-                  transactionStatusCb('success');
-                  return;
+                  confirmationsCb(confirmation);
+                  if (confirmation === 12) {
+                    transactionStatusCb('success');
+                    return;
+                  }
                 }
-              }
-            })
+              },
+            )
             .on('error', function (error: Error) {
               transactionStatusCb('error');
               transactionErrorCb(error);
@@ -190,7 +193,7 @@ export default class Eth extends Api {
     if (locWindow.ethereum) {
       web3 = new Web3(locWindow.ethereum);
       dispatch(setMetamaskFound());
-      
+
       try {
         // Request account access if needed
         await locWindow.ethereum.enable();
