@@ -8,8 +8,11 @@ import Net from './';
 import { setPolkadotJSFound, setPolkadotJSMissing } from '../redux/actions';
 
 // Config
-import { POLKADOT_API_PROVIDER } from '../config';
-import { ETH_ASSET_ID } from '../config';
+import {
+  POLKADOT_API_PROVIDER,
+  ETH_ASSET_ID,
+  Polkadot_Test_Accounts,
+} from '../config';
 
 // Polkadot API connector
 type Connector = (p: Polkadot, net: any) => void;
@@ -22,10 +25,14 @@ export default class Polkadot extends Api {
   public conn?: ApiPromise;
   public net: Net;
 
-  constructor(connector: Connector, net: any) {
+  // Only needed when unit testing
+  public testEnv: boolean;
+
+  constructor(connector: Connector, net: any, testEnv: boolean = false) {
     super();
     this.net = net;
-    connector(this, net);
+    this.testEnv = testEnv;
+    connector(this, testEnv);
   }
 
   // Get all polkadot addresses
@@ -34,8 +41,14 @@ export default class Polkadot extends Api {
     const extensions = await web3Enable('Snowbridge');
 
     if (extensions.length === 0) {
-      dispatch(setPolkadotJSMissing());
-      return null;
+      // Check if launched in test environment
+      if (this.testEnv) {
+        // Return test addresses
+        return Polkadot_Test_Accounts;
+      } else {
+        dispatch(setPolkadotJSMissing());
+        return null;
+      }
     }
     dispatch(setPolkadotJSFound());
 
@@ -73,7 +86,10 @@ export default class Polkadot extends Api {
   }
 
   // Polkadotjs API connector
-  public static async connect(dispatch: Dispatch): Promise<Connector> {
+  public static async connect(
+    dispatch: Dispatch,
+    testEnv: boolean = false,
+  ): Promise<Connector> {
     try {
       const wsProvider = new WsProvider(POLKADOT_API_PROVIDER);
 
