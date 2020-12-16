@@ -1,5 +1,5 @@
 import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
+import ganache from 'ganache-core';
 
 import Api, { ss58_to_u8 } from './api';
 import Net from './';
@@ -19,7 +19,7 @@ import { Dispatch } from 'redux';
 import { setMetamaskFound, setMetamaskMissing } from '../redux/actions';
 
 // Eth API connector
-type Connector = (e: Eth, net: any) => void;
+type Connector = (e: Eth, net: any, testEnv: boolean) => void;
 
 // window wrapper
 type MyWindow = typeof window & {
@@ -29,14 +29,18 @@ type MyWindow = typeof window & {
 
 export default class Eth extends Api {
   public conn?: Web3;
-  public eth_contract?: Contract;
-  public erc20_contract?: Contract;
+  public eth_contract?: any;
+  public erc20_contract?: any;
   private net: Net;
 
-  constructor(connecter: Connector, net: Net) {
+  // Only needed when unit testing
+  public testEnv: boolean;
+
+  constructor(connecter: Connector, net: Net, testEnv: boolean = false) {
     super();
     this.net = net;
-    connecter(this, net);
+    this.testEnv = testEnv;
+    connecter(this, net, testEnv);
   }
 
   // Get default web3 account
@@ -185,7 +189,10 @@ export default class Eth extends Api {
   }
 
   // Web3 API connector
-  public static async connect(dispatch: Dispatch): Promise<Connector> {
+  public static async connect(
+    dispatch: Dispatch,
+    testEnv: boolean = false,
+  ): Promise<Connector> {
     let locWindow = window as MyWindow;
 
     let web3: Web3;
@@ -209,8 +216,18 @@ export default class Eth extends Api {
       console.log('- Injected web3 detected');
     }
     // Fallback to localhost; use dev console port by default...
-    else {
-      dispatch(setMetamaskMissing());
+    else if (testEnv) {
+      // local testing with ganache-core
+      const w = new Web3(ganache.provider() as any);
+
+      dispatch(setMetamaskFound());
+      return (eth: Eth) => {
+        eth.conn = w;
+        // Set contracts
+        eth.set_eth_contract();
+        eth.set_erc20_contract();
+        console.log('- Eth connected');
+      };
     }
 
     return (eth: Eth) => {
