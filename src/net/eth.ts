@@ -114,6 +114,12 @@ export default class Eth extends Api {
               transactionStatusCb('sent');
             })
             .on('transactionHash', function (hash: string) {
+              self.net.add_transaction({
+                hash,
+                state: 'confirming',
+                variant: 'eth',
+              });
+
               transactionHashCb(hash);
               transactionStatusCb('confirming');
             })
@@ -132,6 +138,10 @@ export default class Eth extends Api {
 
                   confirmationsCb(confirmation);
                   if (confirmation === 12) {
+                    self.net.update_transaction_state(
+                      latestBlockHash,
+                      'success',
+                    );
                     transactionStatusCb('success');
                     return;
                   }
