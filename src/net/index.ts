@@ -5,7 +5,8 @@ import { Dispatch } from 'redux';
 
 export interface Transaction {
   hash: string;
-  state: 'confirming' | 'success';
+  status: 'confirming' | 'success';
+  confirmations: number;
   variant: 'eth' | 'polkadot';
 }
 
@@ -19,28 +20,49 @@ export default class Net {
   transactions: Array<Transaction> = [];
 
   constructor() {
-    this.empty_transactions = this.empty_transactions.bind(this);
+    this.emptyTransactions = this.emptyTransactions.bind(this);
+    this.pendingTransactions = this.pendingTransactions.bind(this);
+    this.updateTransactionStatus = this.updateTransactionStatus.bind(this);
+    this.updateConfirmations = this.updateConfirmations.bind(this);
   }
 
-  public add_transaction(transaction: Transaction) {
+  // Adds new transaction to transaction list
+  public addTransaction(transaction: Transaction): void {
     this.transactions.push(transaction);
   }
 
-  public update_transaction_state(
+  // Changes the status of a transaction
+  public updateTransactionStatus(
     hash: string,
-    state: 'confirming' | 'success',
-  ) {
+    status: 'confirming' | 'success',
+  ): void {
     let transaction = this.transactions.filter((t) => t.hash === hash)[0];
 
-    if (transaction.state !== state) {
-      transaction.state = state;
+    if (transaction.status !== status) {
+      transaction.status = status;
     }
   }
 
-  public empty_transactions() {
+  // Update confirmations of a transaction
+  public updateConfirmations(hash: string, confirmations: number): void {
+    let transaction = this.transactions.filter((t) => t.hash === hash)[0];
+
+    if (transaction.confirmations !== confirmations) {
+      transaction.confirmations = confirmations;
+    }
+  }
+
+  // Empty transactions list
+  public emptyTransactions(): void {
     this.transactions = [];
   }
 
+  // returns number of pending (confirming) transactions
+  public pendingTransactions(): number {
+    return this.transactions.filter((t) => t.status === 'confirming').length;
+  }
+
+  // Start net
   public async start(dispatch: Dispatch) {
     let eth = new Eth(await Eth.connect(dispatch), this);
     let ethAddress = await eth.get_address();

@@ -88,6 +88,8 @@ export default class Eth extends Api {
     try {
       const self: Eth = this;
       let default_address = await self.get_address();
+      let transactionHash: string;
+
       if (default_address) {
         if (self.conn && self.eth_contract) {
           const polkadotAddress: Uint8Array = ss58_to_u8(
@@ -108,9 +110,11 @@ export default class Eth extends Api {
               console.log('Transaction sent');
             })
             .on('transactionHash', function (hash: string) {
-              self.net.add_transaction({
+              transactionHash = hash;
+              self.net.addTransaction({
                 hash,
-                state: 'confirming',
+                status: 'confirming',
+                confirmations: 0,
                 variant: 'eth',
               });
             })
@@ -127,9 +131,13 @@ export default class Eth extends Api {
                   console.log('----------- Block ------------');
                   console.log(latestBlockHash);
 
+                  // update transaction confirmations
+                  self.net.updateConfirmations(transactionHash, confirmation);
+
                   if (confirmation === 12) {
-                    self.net.update_transaction_state(
-                      latestBlockHash,
+                    // Update transaction status
+                    self.net.updateTransactionStatus(
+                      transactionHash,
                       'success',
                     );
                     return;

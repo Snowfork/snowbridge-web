@@ -1,8 +1,10 @@
 import React from 'react';
 import Button from '@material-ui/core/Button';
+import Badge from '@material-ui/core/Badge';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import Net from '../../net';
+import Chip from '@material-ui/core/Chip';
+import Net, { Transaction } from '../../net';
 
 import { shortenWalletAddress } from '../../utils/common';
 
@@ -29,7 +31,7 @@ export default function TransactionMenu({
     if (net.transactions.length > 0) {
       return (
         <MenuItem>
-          <Button color="secondary" onClick={net.empty_transactions}>
+          <Button color="secondary" onClick={net.emptyTransactions}>
             Clear Transactions
           </Button>
         </MenuItem>
@@ -46,16 +48,43 @@ export default function TransactionMenu({
     return null;
   }
 
+  // Menu Item for a Transaction
+  function TransactionMenuItem(transaction: Transaction) {
+    let color: string;
+
+    switch (transaction.status) {
+      case 'confirming':
+        color = 'orange';
+        break;
+      case 'success':
+        color = 'green';
+    }
+
+    return (
+      <MenuItem onClick={handleClose}>
+        <Chip
+          avatar={
+            <small style={{ marginRight: '10em', color: color }}>
+              {transaction.status}({transaction.confirmations})
+            </small>
+          }
+          label={shortenWalletAddress(transaction.hash)}
+        />
+      </MenuItem>
+    );
+  }
   return (
     <div>
-      <Button
-        aria-controls="simple-menu"
-        aria-haspopup="true"
-        color="secondary"
-        onClick={handleClick}
-      >
-        Transactions
-      </Button>
+      <Badge color="secondary" badgeContent={net.pendingTransactions()}>
+        <Button
+          aria-controls="simple-menu"
+          aria-haspopup="true"
+          color="secondary"
+          onClick={handleClick}
+        >
+          Transactions
+        </Button>
+      </Badge>
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}
@@ -65,9 +94,7 @@ export default function TransactionMenu({
       >
         <ClearTransactionsBtn />
         <ZeroTransactions />
-        {net.transactions.map((t) => (
-          <MenuItem>{shortenWalletAddress(t.hash)}</MenuItem>
-        ))}
+        {net.transactions.map((t) => TransactionMenuItem(t))}
       </Menu>
     </div>
   );
