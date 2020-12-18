@@ -40,7 +40,7 @@ export default function TransactionMenu({
 
   // Informs the user when there is 0 Transactions Available
   function ZeroTransactions() {
-    if (net.transactions.length == 0) {
+    if (net.transactions.length === 0) {
       return <MenuItem>0 Transactions Available!</MenuItem>;
     }
     return null;

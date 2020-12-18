@@ -84,13 +84,7 @@ export default class Eth extends Api {
   }
 
   // Send ETH To Default Polkadot Account
-  public async send_eth(
-    amount: string,
-    transactionHashCb: any,
-    transactionStatusCb: any,
-    confirmationsCb: any,
-    transactionErrorCb: any,
-  ) {
+  public async send_eth(amount: string) {
     try {
       const self: Eth = this;
       let default_address = await self.get_address();
@@ -108,10 +102,10 @@ export default class Eth extends Api {
               value: self.conn.utils.toWei(amount, 'ether'),
             })
             .on('sending', function (payload: any) {
-              transactionStatusCb('sending');
+              console.log('Sending Transaction');
             })
             .on('sent', function (payload: any) {
-              transactionStatusCb('sent');
+              console.log('Transaction sent');
             })
             .on('transactionHash', function (hash: string) {
               self.net.add_transaction({
@@ -119,9 +113,6 @@ export default class Eth extends Api {
                 state: 'confirming',
                 variant: 'eth',
               });
-
-              transactionHashCb(hash);
-              transactionStatusCb('confirming');
             })
             .on(
               'confirmation',
@@ -136,21 +127,18 @@ export default class Eth extends Api {
                   console.log('----------- Block ------------');
                   console.log(latestBlockHash);
 
-                  confirmationsCb(confirmation);
                   if (confirmation === 12) {
                     self.net.update_transaction_state(
                       latestBlockHash,
                       'success',
                     );
-                    transactionStatusCb('success');
                     return;
                   }
                 }
               },
             )
             .on('error', function (error: Error) {
-              transactionStatusCb('error');
-              transactionErrorCb(error);
+              throw error;
             });
         }
       } else {

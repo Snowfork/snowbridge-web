@@ -39,7 +39,6 @@ function Nav({ net }: Props): React.ReactElement<Props> {
   const [polkadotAccIndex, setPolkadotAccIndex] = useState(0);
 
   const [isOpen, setIsOpen] = useState(false);
-  const pBalance = net?.polkadotBalance!;
 
   function openModal() {
     setIsOpen(true);
