@@ -8,6 +8,7 @@ import {
 } from '../../utils/common';
 
 import Modal from '../Modal';
+import TransactionMenu from '../TransactionMenu/';
 
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
@@ -110,6 +111,7 @@ function Nav({ net }: Props): React.ReactElement<Props> {
             </Modal>
           )}
         </S.DisplayWrapper>
+        <TransactionMenu net={net} />
       </S.CurrencyList>
     </S.Wrapper>
   );
