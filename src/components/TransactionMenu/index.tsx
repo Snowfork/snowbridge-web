@@ -23,6 +23,21 @@ export default function TransactionMenu({
     setAnchorEl(null);
   };
 
+  // Menu Button to clear Transaction history
+  // if transactions are available
+  function ClearTransactionsBtn() {
+    if (net.transactions.length > 0) {
+      return (
+        <MenuItem>
+          <Button color="secondary" onClick={net.empty_transactions}>
+            Clear Transactions
+          </Button>
+        </MenuItem>
+      );
+    }
+    return null;
+  }
+
   // Informs the user when there is 0 Transactions Available
   function ZeroTransactions() {
     if (net.transactions.length == 0) {
@@ -48,6 +63,7 @@ export default function TransactionMenu({
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
+        <ClearTransactionsBtn />
         <ZeroTransactions />
         {net.transactions.map((t) => (
           <MenuItem>{shortenWalletAddress(t.hash)}</MenuItem>

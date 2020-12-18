@@ -18,6 +18,10 @@ export default class Net {
   polkadotBalance?: string;
   transactions: Array<Transaction> = [];
 
+  constructor() {
+    this.empty_transactions = this.empty_transactions.bind(this);
+  }
+
   public add_transaction(transaction: Transaction) {
     this.transactions.push(transaction);
   }
@@ -31,6 +35,10 @@ export default class Net {
     if (transaction.state !== state) {
       transaction.state = state;
     }
+  }
+
+  public empty_transactions() {
+    this.transactions = [];
   }
 
   public async start(dispatch: Dispatch) {
