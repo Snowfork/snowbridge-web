@@ -113,7 +113,6 @@ export default class Eth extends Api {
               transactionHash = hash;
               self.net.addTransaction({
                 hash,
-                status: 'confirming',
                 confirmations: 0,
                 variant: 'eth',
               });
@@ -125,24 +124,13 @@ export default class Eth extends Api {
                 receipt: any,
                 latestBlockHash: string,
               ) {
-                if (confirmation <= 12) {
-                  console.log('----------- Receipt ----------');
-                  console.log(receipt);
-                  console.log('----------- Block ------------');
-                  console.log(latestBlockHash);
+                console.log('----------- Receipt ----------');
+                console.log(receipt);
+                console.log('----------- Block ------------');
+                console.log(latestBlockHash);
 
-                  // update transaction confirmations
-                  self.net.updateConfirmations(transactionHash, confirmation);
-
-                  if (confirmation === 12) {
-                    // Update transaction status
-                    self.net.updateTransactionStatus(
-                      transactionHash,
-                      'success',
-                    );
-                    return;
-                  }
-                }
+                // update transaction confirmations
+                self.net.updateConfirmations(transactionHash, confirmation);
               },
             )
             .on('error', function (error: Error) {

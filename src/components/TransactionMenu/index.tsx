@@ -50,14 +50,10 @@ export default function TransactionMenu({
 
   // Menu Item for a Transaction
   function TransactionMenuItem(transaction: Transaction) {
-    let color: string;
+    let color: string = 'orange';
 
-    switch (transaction.status) {
-      case 'confirming':
-        color = 'orange';
-        break;
-      case 'success':
-        color = 'green';
+    if (transaction.confirmations >= 12) {
+      color = 'green';
     }
 
     return (
@@ -65,7 +61,7 @@ export default function TransactionMenu({
         <Chip
           avatar={
             <small style={{ marginRight: '10em', color: color }}>
-              {transaction.status}({transaction.confirmations})
+              ({transaction.confirmations} confirmations)
             </small>
           }
           label={shortenWalletAddress(transaction.hash)}

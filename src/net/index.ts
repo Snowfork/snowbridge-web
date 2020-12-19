@@ -5,7 +5,6 @@ import { Dispatch } from 'redux';
 
 export interface Transaction {
   hash: string;
-  status: 'confirming' | 'success';
   confirmations: number;
   variant: 'eth' | 'polkadot';
 }
@@ -22,25 +21,12 @@ export default class Net {
   constructor() {
     this.emptyTransactions = this.emptyTransactions.bind(this);
     this.pendingTransactions = this.pendingTransactions.bind(this);
-    this.updateTransactionStatus = this.updateTransactionStatus.bind(this);
     this.updateConfirmations = this.updateConfirmations.bind(this);
   }
 
   // Adds new transaction to transaction list
   public addTransaction(transaction: Transaction): void {
     this.transactions.push(transaction);
-  }
-
-  // Changes the status of a transaction
-  public updateTransactionStatus(
-    hash: string,
-    status: 'confirming' | 'success',
-  ): void {
-    let transaction = this.transactions.filter((t) => t.hash === hash)[0];
-
-    if (transaction.status !== status) {
-      transaction.status = status;
-    }
   }
 
   // Update confirmations of a transaction
@@ -59,7 +45,7 @@ export default class Net {
 
   // returns number of pending (confirming) transactions
   public pendingTransactions(): number {
-    return this.transactions.filter((t) => t.status === 'confirming').length;
+    return this.transactions.filter((t) => t.confirmations < 12).length;
   }
 
   // Start net
