@@ -84,16 +84,12 @@ export default class Eth extends Api {
   }
 
   // Send ETH To Default Polkadot Account
-  public async send_eth(
-    amount: string,
-    transactionHashCb: any,
-    transactionStatusCb: any,
-    confirmationsCb: any,
-    transactionErrorCb: any,
-  ) {
+  public async send_eth(amount: string) {
     try {
       const self: Eth = this;
       let default_address = await self.get_address();
+      let transactionHash: string;
+
       if (default_address) {
         if (self.conn && self.eth_contract) {
           const polkadotAddress: Uint8Array = ss58_to_u8(
@@ -108,14 +104,19 @@ export default class Eth extends Api {
               value: self.conn.utils.toWei(amount, 'ether'),
             })
             .on('sending', function (payload: any) {
-              transactionStatusCb('sending');
+              console.log('Sending Transaction');
             })
             .on('sent', function (payload: any) {
-              transactionStatusCb('sent');
+              console.log('Transaction sent');
             })
             .on('transactionHash', function (hash: string) {
-              transactionHashCb(hash);
-              transactionStatusCb('confirming');
+              transactionHash = hash;
+              self.net.addTransaction({
+                hash,
+                status: 'confirming',
+                confirmations: 0,
+                variant: 'eth',
+              });
             })
             .on(
               'confirmation',
@@ -130,17 +131,22 @@ export default class Eth extends Api {
                   console.log('----------- Block ------------');
                   console.log(latestBlockHash);
 
-                  confirmationsCb(confirmation);
+                  // update transaction confirmations
+                  self.net.updateConfirmations(transactionHash, confirmation);
+
                   if (confirmation === 12) {
-                    transactionStatusCb('success');
+                    // Update transaction status
+                    self.net.updateTransactionStatus(
+                      transactionHash,
+                      'success',
+                    );
                     return;
                   }
                 }
               },
             )
             .on('error', function (error: Error) {
-              transactionStatusCb('error');
-              transactionErrorCb(error);
+              throw error;
             });
         }
       } else {

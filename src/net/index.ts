@@ -3,6 +3,13 @@ import Polkadot from './polkadot';
 
 import { Dispatch } from 'redux';
 
+export interface Transaction {
+  hash: string;
+  status: 'confirming' | 'success';
+  confirmations: number;
+  variant: 'eth' | 'polkadot';
+}
+
 export default class Net {
   eth?: Eth;
   ethAddress: string = '';
@@ -10,16 +17,62 @@ export default class Net {
   polkadot?: Polkadot;
   polkadotAddress: string = '';
   polkadotBalance?: string;
+  transactions: Array<Transaction> = [];
 
+  constructor() {
+    this.emptyTransactions = this.emptyTransactions.bind(this);
+    this.pendingTransactions = this.pendingTransactions.bind(this);
+    this.updateTransactionStatus = this.updateTransactionStatus.bind(this);
+    this.updateConfirmations = this.updateConfirmations.bind(this);
+  }
+
+  // Adds new transaction to transaction list
+  public addTransaction(transaction: Transaction): void {
+    this.transactions.push(transaction);
+  }
+
+  // Changes the status of a transaction
+  public updateTransactionStatus(
+    hash: string,
+    status: 'confirming' | 'success',
+  ): void {
+    let transaction = this.transactions.filter((t) => t.hash === hash)[0];
+
+    if (transaction.status !== status) {
+      transaction.status = status;
+    }
+  }
+
+  // Update confirmations of a transaction
+  public updateConfirmations(hash: string, confirmations: number): void {
+    let transaction = this.transactions.filter((t) => t.hash === hash)[0];
+
+    if (transaction.confirmations !== confirmations) {
+      transaction.confirmations = confirmations;
+    }
+  }
+
+  // Empty transactions list
+  public emptyTransactions(): void {
+    this.transactions = [];
+  }
+
+  // returns number of pending (confirming) transactions
+  public pendingTransactions(): number {
+    return this.transactions.filter((t) => t.status === 'confirming').length;
+  }
+
+  // Start net
   public async start(dispatch: Dispatch) {
     let eth = new Eth(await Eth.connect(dispatch), this);
     let ethAddress = await eth.get_address();
     let ethBalance = await eth.get_balance();
     let polkadot = new Polkadot(await Polkadot.connect(dispatch), this);
     let polkadotAddresses = await polkadot.get_addresses(dispatch);
-    let firstPolkadotAddress = polkadotAddresses && polkadotAddresses[0] && polkadotAddresses[0].address;
+    let firstPolkadotAddress =
+      polkadotAddresses && polkadotAddresses[0] && polkadotAddresses[0].address;
     let polkadotBalance;
-    if(firstPolkadotAddress) {
+    if (firstPolkadotAddress) {
       polkadotBalance = await polkadot.get_balance(firstPolkadotAddress);
     }
 

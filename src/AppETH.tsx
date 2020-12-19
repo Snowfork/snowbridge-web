@@ -15,8 +15,6 @@ import {
   FormControl,
   FormHelperText,
   Divider,
-  Card,
-  CardContent,
 } from '@material-ui/core';
 
 // ------------------------------------------
@@ -32,106 +30,24 @@ type Props = {
 function AppETH({ net }: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
-  const [transactionHash, setTransactionHash] = useState(undefined);
-  const [confirmations, setConfirmations] = useState<undefined | number>();
-  const [transactionError, setTransactionError] = useState<undefined | Error>();
-  const [transactionStatus, setTransactionStatus] = useState<
-    'sending' | 'sent' | 'confirming' | 'success'
-  >();
-
-  function TransactionStatusCb() {
-    let status;
-
-    switch (transactionStatus) {
-      case 'sending':
-        status = <small>Transmitting transaction...</small>;
-        break;
-      case 'sent':
-        status = <small>Transmited transactions, waiting for hash</small>;
-        break;
-      case 'confirming':
-        status = <small>Listening for confirmations...</small>;
-        break;
-      case 'success':
-        status = (
-          <small style={{ color: 'green' }}>Transaction was successful.</small>
-        );
-        break;
-    }
-
-    if (transactionStatus !== undefined) {
-      return (
-        <CardContent>
-          <Typography color="textSecondary" gutterBottom>
-            Trasaction Status
-          </Typography>
-          <small>{status}</small>
-        </CardContent>
-      );
-    }
-  }
-
-  function TransactionHashCb() {
-    if (transactionHash) {
-      return (
-        <CardContent>
-          <Typography color="textSecondary" gutterBottom>
-            Trasaction Hash
-          </Typography>
-          <small>{transactionHash}</small>
-        </CardContent>
-      );
-    }
-  }
-
-  function ConfirmationsCb() {
-    if (confirmations) {
-      return (
-        <CardContent>
-          <Typography color="textSecondary" gutterBottom>
-            Confirmations
-          </Typography>
-          <small>{confirmations}</small>
-        </CardContent>
-      );
-    }
-  }
-
-  function TransactionErrorCb() {
-    if (transactionError) {
-      throw transactionError;
-    }
-  }
 
   function SendButton() {
-    if (transactionStatus === undefined) {
-      if (Number(depositAmount) > 0) {
-        return (
-          <Button
-            color="primary"
-            onClick={() =>
-              net?.eth?.send_eth(
-                depositAmount,
-                setTransactionHash,
-                setTransactionStatus,
-                setConfirmations,
-                setTransactionError,
-              )
-            }
-            variant="outlined"
-          >
-            <Typography variant="button">Send ETH</Typography>
-          </Button>
-        );
-      } else {
-        return (
-          <Button disabled color="primary" variant="outlined">
-            <Typography variant="button">Send ETH</Typography>
-          </Button>
-        );
-      }
+    if (Number(depositAmount) > 0) {
+      return (
+        <Button
+          color="primary"
+          onClick={() => net?.eth?.send_eth(depositAmount)}
+          variant="outlined"
+        >
+          <Typography variant="button">Send ETH</Typography>
+        </Button>
+      );
     } else {
-      return <br />;
+      return (
+        <Button disabled color="primary" variant="outlined">
+          <Typography variant="button">Send ETH</Typography>
+        </Button>
+      );
     }
   }
   // Render
@@ -191,15 +107,7 @@ function AppETH({ net }: Props): React.ReactElement<Props> {
 
         {/* Send ETH */}
         <Grid item xs={10}>
-          {transactionStatus !== undefined ? (
-            <Card variant="outlined">
-              {TransactionStatusCb()}
-              {TransactionHashCb()}
-              {ConfirmationsCb()}
-            </Card>
-          ) : (
-            <SendButton />
-          )}
+          <SendButton />
         </Grid>
       </Grid>
       <Divider />

@@ -26,7 +26,7 @@ type Props = {
 function BridgeApp(props: Props) {
   const { netClient } = props;
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   // Start Network
   useEffect(() => {
