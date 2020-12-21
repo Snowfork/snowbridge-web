@@ -111,10 +111,14 @@ export default class Eth extends Api {
             })
             .on('transactionHash', function (hash: string) {
               transactionHash = hash;
+
               self.net.addTransaction({
                 hash,
                 confirmations: 0,
-                variant: 'eth',
+                chain: 'eth',
+                sender: self.net.ethAddress,
+                receiver: self.net.polkadotAddress,
+                amount: amount,
               });
             })
             .on(

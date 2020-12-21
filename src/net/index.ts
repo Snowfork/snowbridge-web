@@ -6,7 +6,10 @@ import { Dispatch } from 'redux';
 export interface Transaction {
   hash: string;
   confirmations: number;
-  variant: 'eth' | 'polkadot';
+  sender: string;
+  receiver: string;
+  amount: string;
+  chain: 'eth' | 'polkadot';
 }
 
 export default class Net {
