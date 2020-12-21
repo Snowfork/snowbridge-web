@@ -1,11 +1,20 @@
-import React from 'react';
+import React, { useState, ReactNode } from 'react';
 import Button from '@material-ui/core/Button';
 import Badge from '@material-ui/core/Badge';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Chip from '@material-ui/core/Chip';
-import Net, { Transaction } from '../../net';
+import Modal from '../Modal';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
+import Link from '@material-ui/core/Link';
 
+import Net, { Transaction } from '../../net';
 import { shortenWalletAddress } from '../../utils/common';
 
 type Props = {
@@ -16,6 +25,7 @@ export default function TransactionMenu({
   net,
 }: Props): React.ReactElement<Props> {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -25,6 +35,22 @@ export default function TransactionMenu({
     setAnchorEl(null);
   };
 
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleDelete = (event: React.MouseEvent<HTMLButtonElement>) => {
+    //e.preventDefault();
+    const hash = event.currentTarget.dataset.hash;
+
+    if (hash) {
+      net.forgetTransaction(hash);
+    }
+  };
   // Menu Button to clear Transaction history
   // if transactions are available
   function ClearTransactionsBtn() {
@@ -34,6 +60,18 @@ export default function TransactionMenu({
           <Button color="secondary" onClick={net.emptyTransactions}>
             Clear Transactions
           </Button>
+        </MenuItem>
+      );
+    }
+    return null;
+  }
+
+  // All transactions modal button
+  function AllTransactionsBtn() {
+    if (net.transactions.length > 0) {
+      return (
+        <MenuItem>
+          <Button onClick={openModal}>All Transactions</Button>
         </MenuItem>
       );
     }
@@ -57,7 +95,7 @@ export default function TransactionMenu({
     }
 
     return (
-      <MenuItem onClick={handleClose}>
+      <MenuItem>
         <Chip
           avatar={
             <small style={{ marginRight: '10em', color: color }}>
@@ -69,6 +107,62 @@ export default function TransactionMenu({
       </MenuItem>
     );
   }
+
+  // Modal content
+  const modalChildren = (
+    <div>
+      <h3>Transactions</h3>
+      <TableContainer component={Paper}>
+        <Table aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell align="right">#</TableCell>
+              <TableCell align="left">From -&gt; To</TableCell>
+              <TableCell align="left">Confirmations</TableCell>
+              <TableCell align="left">Amount</TableCell>
+              <TableCell align="center">Remove</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {net.transactions.map((t) => (
+              <TableRow key={t.hash}>
+                <TableCell component="th" scope="row" align="left">
+                  <Link href={`https://ropsten.etherscan.io/tx/${t.hash}`}>
+                    {t.hash}
+                  </Link>
+                </TableCell>
+                <TableCell align="left">
+                  <Link
+                    href={`https://ropsten.etherscan.io/address/${t.sender}`}
+                  >
+                    <small>{shortenWalletAddress(t.sender)} </small>
+                  </Link>
+                  -&gt;
+                  <small> {shortenWalletAddress(t.receiver)}</small>
+                </TableCell>
+                <TableCell align="left">
+                  {t.confirmations >= 12 ? (
+                    <span style={{ color: 'green' }}>{t.confirmations}</span>
+                  ) : (
+                    <span style={{ color: 'red' }}>{t.confirmations}</span>
+                  )}
+                </TableCell>
+                <TableCell align="left">
+                  <small>{t.amount}</small>
+                </TableCell>
+                <TableCell align="center">
+                  <button onClick={handleDelete} data-hash={t.hash}>
+                    Delete
+                  </button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </div>
+  );
+
   return (
     <div>
       <Badge color="secondary" badgeContent={net.pendingTransactions()}>
@@ -88,10 +182,18 @@ export default function TransactionMenu({
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <ClearTransactionsBtn />
         <ZeroTransactions />
         {net.transactions.map((t) => TransactionMenuItem(t))}
+        <AllTransactionsBtn />
+        <ClearTransactionsBtn />
       </Menu>
+
+      <Modal
+        children={modalChildren}
+        isOpen={isModalOpen}
+        buttonText={'Close'}
+        closeModal={closeModal}
+      />
     </div>
   );
 }
