@@ -6,7 +6,7 @@ type Props = {
   address: string;
 };
 
-export default function SelectedAccount({ address }: Props) {
+export default function PolkadotAvatar({ address }: Props) {
   const size = 32;
   const theme = 'polkadot';
 
