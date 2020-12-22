@@ -24,10 +24,8 @@ export default class Net {
   transactions: Array<Transaction> = [];
 
   constructor() {
-    this.emptyTransactions = this.emptyTransactions.bind(this);
     this.pendingTransactions = this.pendingTransactions.bind(this);
     this.updateConfirmations = this.updateConfirmations.bind(this);
-    this.forgetTransaction = this.forgetTransaction.bind(this);
   }
 
   // Adds new transaction to transaction list
@@ -42,20 +40,6 @@ export default class Net {
     if (transaction.confirmations !== confirmations) {
       transaction.confirmations = confirmations;
     }
-  }
-
-  // Remove a transaction from the stored transaction list
-  public forgetTransaction(hash: string): void {
-    const index = this.transactions.map((t) => t.hash).indexOf(hash);
-
-    if (index > -1) {
-      this.transactions.splice(index, 1);
-    }
-  }
-
-  // Empty transactions list
-  public emptyTransactions(): void {
-    this.transactions = [];
   }
 
   // returns number of pending (confirming) transactions

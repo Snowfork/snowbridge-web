@@ -44,29 +44,6 @@ export default function TransactionMenu({
     setIsModalOpen(false);
   };
 
-  const handleDelete = (event: React.MouseEvent<HTMLButtonElement>) => {
-    //e.preventDefault();
-    const hash = event.currentTarget.dataset.hash;
-
-    if (hash) {
-      net.forgetTransaction(hash);
-    }
-  };
-  // Menu Button to clear Transaction history
-  // if transactions are available
-  function ClearTransactionsBtn() {
-    if (net.transactions.length > 0) {
-      return (
-        <MenuItem>
-          <Button color="secondary" onClick={net.emptyTransactions}>
-            Clear Transactions
-          </Button>
-        </MenuItem>
-      );
-    }
-    return null;
-  }
-
   // All transactions modal button
   function AllTransactionsBtn() {
     if (net.transactions.length > 0) {
@@ -121,7 +98,6 @@ export default function TransactionMenu({
               <TableCell align="left">From -&gt; To</TableCell>
               <TableCell align="left">Confirmations</TableCell>
               <TableCell align="left">Amount</TableCell>
-              <TableCell align="center">Remove</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -150,11 +126,6 @@ export default function TransactionMenu({
                 </TableCell>
                 <TableCell align="left">
                   <small>{t.amount}</small>
-                </TableCell>
-                <TableCell align="center">
-                  <button onClick={handleDelete} data-hash={t.hash}>
-                    Delete
-                  </button>
                 </TableCell>
               </TableRow>
             ))}
@@ -186,7 +157,6 @@ export default function TransactionMenu({
         <ZeroTransactions />
         {net.transactions.map((t) => TransactionMenuItem(t))}
         <AllTransactionsBtn />
-        <ClearTransactionsBtn />
       </Menu>
 
       <Modal
