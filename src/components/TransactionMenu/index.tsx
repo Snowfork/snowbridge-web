@@ -16,6 +16,7 @@ import Link from '@material-ui/core/Link';
 
 import Net, { Transaction } from '../../net';
 import { shortenWalletAddress } from '../../utils/common';
+import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 
 type Props = {
   net: Net;
@@ -90,7 +91,7 @@ export default function TransactionMenu({
   function TransactionMenuItem(transaction: Transaction) {
     let color: string = 'orange';
 
-    if (transaction.confirmations >= 12) {
+    if (transaction.confirmations >= REQUIRED_ETH_CONFIRMATIONS) {
       color = 'green';
     }
 
@@ -141,7 +142,7 @@ export default function TransactionMenu({
                   <small> {shortenWalletAddress(t.receiver)}</small>
                 </TableCell>
                 <TableCell align="left">
-                  {t.confirmations >= 12 ? (
+                  {t.confirmations >= REQUIRED_ETH_CONFIRMATIONS ? (
                     <span style={{ color: 'green' }}>{t.confirmations}</span>
                   ) : (
                     <span style={{ color: 'red' }}>{t.confirmations}</span>

@@ -3,6 +3,8 @@ import Polkadot from './polkadot';
 
 import { Dispatch } from 'redux';
 
+import { REQUIRED_ETH_CONFIRMATIONS } from '../config';
+
 export interface Transaction {
   hash: string;
   confirmations: number;
@@ -58,7 +60,9 @@ export default class Net {
 
   // returns number of pending (confirming) transactions
   public pendingTransactions(): number {
-    return this.transactions.filter((t) => t.confirmations < 12).length;
+    return this.transactions.filter(
+      (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
+    ).length;
   }
 
   // Start net

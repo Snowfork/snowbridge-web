@@ -16,3 +16,7 @@ export const POLKADOT_API_PROVIDER = 'wss://parachain-rpc.snowfork.network';
 
 // ETH asset ID
 export const ETH_ASSET_ID = '0x00';
+
+// Minimum Number of confirmations required for an ETH transaction
+// to be regarded as a success
+export const REQUIRED_ETH_CONFIRMATIONS = 12;
