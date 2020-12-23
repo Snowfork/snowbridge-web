@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import SelectedAccount from './components/SelectedAccount/';
+import PolkadotAccount from './components/PolkadotAccount/';
 import Net from './net';
 
 import {
@@ -76,7 +76,7 @@ function AppETH({ net }: Props): React.ReactElement<Props> {
         {/* SS58 Address Input */}
         <Grid item xs={10}>
           <FormControl>
-            <SelectedAccount address={net.polkadotAddress} />
+            <PolkadotAccount address={net.polkadotAddress} />
           </FormControl>
           <FormHelperText id="ethAmountDesc">
             Polkadot Receiving Address

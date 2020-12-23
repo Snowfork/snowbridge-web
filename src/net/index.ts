@@ -3,11 +3,15 @@ import Polkadot from './polkadot';
 
 import { Dispatch } from 'redux';
 
+import { REQUIRED_ETH_CONFIRMATIONS } from '../config';
+
 export interface Transaction {
   hash: string;
-  status: 'confirming' | 'success';
   confirmations: number;
-  variant: 'eth' | 'polkadot';
+  sender: string;
+  receiver: string;
+  amount: string;
+  chain: 'eth' | 'polkadot';
 }
 
 export default class Net {
@@ -20,27 +24,13 @@ export default class Net {
   transactions: Array<Transaction> = [];
 
   constructor() {
-    this.emptyTransactions = this.emptyTransactions.bind(this);
     this.pendingTransactions = this.pendingTransactions.bind(this);
-    this.updateTransactionStatus = this.updateTransactionStatus.bind(this);
     this.updateConfirmations = this.updateConfirmations.bind(this);
   }
 
   // Adds new transaction to transaction list
   public addTransaction(transaction: Transaction): void {
     this.transactions.push(transaction);
-  }
-
-  // Changes the status of a transaction
-  public updateTransactionStatus(
-    hash: string,
-    status: 'confirming' | 'success',
-  ): void {
-    let transaction = this.transactions.filter((t) => t.hash === hash)[0];
-
-    if (transaction.status !== status) {
-      transaction.status = status;
-    }
   }
 
   // Update confirmations of a transaction
@@ -52,14 +42,11 @@ export default class Net {
     }
   }
 
-  // Empty transactions list
-  public emptyTransactions(): void {
-    this.transactions = [];
-  }
-
   // returns number of pending (confirming) transactions
   public pendingTransactions(): number {
-    return this.transactions.filter((t) => t.status === 'confirming').length;
+    return this.transactions.filter(
+      (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
+    ).length;
   }
 
   // Start net
