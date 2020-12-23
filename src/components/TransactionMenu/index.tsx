@@ -1,18 +1,8 @@
 import React, { useState, ReactNode } from 'react';
-import Button from '@material-ui/core/Button';
-import Badge from '@material-ui/core/Badge';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import Chip from '@material-ui/core/Chip';
 import Modal from '../Modal';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
-import Link from '@material-ui/core/Link';
+import styled from 'styled-components';
 
 import Net, { Transaction } from '../../net';
 import { shortenWalletAddress } from '../../utils/common';
@@ -21,6 +11,19 @@ import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 type Props = {
   net: Net;
 };
+
+const Table = styled.table`
+  border: thin solid rgba(0, 0, 0, 0.23);
+`;
+
+const TransactionHash = styled.a`
+  font-size: 0.8rem;
+`;
+
+const TD = styled.td`
+  padding: 2em;
+  margin: 2em;
+`;
 
 export default function TransactionMenu({
   net,
@@ -49,7 +52,7 @@ export default function TransactionMenu({
     if (net.transactions.length > 0) {
       return (
         <MenuItem>
-          <Button onClick={openModal}>All Transactions</Button>
+          <button onClick={openModal}>All Transactions</button>
         </MenuItem>
       );
     }
@@ -74,14 +77,12 @@ export default function TransactionMenu({
 
     return (
       <MenuItem>
-        <Chip
-          avatar={
-            <small style={{ marginRight: '10em', color: color }}>
-              ({transaction.confirmations} confirmations)
-            </small>
-          }
-          label={shortenWalletAddress(transaction.hash)}
-        />
+        <label>
+          <small style={{ marginRight: '10em', color: color }}>
+            ({transaction.confirmations} confirmations)
+          </small>
+          {shortenWalletAddress(transaction.hash)}
+        </label>
       </MenuItem>
     );
   }
@@ -90,63 +91,60 @@ export default function TransactionMenu({
   const modalChildren = (
     <div>
       <h3>Transactions</h3>
-      <TableContainer component={Paper}>
+      <section>
         <Table aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell align="right">#</TableCell>
-              <TableCell align="left">From -&gt; To</TableCell>
-              <TableCell align="left">Confirmations</TableCell>
-              <TableCell align="left">Amount</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+          <tr>
+            <td align="left">#</td>
+            <td align="left">From -&gt; To</td>
+            <td align="left">Confirmations</td>
+            <td align="left">Amount</td>
+          </tr>
+          <tbody>
             {net.transactions.map((t) => (
-              <TableRow key={t.hash}>
-                <TableCell component="th" scope="row" align="left">
-                  <Link href={`https://ropsten.etherscan.io/tx/${t.hash}`}>
-                    {t.hash}
-                  </Link>
-                </TableCell>
-                <TableCell align="left">
-                  <Link
-                    href={`https://ropsten.etherscan.io/address/${t.sender}`}
+              <tr key={t.hash}>
+                <td scope="row" align="left">
+                  <TransactionHash
+                    href={`https://ropsten.etherscan.io/tx/${t.hash}`}
                   >
+                    {t.hash}
+                  </TransactionHash>
+                </td>
+                <td align="left">
+                  <a href={`https://ropsten.etherscan.io/address/${t.sender}`}>
                     <small>{shortenWalletAddress(t.sender)} </small>
-                  </Link>
+                  </a>
                   -&gt;
                   <small> {shortenWalletAddress(t.receiver)}</small>
-                </TableCell>
-                <TableCell align="left">
+                </td>
+                <td align="center">
                   {t.confirmations >= REQUIRED_ETH_CONFIRMATIONS ? (
                     <span style={{ color: 'green' }}>{t.confirmations}</span>
                   ) : (
                     <span style={{ color: 'red' }}>{t.confirmations}</span>
                   )}
-                </TableCell>
-                <TableCell align="left">
+                </td>
+                <td align="left">
                   <small>{t.amount}</small>
-                </TableCell>
-              </TableRow>
+                </td>
+              </tr>
             ))}
-          </TableBody>
+          </tbody>
         </Table>
-      </TableContainer>
+      </section>
     </div>
   );
 
   return (
     <div>
-      <Badge color="secondary" badgeContent={net.pendingTransactions()}>
-        <Button
-          aria-controls="simple-menu"
-          aria-haspopup="true"
-          color="secondary"
-          onClick={handleClick}
-        >
-          Transactions
-        </Button>
-      </Badge>
+      <button
+        aria-controls="simple-menu"
+        aria-haspopup="true"
+        color="secondary"
+        onClick={handleClick}
+      >
+        Transactions
+        {net.pendingTransactions() > 0 && ` (${net.pendingTransactions()})`}
+      </button>
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}
