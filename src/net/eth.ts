@@ -87,8 +87,6 @@ export default class Eth extends Api {
     }
   }
 
-  // Get the
-
   // Send ETH To Default Polkadot Account
   public async send_eth(amount: string) {
     try {
