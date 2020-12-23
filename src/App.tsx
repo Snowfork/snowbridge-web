@@ -20,11 +20,13 @@ import { setNet } from './redux/actions';
 ReactModal.setAppElement('#root');
 
 type Props = {
-  netClient: Net;
+  net: any;
 };
 
 function BridgeApp(props: Props) {
-  const { netClient } = props;
+  const { net } = props;
+
+  console.log(net);
 
   const dispatch = useDispatch();
 
@@ -41,24 +43,33 @@ function BridgeApp(props: Props) {
   }, []);
 
   // Check if Network has been started
-  if (!isConnected(netClient)) {
+  if (!isConnected(net.client)) {
     return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
+  }
+
+  // Ensure that network is ropsten
+  if (net.network !== 'ropsten') {
+    return (
+      <p style={{ textAlign: 'center', color: '#fff' }}>
+        Please select Ropsten network in Metamask
+      </p>
+    );
   }
 
   return (
     <main>
-      <Nav net={netClient} />
+      <Nav net={net.client} />
       <Bridge
-        net={netClient!}
-        polkadotAddress={netClient.polkadotAddress}
-        ethAddress={netClient.ethAddress}
+        net={net.client!}
+        polkadotAddress={net.client.polkadotAddress}
+        ethAddress={net.client.ethAddress}
       />
     </main>
   );
 }
 
 const mapStateToProps = (state: any) => {
-  return { netClient: state.net.client };
+  return { net: state.net };
 };
 
 export default connect(mapStateToProps)(BridgeApp);
