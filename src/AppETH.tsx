@@ -22,12 +22,13 @@ import {
 // ------------------------------------------
 type Props = {
   net: Net;
+  children?: JSX.Element | JSX.Element[];
 };
 
 // ------------------------------------------
 //               AppETH component
 // ------------------------------------------
-function AppETH({ net }: Props): React.ReactElement<Props> {
+function AppETH({ net, children }: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
 
@@ -68,6 +69,7 @@ function AppETH({ net }: Props): React.ReactElement<Props> {
         }}
       >
         <Grid item xs={10}>
+          {children}
           <Typography gutterBottom variant="h5">
             ETH App
           </Typography>
