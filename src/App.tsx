@@ -47,11 +47,13 @@ function BridgeApp(props: Props) {
     return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
   }
 
+  const PERMITTED_METAMASK_NETWORK =
+    process.env.GATSBY_PERMITTED_METAMASK_NETWORK || 'ropsten';
   // Ensure that network is ropsten
-  if (net.network !== 'ropsten') {
+  if (net.network !== PERMITTED_METAMASK_NETWORK) {
     return (
       <p style={{ textAlign: 'center', color: '#fff' }}>
-        Please select Ropsten network in Metamask
+        Please select Ropsten network in Metamask extension
       </p>
     );
   }
