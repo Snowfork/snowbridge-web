@@ -33,7 +33,9 @@ function AppPolkadot({ net, children }: Props): React.ReactElement<Props> {
       return (
         <Button
           color="primary"
-          onClick={() => net?.polkadot?.send_asset(depositAmount)}
+          onClick={() =>
+            net?.polkadot?.send_polkadot(parseFloat(depositAmount))
+          }
           variant="outlined"
         >
           <Typography variant="button">Send Polkadot Asset</Typography>
