@@ -34,7 +34,7 @@ function AppPolkadot({ net, children }: Props): React.ReactElement<Props> {
         <Button
           color="primary"
           onClick={() =>
-            net?.polkadot?.send_polkadot(parseFloat(depositAmount))
+            net?.polkadot?.burn_polkaeth(depositAmount)
           }
           variant="outlined"
         >
@@ -93,12 +93,12 @@ function AppPolkadot({ net, children }: Props): React.ReactElement<Props> {
               type="number"
               margin="normal"
               onChange={(e) => setDepositAmount(e.target.value)}
-              placeholder="0.00 PolkdotAsset"
+              placeholder="0.00 PolkaETH"
               style={{ margin: 5 }}
               variant="outlined"
             />
-            <FormHelperText id="polkadotAmountDesc">
-              How much PolkadotAsset would you like to deposit?
+            <FormHelperText id="polkaethAmountDesc">
+              How much PolkaETH would you like to burn and convert to ETH?
             </FormHelperText>
           </FormControl>
         </Grid>

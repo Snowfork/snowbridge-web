@@ -1,3 +1,4 @@
+import web3 from 'web3';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import {
   web3Accounts,
@@ -59,7 +60,7 @@ export default class Polkadot extends Api {
   }
 
   // Query account balance for bridged assets (ETH and ERC20)
-  public async get_balance(polkadotAddress: any) {
+  public async get_eth_balance(polkadotAddress: any) {
     try {
       if (this.conn) {
         if (polkadotAddress) {
@@ -69,11 +70,7 @@ export default class Polkadot extends Api {
           );
 
           if ((accountData as AssetAccountData).free) {
-            return formatBalance(
-              (accountData as AssetAccountData).free,
-              { withSi: false },
-              12,
-            );
+            return web3.utils.fromWei((accountData as AssetAccountData).free, 'ether');
           }
         }
 
@@ -87,7 +84,7 @@ export default class Polkadot extends Api {
     }
   }
 
-  public async send_polkadot(amount: number) {
+  public async burn_polkaeth(amount: string) {
     const self = this;
 
     if (self.conn) {
@@ -95,9 +92,12 @@ export default class Polkadot extends Api {
       const recepient = evmToAddress(self.net.ethAddress);
 
       if (account) {
-        const transferExtrinsic = self.conn.tx.balances.transfer(
+
+        const polkaWeiValue = web3.utils.toWei(amount, 'ether')
+
+        const transferExtrinsic = self.conn.tx.eth.burn(
           recepient,
-          amount,
+          polkaWeiValue,
         );
 
         // to be able to retrieve the signer interface from this account
