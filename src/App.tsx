@@ -11,6 +11,7 @@ import { connect } from 'react-redux';
 // local imports and components
 import Bridge from './Bridge';
 import Nav from './components/Nav';
+import PendingTransactionsUI from './components/PendingTransactionsUI';
 import Net, { isConnected } from './net';
 import { useDispatch } from 'react-redux';
 
@@ -45,14 +46,19 @@ function BridgeApp(props: Props) {
     return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
   }
 
+  const isTransactionPending = true;
   return (
     <main>
       <Nav net={netClient} />
-      <Bridge
-        net={netClient!}
-        polkadotAddress={netClient.polkadotAddress}
-        ethAddress={netClient.ethAddress}
-      />
+      {isTransactionPending ? (
+        <PendingTransactionsUI />
+      ) : (
+        <Bridge
+          net={netClient!}
+          polkadotAddress={netClient.polkadotAddress}
+          ethAddress={netClient.ethAddress}
+        />
+      )}
     </main>
   );
 }
