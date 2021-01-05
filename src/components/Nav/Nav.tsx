@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import * as S from './Nav.style';
 import Net from '../../net';
 
-import {
-  formatToDecimalString,
-  shortenWalletAddress,
-} from '../../utils/common';
+import { shortenWalletAddress } from '../../utils/common';
 
 import Modal from '../Modal';
 import TransactionMenu from '../TransactionMenu/';

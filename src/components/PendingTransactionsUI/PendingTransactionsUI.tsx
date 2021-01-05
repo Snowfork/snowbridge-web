@@ -8,15 +8,15 @@ function PendingTransactionsUI({}: Props) {
   return (
     <S.Wrapper>
       <S.Container>
-        <Step />
+        <Step currentState="complete" />
         <S.StyledLine />
-        <Step />
+        <Step currentState="loading" />
         <S.StyledLine />
-        <Step />
+        <Step currentState="waiting" />
         <S.StyledLine />
-        <Step />
+        <Step currentState="waiting" />
         <S.StyledLine />
-        <Step />
+        <Step currentState="waiting" />
       </S.Container>
     </S.Wrapper>
   );

@@ -60,14 +60,21 @@ function BridgeApp(props: Props) {
     );
   }
 
+  // Used to show Transaction Pending component
+  const isTransactionPending = false;
+
   return (
     <main>
       <Nav net={net.client} />
-      <Bridge
-        net={net.client!}
-        polkadotAddress={net.client.polkadotAddress}
-        ethAddress={net.client.ethAddress}
-      />
+      {isTransactionPending ? (
+        <PendingTransactionsUI />
+      ) : (
+        <Bridge
+          net={net.client!}
+          polkadotAddress={net.client.polkadotAddress}
+          ethAddress={net.client.ethAddress}
+        />
+      )}
     </main>
   );
 }
