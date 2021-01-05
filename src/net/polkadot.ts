@@ -70,7 +70,10 @@ export default class Polkadot extends Api {
           );
 
           if ((accountData as AssetAccountData).free) {
-            return web3.utils.fromWei((accountData as AssetAccountData).free, 'ether');
+            return web3.utils.fromWei(
+              (accountData as AssetAccountData).free,
+              'ether',
+            );
           }
         }
 
@@ -92,8 +95,7 @@ export default class Polkadot extends Api {
       const recepient = evmToAddress(self.net.ethAddress);
 
       if (account) {
-
-        const polkaWeiValue = web3.utils.toWei(amount, 'ether')
+        const polkaWeiValue = web3.utils.toWei(amount, 'ether');
 
         const transferExtrinsic = self.conn.tx.eth.burn(
           recepient,
@@ -127,6 +129,38 @@ export default class Polkadot extends Api {
       } else {
         throw new Error('Default Polkadot account not found');
       }
+    } else {
+      throw new Error('Polkadot API not connected');
+    }
+  }
+
+  // Subscribe to Polkadot events
+  public async subscribeEvents() {
+    if (this.conn) {
+      this.conn.query.system.events((events) => {
+        console.log(`\nReceived ${events.length} events`);
+
+        // Loop through the events in the current block
+        events.forEach((record) => {
+          const { event } = record;
+
+          const types = event.typeDef;
+
+          if (event.section == 'asset' && event.method == 'Minted') {
+            console.log('Got Assets.Minted event');
+
+            event.data.forEach((data, index) => {
+              // let local transaction object know that the asset has
+              // been minted
+              if (types[index].type === 'AccountId') {
+                this.net.polkaEthMinted(data.toString());
+              }
+            });
+
+            // TODO: update new Polkadot account balance
+          }
+        });
+      });
     } else {
       throw new Error('Polkadot API not connected');
     }
@@ -167,6 +201,8 @@ export default class Polkadot extends Api {
 
       return async (polkadot: Polkadot) => {
         polkadot.conn = api;
+        await polkadot.subscribeEvents();
+
         console.log('- Polkadot API endpoint connected');
       };
     } catch (err) {
