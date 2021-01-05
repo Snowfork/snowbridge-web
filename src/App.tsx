@@ -48,7 +48,7 @@ function BridgeApp(props: Props) {
   }
 
   const PERMITTED_METAMASK_NETWORK =
-    process.env.GATSBY_PERMITTED_METAMASK_NETWORK || 'ropsten';
+    process.env.PERMITTED_METAMASK_NETWORK || 'ropsten';
   // Ensure that network is ropsten
   if (net.network !== PERMITTED_METAMASK_NETWORK) {
     return (
