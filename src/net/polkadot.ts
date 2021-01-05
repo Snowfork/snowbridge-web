@@ -1,6 +1,12 @@
+import web3 from 'web3';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { web3Accounts, web3Enable } from '@polkadot/extension-dapp';
+import {
+  web3Accounts,
+  web3Enable,
+  web3FromSource,
+} from '@polkadot/extension-dapp';
 import { formatBalance } from '@polkadot/util';
+import { evmToAddress } from '@polkadot/util-crypto';
 import { Dispatch } from 'redux';
 
 import Api from './api';
@@ -43,8 +49,18 @@ export default class Polkadot extends Api {
     return allAccounts;
   }
 
+  public async get_default_address() {
+    const allAccounts = await web3Accounts();
+
+    if (allAccounts[0]) {
+      return allAccounts[0];
+    } else {
+      return null;
+    }
+  }
+
   // Query account balance for bridged assets (ETH and ERC20)
-  public async get_balance(polkadotAddress: any) {
+  public async get_eth_balance(polkadotAddress: any) {
     try {
       if (this.conn) {
         if (polkadotAddress) {
@@ -54,11 +70,7 @@ export default class Polkadot extends Api {
           );
 
           if ((accountData as AssetAccountData).free) {
-            return formatBalance(
-              (accountData as AssetAccountData).free,
-              { withSi: false },
-              12,
-            );
+            return web3.utils.fromWei((accountData as AssetAccountData).free, 'ether');
           }
         }
 
@@ -69,6 +81,54 @@ export default class Polkadot extends Api {
     } catch (err) {
       console.log(err);
       throw err;
+    }
+  }
+
+  public async burn_polkaeth(amount: string) {
+    const self = this;
+
+    if (self.conn) {
+      const account = await self.get_default_address();
+      const recepient = evmToAddress(self.net.ethAddress);
+
+      if (account) {
+
+        const polkaWeiValue = web3.utils.toWei(amount, 'ether')
+
+        const transferExtrinsic = self.conn.tx.eth.burn(
+          recepient,
+          polkaWeiValue,
+        );
+
+        // to be able to retrieve the signer interface from this account
+        // we can use web3FromSource which will return an InjectedExtension type
+        const injector = await web3FromSource(account.meta.source);
+
+        // passing the injected account address as the first argument of signAndSend
+        // will allow the api to retrieve the signer and the user will see the extension
+        // popup asking to sign the balance transfer transaction
+        transferExtrinsic
+          .signAndSend(
+            account.address,
+            { signer: injector.signer },
+            ({ status }) => {
+              if (status.isInBlock) {
+                console.log(
+                  `Completed at block hash #${status.asInBlock.toString()}`,
+                );
+              } else {
+                console.log(`Current status: ${status.type}`);
+              }
+            },
+          )
+          .catch((error: any) => {
+            console.log(':( transaction failed', error);
+          });
+      } else {
+        throw new Error('Default Polkadot account not found');
+      }
+    } else {
+      throw new Error('Polkadot API not connected');
     }
   }
 

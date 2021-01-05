@@ -75,7 +75,7 @@ function Nav({ net }: Props): React.ReactElement<Props> {
         <S.DisplayWrapper>
           <S.DisplayTitle>Polkadot Wallet</S.DisplayTitle>
           <S.DisplayContainer>
-            <S.Amount>{net.polkadotBalance!.toString()} PolkaETH</S.Amount>
+            <S.Amount>{net.polkadotEthBalance!.toString()} PolkaETH</S.Amount>
             <S.Address onClick={openModal}>
               {polkadotAccs.length > 0 &&
                 shortenWalletAddress(net.polkadotAddress!)}

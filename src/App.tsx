@@ -21,11 +21,11 @@ import { setNet } from './redux/actions';
 ReactModal.setAppElement('#root');
 
 type Props = {
-  netClient: Net;
+  net: any;
 };
 
 function BridgeApp(props: Props) {
-  const { netClient } = props;
+  const { net } = props;
 
   const dispatch = useDispatch();
 
@@ -42,29 +42,38 @@ function BridgeApp(props: Props) {
   }, []);
 
   // Check if Network has been started
-  if (!isConnected(netClient)) {
+  if (!isConnected(net.client)) {
     return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
   }
 
-  const isTransactionPending = true;
+  // Ensure that network is ropsten
+  const PERMITTED_METAMASK_NETWORK =
+    process.env.PERMITTED_METAMASK_NETWORK || 'ropsten';
+  if (
+    net.metamaskNetwork.toLowerCase() !==
+    PERMITTED_METAMASK_NETWORK.toLowerCase()
+  ) {
+    return (
+      <p style={{ textAlign: 'center', color: '#fff' }}>
+        Please select Ropsten network in Metamask extension
+      </p>
+    );
+  }
+
   return (
     <main>
-      <Nav net={netClient} />
-      {isTransactionPending ? (
-        <PendingTransactionsUI />
-      ) : (
-        <Bridge
-          net={netClient!}
-          polkadotAddress={netClient.polkadotAddress}
-          ethAddress={netClient.ethAddress}
-        />
-      )}
+      <Nav net={net.client} />
+      <Bridge
+        net={net.client!}
+        polkadotAddress={net.client.polkadotAddress}
+        ethAddress={net.client.ethAddress}
+      />
     </main>
   );
 }
 
 const mapStateToProps = (state: any) => {
-  return { netClient: state.net.client };
+  return { net: state.net };
 };
 
 export default connect(mapStateToProps)(BridgeApp);
