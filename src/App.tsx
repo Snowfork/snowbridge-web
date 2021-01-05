@@ -26,8 +26,6 @@ type Props = {
 function BridgeApp(props: Props) {
   const { net } = props;
 
-  console.log(net);
-
   const dispatch = useDispatch();
 
   // Start Network
