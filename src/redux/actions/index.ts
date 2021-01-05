@@ -1,5 +1,13 @@
-import { SET_NET, SET_METAMASK_FOUND, SET_METAMASK_CONNECTED, SET_POLKADOTJS_FOUND,
-  SET_POLKADOTJS_CONNECTED, SET_METAMASK_MISSING, SET_POLKADOTJS_MISSING } from '../actionsTypes';
+import {
+  SET_NET,
+  SET_METAMASK_FOUND,
+  SET_METAMASK_CONNECTED,
+  SET_POLKADOTJS_FOUND,
+  SET_POLKADOTJS_CONNECTED,
+  SET_METAMASK_MISSING,
+  SET_POLKADOTJS_MISSING,
+  SET_METAMASK_NETWORK,
+} from '../actionsTypes';
 
 export const setNet = (net: any) => {
   return {
@@ -10,36 +18,43 @@ export const setNet = (net: any) => {
 
 export const setMetamaskFound = () => {
   return {
-    type: SET_METAMASK_FOUND
+    type: SET_METAMASK_FOUND,
   };
 };
 
 export const setMetamaskConnected = () => {
   return {
-    type: SET_METAMASK_CONNECTED
-  };
-};
-
-export const setPolkadotJSFound = () => {
-  return {
-    type: SET_POLKADOTJS_FOUND
-  };
-};
-
-export const setPolkadotJSConnected = () => {
-  return {
-    type: SET_POLKADOTJS_CONNECTED
+    type: SET_METAMASK_CONNECTED,
   };
 };
 
 export const setMetamaskMissing = () => {
   return {
-    type: SET_METAMASK_MISSING
+    type: SET_METAMASK_MISSING,
+  };
+};
+
+export const setMetamaskNetwork = (network: string) => {
+  return {
+    type: SET_METAMASK_NETWORK,
+    metamaskNetwork: network,
+  };
+};
+
+export const setPolkadotJSFound = () => {
+  return {
+    type: SET_POLKADOTJS_FOUND,
+  };
+};
+
+export const setPolkadotJSConnected = () => {
+  return {
+    type: SET_POLKADOTJS_CONNECTED,
   };
 };
 
 export const setPolkadotJSMissing = () => {
   return {
-    type: SET_POLKADOTJS_MISSING
+    type: SET_POLKADOTJS_MISSING,
   };
 };

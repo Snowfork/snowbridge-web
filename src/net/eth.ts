@@ -16,7 +16,11 @@ import * as ERC20App from '../contracts/ERC20App.json';
 /* tslint:enable */
 
 import { Dispatch } from 'redux';
-import { setMetamaskFound, setMetamaskMissing } from '../redux/actions';
+import {
+  setMetamaskFound,
+  setMetamaskMissing,
+  setMetamaskNetwork,
+} from '../redux/actions';
 
 // Eth API connector
 type Connector = (e: Eth, net: any) => void;
@@ -188,9 +192,16 @@ export default class Eth extends Api {
 
     let web3: Web3;
 
+    const connectionComplete = (web3: any) => {
+      dispatch(setMetamaskFound());
+      web3.eth.net
+        .getNetworkType()
+        .then((network: string) => dispatch(setMetamaskNetwork(network)));
+    };
+
     if (locWindow.ethereum) {
       web3 = new Web3(locWindow.ethereum);
-      dispatch(setMetamaskFound());
+      connectionComplete(web3);
 
       try {
         // Request account access if needed
@@ -203,7 +214,8 @@ export default class Eth extends Api {
     // Legacy dapp browsers...
     else if (locWindow.web3) {
       web3 = locWindow.web3;
-      dispatch(setMetamaskFound());
+      connectionComplete(web3);
+
       console.log('- Injected web3 detected');
     }
     // Fallback to localhost; use dev console port by default...
