@@ -20,7 +20,7 @@ export default class Net {
   ethBalance?: string;
   polkadot?: Polkadot;
   polkadotAddress: string = '';
-  polkadotBalance?: string;
+  polkadotEthBalance?: string;
   transactions: Array<Transaction> = [];
 
   constructor() {
@@ -58,9 +58,9 @@ export default class Net {
     let polkadotAddresses = await polkadot.get_addresses(dispatch);
     let firstPolkadotAddress =
       polkadotAddresses && polkadotAddresses[0] && polkadotAddresses[0].address;
-    let polkadotBalance;
+    let polkadotEthBalance;
     if (firstPolkadotAddress) {
-      polkadotBalance = await polkadot.get_balance(firstPolkadotAddress);
+      polkadotEthBalance = await polkadot.get_eth_balance(firstPolkadotAddress);
     }
 
     if (
@@ -69,20 +69,20 @@ export default class Net {
       ethBalance &&
       polkadot &&
       firstPolkadotAddress &&
-      polkadotBalance
+      polkadotEthBalance
     ) {
       this.eth = eth;
       this.ethAddress = ethAddress;
       this.ethBalance = ethBalance;
       this.polkadot = polkadot;
       this.polkadotAddress = firstPolkadotAddress;
-      this.polkadotBalance = polkadotBalance;
+      this.polkadotEthBalance = polkadotEthBalance;
 
       console.log('- Network Started');
       console.log(`  Polkadot Address: ${firstPolkadotAddress}`);
       console.log(`  Ethereum Address: ${this.ethAddress}`);
       console.log(`  Ethereum Balance: ${this.ethBalance}`);
-      console.log(`  Polkadot Balance: ${this.polkadotBalance}`);
+      console.log(`  Polkadot ETH Balance: ${this.polkadotEthBalance}`);
     }
   }
 }
