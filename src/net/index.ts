@@ -16,10 +16,17 @@ export interface Transaction {
   amount: string;
   chain: 'eth' | 'polkadot';
   isMinted: boolean;
+  isBurned: boolean;
 }
 
 // Interface for an PolkaEth 'Minted' event, emitted by the parachain
 interface PolkaEthMintedEvent {
+  AccountId: string;
+  amount: string;
+}
+
+// Interface for an PolkaEth 'Burned' event, emitted by the parachain
+interface PolkaEthBurnedEvent {
   AccountId: string;
   amount: string;
 }
@@ -59,15 +66,12 @@ export default class Net {
     ).length;
   }
 
-  // TODO: Properly map submitted assets to minted assets
+  // TODO: Properly map Eth submitted assets to minted assets
   // Called when an PolkaEth asset has been minted by the parachain
   public polkaEthMinted(event: PolkaEthMintedEvent): void {
     for (var i = 0; i < this.transactions.length; i++) {
       let localAmount = this.transactions[i].amount;
-      let eventAmountEth = web3.utils.fromWei(
-        event.amount,
-        'ether',
-      );
+      let eventAmountEth = web3.utils.fromWei(event.amount, 'ether');
       let localAccountId = this.transactions[i].receiver;
       let eventAccountId = event.AccountId;
 
@@ -77,7 +81,20 @@ export default class Net {
     }
   }
 
-  //public polkaEthBurned(event: PolkaEthBurneEvent) {}
+  // TODO: Properly map PolkaEth submitted assets to burned assets
+  // Called when an PolkaEth asset has been minted by the parachain
+  public polkaEthBurned(event: PolkaEthBurnedEvent) {
+    for (var i = 0; i < this.transactions.length; i++) {
+      let localAmount = this.transactions[i].amount;
+      let eventAmountEth = web3.utils.fromWei(event.amount, 'ether');
+      let localAccountId = this.transactions[i].receiver;
+      let eventAccountId = event.AccountId;
+
+      if (localAmount === eventAmountEth && localAccountId === eventAccountId) {
+        this.transactions[i].isBurned = true;
+      }
+    }
+  }
 
   // Start net
   public async start(dispatch: Dispatch) {
