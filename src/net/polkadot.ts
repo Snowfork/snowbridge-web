@@ -5,7 +5,7 @@ import {
   web3Enable,
   web3FromSource,
 } from '@polkadot/extension-dapp';
-import { formatBalance } from '@polkadot/util';
+
 import { evmToAddress } from '@polkadot/util-crypto';
 import { Dispatch } from 'redux';
 
@@ -134,7 +134,7 @@ export default class Polkadot extends Api {
     }
   }
 
-  // Subscribe to Polkadot events
+  // Subscribe to Parachain events
   public async subscribeEvents() {
     if (this.conn) {
       this.conn.query.system.events((events) => {
@@ -144,21 +144,31 @@ export default class Polkadot extends Api {
         events.forEach((record) => {
           const { event } = record;
 
-          const types = event.typeDef;
-
-          if (event.section == 'asset' && event.method == 'Minted') {
+          // Checks if the parachain emited event is for a Minted asset
+          if (event.section === 'asset' && event.method === 'Minted') {
             console.log('Got Assets.Minted event');
 
-            event.data.forEach((data, index) => {
-              // let local transaction object know that the asset has
-              // been minted
-              if (types[index].type === 'AccountId') {
-                this.net.polkaEthMinted(data.toString());
-              }
+            // Let the local transaction object know that the asset
+            // has  been minted
+            this.net.polkaEthMinted({
+              // Receiver of the sent PolkaEth
+              AccountId: event.data[1].toString(),
+              // PolkaEth amount
+              amount: event.data[2].toString(),
             });
 
-            // TODO: update new Polkadot account balance
+            // Checks if the parachain emited event is for a burned
+          } else if (event.section === 'asset' && event.method === 'Burned') {
+            this.net.polkaEthBurned({
+              AssetId: event.data[0].toString(),
+              AccountId: event.data[1].toString(),
+              amount: event.data[2].toString(),
+            });
+
+            console.log(JSON.stringify(event));
           }
+
+          // TODO: update new Polkadot account balance
         });
       });
     } else {
@@ -201,6 +211,8 @@ export default class Polkadot extends Api {
 
       return async (polkadot: Polkadot) => {
         polkadot.conn = api;
+
+        // Here we subscribe to the parachain events
         await polkadot.subscribeEvents();
 
         console.log('- Polkadot API endpoint connected');
