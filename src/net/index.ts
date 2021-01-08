@@ -57,6 +57,7 @@ export default class Net {
     ).length;
   }
 
+  // TODO: Properly map submitted assets to minted assets
   // Called when an PolkaEth asset has been minted by the parachain
   public polkaEthMinted(event: PolkaEthMintedEvent): void {
     for (var i = 0; i < this.transactions.length; i++) {
@@ -70,6 +71,8 @@ export default class Net {
       }
     }
   }
+
+  //public polkaEthBurned(event: PolkaEthBurneEvent) {}
 
   // Start net
   public async start(dispatch: Dispatch) {
