@@ -123,6 +123,7 @@ export default class Eth extends Api {
                 sender: self.net.ethAddress,
                 receiver: self.net.polkadotAddress,
                 amount: amount,
+                isMinted: false,
               });
             })
             .on(
