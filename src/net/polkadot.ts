@@ -161,11 +161,10 @@ export default class Polkadot extends Api {
             console.log('Got Assets.Burned event');
 
             // Notify local transaction object the asset is burned
-            //this.net.polkaEthBurned({
-            //AssetId: event.data[0].toString(),
-            //AccountId: event.data[1].toString(),
-            //amount: event.data[2].toString(),
-            //});
+            this.net.polkaEthBurned({
+              AccountId: event.data[1].toString(),
+              amount: event.data[2].toString(),
+            });
           }
 
           // TODO: update new Polkadot account balance
