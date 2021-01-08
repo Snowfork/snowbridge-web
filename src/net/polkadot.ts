@@ -92,7 +92,7 @@ export default class Polkadot extends Api {
 
     if (self.conn) {
       const account = await self.get_default_address();
-      const recepient = evmToAddress(self.net.ethAddress);
+      const recepient = self.net.ethAddress;
 
       if (account) {
         const polkaWeiValue = web3.utils.toWei(amount, 'ether');
@@ -139,7 +139,7 @@ export default class Polkadot extends Api {
     if (this.conn) {
       this.conn.query.system.events((events) => {
         console.log(`\nReceived ${events.length} events`);
-
+        console.log({events});
         // Loop through the events in the current block
         events.forEach((record) => {
           const { event } = record;
@@ -149,23 +149,23 @@ export default class Polkadot extends Api {
             console.log('Got Assets.Minted event');
 
             // Notify local transaction object the asset is minted
-            this.net.polkaEthMinted({
-              // Receiver of the sent PolkaEth
-              AccountId: event.data[1].toString(),
-              // PolkaEth amount
-              amount: event.data[2].toString(),
-            });
+            // this.net.polkaEthMinted({
+            //   // Receiver of the sent PolkaEth
+            //   AccountId: event.data[1].toString(),
+            //   // PolkaEth amount
+            //   amount: event.data[2].toString(),
+            // });
 
             // Checks if the parachain emited event is for a burned
           } else if (event.section === 'asset' && event.method === 'Burned') {
-            console.log('Got Assets.Minted event');
+            console.log('Got Assets.Burned event');
 
             // Notify local transaction object the asset is burned
-            this.net.polkaEthBurned({
-              AssetId: event.data[0].toString(),
-              AccountId: event.data[1].toString(),
-              amount: event.data[2].toString(),
-            });
+            // this.net.polkaEthBurned({
+            //   AssetId: event.data[0].toString(),
+            //   AccountId: event.data[1].toString(),
+            //   amount: event.data[2].toString(),
+            // });
           }
 
           // TODO: update new Polkadot account balance

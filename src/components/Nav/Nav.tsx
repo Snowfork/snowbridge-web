@@ -64,7 +64,7 @@ function Nav({ net }: Props): React.ReactElement<Props> {
             <S.Amount>{net.ethBalance} ETH</S.Amount>
             <S.Address
               as="a"
-              href={`https://etherscan.com/ropsten.etherscan.io/address/${net.ethAddress}`}
+              href={`https://ropsten.etherscan.io/address/${net.ethAddress}`}
               target="_blank"
               rel="noopener noreferrer"
             >
