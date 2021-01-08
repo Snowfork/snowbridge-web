@@ -6,7 +6,6 @@ import Polkadot from './polkadot';
 import { Dispatch } from 'redux';
 
 import { REQUIRED_ETH_CONFIRMATIONS } from '../config';
-import BigNumber from 'bignumber.js';
 
 export interface Transaction {
   hash: string;
