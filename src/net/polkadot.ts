@@ -148,8 +148,7 @@ export default class Polkadot extends Api {
           if (event.section === 'asset' && event.method === 'Minted') {
             console.log('Got Assets.Minted event');
 
-            // Let the local transaction object know that the asset
-            // has  been minted
+            // Notify local transaction object the asset is minted
             this.net.polkaEthMinted({
               // Receiver of the sent PolkaEth
               AccountId: event.data[1].toString(),
@@ -159,13 +158,14 @@ export default class Polkadot extends Api {
 
             // Checks if the parachain emited event is for a burned
           } else if (event.section === 'asset' && event.method === 'Burned') {
+            console.log('Got Assets.Minted event');
+
+            // Notify local transaction object the asset is burned
             this.net.polkaEthBurned({
               AssetId: event.data[0].toString(),
               AccountId: event.data[1].toString(),
               amount: event.data[2].toString(),
             });
-
-            console.log(JSON.stringify(event));
           }
 
           // TODO: update new Polkadot account balance
