@@ -1,3 +1,5 @@
+import web3 from 'web3';
+
 import Eth from './eth';
 import Polkadot from './polkadot';
 
@@ -62,11 +64,14 @@ export default class Net {
   public polkaEthMinted(event: PolkaEthMintedEvent): void {
     for (var i = 0; i < this.transactions.length; i++) {
       let localAmount = this.transactions[i].amount;
-      let eventAmount = event.amount;
+      let eventAmountEth = web3.utils.fromWei(
+        event.amount,
+        'ether',
+      );
       let localAccountId = this.transactions[i].receiver;
       let eventAccountId = event.AccountId;
 
-      if (localAmount === eventAmount && localAccountId === eventAccountId) {
+      if (localAmount === eventAmountEth && localAccountId === eventAccountId) {
         this.transactions[i].isMinted = true;
       }
     }
