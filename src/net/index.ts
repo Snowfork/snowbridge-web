@@ -4,6 +4,7 @@ import Polkadot from './polkadot';
 import { Dispatch } from 'redux';
 
 import { REQUIRED_ETH_CONFIRMATIONS } from '../config';
+import BigNumber from 'bignumber.js';
 
 export interface Transaction {
   hash: string;
@@ -12,6 +13,13 @@ export interface Transaction {
   receiver: string;
   amount: string;
   chain: 'eth' | 'polkadot';
+  isMinted: boolean;
+}
+
+// Interface for an PolkaEth 'Minted' event, emitted by the parachain
+interface PolkaEthMintedEvent {
+  AccountId: string;
+  amount: string;
 }
 
 export default class Net {
@@ -47,6 +55,20 @@ export default class Net {
     return this.transactions.filter(
       (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
     ).length;
+  }
+
+  // Called when an PolkaEth asset has been minted by the parachain
+  public polkaEthMinted(event: PolkaEthMintedEvent): void {
+    for (var i = 0; i < this.transactions.length; i++) {
+      let localAmount = this.transactions[i].amount;
+      let eventAmount = event.amount;
+      let localAccountId = this.transactions[i].receiver;
+      let eventAccountId = event.AccountId;
+
+      if (localAmount === eventAmount && localAccountId === eventAccountId) {
+        this.transactions[i].isMinted = true;
+      }
+    }
   }
 
   // Start net
