@@ -124,6 +124,7 @@ export default class Eth extends Api {
                 receiver: self.net.polkadotAddress,
                 amount: amount,
                 isMinted: false,
+                isBurned: false,
               });
             })
             .on(
