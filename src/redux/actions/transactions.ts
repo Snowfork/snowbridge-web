@@ -1,8 +1,9 @@
 import {
     ADD_TRANSACTION,
-    UPDATE_CONFIRMATIONS
+    UPDATE_CONFIRMATIONS,
+    SET_TRANSACTION_STATUS
 } from '../actionsTypes/transactions';
-import { Transaction } from '../reducers/transactions';
+import { Transaction, TransactionStatus } from '../reducers/transactions';
 
 export interface AddTransactionPayload { type: string, transaction: Transaction };
 export const addTransaction = (transaction: Transaction): AddTransactionPayload => ({
@@ -16,3 +17,11 @@ export const updateConfirmations = (hash: string, confirmations: number): Update
     hash,
     confirmations
 });
+
+export interface SetTransactionStatusPayload { type: string, status: TransactionStatus}
+export const setTransactionStatus = (status: TransactionStatus): SetTransactionStatusPayload => (
+    {
+        type: SET_TRANSACTION_STATUS,
+        status
+    }
+)

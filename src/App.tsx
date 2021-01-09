@@ -17,7 +17,7 @@ import { useDispatch } from 'react-redux';
 
 import { setNet } from './redux/actions';
 import { NetState } from './redux/reducers/net';
-import { TransactionsState } from './redux/reducers/transactions';
+import { Transaction, TransactionsState, TransactionStatus } from './redux/reducers/transactions';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
@@ -63,17 +63,14 @@ function BridgeApp(props: Props) {
     );
   }
 
-  // Used to show Transaction Pending component
-  const isTransactionPending = false;
-  console.log('is transactionpending: ', isTransactionPending)
-
-  // let pendingTransaction = props.transactions.transactions.
-
+  // only 1 for now
+  let pendingTransaction: Transaction = props.transactions.transactions[0] //&& pendingTransactions(props.transactions.transactions)
+  
   return (
     <main>
       <Nav net={net.client} transactions={props.transactions} />
-      {isTransactionPending ? (
-        <PendingTransactionsUI />
+      {pendingTransaction ? (
+        <PendingTransactionsUI transaction={pendingTransaction} />
       ) : (
         <Bridge
           net={net.client!}

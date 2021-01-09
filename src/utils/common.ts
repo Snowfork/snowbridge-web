@@ -48,16 +48,10 @@ export function formatToDecimalString(
  *
  * Returns number of pending (confirming) transactions
  *
- * @param {number} value The value that is going to be displayed
- * @param {number} [decimalPlaces=2] The number of decimal spaces to use
- * @returns {string} The formatted number
- * @example
- *
- * formatToDecimalString(20, 2)
- * // returns "20.00"
- *
+ * @param {Transaction[]} transactions The list of transactions to check
+ * @returns {number} The number of pending transactions
+
  */
-// 
 export const pendingTransactions = (transactions: Transaction[]) => {
   return transactions.filter(
     (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,

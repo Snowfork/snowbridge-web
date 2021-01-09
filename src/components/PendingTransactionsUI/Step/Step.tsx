@@ -5,8 +5,15 @@ import LoadingSpinner from '../LoadingSpinner';
 const CIRCLE_SIZE = 30;
 
 type StyledProps = {
-  currentState: string;
+  status: StepStatus
 };
+
+export enum StepStatus {
+  PENDING,
+  HOVERING,
+  LOADING,
+  COMPLETE
+}
 
 const Wrapper = styled.div<StyledProps>`
   display: flex;
@@ -20,22 +27,34 @@ const Wrapper = styled.div<StyledProps>`
   height: ${CIRCLE_SIZE}px;
   box-sizing: border-box;
   background-color: ${(props) =>
-    props.currentState === 'complete' ? 'green' : 'white'};
+    props.status === StepStatus.COMPLETE ? 'green' : 'white'};
 `;
 
 type Props = {
-  currentState: string;
+  status: StepStatus
+  children?: object | string
 };
 
-function Step({ currentState }: Props): React.ReactElement<Props> {
-  if (currentState === 'loading') {
+function stepContent(status: StepStatus, children?: object | string) {
+  if (status === StepStatus.PENDING) {
+    return null
+  }
+  if (status === StepStatus.LOADING && children) {
+    return children
+  }
+  if (status === StepStatus.LOADING) {
+    return <LoadingSpinner/>
+  }
+}
+
+function Step({ status, children }: Props): React.ReactElement<Props> {
     return (
-      <Wrapper currentState={currentState}>
-        <LoadingSpinner />
+      <Wrapper
+        status={status}
+      >
+        {stepContent(status, children)}
       </Wrapper>
     );
-  }
-  return <Wrapper currentState={currentState}></Wrapper>;
 }
 
 export default Step;

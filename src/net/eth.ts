@@ -21,7 +21,7 @@ import {
   setMetamaskMissing,
   setMetamaskNetwork,
 } from '../redux/actions';
-import { addTransaction, updateConfirmations } from '../redux/actions/transactions';
+import { addTransaction, setTransactionStatus, updateConfirmations } from '../redux/actions/transactions';
 import { TransactionStatus } from '../redux/reducers/transactions';
 
 // Eth API connector
@@ -111,6 +111,7 @@ export default class Eth extends Api {
             })
             .on('sending', function (payload: any) {
               console.log('Sending Transaction');
+              dispatch(setTransactionStatus(TransactionStatus.SUBMITTING_TO_ETHEREUM))
             })
             .on('sent', function (payload: any) {
               console.log('Transaction sent');
