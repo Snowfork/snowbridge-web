@@ -21,6 +21,8 @@ import {
   setMetamaskMissing,
   setMetamaskNetwork,
 } from '../redux/actions';
+import { addTransaction, updateConfirmations } from '../redux/actions/transactions';
+import { TransactionStatus } from '../redux/reducers/transactions';
 
 // Eth API connector
 type Connector = (e: Eth, net: any) => void;
@@ -88,7 +90,7 @@ export default class Eth extends Api {
   }
 
   // Send ETH To Default Polkadot Account
-  public async send_eth(amount: string) {
+  public async send_eth(dispatch: Dispatch, amount: string) {
     try {
       const self: Eth = this;
       let default_address = await self.get_address();
@@ -116,14 +118,16 @@ export default class Eth extends Api {
             .on('transactionHash', function (hash: string) {
               transactionHash = hash;
 
-              self.net.addTransaction({
+              dispatch(addTransaction({
                 hash,
                 confirmations: 0,
                 chain: 'eth',
                 sender: self.net.ethAddress,
                 receiver: self.net.polkadotAddress,
                 amount: amount,
-              });
+                status: TransactionStatus.WAITING_FOR_CONFIRMATION
+              })
+            )
             })
             .on(
               'confirmation',
@@ -138,7 +142,7 @@ export default class Eth extends Api {
                 console.log(latestBlockHash);
 
                 // update transaction confirmations
-                self.net.updateConfirmations(transactionHash, confirmation);
+                dispatch(updateConfirmations(transactionHash, confirmation))
               },
             )
             .on('error', function (error: Error) {

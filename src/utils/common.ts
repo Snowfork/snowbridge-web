@@ -1,3 +1,6 @@
+import { REQUIRED_ETH_CONFIRMATIONS } from "../config";
+import { Transaction } from "../redux/reducers/transactions";
+
 /**
  * Shortens a wallet address, showing X number of letters, an ellipsis, and then Y number of letters
  * @param {string} str The wallet address as a string
@@ -38,4 +41,25 @@ export function formatToDecimalString(
   return Number(
     Math.round(parseFloat(value + 'e' + decimalPlaces)) + 'e-' + decimalPlaces,
   ).toFixed(decimalPlaces);
+}
+
+
+/**
+ *
+ * Returns number of pending (confirming) transactions
+ *
+ * @param {number} value The value that is going to be displayed
+ * @param {number} [decimalPlaces=2] The number of decimal spaces to use
+ * @returns {string} The formatted number
+ * @example
+ *
+ * formatToDecimalString(20, 2)
+ * // returns "20.00"
+ *
+ */
+// 
+export const pendingTransactions = (transactions: Transaction[]) => {
+  return transactions.filter(
+    (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
+  ).length;
 }

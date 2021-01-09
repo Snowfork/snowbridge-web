@@ -16,12 +16,15 @@ import Net, { isConnected } from './net';
 import { useDispatch } from 'react-redux';
 
 import { setNet } from './redux/actions';
+import { NetState } from './redux/reducers/net';
+import { TransactionsState } from './redux/reducers/transactions';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
 type Props = {
   net: any;
+  transactions: TransactionsState;
 };
 
 function BridgeApp(props: Props) {
@@ -39,7 +42,7 @@ function BridgeApp(props: Props) {
     };
 
     start();
-  }, []);
+  }, [dispatch]);
 
   // Check if Network has been started
   if (!isConnected(net.client)) {
@@ -62,10 +65,13 @@ function BridgeApp(props: Props) {
 
   // Used to show Transaction Pending component
   const isTransactionPending = false;
+  console.log('is transactionpending: ', isTransactionPending)
+
+  // let pendingTransaction = props.transactions.transactions.
 
   return (
     <main>
-      <Nav net={net.client} />
+      <Nav net={net.client} transactions={props.transactions} />
       {isTransactionPending ? (
         <PendingTransactionsUI />
       ) : (
@@ -79,8 +85,8 @@ function BridgeApp(props: Props) {
   );
 }
 
-const mapStateToProps = (state: any) => {
-  return { net: state.net };
+const mapStateToProps = (state: Props): {net: NetState, transactions: TransactionsState } => {
+  return { net: state.net, transactions: state.transactions };
 };
 
 export default connect(mapStateToProps)(BridgeApp);

@@ -13,9 +13,11 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
+import { TransactionsState } from '../../redux/reducers/transactions';
 
 type Props = {
   net: Net;
+  transactions: TransactionsState
 };
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -30,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-function Nav({ net }: Props): React.ReactElement<Props> {
+function Nav({ net, transactions }: Props): React.ReactElement<Props> {
   const classes = useStyles();
 
   const [polkadotAccIndex, setPolkadotAccIndex] = useState(0);
@@ -107,7 +109,7 @@ function Nav({ net }: Props): React.ReactElement<Props> {
             </Modal>
           )}
         </S.DisplayWrapper>
-        <TransactionMenu net={net} />
+        <TransactionMenu net={net} transactions={transactions} />
       </S.CurrencyList>
     </S.Wrapper>
   );
