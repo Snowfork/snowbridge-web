@@ -1,4 +1,5 @@
 import React from 'react';
+import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { Transaction, TransactionStatus } from '../../redux/reducers/transactions';
 import * as S from './PendingTransactionsUI.style';
 import Step, {StepStatus} from './Step/Step';
@@ -18,6 +19,14 @@ function getStepStatus(transaction: Transaction, step: TransactionStatus) : Step
   return StepStatus.PENDING
 }
 
+function confirmationCount(transaction: Transaction) {
+  if (transaction.confirmations === 0) {
+    return null
+  }
+
+  return `${transaction.confirmations}/${REQUIRED_ETH_CONFIRMATIONS}` 
+}
+
 function PendingTransactionsUI({transaction}: Props) {
   return (
     <S.Wrapper>
@@ -26,13 +35,13 @@ function PendingTransactionsUI({transaction}: Props) {
         <S.StyledLine />
         <Step status={getStepStatus(transaction, TransactionStatus.WAITING_FOR_CONFIRMATION)} />
         <S.StyledLine />
-        <Step status={getStepStatus(transaction, TransactionStatus.CONFIRMED_ON_ETHEREUM)} >
-          {transaction.confirmations.toString()}
+        <Step status={getStepStatus(transaction, TransactionStatus.CONFIRMING)} >
+          {confirmationCount(transaction)}
         </Step>
         <S.StyledLine />
         <Step status={getStepStatus(transaction, TransactionStatus.WAITING_FOR_RELAY)} />
         <S.StyledLine />
-        <Step status={StepStatus.PENDING} />
+        <Step status={getStepStatus(transaction, TransactionStatus.FINALIZED-1)} />
       </S.Container>
     </S.Wrapper>
   );

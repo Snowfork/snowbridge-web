@@ -8,6 +8,7 @@ import Net from './';
 import {
   APP_ETH_CONTRACT_ADDRESS,
   APP_ERC20_CONTRACT_ADDRESS,
+  REQUIRED_ETH_CONFIRMATIONS,
 } from '../config';
 
 /* tslint:disable */
@@ -110,11 +111,12 @@ export default class Eth extends Api {
               value: self.conn.utils.toWei(amount, 'ether'),
             })
             .on('sending', function (payload: any) {
-              console.log('Sending Transaction');
-              dispatch(setTransactionStatus(TransactionStatus.SUBMITTING_TO_ETHEREUM))
+              console.log('Sending Transaction', payload);
+              // dispatch(setTransactionStatus(TransactionStatus.SUBMITTING_TO_ETHEREUM))
+
             })
             .on('sent', function (payload: any) {
-              console.log('Transaction sent');
+              console.log('Transaction sent', payload);
             })
             .on('transactionHash', function (hash: string) {
               transactionHash = hash;
@@ -142,8 +144,13 @@ export default class Eth extends Api {
                 console.log('----------- Block ------------');
                 console.log(latestBlockHash);
 
+                dispatch(updateConfirmations(transactionHash, confirmation));
+                if (confirmation >= REQUIRED_ETH_CONFIRMATIONS ){
                 // update transaction confirmations
-                dispatch(updateConfirmations(transactionHash, confirmation))
+                dispatch(setTransactionStatus(transactionHash, TransactionStatus.CONFIRMED_ON_ETHEREUM))
+              } else {
+                  dispatch(setTransactionStatus(transactionHash, TransactionStatus.CONFIRMING))
+                }
               },
             )
             .on('error', function (error: Error) {

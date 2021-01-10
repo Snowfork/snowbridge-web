@@ -18,10 +18,11 @@ export const updateConfirmations = (hash: string, confirmations: number): Update
     confirmations
 });
 
-export interface SetTransactionStatusPayload { type: string, status: TransactionStatus}
-export const setTransactionStatus = (status: TransactionStatus): SetTransactionStatusPayload => (
+export interface SetTransactionStatusPayload { type: string, hash: string, status: TransactionStatus}
+export const setTransactionStatus = (hash: string, status: TransactionStatus): SetTransactionStatusPayload => (
     {
         type: SET_TRANSACTION_STATUS,
+        hash,
         status
     }
 )

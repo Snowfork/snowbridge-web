@@ -32,10 +32,10 @@ const Wrapper = styled.div<StyledProps>`
 
 type Props = {
   status: StepStatus
-  children?: object | string
+  children?: object | string | null
 };
 
-function stepContent(status: StepStatus, children?: object | string) {
+function stepContent(status: StepStatus, children?: object | string | null) {
   if (status === StepStatus.PENDING) {
     return null
   }

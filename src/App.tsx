@@ -64,25 +64,26 @@ function BridgeApp(props: Props) {
   }
 
   // only 1 for now
-  let pendingTransaction: Transaction = props.transactions.transactions[0] //&& pendingTransactions(props.transactions.transactions)
-  
+  let pendingTransaction: Transaction =
+  props.transactions.transactions[0]
+
   return (
     <main>
       <Nav net={net.client} transactions={props.transactions} />
       {pendingTransaction ? (
         <PendingTransactionsUI transaction={pendingTransaction} />
       ) : (
-        <Bridge
-          net={net.client!}
-          polkadotAddress={net.client.polkadotAddress}
-          ethAddress={net.client.ethAddress}
-        />
-      )}
+          <Bridge
+            net={net.client!}
+            polkadotAddress={net.client.polkadotAddress}
+            ethAddress={net.client.ethAddress}
+          />
+        )}
     </main>
   );
 }
 
-const mapStateToProps = (state: Props): {net: NetState, transactions: TransactionsState } => {
+const mapStateToProps = (state: Props): { net: NetState, transactions: TransactionsState } => {
   return { net: state.net, transactions: state.transactions };
 };
 

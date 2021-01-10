@@ -103,7 +103,7 @@ export default function TransactionMenu({
             <td align="left">Amount</td>
           </tr>
           <tbody>
-            {transactions?.map((t) => (
+            {transactions.map((t) => (
               <tr key={t.hash}>
                 <td scope="row" align="left">
                   <TransactionHash

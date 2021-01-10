@@ -1,16 +1,18 @@
 import {
   ADD_TRANSACTION,
-  UPDATE_CONFIRMATIONS
+  UPDATE_CONFIRMATIONS,
+  SET_TRANSACTION_STATUS
 } from '../actionsTypes/transactions';
-import {AddTransactionPayload, UpdateConfirmationsPayload} from '../actions/transactions'
+import { AddTransactionPayload, SetTransactionStatusPayload, UpdateConfirmationsPayload } from '../actions/transactions'
 
 export enum TransactionStatus {
     SUBMITTING_TO_ETHEREUM = 0,
     WAITING_FOR_CONFIRMATION = 1,
-    CONFIRMED_ON_ETHEREUM = 2,
-    WAITING_FOR_RELAY = 3,
-    RELAYED = 4,
-    FINALIZED = 5
+    CONFIRMING = 2,
+    CONFIRMED_ON_ETHEREUM = 3,
+    WAITING_FOR_RELAY = 4,
+    RELAYED = 5,
+    FINALIZED = 6
 }
 
 export interface Transaction {
@@ -31,7 +33,7 @@ const initialState: TransactionsState = {
     transactions: []
 };
 
-function transactionsReducer(state = initialState, action: any) {
+function transactionsReducer(state: TransactionsState = initialState, action: any) {
   switch (action.type) {
     case ADD_TRANSACTION: {
       return ((action: AddTransactionPayload) => { 
@@ -42,13 +44,15 @@ function transactionsReducer(state = initialState, action: any) {
     }
     case UPDATE_CONFIRMATIONS: {
       return ((action: UpdateConfirmationsPayload) => {
-        let transaction = state.transactions.filter((t) => t.hash === action.hash)[0];
-
-        if (transaction.confirmations !== action.confirmations) {
-          transaction.confirmations = action.confirmations;
-        }
         return Object.assign({}, state, {
-          transactions: {...state.transactions, transaction} 
+          transactions: state.transactions.map((t) => t.hash === action.hash ? {...t, confirmations: action.confirmations} : t)
+        });
+      })(action)
+    }
+    case SET_TRANSACTION_STATUS: {
+      return ((action: SetTransactionStatusPayload) => {
+           return Object.assign({}, state, {
+          transactions: state.transactions.map((t) => t.hash === action.hash ? { ...t, status: action.status } : t)
         });
       })(action)
     }
