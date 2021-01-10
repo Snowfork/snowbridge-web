@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import LoadingSpinner from '../LoadingSpinner';
 
@@ -35,9 +35,18 @@ const Link = styled.a`
     height: 100%;
 `
 
+const ToolTip = styled.div<{ show: boolean }>`
+    background: white;
+    color: black;
+    border: 1px solid black;
+    width: fit-content;
+    opacity: ${({show}) => show ? 1 : 0};
+`;
+
 type Props = {
   status: StepStatus,
   href?: string,
+  toolTip?: object | string | null,
   children?: object | string | null
 };
 
@@ -53,13 +62,19 @@ function stepContent(status: StepStatus, children?: object | string | null) {
   }
 }
 
-function Step({ status, children, href }: Props): React.ReactElement<Props> {
+
+function Step({ status, children, href, toolTip }: Props): React.ReactElement<Props> {
+  let [showToolTip, setShowToolTip] = useState(false);
+
     return (
       <Wrapper
         status={status}
       >
-        <Link href={href} target="_blank" >
+        <Link href={href} target="_blank" onMouseOver={() => setShowToolTip(true)} onMouseOut={() => setShowToolTip(false)}>
           {stepContent(status, children)}
+          <ToolTip show={showToolTip}>
+            { toolTip }
+          </ToolTip>
         </Link>
       </Wrapper>
     );
