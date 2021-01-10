@@ -1,5 +1,5 @@
 import React from 'react';
-import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
+import { BLOCK_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { Transaction, TransactionStatus } from '../../redux/reducers/transactions';
 import * as S from './PendingTransactionsUI.style';
 import Step, {StepStatus} from './Step/Step';
@@ -27,15 +27,28 @@ function confirmationCount(transaction: Transaction) {
   return `${transaction.confirmations}/${REQUIRED_ETH_CONFIRMATIONS}` 
 }
 
+function getEtherscanLink(transaction: Transaction) {
+  return `${BLOCK_EXPLORER_URL}/tx/${transaction.hash}`
+}
+
 function PendingTransactionsUI({transaction}: Props) {
   return (
     <S.Wrapper>
       <S.Container>
-        <Step status={getStepStatus(transaction, TransactionStatus.SUBMITTING_TO_ETHEREUM)} />
+        <Step
+          status={getStepStatus(transaction, TransactionStatus.SUBMITTING_TO_ETHEREUM)}
+          href={getEtherscanLink(transaction)}
+        />
         <S.StyledLine />
-        <Step status={getStepStatus(transaction, TransactionStatus.WAITING_FOR_CONFIRMATION)} />
+        <Step
+          status={getStepStatus(transaction, TransactionStatus.WAITING_FOR_CONFIRMATION)}
+          href={getEtherscanLink(transaction)}
+        />
         <S.StyledLine />
-        <Step status={getStepStatus(transaction, TransactionStatus.CONFIRMING)} >
+        <Step
+          status={getStepStatus(transaction, TransactionStatus.CONFIRMING)}
+          href={getEtherscanLink(transaction)}
+        >
           {confirmationCount(transaction)}
         </Step>
         <S.StyledLine />

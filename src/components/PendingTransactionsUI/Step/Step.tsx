@@ -30,8 +30,14 @@ const Wrapper = styled.div<StyledProps>`
     props.status === StepStatus.COMPLETE ? 'green' : 'white'};
 `;
 
+const Link = styled.a`
+    width: 100%;
+    height: 100%;
+`
+
 type Props = {
-  status: StepStatus
+  status: StepStatus,
+  href?: string,
   children?: object | string | null
 };
 
@@ -47,12 +53,14 @@ function stepContent(status: StepStatus, children?: object | string | null) {
   }
 }
 
-function Step({ status, children }: Props): React.ReactElement<Props> {
+function Step({ status, children, href }: Props): React.ReactElement<Props> {
     return (
       <Wrapper
         status={status}
       >
-        {stepContent(status, children)}
+        <Link href={href} target="_blank" >
+          {stepContent(status, children)}
+        </Link>
       </Wrapper>
     );
 }
