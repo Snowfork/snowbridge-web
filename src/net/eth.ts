@@ -22,7 +22,11 @@ import {
   setMetamaskMissing,
   setMetamaskNetwork,
 } from '../redux/actions';
-import { addTransaction, setTransactionStatus, updateConfirmations } from '../redux/actions/transactions';
+import {
+  addTransaction,
+  setTransactionStatus,
+  updateConfirmations,
+} from '../redux/actions/transactions';
 import { TransactionStatus } from '../redux/reducers/transactions';
 
 // Eth API connector
@@ -113,7 +117,6 @@ export default class Eth extends Api {
             .on('sending', function (payload: any) {
               console.log('Sending Transaction', payload);
               // dispatch(setTransactionStatus(TransactionStatus.SUBMITTING_TO_ETHEREUM))
-
             })
             .on('sent', function (payload: any) {
               console.log('Transaction sent', payload);
@@ -121,16 +124,17 @@ export default class Eth extends Api {
             .on('transactionHash', function (hash: string) {
               transactionHash = hash;
 
-              dispatch(addTransaction({
-                hash,
-                confirmations: 0,
-                chain: 'eth',
-                sender: self.net.ethAddress,
-                receiver: self.net.polkadotAddress,
-                amount: amount,
-                status: TransactionStatus.WAITING_FOR_CONFIRMATION
-              })
-            )
+              dispatch(
+                addTransaction({
+                  hash,
+                  confirmations: 0,
+                  chain: 'eth',
+                  sender: self.net.ethAddress,
+                  receiver: self.net.polkadotAddress,
+                  amount: amount,
+                  status: TransactionStatus.WAITING_FOR_CONFIRMATION,
+                }),
+              );
             })
             .on(
               'confirmation',
@@ -145,11 +149,21 @@ export default class Eth extends Api {
                 console.log(latestBlockHash);
 
                 dispatch(updateConfirmations(transactionHash, confirmation));
-                if (confirmation >= REQUIRED_ETH_CONFIRMATIONS ){
-                // update transaction confirmations
-                dispatch(setTransactionStatus(transactionHash, TransactionStatus.CONFIRMED_ON_ETHEREUM))
-              } else {
-                  dispatch(setTransactionStatus(transactionHash, TransactionStatus.CONFIRMING))
+                if (confirmation >= REQUIRED_ETH_CONFIRMATIONS) {
+                  // update transaction confirmations
+                  dispatch(
+                    setTransactionStatus(
+                      transactionHash,
+                      TransactionStatus.CONFIRMED_ON_ETHEREUM,
+                    ),
+                  );
+                } else {
+                  dispatch(
+                    setTransactionStatus(
+                      transactionHash,
+                      TransactionStatus.CONFIRMING,
+                    ),
+                  );
                 }
               },
             )

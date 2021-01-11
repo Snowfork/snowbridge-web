@@ -17,7 +17,11 @@ import { useDispatch } from 'react-redux';
 
 import { setNet } from './redux/actions';
 import { NetState } from './redux/reducers/net';
-import { Transaction, TransactionsState, TransactionStatus } from './redux/reducers/transactions';
+import {
+  Transaction,
+  TransactionsState,
+  TransactionStatus,
+} from './redux/reducers/transactions';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
@@ -64,8 +68,7 @@ function BridgeApp(props: Props) {
   }
 
   // only 1 for now
-  let pendingTransaction: Transaction =
-  props.transactions.transactions[0]
+  let pendingTransaction: Transaction = props.transactions.transactions[0];
 
   return (
     <main>
@@ -73,17 +76,19 @@ function BridgeApp(props: Props) {
       {pendingTransaction ? (
         <PendingTransactionsUI transaction={pendingTransaction} />
       ) : (
-          <Bridge
-            net={net.client!}
-            polkadotAddress={net.client.polkadotAddress}
-            ethAddress={net.client.ethAddress}
-          />
-        )}
+        <Bridge
+          net={net.client!}
+          polkadotAddress={net.client.polkadotAddress}
+          ethAddress={net.client.ethAddress}
+        />
+      )}
     </main>
   );
 }
 
-const mapStateToProps = (state: Props): { net: NetState, transactions: TransactionsState } => {
+const mapStateToProps = (
+  state: Props,
+): { net: NetState; transactions: TransactionsState } => {
   return { net: state.net, transactions: state.transactions };
 };
 
