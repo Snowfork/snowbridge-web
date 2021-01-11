@@ -39,11 +39,13 @@ export default class Eth extends Api {
   public eth_contract?: Contract;
   public erc20_contract?: Contract;
   private net: Net;
+  public dispatch: Dispatch;
 
-  constructor(connecter: Connector, net: Net) {
+  constructor(connecter: Connector, net: Net, dispatch: Dispatch) {
     super();
     this.net = net;
     connecter(this, net);
+    this.dispatch = dispatch;
   }
 
   // Get default web3 account
@@ -91,7 +93,7 @@ export default class Eth extends Api {
   }
 
   // Send ETH To Default Polkadot Account
-  public async send_eth(dispatch: Dispatch, amount: string) {
+  public async send_eth(amount: string) {
     try {
       const self: Eth = this;
       let default_address = await self.get_address();
@@ -113,6 +115,7 @@ export default class Eth extends Api {
             .on('sending', function (payload: any) {
               console.log('Sending Transaction', payload);
               // dispatch(setTransactionStatus(TransactionStatus.SUBMITTING_TO_ETHEREUM))
+              //TODO: use nonce as ID 
 
             })
             .on('sent', function (payload: any) {
@@ -121,14 +124,16 @@ export default class Eth extends Api {
             .on('transactionHash', function (hash: string) {
               transactionHash = hash;
 
-              dispatch(addTransaction({
+              self.dispatch(addTransaction({
                 hash,
                 confirmations: 0,
                 chain: 'eth',
                 sender: self.net.ethAddress,
                 receiver: self.net.polkadotAddress,
                 amount: amount,
-                status: TransactionStatus.WAITING_FOR_CONFIRMATION
+                status: TransactionStatus.WAITING_FOR_CONFIRMATION,
+                isMinted: false,
+                isBurned: false,
               })
             )
             })
@@ -144,12 +149,12 @@ export default class Eth extends Api {
                 console.log('----------- Block ------------');
                 console.log(latestBlockHash);
 
-                dispatch(updateConfirmations(transactionHash, confirmation));
+                self.dispatch(updateConfirmations(transactionHash, confirmation));
                 if (confirmation >= REQUIRED_ETH_CONFIRMATIONS ){
                 // update transaction confirmations
-                dispatch(setTransactionStatus(transactionHash, TransactionStatus.CONFIRMED_ON_ETHEREUM))
+                self.dispatch(setTransactionStatus(transactionHash, TransactionStatus.CONFIRMED_ON_ETHEREUM))
               } else {
-                  dispatch(setTransactionStatus(transactionHash, TransactionStatus.CONFIRMING))
+                  self.dispatch(setTransactionStatus(transactionHash, TransactionStatus.CONFIRMING))
                 }
               },
             )
@@ -198,10 +203,11 @@ export default class Eth extends Api {
     }
   }
 
+  
+
   // Web3 API connector
   public static async connect(dispatch: Dispatch): Promise<Connector> {
     let locWindow = window as MyWindow;
-
     let web3: Web3;
 
     const connectionComplete = (web3: any) => {

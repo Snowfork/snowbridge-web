@@ -12,11 +12,11 @@ export default class Net {
 
   // Start net
   public async start(dispatch: Dispatch) {
-    let eth = new Eth(await Eth.connect(dispatch), this);
+    let eth = new Eth(await Eth.connect(dispatch), this, dispatch);
     let ethAddress = await eth.get_address();
     let ethBalance = await eth.get_balance();
-    let polkadot = new Polkadot(await Polkadot.connect(dispatch), this);
-    let polkadotAddresses = await polkadot.get_addresses(dispatch);
+    let polkadot = new Polkadot(await Polkadot.connect(dispatch), this, dispatch);
+    let polkadotAddresses = await polkadot.get_addresses();
     let firstPolkadotAddress =
       polkadotAddresses && polkadotAddresses[0] && polkadotAddresses[0].address;
     let polkadotEthBalance;

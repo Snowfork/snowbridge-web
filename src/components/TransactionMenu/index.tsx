@@ -1,9 +1,9 @@
-import React, { useState, ReactNode } from 'react';
+import React from 'react';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Modal from '../Modal';
 import styled from 'styled-components';
-import {Transaction, TransactionsState} from '../../redux/reducers/transactions'
+import { Transaction, TransactionsState} from '../../redux/reducers/transactions'
 import Net from '../../net';
 import { pendingTransactions, shortenWalletAddress } from '../../utils/common';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
