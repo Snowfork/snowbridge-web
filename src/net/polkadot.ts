@@ -5,7 +5,7 @@ import {
   web3Enable,
   web3FromSource,
 } from '@polkadot/extension-dapp';
-import { formatBalance } from '@polkadot/util';
+
 import { evmToAddress } from '@polkadot/util-crypto';
 import { Dispatch } from 'redux';
 
@@ -70,7 +70,10 @@ export default class Polkadot extends Api {
           );
 
           if ((accountData as AssetAccountData).free) {
-            return web3.utils.fromWei((accountData as AssetAccountData).free, 'ether');
+            return web3.utils.fromWei(
+              (accountData as AssetAccountData).free,
+              'ether',
+            );
           }
         }
 
@@ -89,11 +92,10 @@ export default class Polkadot extends Api {
 
     if (self.conn) {
       const account = await self.get_default_address();
-      const recepient = evmToAddress(self.net.ethAddress);
+      const recepient = self.net.ethAddress;
 
       if (account) {
-
-        const polkaWeiValue = web3.utils.toWei(amount, 'ether')
+        const polkaWeiValue = web3.utils.toWei(amount, 'ether');
 
         const transferExtrinsic = self.conn.tx.eth.burn(
           recepient,
@@ -127,6 +129,47 @@ export default class Polkadot extends Api {
       } else {
         throw new Error('Default Polkadot account not found');
       }
+    } else {
+      throw new Error('Polkadot API not connected');
+    }
+  }
+
+  // Subscribe to Parachain events
+  public async subscribeEvents() {
+    if (this.conn) {
+      this.conn.query.system.events((events) => {
+        console.log(`\nReceived ${events.length} events`);
+        console.log({ events });
+        // Loop through the events in the current block
+        events.forEach((record) => {
+          const { event } = record;
+
+          // Checks if the parachain emited event is for a Minted asset
+          if (event.section === 'asset' && event.method === 'Minted') {
+            console.log('Got Assets.Minted event');
+
+            // Notify local transaction object the asset is minted
+            this.net.polkaEthMinted({
+              // Receiver of the sent PolkaEth
+              AccountId: event.data[1].toString(),
+              // PolkaEth amount
+              amount: event.data[2].toString(),
+            });
+
+            // Checks if the parachain emited event is for a burned
+          } else if (event.section === 'asset' && event.method === 'Burned') {
+            console.log('Got Assets.Burned event');
+
+            // Notify local transaction object the asset is burned
+            this.net.polkaEthBurned({
+              AccountId: event.data[1].toString(),
+              amount: event.data[2].toString(),
+            });
+          }
+
+          // TODO: update new Polkadot account balance
+        });
+      });
     } else {
       throw new Error('Polkadot API not connected');
     }
@@ -167,6 +210,10 @@ export default class Polkadot extends Api {
 
       return async (polkadot: Polkadot) => {
         polkadot.conn = api;
+
+        // Here we subscribe to the parachain events
+        await polkadot.subscribeEvents();
+
         console.log('- Polkadot API endpoint connected');
       };
     } catch (err) {
