@@ -17,7 +17,7 @@ import { TransactionsState } from '../../redux/reducers/transactions';
 
 type Props = {
   net: Net;
-  transactions: TransactionsState
+  transactions: TransactionsState;
 };
 
 const useStyles = makeStyles((theme: Theme) =>

@@ -1,4 +1,4 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Modal from '../Modal';
@@ -10,6 +10,7 @@ import {
 import Net from '../../net';
 import { pendingTransactions, shortenWalletAddress } from '../../utils/common';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
+import PendingTransactionsUI from '../PendingTransactionsUI';
 
 type Props = {
   net: Net;
@@ -33,8 +34,12 @@ export default function TransactionMenu({
   net,
   transactions: { transactions },
 }: Props): React.ReactElement<Props> {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [
+    isPendingTransactionUIModalOpen,
+    setPendingTransactionUIModalOpen,
+  ] = useState(false);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -52,8 +57,21 @@ export default function TransactionMenu({
     setIsModalOpen(false);
   };
 
+  // Pending Transaction UI
+  useEffect(() => {
+    console.log('USEEFFECT TRIGGER');
+    console.log(isPendingTransactionUIModalOpen);
+  }, [isPendingTransactionUIModalOpen]);
+
+  const openPendingTransactionUIModal = () => {
+    setPendingTransactionUIModalOpen(true);
+  };
+  const closePendingTransactionUIModal = () => {
+    setPendingTransactionUIModalOpen(false);
+    console.log('Closing: ', isPendingTransactionUIModalOpen);
+  };
   const handleTransactionClick = () => {
-    console.log('Click');
+    openPendingTransactionUIModal();
   };
 
   // All transactions modal button
@@ -71,11 +89,7 @@ export default function TransactionMenu({
   // Informs the user when there is 0 Transactions Available
   function ZeroTransactions() {
     if (transactions.length === 0) {
-      return (
-        <MenuItem onClick={handleTransactionClick}>
-          0 Transactions Available!
-        </MenuItem>
-      );
+      return <MenuItem>0 Transactions Available!</MenuItem>;
     }
     return null;
   }
@@ -89,8 +103,13 @@ export default function TransactionMenu({
     }
 
     return (
-      <MenuItem>
+      <MenuItem onClick={handleTransactionClick}>
         <label>
+          <PendingTransactionsUI
+            transaction={transaction}
+            isOpen={isPendingTransactionUIModalOpen}
+            closeModal={closePendingTransactionUIModal}
+          />
           <small style={{ marginRight: '10em', color: color }}>
             ({transaction.confirmations} confirmations)
           </small>

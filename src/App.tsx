@@ -32,22 +32,9 @@ type Props = {
 };
 
 function BridgeApp(props: Props) {
-  const [
-    isPendingTransactionUIModalOpen,
-    setPendingTransactionUIModalOpen,
-  ] = useState(false);
-
   const { net } = props;
 
   const dispatch = useDispatch();
-
-  // Pending Transaction UI
-  const openPendingTransactionUIModal = () => {
-    setPendingTransactionUIModalOpen(true);
-  };
-  const closePendingTransactionUIModal = () => {
-    setPendingTransactionUIModalOpen(false);
-  };
 
   // Start Network
   useEffect(() => {
@@ -86,7 +73,11 @@ function BridgeApp(props: Props) {
   return (
     <main>
       <Nav net={net.client} transactions={props.transactions} />
-      <button>test</button>
+      {/* <PendingTransactionsUI
+        transaction={pendingTransaction}
+        isOpen={false}
+        closeModal={() => console.log('yes')}
+      /> */}
       {/* {pendingTransaction ? (
         <PendingTransactionsUI transaction={pendingTransaction} />
       ) : (
