@@ -3,14 +3,17 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Modal from '../Modal';
 import styled from 'styled-components';
-import {Transaction, TransactionsState} from '../../redux/reducers/transactions'
+import {
+  Transaction,
+  TransactionsState,
+} from '../../redux/reducers/transactions';
 import Net from '../../net';
 import { pendingTransactions, shortenWalletAddress } from '../../utils/common';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 
 type Props = {
   net: Net;
-  transactions: TransactionsState
+  transactions: TransactionsState;
 };
 
 const Table = styled.table`
@@ -28,7 +31,7 @@ const TD = styled.td`
 
 export default function TransactionMenu({
   net,
-  transactions : { transactions }
+  transactions: { transactions },
 }: Props): React.ReactElement<Props> {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -49,6 +52,10 @@ export default function TransactionMenu({
     setIsModalOpen(false);
   };
 
+  const handleTransactionClick = () => {
+    console.log('Click');
+  };
+
   // All transactions modal button
   function AllTransactionsBtn() {
     if (transactions.length > 0) {
@@ -61,11 +68,14 @@ export default function TransactionMenu({
     return null;
   }
 
-
   // Informs the user when there is 0 Transactions Available
   function ZeroTransactions() {
     if (transactions.length === 0) {
-      return <MenuItem>0 Transactions Available!</MenuItem>;
+      return (
+        <MenuItem onClick={handleTransactionClick}>
+          0 Transactions Available!
+        </MenuItem>
+      );
     }
     return null;
   }
@@ -146,7 +156,8 @@ export default function TransactionMenu({
         onClick={handleClick}
       >
         Transactions
-        {pendingTransactions(transactions) > 0 && ` (${pendingTransactions(transactions)})`}
+        {pendingTransactions(transactions) > 0 &&
+          ` (${pendingTransactions(transactions)})`}
       </button>
       <Menu
         id="simple-menu"

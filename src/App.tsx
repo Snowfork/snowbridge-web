@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // external imports
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactModal from 'react-modal';
 
 import { connect } from 'react-redux';
@@ -32,9 +32,22 @@ type Props = {
 };
 
 function BridgeApp(props: Props) {
+  const [
+    isPendingTransactionUIModalOpen,
+    setPendingTransactionUIModalOpen,
+  ] = useState(false);
+
   const { net } = props;
 
   const dispatch = useDispatch();
+
+  // Pending Transaction UI
+  const openPendingTransactionUIModal = () => {
+    setPendingTransactionUIModalOpen(true);
+  };
+  const closePendingTransactionUIModal = () => {
+    setPendingTransactionUIModalOpen(false);
+  };
 
   // Start Network
   useEffect(() => {
@@ -73,7 +86,8 @@ function BridgeApp(props: Props) {
   return (
     <main>
       <Nav net={net.client} transactions={props.transactions} />
-      {pendingTransaction ? (
+      <button>test</button>
+      {/* {pendingTransaction ? (
         <PendingTransactionsUI transaction={pendingTransaction} />
       ) : (
         <Bridge
@@ -81,7 +95,12 @@ function BridgeApp(props: Props) {
           polkadotAddress={net.client.polkadotAddress}
           ethAddress={net.client.ethAddress}
         />
-      )}
+      )} */}
+      <Bridge
+        net={net.client!}
+        polkadotAddress={net.client.polkadotAddress}
+        ethAddress={net.client.ethAddress}
+      />
     </main>
   );
 }
