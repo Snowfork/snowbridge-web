@@ -3,7 +3,8 @@ import {
     UPDATE_CONFIRMATIONS,
     SET_TRANSACTION_STATUS,
     POLKA_ETH_BURNED,
-    POLKA_ETH_MINTED
+    POLKA_ETH_MINTED,
+    SET_TRANSACTION_HASH
 } from '../actionsTypes/transactions';
 import { PolkaEthBurnedEvent, PolkaEthMintedEvent, Transaction, TransactionStatus } from '../reducers/transactions';
 
@@ -37,4 +38,11 @@ export interface PolkaEthBurnedPayload { type: string, event: PolkaEthBurnedEven
 export const polkaEthBurned = (event: PolkaEthBurnedEvent): PolkaEthBurnedPayload => ({
     type: POLKA_ETH_BURNED,
     event
+})
+
+export interface SetTransactionHashPayload { type: string, nonce: number, hash: string };
+export const setTransactionHash = (nonce: number, hash: string): SetTransactionHashPayload => ({
+    type: SET_TRANSACTION_HASH,
+    nonce,
+    hash
 })

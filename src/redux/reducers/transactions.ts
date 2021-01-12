@@ -3,15 +3,18 @@ import {
   UPDATE_CONFIRMATIONS,
   SET_TRANSACTION_STATUS,
   POLKA_ETH_MINTED,
-  POLKA_ETH_BURNED
+  POLKA_ETH_BURNED,
+  SET_TRANSACTION_HASH
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
   SetTransactionStatusPayload,
   UpdateConfirmationsPayload,
   PolkaEthMintedPayload,
-  PolkaEthBurnedPayload
+  PolkaEthBurnedPayload,
+  SetTransactionHashPayload
 } from '../actions/transactions'
+import { store } from '../../index'
 
 export enum TransactionStatus {
   SUBMITTING_TO_ETHEREUM = 0,
@@ -32,7 +35,8 @@ export interface Transaction {
   chain: 'eth' | 'polkadot';
   status: TransactionStatus
   isMinted: boolean,
-  isBurned: boolean
+  isBurned: boolean,
+  nonce: number
 }
 
 // Interface for an PolkaEth 'Minted' event, emitted by the parachain
@@ -85,9 +89,9 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         return Object.assign({}, state, {
           transactions: state.transactions.map((t) =>
             (t.amount === action.event.amount
-            && t.receiver === action.event.accountId)
-            ? { ...t, isMinted: true, status: TransactionStatus.RELAYED }
-            : t
+              && t.receiver === action.event.accountId)
+              ? { ...t, isMinted: true, status: TransactionStatus.RELAYED }
+              : t
           )
         });
       })(action)
@@ -99,16 +103,33 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         return Object.assign({}, state, {
           transactions: state.transactions.map((t) =>
             (t.amount === action.event.amount
-            && t.receiver === action.event.accountId)
-            ? { ...t, isBurned: true}
-            : t
+              && t.receiver === action.event.accountId)
+              ? { ...t, isBurned: true }
+              : t
           )
         });
+      })(action)
+    }
+    case SET_TRANSACTION_HASH: {
+      return ((action: SetTransactionHashPayload) => {
+        return Object.assign({}, state, {
+          transactions: state.transactions.map((t) => t.nonce === action.nonce ?
+            { ...t, hash: action.hash, status: TransactionStatus.WAITING_FOR_CONFIRMATION }
+            : t
+          )
+        })
       })(action)
     }
     default:
       return state
   }
+}
+
+// selectors
+export const getTransaction = (nonce: number): Transaction => {
+  const transactions: Transaction[] = store.getState().transactions.transactions;
+
+  return transactions.filter((t) => t.nonce === nonce)[0]
 }
 
 export default transactionsReducer;

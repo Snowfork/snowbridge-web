@@ -22,8 +22,8 @@ import {
   setMetamaskMissing,
   setMetamaskNetwork,
 } from '../redux/actions';
-import { addTransaction, setTransactionStatus, updateConfirmations } from '../redux/actions/transactions';
-import { TransactionStatus } from '../redux/reducers/transactions';
+import { addTransaction, setTransactionHash, setTransactionStatus, updateConfirmations } from '../redux/actions/transactions';
+import { getTransaction, TransactionStatus } from '../redux/reducers/transactions';
 
 // Eth API connector
 type Connector = (e: Eth, net: any) => void;
@@ -98,6 +98,7 @@ export default class Eth extends Api {
       const self: Eth = this;
       let default_address = await self.get_address();
       let transactionHash: string;
+      const nonce = await self.conn?.eth.getTransactionCount(self.net.ethAddress)!
 
       if (default_address) {
         if (self.conn && self.eth_contract) {
@@ -112,30 +113,32 @@ export default class Eth extends Api {
               gas: 500000,
               value: self.conn.utils.toWei(amount, 'ether'),
             })
-            .on('sending', function (payload: any) {
+            .on('sending', async function (payload: any) {
               console.log('Sending Transaction', payload);
-              // dispatch(setTransactionStatus(TransactionStatus.SUBMITTING_TO_ETHEREUM))
-              //TODO: use nonce as ID 
-
-            })
-            .on('sent', function (payload: any) {
-              console.log('Transaction sent', payload);
-            })
-            .on('transactionHash', function (hash: string) {
-              transactionHash = hash;
 
               self.dispatch(addTransaction({
-                hash,
+                hash: '',
                 confirmations: 0,
                 chain: 'eth',
                 sender: self.net.ethAddress,
                 receiver: self.net.polkadotAddress,
                 amount: amount,
-                status: TransactionStatus.WAITING_FOR_CONFIRMATION,
+                status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
                 isMinted: false,
                 isBurned: false,
+                nonce
               })
-            )
+              )
+
+            })
+            .on('sent', async function (payload: any) {
+              console.log('Transaction sent', payload);
+
+            })
+            .on('transactionHash', async function (hash: string) {
+              transactionHash = hash;
+
+              self.dispatch(setTransactionHash(nonce, hash))
             })
             .on(
               'confirmation',
@@ -149,11 +152,17 @@ export default class Eth extends Api {
                 console.log('----------- Block ------------');
                 console.log(latestBlockHash);
 
-                self.dispatch(updateConfirmations(transactionHash, confirmation));
-                if (confirmation >= REQUIRED_ETH_CONFIRMATIONS ){
                 // update transaction confirmations
-                self.dispatch(setTransactionStatus(transactionHash, TransactionStatus.CONFIRMED_ON_ETHEREUM))
-              } else {
+                self.dispatch(updateConfirmations(transactionHash, confirmation));
+
+                if (confirmation >= REQUIRED_ETH_CONFIRMATIONS) {
+                  // check if this has already been relayed to polkadot
+                  if (getTransaction(nonce).isMinted) {
+                    self.dispatch(setTransactionStatus(transactionHash, TransactionStatus.RELAYED))
+                  } else {
+                    self.dispatch(setTransactionStatus(transactionHash, TransactionStatus.CONFIRMED_ON_ETHEREUM))
+                  }
+                } else {
                   self.dispatch(setTransactionStatus(transactionHash, TransactionStatus.CONFIRMING))
                 }
               },
@@ -202,8 +211,6 @@ export default class Eth extends Api {
       console.log(err);
     }
   }
-
-  
 
   // Web3 API connector
   public static async connect(dispatch: Dispatch): Promise<Connector> {

@@ -152,7 +152,7 @@ export default class Polkadot extends Api {
               // Receiver of the sent PolkaEth
               accountId: event.data[1].toString(),
               // PolkaEth amount
-              amount: event.data[2].toString(),
+              amount: web3.utils.fromWei(event.data[2].toString()),
             }
             ));
 
