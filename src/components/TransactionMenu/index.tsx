@@ -40,6 +40,7 @@ export default function TransactionMenu({
     isPendingTransactionUIModalOpen,
     setPendingTransactionUIModalOpen,
   ] = useState(false);
+  const [currentTransactionIndex, setCurrentTransactionIndex] = useState(-1);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -58,19 +59,16 @@ export default function TransactionMenu({
   };
 
   // Pending Transaction UI
-  useEffect(() => {
-    console.log('USEEFFECT TRIGGER');
-    console.log(isPendingTransactionUIModalOpen);
-  }, [isPendingTransactionUIModalOpen]);
-
   const openPendingTransactionUIModal = () => {
     setPendingTransactionUIModalOpen(true);
   };
+
   const closePendingTransactionUIModal = () => {
     setPendingTransactionUIModalOpen(false);
-    console.log('Closing: ', isPendingTransactionUIModalOpen);
   };
-  const handleTransactionClick = () => {
+
+  const handleTransactionClick = (transactionIndex: number) => {
+    setCurrentTransactionIndex(transactionIndex);
     openPendingTransactionUIModal();
   };
 
@@ -95,7 +93,12 @@ export default function TransactionMenu({
   }
 
   // Menu Item for a Transaction
-  function TransactionMenuItem(transaction: Transaction) {
+  //    An index will be passed in each item so the current transaction
+  //    can be identified
+  function TransactionMenuItem(
+    transaction: Transaction,
+    transactionIndex: number,
+  ) {
     let color: string = 'orange';
 
     if (transaction.confirmations >= REQUIRED_ETH_CONFIRMATIONS) {
@@ -103,13 +106,8 @@ export default function TransactionMenu({
     }
 
     return (
-      <MenuItem onClick={handleTransactionClick}>
+      <MenuItem onClick={() => handleTransactionClick(transactionIndex)}>
         <label>
-          <PendingTransactionsUI
-            transaction={transaction}
-            isOpen={isPendingTransactionUIModalOpen}
-            closeModal={closePendingTransactionUIModal}
-          />
           <small style={{ marginRight: '10em', color: color }}>
             ({transaction.confirmations} confirmations)
           </small>
@@ -186,7 +184,9 @@ export default function TransactionMenu({
         onClose={handleClose}
       >
         <ZeroTransactions />
-        {transactions.map((t) => TransactionMenuItem(t))}
+        {transactions.map((transaction, index) =>
+          TransactionMenuItem(transaction, index),
+        )}
         <AllTransactionsBtn />
       </Menu>
 
@@ -196,6 +196,13 @@ export default function TransactionMenu({
         buttonText={'Close'}
         closeModal={closeModal}
       />
+      {transactions.length > 0 && currentTransactionIndex !== -1 && (
+        <PendingTransactionsUI
+          transaction={transactions[currentTransactionIndex]}
+          isOpen={isPendingTransactionUIModalOpen}
+          closeModal={closePendingTransactionUIModal}
+        />
+      )}
     </div>
   );
 }
