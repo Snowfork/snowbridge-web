@@ -196,13 +196,6 @@ export default function TransactionMenu({
         buttonText={'Close'}
         closeModal={closeModal}
       />
-      {transactions.length > 0 && currentTransactionIndex !== -1 && (
-        <PendingTransactionsUI
-          transaction={transactions[currentTransactionIndex]}
-          isOpen={isPendingTransactionUIModalOpen}
-          closeModal={closePendingTransactionUIModal}
-        />
-      )}
     </div>
   );
 }

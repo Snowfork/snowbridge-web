@@ -1,4 +1,5 @@
 import React from 'react';
+import * as S from './TransactionItem.style';
 
 import {
   Transaction,
@@ -9,21 +10,25 @@ import {
   pendingTransactions,
   shortenWalletAddress,
 } from '../../../utils/common';
+import PendingTransactionsUI from '../../PendingTransactionsUI';
 
 type Props = {
   transaction: Transaction;
-  transactionIndex: number;
+  transactionIndex?: number;
 };
 
 function TransactionItem({
   transaction,
-  transactionIndex,
+  transactionIndex, // This index is incase you want to track the item
 }: Props): React.ReactElement<Props> {
   return (
-    <div>
-      ({transaction.confirmations} confirmations)
-      {shortenWalletAddress(transaction.hash)}
-    </div>
+    <S.Wrapper>
+      <S.Details>
+        ({transaction.confirmations} confirmations)
+        {shortenWalletAddress(transaction.hash)}
+      </S.Details>
+      <PendingTransactionsUI transaction={transaction} />
+    </S.Wrapper>
   );
 }
 

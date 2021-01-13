@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactModal from 'react-modal';
 import { BLOCK_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import {
   Transaction,
@@ -8,21 +7,8 @@ import {
 import * as S from './PendingTransactionsUI.style';
 import Step, { StepStatus } from './Step/Step';
 
-const customStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-  },
-};
-
 type Props = {
   transaction: Transaction;
-  isOpen: boolean;
-  closeModal: () => void;
 };
 
 // returns a StepStatus (pending,loading,complete) according to the transaction status
@@ -51,62 +37,51 @@ function getEtherscanLink(transaction: Transaction) {
   return `${BLOCK_EXPLORER_URL}/tx/${transaction.hash}`;
 }
 
-function PendingTransactionsUI({ transaction, isOpen, closeModal }: Props) {
+function PendingTransactionsUI({ transaction }: Props) {
   return (
     <div>
-      <ReactModal
-        isOpen={isOpen}
-        onRequestClose={closeModal}
-        style={customStyles}
-        contentLabel="Example Modal"
-      >
-        <S.Wrapper>
-          <S.Container>
-            <button onClick={closeModal}>CLOSE</button>
-            <Step
-              status={getStepStatus(
-                transaction,
-                TransactionStatus.SUBMITTING_TO_ETHEREUM,
-              )}
-              href={getEtherscanLink(transaction)}
-              toolTip="Submitting to ethereum"
-            />
-            <S.StyledLine />
-            <Step
-              status={getStepStatus(
-                transaction,
-                TransactionStatus.WAITING_FOR_CONFIRMATION,
-              )}
-              href={getEtherscanLink(transaction)}
-              toolTip="Waiting for confirmation"
-            />
-            <S.StyledLine />
-            <Step
-              status={getStepStatus(transaction, TransactionStatus.CONFIRMING)}
-              href={getEtherscanLink(transaction)}
-              toolTip={`Waiting for ${REQUIRED_ETH_CONFIRMATIONS}`}
-            >
-              {confirmationCount(transaction)}
-            </Step>
-            <S.StyledLine />
-            <Step
-              status={getStepStatus(
-                transaction,
-                TransactionStatus.WAITING_FOR_RELAY,
-              )}
-              toolTip="Relaying to Polkadot"
-            />
-            <S.StyledLine />
-            <Step
-              status={getStepStatus(
-                transaction,
-                TransactionStatus.FINALIZED - 1,
-              )}
-              toolTip="Transaction finalized"
-            />
-          </S.Container>
-        </S.Wrapper>
-      </ReactModal>
+      <S.Wrapper>
+        <S.Container>
+          <Step
+            status={getStepStatus(
+              transaction,
+              TransactionStatus.SUBMITTING_TO_ETHEREUM,
+            )}
+            href={getEtherscanLink(transaction)}
+            toolTip="Submitting to ethereum"
+          />
+          <S.StyledLine />
+          <Step
+            status={getStepStatus(
+              transaction,
+              TransactionStatus.WAITING_FOR_CONFIRMATION,
+            )}
+            href={getEtherscanLink(transaction)}
+            toolTip="Waiting for confirmation"
+          />
+          <S.StyledLine />
+          <Step
+            status={getStepStatus(transaction, TransactionStatus.CONFIRMING)}
+            href={getEtherscanLink(transaction)}
+            toolTip={`Waiting for ${REQUIRED_ETH_CONFIRMATIONS}`}
+          >
+            {confirmationCount(transaction)}
+          </Step>
+          <S.StyledLine />
+          <Step
+            status={getStepStatus(
+              transaction,
+              TransactionStatus.WAITING_FOR_RELAY,
+            )}
+            toolTip="Relaying to Polkadot"
+          />
+          <S.StyledLine />
+          <Step
+            status={getStepStatus(transaction, TransactionStatus.FINALIZED - 1)}
+            toolTip="Transaction finalized"
+          />
+        </S.Container>
+      </S.Wrapper>
     </div>
   );
 }

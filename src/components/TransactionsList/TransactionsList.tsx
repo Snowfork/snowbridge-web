@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
+import * as S from './TransactionsList.style';
 import ReactModal from 'react-modal';
 
-import {
-  Transaction,
-  TransactionsState,
-} from '../../redux/reducers/transactions';
+import { TransactionsState } from '../../redux/reducers/transactions';
 import Net from '../../net';
-
-import { pendingTransactions, shortenWalletAddress } from '../../utils/common';
-import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 
 import TransactionItem from './TransactionItem';
 
 const customStyles = {
+  overlay: {},
   content: {
     top: '50%',
     left: '50%',
@@ -20,6 +16,7 @@ const customStyles = {
     bottom: 'auto',
     marginRight: '-50%',
     transform: 'translate(-50%, -50%)',
+    overflow: 'hidden',
   },
 };
 
@@ -41,28 +38,14 @@ function TransactionsList({
     setIsOpen(true);
   }
 
-  /* function TransactionItem(transaction: Transaction, transactionIndex: number) {
-    return (
-      <div>
-        ({transaction.confirmations} confirmations)
-        {shortenWalletAddress(transaction.hash)}
-      </div>
-    );
-  }
- */
-
   function getTransactions() {
     if (transactions.length === 0 || !transactions) {
       return <div>No transactions</div>;
     }
     return transactions.map((transaction, index) => (
-      <div>
-        {/* <TransactionItem transaction={transaction} transactionIndex={index} /> */}
-        {/* {TransactionItem(transaction, index)} */}
-        {/* <TransactionItem transaction={transaction} transactionIndex={index} /> */}
+      <S.List>
         <TransactionItem transaction={transaction} transactionIndex={index} />
-        {console.log(transaction)}
-      </div>
+      </S.List>
     ));
   }
 
@@ -75,9 +58,11 @@ function TransactionsList({
         style={customStyles}
         contentLabel="Transactions List"
       >
-        <button onClick={closeModal}>Click</button>
-        TRANSACTIONS LIST
-        {getTransactions()}
+        <S.Wrapper>
+          <S.Heading>Transactions List</S.Heading>
+          {getTransactions()}
+          <button onClick={closeModal}>Close</button>
+        </S.Wrapper>
       </ReactModal>
     </div>
   );

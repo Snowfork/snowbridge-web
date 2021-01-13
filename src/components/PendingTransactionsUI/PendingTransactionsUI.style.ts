@@ -7,10 +7,6 @@ export const Container = styled.div`
   justify-content: center;
   align-items: center;
   background: white;
-  margin: 1em auto 0 auto;
-  padding: 2em;
-  border: thin solid #e0e0e0;
-  max-width: 800px;
 `;
 
 export const StyledLine = styled.div`
