@@ -3,7 +3,6 @@ import * as S from './TransactionsList.style';
 import ReactModal from 'react-modal';
 
 import { TransactionsState } from '../../redux/reducers/transactions';
-import Net from '../../net';
 
 import TransactionItem from './TransactionItem';
 
