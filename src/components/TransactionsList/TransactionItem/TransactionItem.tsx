@@ -1,15 +1,9 @@
 import React from 'react';
 import * as S from './TransactionItem.style';
 
-import {
-  Transaction,
-  TransactionsState,
-} from '../../../redux/reducers/transactions';
+import { Transaction } from '../../../redux/reducers/transactions';
 
-import {
-  pendingTransactions,
-  shortenWalletAddress,
-} from '../../../utils/common';
+import { shortenWalletAddress } from '../../../utils/common';
 import PendingTransactionsUI from '../../PendingTransactionsUI';
 
 type Props = {

@@ -16,7 +16,6 @@ import {
   FormHelperText,
   Divider,
 } from '@material-ui/core';
-import { useDispatch } from 'react-redux';
 
 // ------------------------------------------
 //                  Props
@@ -32,14 +31,13 @@ type Props = {
 function AppETH({ net, children }: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
-  const dispatch = useDispatch();
 
   function SendButton() {
     if (Number(depositAmount) > 0) {
       return (
         <Button
           color="primary"
-          onClick={() => net?.eth?.send_eth(dispatch, depositAmount)}
+          onClick={() => net?.eth?.send_eth(depositAmount)}
           variant="outlined"
         >
           <Typography variant="button">Send ETH</Typography>

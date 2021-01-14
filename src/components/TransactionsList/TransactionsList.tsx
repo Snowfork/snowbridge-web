@@ -21,12 +21,10 @@ const customStyles = {
 };
 
 type Props = {
-  net: Net;
   transactions: TransactionsState;
 };
 
 function TransactionsList({
-  net,
   transactions: { transactions },
 }: Props): React.ReactElement<Props> {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,11 +40,13 @@ function TransactionsList({
     if (transactions.length === 0 || !transactions) {
       return <div>No transactions</div>;
     }
-    return transactions.map((transaction, index) => (
+    return (
       <S.List>
-        <TransactionItem transaction={transaction} transactionIndex={index} />
+        {transactions.map((transaction, index) => (
+          <TransactionItem transaction={transaction} transactionIndex={index} />
+        ))}
       </S.List>
-    ));
+    );
   }
 
   return (
@@ -61,7 +61,7 @@ function TransactionsList({
         <S.Wrapper>
           <S.Heading>Transactions List</S.Heading>
           {getTransactions()}
-          <button onClick={closeModal}>Close</button>
+          <S.Button onClick={closeModal}>Close</S.Button>
         </S.Wrapper>
       </ReactModal>
     </div>

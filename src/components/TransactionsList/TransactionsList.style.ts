@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 export const Wrapper = styled.section`
   display: flex;
+  flex-direction: column;
 `;
 
 export const Heading = styled.h2`
@@ -13,6 +14,6 @@ export const List = styled.ul`
   padding: 0;
 `;
 
-export const BUtton = styled.button`
+export const Button = styled.button`
   margin-top: 20px;
 `;

@@ -15,6 +15,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { TransactionsState } from '../../redux/reducers/transactions';
+import { BLOCK_EXPLORER_URL } from '../../config';
 
 type Props = {
   net: Net;
@@ -64,7 +65,7 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
             <S.Amount>{net.ethBalance} ETH</S.Amount>
             <S.Address
               as="a"
-              href={`https://etherscan.com/ropsten.etherscan.io/address/${net.ethAddress}`}
+              href={`${BLOCK_EXPLORER_URL}/address/${net.ethAddress}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -111,7 +112,7 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
           )}
         </S.DisplayWrapper>
         <TransactionMenu net={net} transactions={transactions} />
-        <TransactionsList net={net} transactions={transactions} />
+        <TransactionsList transactions={transactions} />
       </S.CurrencyList>
     </S.Wrapper>
   );
