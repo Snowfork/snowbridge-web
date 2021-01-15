@@ -24,12 +24,11 @@ import {
 } from '../redux/actions';
 import {
   addTransaction,
+  removeTransaction,
   setTransactionHash,
-  setTransactionStatus,
   updateConfirmations,
 } from '../redux/actions/transactions';
 import {
-  getTransaction,
   TransactionStatus,
 } from '../redux/reducers/transactions';
 
@@ -169,6 +168,10 @@ export default class Eth extends Api {
               },
             )
             .on('error', function (error: Error) {
+              // TODO: render error message
+              self.dispatch(
+                removeTransaction(nonce)
+              )
               throw error;
             });
         }

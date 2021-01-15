@@ -34,9 +34,9 @@ function TransactionsList({
   // to open the modal
   useEffect(() => {
     if (transactions.length > lastTransactionCount) {
-      setLastTransactionCount(transactions.length)
       openModal();
     }
+    setLastTransactionCount(transactions.length)
   }, [lastTransactionCount, transactions])
 
 

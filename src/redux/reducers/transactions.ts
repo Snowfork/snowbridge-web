@@ -4,7 +4,8 @@ import {
   SET_TRANSACTION_STATUS,
   POLKA_ETH_MINTED,
   POLKA_ETH_BURNED,
-  SET_TRANSACTION_HASH
+  SET_TRANSACTION_HASH,
+  REMOVE_TRANSACTION
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
@@ -12,7 +13,8 @@ import {
   UpdateConfirmationsPayload,
   PolkaEthMintedPayload,
   PolkaEthBurnedPayload,
-  SetTransactionHashPayload
+  SetTransactionHashPayload,
+  RemoveTransactionPayload
 } from '../actions/transactions'
 import { store } from '../../index'
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
@@ -141,6 +143,13 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
             : t
           )
         })
+      })(action)
+    }
+    case REMOVE_TRANSACTION: {
+      return ((action: RemoveTransactionPayload) => {
+        return Object.assign({}, state, {
+          transactions: state.transactions.filter((t) => t.nonce !== action.nonce)
+        });
       })(action)
     }
     default:
