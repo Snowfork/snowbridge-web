@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as S from './TransactionsList.style';
 import ReactModal from 'react-modal';
 
@@ -27,6 +27,18 @@ function TransactionsList({
   transactions: { transactions },
 }: Props): React.ReactElement<Props> {
   const [isOpen, setIsOpen] = useState(false);
+  const [lastTransactionCount, setLastTransactionCount] = useState(transactions.length)
+
+  // fires when the transaction list is updated
+  // check if a new transaction has been added
+  // to open the modal
+  useEffect(() => {
+    if (transactions.length > lastTransactionCount) {
+      setLastTransactionCount(transactions.length)
+      openModal();
+    }
+  }, [lastTransactionCount, transactions])
+
 
   function closeModal() {
     setIsOpen(false);
