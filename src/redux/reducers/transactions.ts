@@ -15,6 +15,7 @@ import {
   SetTransactionHashPayload
 } from '../actions/transactions'
 import { store } from '../../index'
+import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 
 export enum TransactionStatus {
   SUBMITTING_TO_ETHEREUM = 0,
@@ -70,8 +71,26 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
     }
     case UPDATE_CONFIRMATIONS: {
       return ((action: UpdateConfirmationsPayload) => {
+        const getTransactionStatus = (transaction: Transaction): TransactionStatus => {
+          // check if the transaction has already been relayed to polkadot
+          if (action.confirmations >= REQUIRED_ETH_CONFIRMATIONS) {
+            if (transaction.isMinted) {
+              return TransactionStatus.RELAYED
+            } else {
+              return TransactionStatus.CONFIRMED_ON_ETHEREUM
+            }
+          } else {
+            return TransactionStatus.CONFIRMING
+          }
+        }
         return Object.assign({}, state, {
-          transactions: state.transactions.map((t) => t.hash === action.hash ? { ...t, confirmations: action.confirmations } : t)
+          transactions: state.transactions.map((t) => t.hash === action.hash
+            ? {
+              ...t,
+              confirmations: action.confirmations,
+              status: getTransactionStatus(t)
+            }
+            : t)
         });
       })(action)
     }
@@ -90,7 +109,11 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
           transactions: state.transactions.map((t) =>
             (t.amount === action.event.amount
               && t.receiver === action.event.accountId)
-              ? { ...t, isMinted: true, status: TransactionStatus.RELAYED }
+              ? {
+                ...t,
+                isMinted: true,
+                status: t.confirmations > REQUIRED_ETH_CONFIRMATIONS ? TransactionStatus.RELAYED : t.status
+              }
               : t
           )
         });

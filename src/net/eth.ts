@@ -166,31 +166,6 @@ export default class Eth extends Api {
                   updateConfirmations(transactionHash, confirmation),
                 );
 
-                if (confirmation >= REQUIRED_ETH_CONFIRMATIONS) {
-                  // check if this has already been relayed to polkadot
-                  if (getTransaction(nonce).isMinted) {
-                    self.dispatch(
-                      setTransactionStatus(
-                        transactionHash,
-                        TransactionStatus.RELAYED,
-                      ),
-                    );
-                  } else {
-                    self.dispatch(
-                      setTransactionStatus(
-                        transactionHash,
-                        TransactionStatus.CONFIRMED_ON_ETHEREUM,
-                      ),
-                    );
-                  }
-                } else {
-                  self.dispatch(
-                    setTransactionStatus(
-                      transactionHash,
-                      TransactionStatus.CONFIRMING,
-                    ),
-                  );
-                }
               },
             )
             .on('error', function (error: Error) {
