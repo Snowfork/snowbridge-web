@@ -9,8 +9,7 @@ import {
 } from '../../redux/reducers/transactions';
 import Net from '../../net';
 import { pendingTransactions, shortenWalletAddress } from '../../utils/common';
-import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
-import PendingTransactionsUI from '../PendingTransactionsUI';
+import { BLOCK_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 
 type Props = {
   net: Net;
@@ -25,10 +24,6 @@ const TransactionHash = styled.a`
   font-size: 0.8rem;
 `;
 
-const TD = styled.td`
-  padding: 2em;
-  margin: 2em;
-`;
 
 export default function TransactionMenu({
   net,
@@ -36,11 +31,6 @@ export default function TransactionMenu({
 }: Props): React.ReactElement<Props> {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [
-    isPendingTransactionUIModalOpen,
-    setPendingTransactionUIModalOpen,
-  ] = useState(false);
-  const [currentTransactionIndex, setCurrentTransactionIndex] = useState(-1);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -56,20 +46,6 @@ export default function TransactionMenu({
 
   const closeModal = () => {
     setIsModalOpen(false);
-  };
-
-  // Pending Transaction UI
-  const openPendingTransactionUIModal = () => {
-    setPendingTransactionUIModalOpen(true);
-  };
-
-  const closePendingTransactionUIModal = () => {
-    setPendingTransactionUIModalOpen(false);
-  };
-
-  const handleTransactionClick = (transactionIndex: number) => {
-    setCurrentTransactionIndex(transactionIndex);
-    openPendingTransactionUIModal();
   };
 
   // All transactions modal button
@@ -106,7 +82,7 @@ export default function TransactionMenu({
     }
 
     return (
-      <MenuItem onClick={() => handleTransactionClick(transactionIndex)}>
+      <MenuItem>
         <label>
           <small style={{ marginRight: '10em', color: color }}>
             ({transaction.confirmations} confirmations)
@@ -132,15 +108,15 @@ export default function TransactionMenu({
           <tbody>
             {transactions.map((t) => (
               <tr key={t.hash}>
-                <td scope="row" align="left">
+                <td align="left">
                   <TransactionHash
-                    href={`https://ropsten.etherscan.io/tx/${t.hash}`}
+                    href={`${BLOCK_EXPLORER_URL}/tx/${t.hash}`}
                   >
                     {t.hash}
                   </TransactionHash>
                 </td>
                 <td align="left">
-                  <a href={`https://ropsten.etherscan.io/address/${t.sender}`}>
+                  <a href={`${BLOCK_EXPLORER_URL}/address/${t.sender}`}>
                     <small>{shortenWalletAddress(t.sender)} </small>
                   </a>
                   -&gt;
