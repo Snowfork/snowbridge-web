@@ -18,8 +18,7 @@ function TransactionItem({
   return (
     <S.Wrapper>
       <S.Details>
-        ({transaction.confirmations} confirmations)
-        {shortenWalletAddress(transaction.hash)}
+        Swap { transaction.amount } ETH for {transaction.amount} PolkaETH
       </S.Details>
       <PendingTransactionsUI transaction={transaction} />
     </S.Wrapper>

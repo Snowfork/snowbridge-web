@@ -43,27 +43,11 @@ function PendingTransactionsUI({ transaction }: Props) {
       <S.Wrapper>
         <S.Container>
           <Step
-            status={getStepStatus(
-              transaction,
-              TransactionStatus.SUBMITTING_TO_ETHEREUM,
-            )}
-            href={getEtherscanLink(transaction)}
-            toolTip="Submitting to ethereum"
-          />
-          <S.StyledLine />
-          <Step
-            status={getStepStatus(
-              transaction,
-              TransactionStatus.WAITING_FOR_CONFIRMATION,
-            )}
-            href={getEtherscanLink(transaction)}
-            toolTip="Waiting for confirmation"
-          />
-          <S.StyledLine />
-          <Step
-            status={getStepStatus(transaction, TransactionStatus.CONFIRMING)}
             href={getEtherscanLink(transaction)}
             toolTip={`Waiting for ${REQUIRED_ETH_CONFIRMATIONS}`}
+            status={transaction.status > TransactionStatus.CONFIRMING
+              ? StepStatus.COMPLETE
+              : StepStatus.LOADING }
           >
             {confirmationCount(transaction)}
           </Step>
