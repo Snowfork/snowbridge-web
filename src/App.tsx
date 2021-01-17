@@ -118,6 +118,8 @@ function BridgeApp(props: Props) {
 							<h3>Transaction Submitted</h3>
 							<h4>
 								<a
+									target="_blank"
+									rel="noopener noreferrer"
 									href={`${BLOCK_EXPLORER_URL}/tx/${transactions.pendingTransaction.hash}`}
 								>
 									View on etherscan
