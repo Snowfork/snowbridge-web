@@ -8,7 +8,6 @@ import Net from './';
 import {
   APP_ETH_CONTRACT_ADDRESS,
   APP_ERC20_CONTRACT_ADDRESS,
-  REQUIRED_ETH_CONFIRMATIONS,
 } from '../config';
 
 /* tslint:disable */
@@ -24,8 +23,7 @@ import {
 } from '../redux/actions';
 import {
   addTransaction,
-  removeTransaction,
-  setTransactionHash,
+  setPendingTransaction,
   updateConfirmations,
 } from '../redux/actions/transactions';
 import {
@@ -105,9 +103,6 @@ export default class Eth extends Api {
       const self: Eth = this;
       let default_address = await self.get_address();
       let transactionHash: string;
-      const nonce = await self.conn?.eth.getTransactionCount(
-        self.net.ethAddress,
-      )!;
 
       if (default_address) {
         if (self.conn && self.eth_contract) {
@@ -124,21 +119,18 @@ export default class Eth extends Api {
             })
             .on('sending', async function (payload: any) {
               console.log('Sending Transaction', payload);
-
-              self.dispatch(
-                addTransaction({
-                  hash: '',
-                  confirmations: 0,
-                  chain: 'eth',
-                  sender: self.net.ethAddress,
-                  receiver: self.net.polkadotAddress,
-                  amount: amount,
-                  status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
-                  isMinted: false,
-                  isBurned: false,
-                  nonce,
-                }),
-              );
+              // create transaction with default values to display in the modal
+              self.dispatch(setPendingTransaction({
+                hash: '',
+                confirmations: 0,
+                chain: 'eth',
+                sender: self.net.ethAddress,
+                receiver: self.net.polkadotAddress,
+                amount: amount,
+                status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
+                isMinted: false,
+                isBurned: false,
+              }));
             })
             .on('sent', async function (payload: any) {
               console.log('Transaction sent', payload);
@@ -146,7 +138,20 @@ export default class Eth extends Api {
             .on('transactionHash', async function (hash: string) {
               transactionHash = hash;
 
-              self.dispatch(setTransactionHash(nonce, hash));
+              self.dispatch(
+                addTransaction({
+                  hash,
+                  confirmations: 0,
+                  chain: 'eth',
+                  sender: self.net.ethAddress,
+                  receiver: self.net.polkadotAddress,
+                  amount: amount,
+                  status: TransactionStatus.WAITING_FOR_CONFIRMATION,
+                  isMinted: false,
+                  isBurned: false,
+                }),
+              );
+
             })
             .on(
               'confirmation',
@@ -169,9 +174,17 @@ export default class Eth extends Api {
             )
             .on('error', function (error: Error) {
               // TODO: render error message
-              self.dispatch(
-                removeTransaction(nonce)
-              )
+              self.dispatch(setPendingTransaction({
+                hash: '',
+                confirmations: 0,
+                chain: 'eth',
+                sender: self.net.ethAddress,
+                receiver: self.net.polkadotAddress,
+                amount: amount,
+                status: TransactionStatus.REJECTED,
+                isMinted: false,
+                isBurned: false,
+              }));
               throw error;
             });
         }

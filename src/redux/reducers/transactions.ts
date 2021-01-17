@@ -4,8 +4,7 @@ import {
   SET_TRANSACTION_STATUS,
   POLKA_ETH_MINTED,
   POLKA_ETH_BURNED,
-  SET_TRANSACTION_HASH,
-  REMOVE_TRANSACTION
+  SET_PENDING_TRANSACTION
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
@@ -13,19 +12,27 @@ import {
   UpdateConfirmationsPayload,
   PolkaEthMintedPayload,
   PolkaEthBurnedPayload,
-  SetTransactionHashPayload,
-  RemoveTransactionPayload
+  SetPendingTransactionPayload
 } from '../actions/transactions'
-import { store } from '../../index'
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 
 export enum TransactionStatus {
+  // used for error states
+  REJECTED = -1,
+  // used when waiting for confirmation in metamask
   SUBMITTING_TO_ETHEREUM = 0,
+  // transaction hash recieved 
   WAITING_FOR_CONFIRMATION = 1,
+  // used when the eth transaction is confirmed
+  // and we are waiting to reach the confirmation threshold
   CONFIRMING = 2,
+  // transaction reached the eth confirmation threshold
   CONFIRMED_ON_ETHEREUM = 3,
+  // waiting for 'Minted' event on polkadot
   WAITING_FOR_RELAY = 4,
+  // recieved minted event on polkadot
   RELAYED = 5,
+  // transaction finalized on both chains
   FINALIZED = 6
 }
 
@@ -39,7 +46,6 @@ export interface Transaction {
   status: TransactionStatus
   isMinted: boolean,
   isBurned: boolean,
-  nonce: number
 }
 
 // Interface for an PolkaEth 'Minted' event, emitted by the parachain
@@ -55,11 +61,13 @@ export interface PolkaEthBurnedEvent {
 }
 
 export interface TransactionsState {
-  transactions: Transaction[]
+  transactions: Transaction[],
+  pendingTransaction?: Transaction
 }
 
 const initialState: TransactionsState = {
-  transactions: []
+  transactions: [],
+  pendingTransaction: undefined
 };
 
 function transactionsReducer(state: TransactionsState = initialState, action: any) {
@@ -68,6 +76,7 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
       return ((action: AddTransactionPayload) => {
         return Object.assign({}, state, {
           transactions: [...state.transactions, action.transaction],
+          pendingTransaction: action.transaction
         });
       })(action)
     }
@@ -135,33 +144,17 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         });
       })(action)
     }
-    case SET_TRANSACTION_HASH: {
-      return ((action: SetTransactionHashPayload) => {
+    case SET_PENDING_TRANSACTION: {
+      return ((action: SetPendingTransactionPayload) => {
         return Object.assign({}, state, {
-          transactions: state.transactions.map((t) => t.nonce === action.nonce ?
-            { ...t, hash: action.hash, status: TransactionStatus.WAITING_FOR_CONFIRMATION }
-            : t
-          )
+          pendingTransaction: action.transaction
         })
-      })(action)
-    }
-    case REMOVE_TRANSACTION: {
-      return ((action: RemoveTransactionPayload) => {
-        return Object.assign({}, state, {
-          transactions: state.transactions.filter((t) => t.nonce !== action.nonce)
-        });
-      })(action)
+       })(action)
     }
     default:
       return state
   }
 }
 
-// selectors
-export const getTransaction = (nonce: number): Transaction => {
-  const transactions: Transaction[] = store.getState().transactions.transactions;
-
-  return transactions.filter((t) => t.nonce === nonce)[0]
-}
 
 export default transactionsReducer;
