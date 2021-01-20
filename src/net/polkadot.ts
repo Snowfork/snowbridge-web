@@ -12,7 +12,8 @@ import { setPolkadotJSFound, setPolkadotJSMissing } from '../redux/actions';
 
 // Config
 import { POLKADOT_API_PROVIDER, ETH_ASSET_ID } from '../config';
-import { polkaEthBurned, polkaEthMinted } from '../redux/actions/transactions';
+import { addTransaction, polkaEthBurned, polkaEthMinted, setPendingTransaction } from '../redux/actions/transactions';
+import { Transaction, TransactionStatus } from '../redux/reducers/transactions';
 
 // Polkadot API connector
 type Connector = (p: Polkadot, net: any) => void;
@@ -94,6 +95,23 @@ export default class Polkadot extends Api {
       const recepient = self.net.ethAddress;
 
       if (account) {
+        const pendingTransaction: Transaction = {
+          hash: '',
+          confirmations: 0,
+          sender: self.net.ethAddress,
+          receiver: self.net.polkadotAddress,
+          amount: amount,
+          status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
+          isMinted: false,
+          isBurned: false,
+          chain: 'polkadot',
+          assets: {
+            deposited: 'polkaEth',
+            recieved: 'eth'
+          }
+        }
+        self.dispatch(setPendingTransaction(pendingTransaction));
+
         const polkaWeiValue = web3.utils.toWei(amount, 'ether');
 
         const transferExtrinsic = self.conn.tx.eth.burn(
@@ -119,11 +137,20 @@ export default class Polkadot extends Api {
                 );
               } else {
                 console.log(`Current status: ${status.type}`);
+                // transaction is now considered as submitted
+                if (status.isReady) {
+                  self.dispatch(addTransaction({ ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION }));
+                }
               }
             },
           )
           .catch((error: any) => {
             console.log(':( transaction failed', error);
+            if (error.toString() === 'Error: Cancelled') {
+              self.dispatch(setPendingTransaction({ ...pendingTransaction, status: TransactionStatus.REJECTED }));
+            } else {
+              // TODO: display error in modal
+            }
           });
       } else {
         throw new Error('Default Polkadot account not found');
@@ -162,8 +189,8 @@ export default class Polkadot extends Api {
 
             // Notify local transaction object the asset is burned
             this.dispatch(polkaEthBurned({
-             accountId: event.data[1].toString(),
-              amount: event.data[2].toString(),
+              accountId: event.data[1].toString(),
+              amount: web3.utils.fromWei(event.data[2].toString()),
             }
             ));
           }

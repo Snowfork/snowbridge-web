@@ -26,9 +26,10 @@ export enum TransactionStatus {
   // used when the eth transaction is confirmed
   // and we are waiting to reach the confirmation threshold
   CONFIRMING = 2,
-  // transaction reached the eth confirmation threshold
+  // eth transaction reached the eth confirmation threshold
   CONFIRMED_ON_ETHEREUM = 3,
-  // waiting for 'Minted' event on polkadot
+  // waiting for 'Minted' event on polkadot for eth transactions
+  // or waiting for 'Unlock' event on Ethereum for polkadot transactions
   WAITING_FOR_RELAY = 4,
   // recieved minted event on polkadot
   RELAYED = 5,
@@ -42,10 +43,14 @@ export interface Transaction {
   sender: string;
   receiver: string;
   amount: string;
+  status: TransactionStatus;
+  isMinted: boolean;
+  isBurned: boolean;
   chain: 'eth' | 'polkadot';
-  status: TransactionStatus
-  isMinted: boolean,
-  isBurned: boolean,
+  assets: {
+    deposited: 'eth' | 'polkaEth',
+    recieved: 'eth' | 'polkaEth',
+  }
 }
 
 // Interface for an PolkaEth 'Minted' event, emitted by the parachain
@@ -138,7 +143,7 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
           transactions: state.transactions.map((t) =>
             (t.amount === action.event.amount
               && t.receiver === action.event.accountId)
-              ? { ...t, isBurned: true }
+              ? { ...t, isBurned: true, status: TransactionStatus.WAITING_FOR_RELAY }
               : t
           )
         });
