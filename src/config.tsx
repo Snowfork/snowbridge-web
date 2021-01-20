@@ -20,3 +20,6 @@ export const ETH_ASSET_ID = '0x00';
 // Minimum Number of confirmations required for an ETH transaction
 // to be regarded as a success
 export const REQUIRED_ETH_CONFIRMATIONS = 12;
+
+// URL to the block explorer the UI will redirect to
+export const BLOCK_EXPLORER_URL = 'https://ropsten.etherscan.io'

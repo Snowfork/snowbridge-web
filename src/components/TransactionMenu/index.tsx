@@ -1,15 +1,19 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useState } from 'react';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Modal from '../Modal';
 import styled from 'styled-components';
-
-import Net, { Transaction } from '../../net';
-import { shortenWalletAddress } from '../../utils/common';
-import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
+import {
+  Transaction,
+  TransactionsState,
+} from '../../redux/reducers/transactions';
+import Net from '../../net';
+import { pendingTransactions, shortenWalletAddress } from '../../utils/common';
+import { BLOCK_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 
 type Props = {
   net: Net;
+  transactions: TransactionsState;
 };
 
 const Table = styled.table`
@@ -20,16 +24,13 @@ const TransactionHash = styled.a`
   font-size: 0.8rem;
 `;
 
-const TD = styled.td`
-  padding: 2em;
-  margin: 2em;
-`;
 
 export default function TransactionMenu({
   net,
+  transactions: { transactions },
 }: Props): React.ReactElement<Props> {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -49,7 +50,7 @@ export default function TransactionMenu({
 
   // All transactions modal button
   function AllTransactionsBtn() {
-    if (net.transactions.length > 0) {
+    if (transactions.length > 0) {
       return (
         <MenuItem>
           <button onClick={openModal}>All Transactions</button>
@@ -61,14 +62,19 @@ export default function TransactionMenu({
 
   // Informs the user when there is 0 Transactions Available
   function ZeroTransactions() {
-    if (net.transactions.length === 0) {
+    if (transactions.length === 0) {
       return <MenuItem>0 Transactions Available!</MenuItem>;
     }
     return null;
   }
 
   // Menu Item for a Transaction
-  function TransactionMenuItem(transaction: Transaction) {
+  //    An index will be passed in each item so the current transaction
+  //    can be identified
+  function TransactionMenuItem(
+    transaction: Transaction,
+    transactionIndex: number,
+  ) {
     let color: string = 'orange';
 
     if (transaction.confirmations >= REQUIRED_ETH_CONFIRMATIONS) {
@@ -100,17 +106,17 @@ export default function TransactionMenu({
             <td align="left">Amount</td>
           </tr>
           <tbody>
-            {net.transactions.map((t) => (
+            {transactions.map((t) => (
               <tr key={t.hash}>
-                <td scope="row" align="left">
+                <td align="left">
                   <TransactionHash
-                    href={`https://ropsten.etherscan.io/tx/${t.hash}`}
+                    href={`${BLOCK_EXPLORER_URL}/tx/${t.hash}`}
                   >
                     {t.hash}
                   </TransactionHash>
                 </td>
                 <td align="left">
-                  <a href={`https://ropsten.etherscan.io/address/${t.sender}`}>
+                  <a href={`${BLOCK_EXPLORER_URL}/address/${t.sender}`}>
                     <small>{shortenWalletAddress(t.sender)} </small>
                   </a>
                   -&gt;
@@ -143,7 +149,8 @@ export default function TransactionMenu({
         onClick={handleClick}
       >
         Transactions
-        {net.pendingTransactions() > 0 && ` (${net.pendingTransactions()})`}
+        {pendingTransactions(transactions) > 0 &&
+          ` (${pendingTransactions(transactions)})`}
       </button>
       <Menu
         id="simple-menu"
@@ -153,7 +160,9 @@ export default function TransactionMenu({
         onClose={handleClose}
       >
         <ZeroTransactions />
-        {net.transactions.map((t) => TransactionMenuItem(t))}
+        {transactions.map((transaction, index) =>
+          TransactionMenuItem(transaction, index),
+        )}
         <AllTransactionsBtn />
       </Menu>
 

@@ -9,7 +9,18 @@ import {
   SET_METAMASK_NETWORK,
 } from '../actionsTypes';
 
-const initialState = {
+export interface NetState {
+  client: any,
+  metamaskFound: boolean,
+  polkadotJSFound: boolean,
+  metamaskConnected: boolean,
+  polkadotJSConnected: boolean,
+  metamaskMissing: boolean,
+  polkadotJSMissing: boolean,
+  metamaskNetwork: string,
+}
+
+const initialState : NetState = {
   client: null,
   metamaskFound: false,
   polkadotJSFound: false,

@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // external imports
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactModal from 'react-modal';
 
 import { connect } from 'react-redux';
@@ -15,64 +15,136 @@ import Net, { isConnected } from './net';
 import { useDispatch } from 'react-redux';
 
 import { setNet } from './redux/actions';
+import { NetState } from './redux/reducers/net';
+import {
+	TransactionsState,
+	TransactionStatus,
+} from './redux/reducers/transactions';
+import Modal from './components/Modal';
+import LoadingSpinner from './components/PendingTransactionsUI/LoadingSpinner';
+import { BLOCK_EXPLORER_URL } from './config';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
 type Props = {
-  net: any;
+	net: any;
+	transactions: TransactionsState;
 };
 
 function BridgeApp(props: Props) {
-  const { net } = props;
+	const { net, transactions } = props;
 
-  const dispatch = useDispatch();
+	const dispatch = useDispatch();
+	const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
 
-  // Start Network
-  useEffect(() => {
-    const start = async () => {
-      const net = await new Net();
-      await net.start(dispatch);
+	// Start Network
+	useEffect(() => {
+		const start = async () => {
+			const net = await new Net();
+			await net.start(dispatch);
 
-      dispatch(setNet(net));
-    };
+			dispatch(setNet(net));
+		};
 
-    start();
-  }, []);
+		start();
+	}, [dispatch]);
 
-  // Check if Network has been started
-  if (!isConnected(net.client)) {
-    return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
-  }
+	// open modal for pending transation
+	useEffect(() => {
+		if (transactions.pendingTransaction) {
+			setIsPendingModalOpen(true);
+		}
+	}, [transactions.pendingTransaction, dispatch]);
 
-  // Ensure that network is ropsten
-  const PERMITTED_METAMASK_NETWORK =
-    process.env.PERMITTED_METAMASK_NETWORK || 'ropsten';
-  if (
-    net.metamaskNetwork.toLowerCase() !==
-    PERMITTED_METAMASK_NETWORK.toLowerCase()
-  ) {
-    return (
-      <p style={{ textAlign: 'center', color: '#fff' }}>
-        Please select Ropsten network in Metamask extension
-      </p>
-    );
-  }
+	const closeModal = () => {
+		setIsPendingModalOpen(false);
+	};
 
-  return (
-    <main>
-      <Nav net={net.client} />
-      <Bridge
-        net={net.client!}
-        polkadotAddress={net.client.polkadotAddress}
-        ethAddress={net.client.ethAddress}
-      />
-    </main>
-  );
+	// Check if Network has been started
+	if (!isConnected(net.client)) {
+		return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
+	}
+
+	// Ensure that network is ropsten
+	const PERMITTED_METAMASK_NETWORK =
+		process.env.PERMITTED_METAMASK_NETWORK || 'ropsten';
+	if (
+		net.metamaskNetwork.toLowerCase() !==
+		PERMITTED_METAMASK_NETWORK.toLowerCase()
+	) {
+		return (
+			<p style={{ textAlign: 'center', color: '#fff' }}>
+				Please select Ropsten network in Metamask extension
+			</p>
+		);
+	}
+
+	return (
+		<main>
+			<Nav net={net.client} transactions={props.transactions} />
+			<Bridge
+				net={net.client!}
+				polkadotAddress={net.client.polkadotAddress}
+				ethAddress={net.client.ethAddress}
+			/>
+			<Modal
+				isOpen={isPendingModalOpen}
+				closeModal={closeModal}
+				buttonText="x"
+			>
+				<div>
+					{/* submitting - waiting for confirmation in metamask */}
+					{transactions.pendingTransaction?.status ===
+					TransactionStatus.SUBMITTING_TO_ETHEREUM ? (
+						<div>
+							<div style={{ width: '40px', height: '40px' }}>
+								<LoadingSpinner />
+							</div>
+							<h3>Waiting for Confirmation</h3>
+							<h4>
+								Swapping{' '}
+								{transactions.pendingTransaction?.amount} ETH
+								for {transactions.pendingTransaction?.amount}{' '}
+								PolkaEth
+							</h4>
+							<div>Confirm this transaction in your wallet</div>
+						</div>
+					) : null}
+					{/* submitted to ethereum - waiting to reach transaction confirmation threshold  */}
+					{transactions.pendingTransaction?.status ===
+					TransactionStatus.WAITING_FOR_CONFIRMATION ? (
+						<div>
+							<h3>Transaction Submitted</h3>
+							<h4>
+								<a
+									target="_blank"
+									rel="noopener noreferrer"
+									href={`${BLOCK_EXPLORER_URL}/tx/${transactions.pendingTransaction.hash}`}
+								>
+									View on etherscan
+								</a>
+							</h4>
+						</div>
+					) : null}
+					{/* error */}
+					{transactions.pendingTransaction?.status ===
+					TransactionStatus.REJECTED ? (
+						<div>
+							<h3>Error</h3>
+							<h4>Transactoin rejected.</h4>
+						</div>
+					) : null}
+				</div>
+			</Modal>
+		</main>
+	);
 }
 
-const mapStateToProps = (state: any) => {
-  return { net: state.net };
+const mapStateToProps = (
+	state: Props
+): { net: NetState; transactions: TransactionsState } => {
+	return { net: state.net, transactions: state.transactions };
 };
 
 export default connect(mapStateToProps)(BridgeApp);

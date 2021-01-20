@@ -21,6 +21,14 @@ import {
   setMetamaskMissing,
   setMetamaskNetwork,
 } from '../redux/actions';
+import {
+  addTransaction,
+  setPendingTransaction,
+  updateConfirmations,
+} from '../redux/actions/transactions';
+import {
+  TransactionStatus,
+} from '../redux/reducers/transactions';
 
 // Eth API connector
 type Connector = (e: Eth, net: any) => void;
@@ -36,11 +44,13 @@ export default class Eth extends Api {
   public eth_contract?: Contract;
   public erc20_contract?: Contract;
   private net: Net;
+  public dispatch: Dispatch;
 
-  constructor(connecter: Connector, net: Net) {
+  constructor(connecter: Connector, net: Net, dispatch: Dispatch) {
     super();
     this.net = net;
     connecter(this, net);
+    this.dispatch = dispatch;
   }
 
   // Get default web3 account
@@ -107,25 +117,41 @@ export default class Eth extends Api {
               gas: 500000,
               value: self.conn.utils.toWei(amount, 'ether'),
             })
-            .on('sending', function (payload: any) {
-              console.log('Sending Transaction');
-            })
-            .on('sent', function (payload: any) {
-              console.log('Transaction sent');
-            })
-            .on('transactionHash', function (hash: string) {
-              transactionHash = hash;
-
-              self.net.addTransaction({
-                hash,
+            .on('sending', async function (payload: any) {
+              console.log('Sending Transaction', payload);
+              // create transaction with default values to display in the modal
+              self.dispatch(setPendingTransaction({
+                hash: '',
                 confirmations: 0,
                 chain: 'eth',
                 sender: self.net.ethAddress,
                 receiver: self.net.polkadotAddress,
                 amount: amount,
+                status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
                 isMinted: false,
                 isBurned: false,
-              });
+              }));
+            })
+            .on('sent', async function (payload: any) {
+              console.log('Transaction sent', payload);
+            })
+            .on('transactionHash', async function (hash: string) {
+              transactionHash = hash;
+
+              self.dispatch(
+                addTransaction({
+                  hash,
+                  confirmations: 0,
+                  chain: 'eth',
+                  sender: self.net.ethAddress,
+                  receiver: self.net.polkadotAddress,
+                  amount: amount,
+                  status: TransactionStatus.WAITING_FOR_CONFIRMATION,
+                  isMinted: false,
+                  isBurned: false,
+                }),
+              );
+
             })
             .on(
               'confirmation',
@@ -140,10 +166,25 @@ export default class Eth extends Api {
                 console.log(latestBlockHash);
 
                 // update transaction confirmations
-                self.net.updateConfirmations(transactionHash, confirmation);
+                self.dispatch(
+                  updateConfirmations(transactionHash, confirmation),
+                );
+
               },
             )
             .on('error', function (error: Error) {
+              // TODO: render error message
+              self.dispatch(setPendingTransaction({
+                hash: '',
+                confirmations: 0,
+                chain: 'eth',
+                sender: self.net.ethAddress,
+                receiver: self.net.polkadotAddress,
+                amount: amount,
+                status: TransactionStatus.REJECTED,
+                isMinted: false,
+                isBurned: false,
+              }));
               throw error;
             });
         }
@@ -191,7 +232,6 @@ export default class Eth extends Api {
   // Web3 API connector
   public static async connect(dispatch: Dispatch): Promise<Connector> {
     let locWindow = window as MyWindow;
-
     let web3: Web3;
 
     const connectionComplete = (web3: any) => {

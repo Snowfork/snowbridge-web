@@ -5,17 +5,14 @@ import {
   web3Enable,
   web3FromSource,
 } from '@polkadot/extension-dapp';
-
-import { evmToAddress } from '@polkadot/util-crypto';
 import { Dispatch } from 'redux';
-
 import Api from './api';
 import Net from './';
 import { setPolkadotJSFound, setPolkadotJSMissing } from '../redux/actions';
 
 // Config
-import { POLKADOT_API_PROVIDER } from '../config';
-import { ETH_ASSET_ID } from '../config';
+import { POLKADOT_API_PROVIDER, ETH_ASSET_ID } from '../config';
+import { polkaEthBurned, polkaEthMinted } from '../redux/actions/transactions';
 
 // Polkadot API connector
 type Connector = (p: Polkadot, net: any) => void;
@@ -27,23 +24,25 @@ interface AssetAccountData {
 export default class Polkadot extends Api {
   public conn?: ApiPromise;
   public net: Net;
+  public dispatch: Dispatch;
 
-  constructor(connector: Connector, net: any) {
+  constructor(connector: Connector, net: any, dispatch: Dispatch) {
     super();
     this.net = net;
     connector(this, net);
+    this.dispatch = dispatch;
   }
 
   // Get all polkadot addresses
-  public async get_addresses(dispatch: Dispatch) {
+  public async get_addresses() {
     // returns an array of all the injected sources
     const extensions = await web3Enable('Snowbridge');
 
     if (extensions.length === 0) {
-      dispatch(setPolkadotJSMissing());
+      this.dispatch(setPolkadotJSMissing());
       return null;
     }
-    dispatch(setPolkadotJSFound());
+    this.dispatch(setPolkadotJSFound());
 
     const allAccounts = await web3Accounts();
     return allAccounts;
@@ -149,22 +148,24 @@ export default class Polkadot extends Api {
             console.log('Got Assets.Minted event');
 
             // Notify local transaction object the asset is minted
-            this.net.polkaEthMinted({
+            this.dispatch(polkaEthMinted({
               // Receiver of the sent PolkaEth
-              AccountId: event.data[1].toString(),
+              accountId: event.data[1].toString(),
               // PolkaEth amount
-              amount: event.data[2].toString(),
-            });
+              amount: web3.utils.fromWei(event.data[2].toString()),
+            }
+            ));
 
             // Checks if the parachain emited event is for a burned
           } else if (event.section === 'asset' && event.method === 'Burned') {
             console.log('Got Assets.Burned event');
 
             // Notify local transaction object the asset is burned
-            this.net.polkaEthBurned({
-              AccountId: event.data[1].toString(),
+            this.dispatch(polkaEthBurned({
+             accountId: event.data[1].toString(),
               amount: event.data[2].toString(),
-            });
+            }
+            ));
           }
 
           // TODO: update new Polkadot account balance

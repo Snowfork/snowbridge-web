@@ -2,13 +2,11 @@ import React, { useState } from 'react';
 import * as S from './Nav.style';
 import Net from '../../net';
 
-import {
-  formatToDecimalString,
-  shortenWalletAddress,
-} from '../../utils/common';
+import { shortenWalletAddress } from '../../utils/common';
 
 import Modal from '../Modal';
 import TransactionMenu from '../TransactionMenu/';
+import TransactionsList from '../TransactionsList/';
 
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
@@ -16,9 +14,12 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
+import { TransactionsState } from '../../redux/reducers/transactions';
+import { BLOCK_EXPLORER_URL } from '../../config';
 
 type Props = {
   net: Net;
+  transactions: TransactionsState;
 };
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -33,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-function Nav({ net }: Props): React.ReactElement<Props> {
+function Nav({ net, transactions }: Props): React.ReactElement<Props> {
   const classes = useStyles();
 
   const [polkadotAccIndex, setPolkadotAccIndex] = useState(0);
@@ -64,7 +65,7 @@ function Nav({ net }: Props): React.ReactElement<Props> {
             <S.Amount>{net.ethBalance} ETH</S.Amount>
             <S.Address
               as="a"
-              href={`https://ropsten.etherscan.io/address/${net.ethAddress}`}
+              href={`${BLOCK_EXPLORER_URL}/address/${net.ethAddress}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -110,7 +111,8 @@ function Nav({ net }: Props): React.ReactElement<Props> {
             </Modal>
           )}
         </S.DisplayWrapper>
-        <TransactionMenu net={net} />
+        <TransactionMenu net={net} transactions={transactions} />
+        <TransactionsList transactions={transactions} />
       </S.CurrencyList>
     </S.Wrapper>
   );
