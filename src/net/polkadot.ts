@@ -12,8 +12,8 @@ import { setPolkadotJSFound, setPolkadotJSMissing } from '../redux/actions';
 
 // Config
 import { POLKADOT_API_PROVIDER, ETH_ASSET_ID } from '../config';
-import { addTransaction, polkaEthBurned, polkaEthMinted, setPendingTransaction } from '../redux/actions/transactions';
-import { Transaction, TransactionStatus } from '../redux/reducers/transactions';
+import { addTransaction, ethUnlockedEvent, polkaEthBurned, polkaEthMinted, setPendingTransaction } from '../redux/actions/transactions';
+import { EthUnlockEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
 
 // Polkadot API connector
 type Connector = (p: Polkadot, net: any) => void;
@@ -98,8 +98,8 @@ export default class Polkadot extends Api {
         const pendingTransaction: Transaction = {
           hash: '',
           confirmations: 0,
-          sender: self.net.ethAddress,
-          receiver: self.net.polkadotAddress,
+          sender: self.net.polkadotAddress,
+          receiver: self.net.ethAddress,
           amount: amount,
           status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
           isMinted: false,
@@ -111,6 +111,22 @@ export default class Polkadot extends Api {
           }
         }
         self.dispatch(setPendingTransaction(pendingTransaction));
+
+
+
+        // subscribe to ETH unlock event
+        const unlockEventSubscription = self.net.eth?.eth_contract?.events.Unlock({})
+          .on('data', (
+            event: EthUnlockEvent
+          ) => {
+            // TODO: find a better way to link this event to the transaction
+            if (
+              self.net.eth?.conn?.utils.fromWei(event.returnValues._amount) === pendingTransaction.amount &&
+              event.returnValues._recipient === pendingTransaction.receiver
+            ) {
+              self.dispatch(ethUnlockedEvent(event, pendingTransaction));
+            } 
+        })
 
         const polkaWeiValue = web3.utils.toWei(amount, 'ether');
 
@@ -151,6 +167,7 @@ export default class Polkadot extends Api {
             } else {
               // TODO: display error in modal
             }
+            unlockEventSubscription?.unsubscribe();
           });
       } else {
         throw new Error('Default Polkadot account not found');

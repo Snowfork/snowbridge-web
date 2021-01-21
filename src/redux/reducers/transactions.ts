@@ -4,7 +4,8 @@ import {
   SET_TRANSACTION_STATUS,
   POLKA_ETH_MINTED,
   POLKA_ETH_BURNED,
-  SET_PENDING_TRANSACTION
+  SET_PENDING_TRANSACTION,
+  ETH_UNLOCKED_EVENT
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
@@ -12,9 +13,11 @@ import {
   UpdateConfirmationsPayload,
   PolkaEthMintedPayload,
   PolkaEthBurnedPayload,
-  SetPendingTransactionPayload
+  SetPendingTransactionPayload,
+  EthUnlockEventPayload
 } from '../actions/transactions'
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
+import { EventData } from 'web3-eth-contract';
 
 export enum TransactionStatus {
   // used for error states
@@ -37,6 +40,7 @@ export enum TransactionStatus {
   FINALIZED = 6
 }
 
+
 export interface Transaction {
   hash: string;
   confirmations: number;
@@ -51,6 +55,11 @@ export interface Transaction {
     deposited: 'eth' | 'polkaEth',
     recieved: 'eth' | 'polkaEth',
   }
+}
+
+// Interface for the Ethereum 'Unlock' event, emitted by the ETHApp smart contract 
+export interface EthUnlockEvent extends EventData {
+  returnValues: { _amount: string, _recipient: string, _sender: string }
 }
 
 // Interface for an PolkaEth 'Minted' event, emitted by the parachain
@@ -154,7 +163,24 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         return Object.assign({}, state, {
           pendingTransaction: action.transaction
         })
-       })(action)
+      })(action)
+    }
+    case ETH_UNLOCKED_EVENT: {
+      return ((action: EthUnlockEventPayload) => {
+        const isMatchingTransaction = (transaction: Transaction): boolean => {
+          return action.transaction.amount === transaction.amount
+            && action.transaction.sender === transaction.sender
+        }
+        return Object.assign({}, state, {
+          transactions: state.transactions.map((t) => isMatchingTransaction(t)
+            ? {
+              ...t,
+              status: TransactionStatus.FINALIZED,
+              hash: action.event.transactionHash
+            }
+            : t)
+        })
+      })(action)
     }
     default:
       return state
