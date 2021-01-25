@@ -12,7 +12,7 @@ export type NotificationVariant = 'success' | 'warning';
 export interface Notification {
   text: string;
   variant: NotificationVariant;
-  id?: any;
+  id?: number;
 }
 
 export interface NotificationState {
