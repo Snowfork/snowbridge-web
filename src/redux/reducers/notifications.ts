@@ -11,7 +11,7 @@ export type NotificationColor = 'success' | 'warning' | 'error' | 'default';
 
 export interface Notification {
   text: string;
-  color: NotificationColor;
+  color?: NotificationColor;
   id?: number;
 }
 
