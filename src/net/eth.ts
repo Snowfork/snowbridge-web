@@ -29,6 +29,7 @@ import {
 import {
   TransactionStatus,
 } from '../redux/reducers/transactions';
+import {notify} from '../redux/actions/notifications';
 
 // Eth API connector
 type Connector = (e: Eth, net: any) => void;
@@ -152,6 +153,7 @@ export default class Eth extends Api {
                 }),
               );
 
+	      self.dispatch(notify({text: "ETH to SnowETH Transaction created"} ));
             })
             .on(
               'confirmation',
@@ -170,6 +172,12 @@ export default class Eth extends Api {
                   updateConfirmations(transactionHash, confirmation),
                 );
 
+		if(confirmation === 12){
+		  self.dispatch(notify({
+	            text: `Transactions confirmed after ${confirmation} confirmations`,
+		      color: 'success'
+		    } ));
+		  }
               },
             )
             .on('error', function (error: Error) {
@@ -185,6 +193,11 @@ export default class Eth extends Api {
                 isMinted: false,
                 isBurned: false,
               }));
+
+	      self.dispatch(notify({
+	        text: `Transaction Error`,
+		  color: 'error'
+	      } ));
               throw error;
             });
         }
