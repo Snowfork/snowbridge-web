@@ -33,7 +33,7 @@ export function notify(
 	    toast.error(notification.text);
 	    break;
 	default:
-	    toast(notification.text);
+	    toast.info(notification.text);
     }
     
   return {
