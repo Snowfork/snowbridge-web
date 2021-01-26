@@ -7,11 +7,11 @@ import {
   RemoveNotificationPayload,
 } from '../actions/notifications';
 
-export type NotificationVariant = 'success' | 'warning';
+export type NotificationColor = 'success' | 'warning' | 'error' | 'default';
 
 export interface Notification {
   text: string;
-  variant: NotificationVariant;
+  color: NotificationColor;
   id?: number;
 }
 
