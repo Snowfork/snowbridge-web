@@ -7,11 +7,13 @@ import styled from 'styled-components';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 
-import AppEthereum from './AppETH';
-import AppPolkadot from './AppPolkadot';
+import AppEthereum from './components/AppEth';
+import AppPolkadot from './components/AppPolkadot';
 import AppERC20 from './AppERC20';
 
 import Net from './net';
+
+import SelectTokenModal from './components/SelectTokenModal';
 
 // ------------------------------------------
 //                  Props
@@ -22,6 +24,11 @@ type Props = {
   ethAddress: string;
 };
 
+enum Currencies {
+  Eth = 'ETH',
+  Polkadot = 'POLKADOT',
+}
+
 // ------------------------------------------
 //               Bank component
 // ------------------------------------------
@@ -30,58 +37,29 @@ function Bridge({
   polkadotAddress,
   ethAddress,
 }: Props): React.ReactElement<Props> {
-  const [selectedChain, swapChain] = useState('ETH');
+  const [selectedChain, swapChain] = useState(Currencies.Eth);
+  const [selectedToken, setSelectedToken] = useState('ETH');
 
-  const SelectPolkadotApp = (): React.ReactElement => {
-    return (
-      <select style={{ float: 'right' }} onChange={handleSwap}>
-        <option selected value="ETH">
-          ETH to Polkadot
-        </option>
-        <option value="POLKADOT">Polkadot to ETH</option>
-      </select>
-    );
-  };
-
-  const SelectEthApp = (): React.ReactElement => {
-    return (
-      <select style={{ float: 'right' }} onChange={handleSwap}>
-        <option value="ETH">ETH to Polkadot</option>
-        <option selected value="POLKADOT">
-          Polkadot to ETH
-        </option>
-      </select>
-    );
-  };
-
-  const handleSwap = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    let val = e.target.value;
-
-    if (val === 'POLKADOT') {
-      swapChain('POLKADOT');
+  const handleSwap = () => {
+    if (selectedChain === Currencies.Eth) {
+      swapChain(Currencies.Polkadot);
     } else {
-      swapChain('ETH');
+      swapChain(Currencies.Eth);
     }
   };
 
   const ChainApp = () => {
-    if (selectedChain === 'POLKADOT') {
-      return (
-        <AppPolkadot net={net}>
-          <SelectEthApp />
-        </AppPolkadot>
-      );
+    if (selectedChain === Currencies.Polkadot) {
+      return <AppEthereum net={net} handleSwap={handleSwap} />;
     } else {
-      return (
-        <AppEthereum net={net}>
-          <SelectPolkadotApp />
-        </AppEthereum>
-      );
+      return <AppPolkadot net={net} handleSwap={handleSwap} />;
     }
   };
 
   return (
     <div style={{ padding: '2em 0' }}>
+      <SelectTokenModal setSelectedToken={setSelectedToken} />
+      <div style={{ color: '#fff' }}>{selectedToken}</div>
       <ChainApp />
       <AppERC20
         web3={net?.eth?.conn as Web3}

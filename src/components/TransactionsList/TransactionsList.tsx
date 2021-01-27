@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import * as S from './TransactionsList.style';
 import ReactModal from 'react-modal';
 import Button from '../Button';
-import LoadingSpinner from './LoadingSpinner';
+import LoadingSpinner from '../LoadingSpinner';
 
 import { TransactionsState } from '../../redux/reducers/transactions';
 

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import Net from './net';
-import { shortenWalletAddress } from '../src/utils/common';
+import * as S from './AppPolkadot.style';
+import Net from '../../net';
+import { shortenWalletAddress } from '../../utils/common';
 
 import {
   Typography,
@@ -13,29 +14,39 @@ import {
   Divider,
 } from '@material-ui/core';
 
+import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
+import IconButton from '../IconButton';
+
 // ------------------------------------------
 //                  Props
 // ------------------------------------------
 type Props = {
   net: Net;
+  handleSwap: any;
   children?: JSX.Element | JSX.Element[];
 };
 
 // ------------------------------------------
 //               AppPolkadot component
 // ------------------------------------------
-function AppPolkadot({ net, children }: Props): React.ReactElement<Props> {
+function AppPolkadot({
+  net,
+  handleSwap,
+  children,
+}: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
+
+  const handleClick = () => {
+    handleSwap();
+  };
 
   function SendButton() {
     if (Number(depositAmount) > 0) {
       return (
         <Button
           color="primary"
-          onClick={() =>
-            net?.polkadot?.burn_polkaeth(depositAmount)
-          }
+          onClick={() => net?.polkadot?.burn_polkaeth(depositAmount)}
           variant="outlined"
         >
           <Typography variant="button">Send Polkadot Asset</Typography>
@@ -67,9 +78,22 @@ function AppPolkadot({ net, children }: Props): React.ReactElement<Props> {
         }}
       >
         <Grid item xs={10}>
-          {children}
           <Typography gutterBottom variant="h5">
-            Polkadot App
+            <S.HeadingContainer>
+              Eth
+              <IconButton
+                primary
+                style={{ marginLeft: '10px' }}
+                icon={<FaLongArrowAltLeft size="2.5em" />}
+                onClick={handleClick}
+              />
+              <IconButton
+                style={{ marginRight: '10px' }}
+                icon={<FaLongArrowAltRight size="2.5em" />}
+                onClick={handleClick}
+              />
+              Polkadot
+            </S.HeadingContainer>
           </Typography>
         </Grid>
 
