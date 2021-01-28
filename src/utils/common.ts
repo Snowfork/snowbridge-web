@@ -1,5 +1,4 @@
-import { REQUIRED_ETH_CONFIRMATIONS } from "../config";
-import { Transaction } from "../redux/reducers/transactions";
+import { Transaction, TransactionStatus } from "../redux/reducers/transactions";
 
 /**
  * Shortens a wallet address, showing X number of letters, an ellipsis, and then Y number of letters
@@ -52,8 +51,8 @@ export function formatToDecimalString(
  * @returns {number} The number of pending transactions
 
  */
-export const pendingTransactions = (transactions: Transaction[]) => {
+export const pendingTransactions = (transactions: Transaction[]): number => {
   return transactions.filter(
-    (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
+    (t) => t.status < TransactionStatus.FINALIZED,
   ).length;
 }

@@ -7,6 +7,7 @@ import LoadingSpinner from '../LoadingSpinner';
 import { TransactionsState } from '../../redux/reducers/transactions';
 
 import TransactionItem from './TransactionItem';
+import { pendingTransactions } from '../../utils/common';
 
 const customStyles = {
   overlay: {},
@@ -32,6 +33,7 @@ function TransactionsList({
   const [lastTransactionCount, setLastTransactionCount] = useState(
     transactions.length,
   );
+  const [isTransactionPending, setIsTransactionPending] = useState(false)
 
   // fires when the transaction list is updated
   // check if a new transaction has been added
@@ -42,6 +44,12 @@ function TransactionsList({
     }
     setLastTransactionCount(transactions.length);
   }, [lastTransactionCount, transactions]);
+
+  // fires when the transactions are updated
+  // to check if there are any pending transactions
+  useEffect(() => { 
+      setIsTransactionPending(pendingTransactions(transactions) > 0)
+  }, [transactions])
 
   function closeModal() {
     setIsOpen(false);
@@ -63,11 +71,17 @@ function TransactionsList({
     );
   }
 
+  function getLoadingIcon() {
+    return isTransactionPending
+      ? <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />
+      : null;
+  }
+
   return (
     <div>
       <Button
         onClick={openModal}
-        icon={<LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
+        icon={getLoadingIcon()}
       >
         Transaction list
       </Button>
