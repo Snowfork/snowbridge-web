@@ -27,6 +27,7 @@ import {
   updateConfirmations,
 } from '../redux/actions/transactions';
 import {
+  Transaction,
   TransactionStatus,
 } from '../redux/reducers/transactions';
 import {notify} from '../redux/actions/notifications';
@@ -111,6 +112,22 @@ export default class Eth extends Api {
             self.net.polkadotAddress,
           );
 
+          const pendingTransaction: Transaction = {
+            hash: '',
+            confirmations: 0,
+            sender: self.net.ethAddress,
+            receiver: self.net.polkadotAddress,
+            amount: amount,
+            status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
+            isMinted: false,
+            isBurned: false,
+            chain: 'eth',
+            assets: {
+              deposited: 'eth',
+              recieved: 'polkaEth'
+            }
+          }
+
           await self.eth_contract.methods
             .sendETH(polkadotAddress)
             .send({
@@ -121,17 +138,7 @@ export default class Eth extends Api {
             .on('sending', async function (payload: any) {
               console.log('Sending Transaction', payload);
               // create transaction with default values to display in the modal
-              self.dispatch(setPendingTransaction({
-                hash: '',
-                confirmations: 0,
-                chain: 'eth',
-                sender: self.net.ethAddress,
-                receiver: self.net.polkadotAddress,
-                amount: amount,
-                status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
-                isMinted: false,
-                isBurned: false,
-              }));
+              self.dispatch(setPendingTransaction(pendingTransaction));
             })
             .on('sent', async function (payload: any) {
               console.log('Transaction sent', payload);
@@ -143,13 +150,17 @@ export default class Eth extends Api {
                 addTransaction({
                   hash,
                   confirmations: 0,
-                  chain: 'eth',
                   sender: self.net.ethAddress,
                   receiver: self.net.polkadotAddress,
                   amount: amount,
                   status: TransactionStatus.WAITING_FOR_CONFIRMATION,
                   isMinted: false,
                   isBurned: false,
+                  chain: 'eth',
+                  assets: {
+                    deposited: 'eth',
+                    recieved: 'polkaEth'
+                  }
                 }),
               );
 
@@ -183,15 +194,8 @@ export default class Eth extends Api {
             .on('error', function (error: Error) {
               // TODO: render error message
               self.dispatch(setPendingTransaction({
-                hash: '',
-                confirmations: 0,
-                chain: 'eth',
-                sender: self.net.ethAddress,
-                receiver: self.net.polkadotAddress,
-                amount: amount,
+                ...pendingTransaction,
                 status: TransactionStatus.REJECTED,
-                isMinted: false,
-                isBurned: false,
               }));
 
 	      self.dispatch(notify({
