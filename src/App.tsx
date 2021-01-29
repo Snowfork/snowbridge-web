@@ -134,8 +134,7 @@ function BridgeApp(props: Props) {
           ) : null}
         </div>
       </Modal>
-
-      {/* notifications */}
+      
       <ToastContainer autoClose={10000} />
     </main>
   );
