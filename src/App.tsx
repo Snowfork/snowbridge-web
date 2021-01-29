@@ -129,7 +129,7 @@ function BridgeApp(props: Props) {
           TransactionStatus.REJECTED ? (
             <div>
               <h3>Error</h3>
-              <h4>Transactoin rejected.</h4>
+              <h4>Transaction rejected.</h4>
             </div>
           ) : null}
         </div>
