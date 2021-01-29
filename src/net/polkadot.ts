@@ -12,8 +12,10 @@ import { setPolkadotJSFound, setPolkadotJSMissing } from '../redux/actions';
 
 // Config
 import { POLKADOT_API_PROVIDER, ETH_ASSET_ID } from '../config';
+
 import { addTransaction, ethUnlockedEvent, polkaEthBurned, polkaEthMinted, setPendingTransaction } from '../redux/actions/transactions';
 import { EthUnlockEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
+import {notify} from '../redux/actions/notifications';
 
 // Polkadot API connector
 type Connector = (p: Polkadot, net: any) => void;
@@ -200,6 +202,7 @@ export default class Polkadot extends Api {
             }
             ));
 
+            this.dispatch(notify({text: "PolkaEth Minted", color: "success"}));
             // Checks if the parachain emited event is for a burned
           } else if (event.section === 'asset' && event.method === 'Burned') {
             console.log('Got Assets.Burned event');
@@ -210,7 +213,9 @@ export default class Polkadot extends Api {
               amount: web3.utils.fromWei(event.data[2].toString()),
             }
             ));
-          }
+
+            this.dispatch(notify({text: "PolkaEth Burned", color: "success"}));
+	  }
 
           // TODO: update new Polkadot account balance
         });

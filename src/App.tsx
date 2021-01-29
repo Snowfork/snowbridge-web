@@ -13,12 +13,14 @@ import Bridge from './Bridge';
 import Nav from './components/Nav';
 import Net, { isConnected } from './net';
 import { useDispatch } from 'react-redux';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { setNet } from './redux/actions';
 import { NetState } from './redux/reducers/net';
 import {
-	TransactionsState,
-	TransactionStatus,
+  TransactionsState,
+  TransactionStatus,
 } from './redux/reducers/transactions';
 import Modal from './components/Modal';
 import LoadingSpinner from './components/PendingTransactionsUI/LoadingSpinner';
@@ -28,8 +30,8 @@ import { BLOCK_EXPLORER_URL } from './config';
 ReactModal.setAppElement('#root');
 
 type Props = {
-	net: any;
-	transactions: TransactionsState;
+  net: any;
+  transactions: TransactionsState;
 };
 
 function BridgeApp(props: Props) {
@@ -145,14 +147,23 @@ function BridgeApp(props: Props) {
 						) : null}
 				</div>
 			</Modal>
+
+			<ToastContainer autoClose={10000} />
 		</main>
 	);
+
 }
 
 const mapStateToProps = (
-	state: Props
-): { net: NetState; transactions: TransactionsState } => {
-	return { net: state.net, transactions: state.transactions };
+  state: Props,
+): {
+  net: NetState;
+  transactions: TransactionsState;
+} => {
+  return {
+    net: state.net,
+    transactions: state.transactions,
+  };
 };
 
 export default connect(mapStateToProps)(BridgeApp);
