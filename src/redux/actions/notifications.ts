@@ -1,11 +1,16 @@
 import { toast } from "react-toastify";
-import { Notification } from '../reducers/notifications';
 
 import {
   ADD_NOTIFICATION,
-  REMOVE_NOTIFICATION,
 } from '../actionsTypes/notifications';
 
+export type NotificationColor = 'success' | 'warning' | 'error' | 'default';
+
+export interface Notification {
+  text: string;
+  color?: NotificationColor;
+  id?: number;
+}
 export interface AddNotificationPayload {
   type: string;
   notification: Notification;
@@ -39,11 +44,5 @@ export function notify(
   return {
     type: ADD_NOTIFICATION,
     notification,
-  };
-}
-export function removeNotification(id: number): RemoveNotificationPayload {
-  return {
-    type: REMOVE_NOTIFICATION,
-    id: id,
   };
 }
