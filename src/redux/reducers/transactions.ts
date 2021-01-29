@@ -4,7 +4,8 @@ import {
   SET_TRANSACTION_STATUS,
   POLKA_ETH_MINTED,
   POLKA_ETH_BURNED,
-  SET_PENDING_TRANSACTION
+  SET_PENDING_TRANSACTION,
+  ETH_UNLOCKED_EVENT
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
@@ -12,9 +13,11 @@ import {
   UpdateConfirmationsPayload,
   PolkaEthMintedPayload,
   PolkaEthBurnedPayload,
-  SetPendingTransactionPayload
+  SetPendingTransactionPayload,
+  EthUnlockEventPayload
 } from '../actions/transactions'
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
+import { EventData } from 'web3-eth-contract';
 
 export enum TransactionStatus {
   // used for error states
@@ -26,9 +29,10 @@ export enum TransactionStatus {
   // used when the eth transaction is confirmed
   // and we are waiting to reach the confirmation threshold
   CONFIRMING = 2,
-  // transaction reached the eth confirmation threshold
+  // eth transaction reached the eth confirmation threshold
   CONFIRMED_ON_ETHEREUM = 3,
-  // waiting for 'Minted' event on polkadot
+  // waiting for 'Minted' event on polkadot for eth transactions
+  // or waiting for 'Unlock' event on Ethereum for polkadot transactions
   WAITING_FOR_RELAY = 4,
   // recieved minted event on polkadot
   RELAYED = 5,
@@ -36,16 +40,26 @@ export enum TransactionStatus {
   FINALIZED = 6
 }
 
+
 export interface Transaction {
   hash: string;
   confirmations: number;
   sender: string;
   receiver: string;
   amount: string;
+  status: TransactionStatus;
+  isMinted: boolean;
+  isBurned: boolean;
   chain: 'eth' | 'polkadot';
-  status: TransactionStatus
-  isMinted: boolean,
-  isBurned: boolean,
+  assets: {
+    deposited: 'eth' | 'polkaEth',
+    recieved: 'eth' | 'polkaEth',
+  }
+}
+
+// Interface for the Ethereum 'Unlock' event, emitted by the ETHApp smart contract 
+export interface EthUnlockEvent extends EventData {
+  returnValues: { _amount: string, _recipient: string, _sender: string }
 }
 
 // Interface for an PolkaEth 'Minted' event, emitted by the parachain
@@ -138,7 +152,7 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
           transactions: state.transactions.map((t) =>
             (t.amount === action.event.amount
               && t.receiver === action.event.accountId)
-              ? { ...t, isBurned: true }
+              ? { ...t, isBurned: true, status: TransactionStatus.WAITING_FOR_RELAY }
               : t
           )
         });
@@ -149,7 +163,24 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         return Object.assign({}, state, {
           pendingTransaction: action.transaction
         })
-       })(action)
+      })(action)
+    }
+    case ETH_UNLOCKED_EVENT: {
+      return ((action: EthUnlockEventPayload) => {
+        const isMatchingTransaction = (transaction: Transaction): boolean => {
+          return action.transaction.amount === transaction.amount
+            && action.transaction.sender === transaction.sender
+        }
+        return Object.assign({}, state, {
+          transactions: state.transactions.map((t) => isMatchingTransaction(t)
+            ? {
+              ...t,
+              status: TransactionStatus.FINALIZED,
+              hash: action.event.transactionHash
+            }
+            : t)
+        })
+      })(action)
     }
     default:
       return state

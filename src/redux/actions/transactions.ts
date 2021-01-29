@@ -5,8 +5,9 @@ import {
     POLKA_ETH_BURNED,
     POLKA_ETH_MINTED,
     SET_PENDING_TRANSACTION,
+    ETH_UNLOCKED_EVENT
 } from '../actionsTypes/transactions';
-import { PolkaEthBurnedEvent, PolkaEthMintedEvent, Transaction, TransactionStatus } from '../reducers/transactions';
+import { EthUnlockEvent, PolkaEthBurnedEvent, PolkaEthMintedEvent, Transaction, TransactionStatus } from '../reducers/transactions';
 
 export interface AddTransactionPayload { type: string, transaction: Transaction };
 export const addTransaction = (transaction: Transaction): AddTransactionPayload => ({
@@ -43,5 +44,12 @@ export const polkaEthBurned = (event: PolkaEthBurnedEvent): PolkaEthBurnedPayloa
 export interface SetPendingTransactionPayload { type: string, transaction: Transaction };
 export const setPendingTransaction = (transaction: Transaction): SetPendingTransactionPayload => ({
     type: SET_PENDING_TRANSACTION,
+    transaction
+})
+
+export interface EthUnlockEventPayload { type: string; event: EthUnlockEvent; transaction: Transaction };
+export const ethUnlockedEvent = (event: EthUnlockEvent, transaction: Transaction): EthUnlockEventPayload => ({
+    type: ETH_UNLOCKED_EVENT,
+    event,
     transaction
 })
