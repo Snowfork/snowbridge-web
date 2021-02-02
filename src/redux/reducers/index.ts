@@ -1,8 +1,18 @@
 import { combineReducers } from 'redux';
-import net from './net';
-import transactions from './transactions';
+import net, { NetState } from './net';
+import transactions, { TransactionsState } from './transactions';
+import ERC20Transactions, { ERC20TransactionsState } from './ERC20Transactions'
 
-export default combineReducers({
+export interface RootState {
+  net: NetState,
+  transactions: TransactionsState,
+  ERC20Transactions: ERC20TransactionsState
+}
+
+const rootReducer =  combineReducers({
   net,
-  transactions
+  transactions,
+  ERC20Transactions
 });
+
+export default rootReducer;
