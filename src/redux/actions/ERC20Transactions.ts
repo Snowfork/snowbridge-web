@@ -57,13 +57,12 @@ export const fetchERC20Balance = (contractInstance: any, userAddress: string):
 export const fetchERC20TokenName = (contractInstance: any):
     ThunkAction<Promise<void>, {}, {}, AnyAction> => {
     return async (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
-        const name = await contractInstance.methods.name().call();
+        const name = await ERC20Api.fetchERC20Name(contractInstance)
         dispatch(setTokenName(name))
     }
 }
-
 async function formatAmount(amount: number, contractERC20: any): Promise<number> {
-    const decimals = Number(await contractERC20.methods.decimals().call());
+    const decimals = await ERC20Api.fetchERC20Decimals(contractERC20);
     const conversionFactor =  10 ** decimals;
     return Promise.resolve(amount / conversionFactor)
 }

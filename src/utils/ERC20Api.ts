@@ -33,3 +33,13 @@ export async function fetchERC20Balance(tokenContractInstance: any, userAddress:
         .call()
     return balance
 }
+
+/**
+ * Queries an ERC20 token contract to return the name of the token
+ * @param {tokenContractInstance} any The ERC20 token contract instance
+ * @return {Promise<string>} The name of the token
+ */
+export async function fetchERC20Name(tokenContractInstance: any): Promise<string> {
+    const name = await tokenContractInstance.methods.name().call();
+    return name;
+}
