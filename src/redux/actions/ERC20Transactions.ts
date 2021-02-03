@@ -41,7 +41,8 @@ export const fetchERC20Allowance = (contractInstance: any, userAddress: string, 
     ThunkAction<Promise<void>, {}, {}, AnyAction> => {
         return async (dispatch: ThunkDispatch<{}, {}, AnyAction>): Promise<void> => {
             const allowance: number = await ERC20Api.fetchERC20Allowance(contractInstance, userAddress, ERC20BridgeContractAddress);
-            dispatch(setERC20Allowance(allowance))
+            const formattedAllowance: number = await ERC20Api.removeDecimals(contractInstance, allowance);
+            dispatch(setERC20Allowance(formattedAllowance));
         }
 }
     
@@ -49,7 +50,7 @@ export const fetchERC20Balance = (contractInstance: any, userAddress: string):
     ThunkAction<Promise<void>, {}, {}, AnyAction> => {
     return async (dispatch: ThunkDispatch<{}, {},AnyAction>) => {
         const balance: number = await ERC20Api.fetchERC20Balance(contractInstance,userAddress)
-        const formattedBalance = await formatAmount(balance, contractInstance)
+        const formattedBalance = await ERC20Api.removeDecimals(contractInstance, balance)
         dispatch(setERC20Balance(formattedBalance))
     }
 }
@@ -60,9 +61,4 @@ export const fetchERC20TokenName = (contractInstance: any):
         const name = await ERC20Api.fetchERC20Name(contractInstance)
         dispatch(setTokenName(name))
     }
-}
-async function formatAmount(amount: number, contractERC20: any): Promise<number> {
-    const decimals = await ERC20Api.fetchERC20Decimals(contractERC20);
-    const conversionFactor =  10 ** decimals;
-    return Promise.resolve(amount / conversionFactor)
 }
