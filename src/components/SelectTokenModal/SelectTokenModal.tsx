@@ -104,7 +104,7 @@ function SelectTokenModal({
             {TOKENS.filter((token) =>
               token.name.toLowerCase().includes(searchInput),
             ).map((token) => (
-              <S.Token>
+              <S.Token key={token.id}>
                 <button onClick={() => handleTokenSelection(token.stockSymbol)}>
                   <img src={token.icon} alt={`${token.name} icon`} />
                   <div>

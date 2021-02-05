@@ -9,7 +9,7 @@ import ReactModal from 'react-modal';
 import { connect } from 'react-redux';
 
 // local imports and components
-import Bridge from './Bridge';
+import Bridge from './components/Bridge/Bridge';
 import Nav from './components/Nav';
 import Net, { isConnected } from './net';
 import { useDispatch } from 'react-redux';

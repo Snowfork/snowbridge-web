@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import * as S from './AppEth.style';
+// import * as S from './AppEth.style';
 import PolkadotAccount from '../PolkadotAccount/';
 import Net from '../../net';
 
@@ -17,9 +17,6 @@ import {
   FormHelperText,
   Divider,
 } from '@material-ui/core';
-
-import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
-import IconButton from '../IconButton';
 
 // ------------------------------------------
 //                  Props
@@ -35,15 +32,10 @@ type Props = {
 // ------------------------------------------
 function AppETH({
   net,
-  handleSwap,
   children,
 }: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
-
-  const handleClick = () => {
-    handleSwap();
-  };
 
   function SendButton() {
     if (Number(depositAmount) > 0) {
@@ -82,25 +74,6 @@ function AppETH({
           border: 'thin solid #E0E0E0',
         }}
       >
-        <Grid item xs={10}>
-          <Typography gutterBottom variant="h5">
-            <S.HeadingContainer>
-              Eth
-              <IconButton
-                style={{ marginLeft: '10px' }}
-                icon={<FaLongArrowAltLeft size="2.5em" />}
-                onClick={handleClick}
-              />
-              <IconButton
-                primary
-                style={{ marginRight: '10px' }}
-                icon={<FaLongArrowAltRight size="2.5em" />}
-                onClick={handleClick}
-              />
-              Polkadot
-            </S.HeadingContainer>
-          </Typography>
-        </Grid>
 
         {/* SS58 Address Input */}
         <Grid item xs={10}>

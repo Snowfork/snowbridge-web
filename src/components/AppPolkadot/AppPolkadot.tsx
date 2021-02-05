@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import * as S from './AppPolkadot.style';
 import Net from '../../net';
 import { shortenWalletAddress } from '../../utils/common';
 
@@ -13,9 +12,6 @@ import {
   FormHelperText,
   Divider,
 } from '@material-ui/core';
-
-import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
-import IconButton from '../IconButton';
 
 // ------------------------------------------
 //                  Props
@@ -31,15 +27,10 @@ type Props = {
 // ------------------------------------------
 function AppPolkadot({
   net,
-  handleSwap,
   children,
 }: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
-
-  const handleClick = () => {
-    handleSwap();
-  };
 
   function SendButton() {
     if (Number(depositAmount) > 0) {
@@ -77,25 +68,6 @@ function AppPolkadot({
           border: 'thin solid #E0E0E0',
         }}
       >
-        <Grid item xs={10}>
-          <Typography gutterBottom variant="h5">
-            <S.HeadingContainer>
-              Eth
-              <IconButton
-                primary
-                style={{ marginLeft: '10px' }}
-                icon={<FaLongArrowAltLeft size="2.5em" />}
-                onClick={handleClick}
-              />
-              <IconButton
-                style={{ marginRight: '10px' }}
-                icon={<FaLongArrowAltRight size="2.5em" />}
-                onClick={handleClick}
-              />
-              Polkadot
-            </S.HeadingContainer>
-          </Typography>
-        </Grid>
 
         {/* Address Input */}
         <Grid item xs={10}>
