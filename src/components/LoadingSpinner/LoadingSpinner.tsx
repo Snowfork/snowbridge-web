@@ -1,7 +1,10 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
-type Props = {};
+export interface ISpinnerProps {
+  spinnerHeight?: string;
+  spinnerWidth?: string;
+}
 
 interface StyledProps {
   borderSize: string;
@@ -30,12 +33,15 @@ const Wrapper = styled.div<StyledProps>`
   animation: ${spinnerRotate} 2s linear infinite;
 `;
 
-function LoadingSpinner() {
+const LoadingSpinner: React.FC<ISpinnerProps> = ({
+  spinnerHeight = '40%',
+  spinnerWidth = '40%',
+}) => {
   return (
     <Wrapper
       borderSize="3px"
-      spinnerWidth="40%"
-      spinnerHeight="40%"
+      spinnerWidth={spinnerWidth}
+      spinnerHeight={spinnerHeight}
       mainColor="#868686"
       accentColor="#000000"
     >
@@ -53,6 +59,6 @@ function LoadingSpinner() {
       <div></div>
     </Wrapper>
   );
-}
+};
 
 export default LoadingSpinner;

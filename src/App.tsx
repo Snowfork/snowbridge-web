@@ -23,7 +23,7 @@ import {
   TransactionStatus,
 } from './redux/reducers/transactions';
 import Modal from './components/Modal';
-import LoadingSpinner from './components/PendingTransactionsUI/LoadingSpinner';
+import LoadingSpinner from './components/LoadingSpinner';
 import { BLOCK_EXPLORER_URL } from './config';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)

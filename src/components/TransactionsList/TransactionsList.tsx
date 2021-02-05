@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import * as S from './TransactionsList.style';
 import ReactModal from 'react-modal';
+import Button from '../Button';
+import LoadingSpinner from '../LoadingSpinner';
 
 import { TransactionsState } from '../../redux/reducers/transactions';
 
@@ -27,7 +29,9 @@ function TransactionsList({
   transactions: { transactions },
 }: Props): React.ReactElement<Props> {
   const [isOpen, setIsOpen] = useState(false);
-  const [lastTransactionCount, setLastTransactionCount] = useState(transactions.length)
+  const [lastTransactionCount, setLastTransactionCount] = useState(
+    transactions.length,
+  );
 
   // fires when the transaction list is updated
   // check if a new transaction has been added
@@ -36,9 +40,8 @@ function TransactionsList({
     if (transactions.length > lastTransactionCount) {
       openModal();
     }
-    setLastTransactionCount(transactions.length)
-  }, [lastTransactionCount, transactions])
-
+    setLastTransactionCount(transactions.length);
+  }, [lastTransactionCount, transactions]);
 
   function closeModal() {
     setIsOpen(false);
@@ -62,7 +65,12 @@ function TransactionsList({
 
   return (
     <div>
-      <button onClick={openModal}>Transaction list</button>
+      <Button
+        onClick={openModal}
+        icon={<LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
+      >
+        Transaction list
+      </Button>
       <ReactModal
         isOpen={isOpen}
         onRequestClose={closeModal}
