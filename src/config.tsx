@@ -1,25 +1,22 @@
-// Copyright 2017-2020 @polkadot/apps-routing authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+import localConfig from './config-local';
+import stagingConfig from './config-staging';
 
-// Bridge applications
-export const APP_ETH_CONTRACT_ADDRESS =
-  '0x19a04AaE0c7F929d8BC0B7f69D106310f168B500';
-export const APP_ERC20_CONTRACT_ADDRESS =
-  '0xF1becfDcA540605451553b4d5f80ACF17C7A490A';
+let config = stagingConfig;
 
-// Fetch chain data interval
-export const REFRESH_INTERVAL_MILLISECONDS = 10000;
+if (process.env.REACT_APP_NODE_CONFIG_ENV === 'local') {
+  config = localConfig;
+}
 
-// Polkadotjs API Provider
-export const POLKADOT_API_PROVIDER = 'wss://parachain-rpc.snowfork.network';
-
-// ETH asset ID
-export const ETH_ASSET_ID = '0x00';
-
-// Minimum Number of confirmations required for an ETH transaction
-// to be regarded as a success
-export const REQUIRED_ETH_CONFIRMATIONS = 12;
-
-// URL to the block explorer the UI will redirect to
-export const BLOCK_EXPLORER_URL = 'https://ropsten.etherscan.io'
+export const {
+  APP_ETH_CONTRACT_ADDRESS,
+  APP_ERC20_CONTRACT_ADDRESS,
+  BASIC_INBOUND_CHANNEL,
+  BASIC_OUTBOUND_CHANNEL,
+  INCENTIVIZED_INBOUND_CHANNEL,
+  INCENTIVIZED_OUTBOUND_CHANNEL,
+  REFRESH_INTERVAL_MILLISECONDS,
+  POLKADOT_API_PROVIDER,
+  REQUIRED_ETH_CONFIRMATIONS,
+  BLOCK_EXPLORER_URL,
+  PERMITTED_METAMASK_NETWORK
+} = config;
