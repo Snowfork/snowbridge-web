@@ -12,7 +12,10 @@ import { setPolkadotJSFound, setPolkadotJSMissing } from '../redux/actions';
 
 // Config
 import { POLKADOT_API_PROVIDER, ETH_ASSET_ID } from '../config';
-import { polkaEthBurned, polkaEthMinted } from '../redux/actions/transactions';
+
+import { addTransaction, ethUnlockedEvent, polkaEthBurned, polkaEthMinted, setPendingTransaction } from '../redux/actions/transactions';
+import { EthUnlockEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
+import {notify} from '../redux/actions/notifications';
 
 // Polkadot API connector
 type Connector = (p: Polkadot, net: any) => void;
@@ -94,6 +97,39 @@ export default class Polkadot extends Api {
       const recepient = self.net.ethAddress;
 
       if (account) {
+        const pendingTransaction: Transaction = {
+          hash: '',
+          confirmations: 0,
+          sender: self.net.polkadotAddress,
+          receiver: self.net.ethAddress,
+          amount: amount,
+          status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
+          isMinted: false,
+          isBurned: false,
+          chain: 'polkadot',
+          assets: {
+            deposited: 'polkaEth',
+            recieved: 'eth'
+          }
+        }
+        self.dispatch(setPendingTransaction(pendingTransaction));
+
+
+
+        // subscribe to ETH unlock event
+        const unlockEventSubscription = self.net.eth?.eth_contract?.events.Unlock({})
+          .on('data', (
+            event: EthUnlockEvent
+          ) => {
+            // TODO: find a better way to link this event to the transaction
+            if (
+              self.net.eth?.conn?.utils.fromWei(event.returnValues._amount) === pendingTransaction.amount &&
+              event.returnValues._recipient === pendingTransaction.receiver
+            ) {
+              self.dispatch(ethUnlockedEvent(event, pendingTransaction));
+            } 
+        })
+
         const polkaWeiValue = web3.utils.toWei(amount, 'ether');
 
         const transferExtrinsic = self.conn.tx.eth.burn(
@@ -119,11 +155,21 @@ export default class Polkadot extends Api {
                 );
               } else {
                 console.log(`Current status: ${status.type}`);
+                // transaction is now considered as submitted
+                if (status.isReady) {
+                  self.dispatch(addTransaction({ ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION }));
+                }
               }
             },
           )
           .catch((error: any) => {
             console.log(':( transaction failed', error);
+            if (error.toString() === 'Error: Cancelled') {
+              self.dispatch(setPendingTransaction({ ...pendingTransaction, status: TransactionStatus.REJECTED }));
+            } else {
+              // TODO: display error in modal
+            }
+            unlockEventSubscription?.unsubscribe();
           });
       } else {
         throw new Error('Default Polkadot account not found');
@@ -156,17 +202,20 @@ export default class Polkadot extends Api {
             }
             ));
 
+            this.dispatch(notify({text: "PolkaEth Minted", color: "success"}));
             // Checks if the parachain emited event is for a burned
           } else if (event.section === 'asset' && event.method === 'Burned') {
             console.log('Got Assets.Burned event');
 
             // Notify local transaction object the asset is burned
             this.dispatch(polkaEthBurned({
-             accountId: event.data[1].toString(),
-              amount: event.data[2].toString(),
+              accountId: event.data[1].toString(),
+              amount: web3.utils.fromWei(event.data[2].toString()),
             }
             ));
-          }
+
+            this.dispatch(notify({text: "PolkaEth Burned", color: "success"}));
+	  }
 
           // TODO: update new Polkadot account balance
         });

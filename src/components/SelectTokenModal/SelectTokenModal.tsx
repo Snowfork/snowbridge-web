@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import * as S from './SelectTokenModal.style';
 import ReactModal from 'react-modal';
 import Button from '../Button';
