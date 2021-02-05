@@ -30,7 +30,7 @@ import { BLOCK_EXPLORER_URL } from './config';
 ReactModal.setAppElement('#root');
 
 type Props = {
-  net: any;
+  net: NetState;
   transactions: TransactionsState;
 };
 

@@ -13,7 +13,6 @@ import AppERC20 from '../../AppERC20';
 
 import Net from '../../net';
 
-import SelectTokenModal from '../SelectTokenModal';
 
 import * as S from './Bridge.style';
 import {
@@ -47,7 +46,6 @@ function Bridge({
   ethAddress,
 }: Props): React.ReactElement<Props> {
   const [swapDirection, setSwapDirection] = useState(SwapDirection.EthereumToPolkadot);
-  const [selectedToken, setSelectedToken] = useState('ETH');
 
   const handleSwap = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
@@ -101,8 +99,6 @@ function Bridge({
             </S.HeadingContainer>
         </Typography>
       </Grid>
-      <SelectTokenModal setSelectedToken={setSelectedToken} />
-      <div style={{ color: '#fff' }}>{selectedToken}</div>
       <ChainApp />
       <AppERC20
         web3={net?.eth?.conn as Web3}

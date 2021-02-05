@@ -2,11 +2,14 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 // import * as S from './AppEth.style';
 import PolkadotAccount from '../PolkadotAccount/';
 import Net from '../../net';
+import SelectTokenModal from '../SelectTokenModal';
+import MaterialButton from '../Button';
+import tokenList from './tokenList.json'
 
 import {
   Typography,
@@ -26,6 +29,14 @@ type Props = {
   handleSwap: any;
   children?: JSX.Element | JSX.Element[];
 };
+export interface Token {
+  chainId: number;
+  address: string;
+  name: string;
+  symbol: string;
+  decimals: 18;
+  logoURI: string;
+}
 
 // ------------------------------------------
 //               AppETH component
@@ -36,6 +47,20 @@ function AppETH({
 }: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
+  const [showAssetSelector, setShowAssetSelector] = useState(true)
+  const [tokens, setTokens] = useState<Token[]>([tokenList.tokens[0] as Token]);
+  const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
+
+  useEffect(() => {
+    const currentChainId = Number.parseInt((net.eth?.conn?.currentProvider as any).chainId, 16)
+
+    setTokens(
+      (tokenList.tokens as Token[])
+        .filter(
+          (token: Token) => token.chainId === currentChainId)
+    )
+}, [net.eth, setTokens] )
+  
 
   function SendButton() {
     if (Number(depositAmount) > 0) {
@@ -74,6 +99,15 @@ function AppETH({
           border: 'thin solid #E0E0E0',
         }}
       >
+        {/* asset selector */}
+        <Grid item xs={10}>
+          <Typography gutterBottom>Select Asset</Typography>
+          <MaterialButton onClick={() => setShowAssetSelector(true)}>
+            <img src={selectedAsset.logoURI} alt={`${selectedAsset.name} icon`} style={{width: '25px'}} />
+            {selectedAsset.symbol}
+          </MaterialButton>
+          <SelectTokenModal tokens={tokens} onTokenSelected={setSelectedAsset} open={showAssetSelector} onClose={() => setShowAssetSelector(false)} />
+        </Grid>
 
         {/* SS58 Address Input */}
         <Grid item xs={10}>
