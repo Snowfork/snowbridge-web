@@ -41,6 +41,8 @@ type MyWindow = typeof window & {
   web3: Web3;
 };
 
+const INCENTIVIZED_CHANNEL_ID = 1;
+
 export default class Eth extends Api {
   public conn?: Web3;
   public eth_contract?: Contract;
@@ -99,7 +101,7 @@ export default class Eth extends Api {
     }
   }
 
-  // Send ETH To Default Polkadot Account
+  // Lockup ETH To Default Polkadot Account via Incentivized Channel
   public async send_eth(amount: string) {
     try {
       const self: Eth = this;
@@ -129,7 +131,7 @@ export default class Eth extends Api {
           }
 
           await self.eth_contract.methods
-            .sendETH(polkadotAddress)
+            .lock(polkadotAddress, INCENTIVIZED_CHANNEL_ID)
             .send({
               from: default_address,
               gas: 500000,

@@ -181,15 +181,11 @@ export default class Polkadot extends Api {
     if (this.conn) {
       this.conn.query.system.events((events) => {
         console.log(`\nReceived ${events.length} events`);
-        console.log({ events });
         // Loop through the events in the current block
         events.forEach((record) => {
           const { event } = record;
-
           // Checks if the parachain emited event is for a Minted asset
-          if (event.section === 'asset' && event.method === 'Minted') {
-            console.log('Got Assets.Minted event');
-
+          if (event.section === 'eth' && event.method === 'Minted') {
             // Notify local transaction object the asset is minted
             this.dispatch(polkaEthMinted({
               // Receiver of the sent PolkaEth
