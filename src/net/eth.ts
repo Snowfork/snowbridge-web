@@ -131,7 +131,7 @@ export default class Eth extends Api {
             }
           }
 
-          await self.eth_contract.methods
+          const promiEvent = self.eth_contract.methods
             .lock(polkadotAddress, INCENTIVIZED_CHANNEL_ID)
             .send({
               from: default_address,
@@ -211,6 +211,7 @@ export default class Eth extends Api {
                     text: `Transactions confirmed after ${confirmation} confirmations`,
                     color: 'success'
                   }));
+                  promiEvent.off('confirmation');
                 }
               },
             )

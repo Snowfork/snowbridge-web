@@ -182,12 +182,11 @@ export default class Polkadot extends Api {
   public async subscribeEvents() {
     if (this.conn) {
       this.conn.query.system.events((eventRecords) => {
-        console.log(`\nReceived ${eventRecords.length} new Polkadot events`);
         const dispatchEvents = _.filter(eventRecords, eR => eR.event.section === 'dispatch')
         const mintedEvents = _.filter(eventRecords, eR => eR.event.section === 'eth' && eR.event.method === 'Minted');
         const burnedEvents = _.filter(eventRecords, eR => eR.event.section === 'eth' && eR.event.method === 'Burned');
         dispatchEvents.forEach(({ event }) => {
-
+          console.log("Got new dispatch event:", event);
         });
         mintedEvents.forEach(({ event }) => {
           this.dispatch(polkaEthMinted({
