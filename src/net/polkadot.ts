@@ -14,7 +14,7 @@ import _ from 'lodash';
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
 
-import { addTransaction, setTransactionStatus, polkaEthBurned, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
+import { addTransaction, ethMessageDelivered, setTransactionStatus, polkaEthBurned, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
 import { MessageDeliveredEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
 import { notify } from '../redux/actions/notifications';
 
@@ -134,7 +134,9 @@ export default class Polkadot extends Api {
             (result) => {
               if (result.status.isInBlock) {
                 pendingTransaction.hash = result.status.hash.toString();
-                //TODO: get nonce = ...
+                //TODO: get nonce properly
+                const nonce = 'TODO';
+                pendingTransaction.nonce = nonce;
                 console.log("inblock, adding pendintx")
                 console.log({ pendingTransaction })
                 console.log({ result })
@@ -144,12 +146,13 @@ export default class Polkadot extends Api {
                   .on('data', (
                     event: MessageDeliveredEvent
                   ) => {
-                    // TODO: check nonce and dispatch on delivery
-                    // if (
-                    //   event.returnValues.nonce === xxx.nonce
-                    // ) {
-                    //   self.dispatch(ethMessageDelivered(event.returnValues.nonce, pendingTransaction.hash));
-                    // }
+                    console.log("new eth MessageDeliveredEvent");
+                    console.log({ event })
+                    if (
+                      event.returnValues.nonce === nonce
+                    ) {
+                      self.dispatch(ethMessageDelivered(event.returnValues.nonce, pendingTransaction.nonce!));
+                    }
                   });
               }
               else if (result.status.isFinalized) {

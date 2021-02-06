@@ -42,7 +42,6 @@ export enum TransactionStatus {
   DELIVERED = 6
 }
 
-
 export interface Transaction {
   hash: string;
   nonce?: string;
