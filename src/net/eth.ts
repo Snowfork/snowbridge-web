@@ -8,6 +8,7 @@ import Net from './';
 import {
   APP_ETH_CONTRACT_ADDRESS,
   APP_ERC20_CONTRACT_ADDRESS,
+  REQUIRED_ETH_CONFIRMATIONS
 } from '../config';
 
 /* tslint:disable */
@@ -205,7 +206,7 @@ export default class Eth extends Api {
                   updateConfirmations(receipt.transactionHash, confirmation),
                 );
 
-                if (confirmation === 12) {
+                if (confirmation === REQUIRED_ETH_CONFIRMATIONS) {
                   self.dispatch(notify({
                     text: `Transactions confirmed after ${confirmation} confirmations`,
                     color: 'success'

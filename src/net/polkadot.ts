@@ -186,7 +186,7 @@ export default class Polkadot extends Api {
         const burnedEvents = _.filter(eventRecords, eR => eR.event.section === 'eth' && eR.event.method === 'Burned');
         dispatchEvents.forEach(({ event }) => {
           const nonce = (event.data as any)[0][1].toString();
-          // const dispatchSuccessNotification = (text: string) => this.dispatch(notify({ text, color: "success" }));
+          // TODO: const dispatchSuccessNotification = (text: string) => this.dispatch(notify({ text, color: "success" }));
           console.log(`Got new dispatch event with nonce: ${nonce}`);
           this.dispatch(parachainMessageDispatched(nonce));
         });
