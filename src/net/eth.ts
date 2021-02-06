@@ -198,7 +198,6 @@ export default class Eth extends Api {
               function (
                 confirmation: number,
                 receipt: any,
-                latestBlockHash: string,
               ) {
                 console.log(`Got confirmation ${confirmation} for ${receipt.transactionHash}`);
                 // update transaction confirmations

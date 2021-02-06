@@ -3,7 +3,7 @@ import {
   UPDATE_CONFIRMATIONS,
   SET_NONCE,
   SET_TRANSACTION_STATUS,
-  POLKA_ETH_MINTED,
+  PARACHAIN_MESSAGE_DISPATCHED,
   POLKA_ETH_BURNED,
   SET_PENDING_TRANSACTION,
   ETH_UNLOCKED_EVENT
@@ -12,7 +12,7 @@ import {
   AddTransactionPayload,
   SetTransactionStatusPayload,
   UpdateConfirmationsPayload,
-  PolkaEthMintedPayload,
+  ParachainMessageDispatchedPayload,
   PolkaEthBurnedPayload,
   SetPendingTransactionPayload,
   EthUnlockEventPayload,
@@ -63,12 +63,6 @@ export interface Transaction {
 // Interface for the Ethereum 'Unlock' event, emitted by the ETHApp smart contract
 export interface EthUnlockEvent extends EventData {
   returnValues: { _amount: string, _recipient: string, _sender: string }
-}
-
-// Interface for an PolkaEth 'Minted' event, emitted by the parachain
-export interface PolkaEthMintedEvent {
-  accountId: string;
-  amount: string;
 }
 
 // Interface for an PolkaEth 'Burned' event, emitted by the parachain
@@ -138,12 +132,11 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
     }
     // TODO: Properly map Eth submitted assets to minted assets
     // Called when an PolkaEth asset has been minted by the parachain
-    case POLKA_ETH_MINTED: {
-      return ((action: PolkaEthMintedPayload) => {
+    case PARACHAIN_MESSAGE_DISPATCHED: {
+      return ((action: ParachainMessageDispatchedPayload) => {
         return Object.assign({}, state, {
           transactions: state.transactions.map((t) =>
-            (t.amount === action.event.amount
-              && t.receiver === action.event.accountId)
+            (t.nonce === action.nonce)
               ? {
                 ...t,
                 isMinted: true,

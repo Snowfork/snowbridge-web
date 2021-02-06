@@ -14,7 +14,7 @@ import _ from 'lodash';
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
 
-import { addTransaction, ethUnlockedEvent, polkaEthBurned, polkaEthMinted, setPendingTransaction } from '../redux/actions/transactions';
+import { addTransaction, ethUnlockedEvent, polkaEthBurned, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
 import { EthUnlockEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
 import { notify } from '../redux/actions/notifications';
 
@@ -183,19 +183,12 @@ export default class Polkadot extends Api {
     if (this.conn) {
       this.conn.query.system.events((eventRecords) => {
         const dispatchEvents = _.filter(eventRecords, eR => eR.event.section === 'dispatch')
-        const mintedEvents = _.filter(eventRecords, eR => eR.event.section === 'eth' && eR.event.method === 'Minted');
         const burnedEvents = _.filter(eventRecords, eR => eR.event.section === 'eth' && eR.event.method === 'Burned');
         dispatchEvents.forEach(({ event }) => {
-          console.log("Got new dispatch event:", event);
-        });
-        mintedEvents.forEach(({ event }) => {
-          this.dispatch(polkaEthMinted({
-            accountId: event.data[1].toString(),
-            amount: web3.utils.fromWei(event.data[2].toString()),
-          }
-          ));
-
-          this.dispatch(notify({ text: "PolkaEth Minted", color: "success" }));
+          const nonce = (event.data as any)[0][1].toString();
+          // const dispatchSuccessNotification = (text: string) => this.dispatch(notify({ text, color: "success" }));
+          console.log(`Got new dispatch event with nonce: ${nonce}`);
+          this.dispatch(parachainMessageDispatched(nonce));
         });
         burnedEvents.forEach(({ event }) => {
           this.dispatch(polkaEthBurned({

@@ -4,11 +4,11 @@ import {
     SET_NONCE,
     SET_TRANSACTION_STATUS,
     POLKA_ETH_BURNED,
-    POLKA_ETH_MINTED,
     SET_PENDING_TRANSACTION,
-    ETH_UNLOCKED_EVENT
+    ETH_UNLOCKED_EVENT,
+    PARACHAIN_MESSAGE_DISPATCHED
 } from '../actionsTypes/transactions';
-import { EthUnlockEvent, PolkaEthBurnedEvent, PolkaEthMintedEvent, Transaction, TransactionStatus } from '../reducers/transactions';
+import { EthUnlockEvent, PolkaEthBurnedEvent, Transaction, TransactionStatus } from '../reducers/transactions';
 
 export interface AddTransactionPayload { type: string, transaction: Transaction };
 export const addTransaction = (transaction: Transaction): AddTransactionPayload => ({
@@ -37,10 +37,10 @@ export const setTransactionStatus = (hash: string, status: TransactionStatus): S
     status
 })
 
-export interface PolkaEthMintedPayload { type: string, event: PolkaEthMintedEvent };
-export const polkaEthMinted = (event: PolkaEthMintedEvent): PolkaEthMintedPayload => ({
-    type: POLKA_ETH_MINTED,
-    event
+export interface ParachainMessageDispatchedPayload { type: string, nonce: string };
+export const parachainMessageDispatched = (nonce: string): ParachainMessageDispatchedPayload => ({
+    type: PARACHAIN_MESSAGE_DISPATCHED,
+    nonce
 })
 
 export interface PolkaEthBurnedPayload { type: string, event: PolkaEthBurnedEvent };
