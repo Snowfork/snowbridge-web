@@ -6,7 +6,7 @@ import {
   PARACHAIN_MESSAGE_DISPATCHED,
   POLKA_ETH_BURNED,
   SET_PENDING_TRANSACTION,
-  ETH_UNLOCKED_EVENT
+  ETH_MESSAGE_DELIVERED_EVENT
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
@@ -15,7 +15,7 @@ import {
   ParachainMessageDispatchedPayload,
   PolkaEthBurnedPayload,
   SetPendingTransactionPayload,
-  EthUnlockEventPayload,
+  EthMessageDeliveredPayload,
   SetNoncePayload
 } from '../actions/transactions'
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
@@ -24,22 +24,22 @@ import { EventData } from 'web3-eth-contract';
 export enum TransactionStatus {
   // used for error states
   REJECTED = -1,
-  // used when waiting for confirmation in metamask
-  SUBMITTING_TO_ETHEREUM = 0,
+  // used when waiting for confirmation from chain
+  SUBMITTING_TO_CHAIN = 0,
   // transaction hash recieved
   WAITING_FOR_CONFIRMATION = 1,
   // used when the eth transaction is confirmed
   // and we are waiting to reach the confirmation threshold
   CONFIRMING = 2,
-  // eth transaction reached the eth confirmation threshold
-  CONFIRMED_ON_ETHEREUM = 3,
+  // transaction finalized (for eth, when we reach enough confirmations. for parachain, when tx finalized)
+  FINALIZED_ON_CHAIN = 3,
   // waiting for 'MessageDispatch' event on polkadot for eth transactions
-  // or waiting for 'Unlock' event on Ethereum for polkadot transactions
+  // or waiting for 'MessageDelivered' event on Ethereum for polkadot transactions
   WAITING_FOR_RELAY = 4,
   // message dispatched on polkadot
   RELAYED = 5,
-  // transaction finalized on both chains
-  FINALIZED = 6
+  // transaction delivered to second chain
+  DELIVERED = 6
 }
 
 
@@ -57,12 +57,13 @@ export interface Transaction {
   assets: {
     deposited: 'eth' | 'polkaEth',
     recieved: 'eth' | 'polkaEth',
-  }
+  },
+  deliveryTransactionHash?: string
 }
 
-// Interface for the Ethereum 'Unlock' event, emitted by the ETHApp smart contract
-export interface EthUnlockEvent extends EventData {
-  returnValues: { _amount: string, _recipient: string, _sender: string }
+// Interface for the Ethereum 'MessageDelivered' event, emitted by the Incentivized Channel smart contract
+export interface MessageDeliveredEvent extends EventData {
+  returnValues: { nonce: string, result: boolean }
 }
 
 // Interface for an PolkaEth 'Burned' event, emitted by the parachain
@@ -99,7 +100,7 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
             if (transaction.isMinted) {
               return TransactionStatus.RELAYED
             } else {
-              return TransactionStatus.CONFIRMED_ON_ETHEREUM
+              return TransactionStatus.FINALIZED_ON_CHAIN
             }
           } else {
             return TransactionStatus.CONFIRMING
@@ -130,7 +131,6 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         });
       })(action)
     }
-    // TODO: Properly map Eth submitted assets to minted assets
     // Called when an PolkaEth asset has been minted by the parachain
     case PARACHAIN_MESSAGE_DISPATCHED: {
       return ((action: ParachainMessageDispatchedPayload) => {
@@ -168,18 +168,17 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         })
       })(action)
     }
-    case ETH_UNLOCKED_EVENT: {
-      return ((action: EthUnlockEventPayload) => {
+    case ETH_MESSAGE_DELIVERED_EVENT: {
+      return ((action: EthMessageDeliveredPayload) => {
         const isMatchingTransaction = (transaction: Transaction): boolean => {
-          return action.transaction.amount === transaction.amount
-            && action.transaction.sender === transaction.sender
+          return action.nonce === transaction.nonce
         }
         return Object.assign({}, state, {
           transactions: state.transactions.map((t) => isMatchingTransaction(t)
             ? {
               ...t,
-              status: TransactionStatus.FINALIZED,
-              hash: action.event.transactionHash
+              status: TransactionStatus.DELIVERED,
+              deliveryTransactionHash: action.deliveryTransactionHash
             }
             : t)
         })

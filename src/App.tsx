@@ -95,7 +95,7 @@ function BridgeApp(props: Props) {
 				<div>
 					{/* submitting - waiting for confirmation in metamask */}
 					{transactions.pendingTransaction?.status ===
-						TransactionStatus.SUBMITTING_TO_ETHEREUM ? (
+						TransactionStatus.SUBMITTING_TO_CHAIN ? (
 						<div>
 							<div style={{ width: '40px', height: '40px' }}>
 								<LoadingSpinner />

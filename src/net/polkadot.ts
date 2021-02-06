@@ -14,8 +14,8 @@ import _ from 'lodash';
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
 
-import { addTransaction, ethUnlockedEvent, polkaEthBurned, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
-import { EthUnlockEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
+import { addTransaction, setTransactionStatus, polkaEthBurned, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
+import { MessageDeliveredEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
 import { notify } from '../redux/actions/notifications';
 
 const INCENTIVIZED_CHANNEL_ID = 1;
@@ -101,7 +101,7 @@ export default class Polkadot extends Api {
           sender: self.net.polkadotAddress,
           receiver: self.net.ethAddress,
           amount: amount,
-          status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
+          status: TransactionStatus.SUBMITTING_TO_CHAIN,
           isMinted: false,
           isBurned: false,
           chain: 'polkadot',
@@ -112,25 +112,9 @@ export default class Polkadot extends Api {
         }
         self.dispatch(setPendingTransaction(pendingTransaction));
 
-
-
-        // subscribe to ETH unlock event
-        const unlockEventSubscription = self.net.eth?.eth_contract?.events.Unlocked({})
-          .on('data', (
-            event: EthUnlockEvent
-          ) => {
-            // TODO: find a better way to link this event to the transaction
-            if (
-              self.net.eth?.conn?.utils.fromWei(event.returnValues._amount) === pendingTransaction.amount &&
-              event.returnValues._recipient === pendingTransaction.receiver
-            ) {
-              self.dispatch(ethUnlockedEvent(event, pendingTransaction));
-            }
-          })
-
         const polkaWeiValue = web3.utils.toWei(amount, 'ether');
 
-        const transferExtrinsic = self.conn.tx.eth.burn(
+        const burnExtrinsic = self.conn.tx.eth.burn(
           INCENTIVIZED_CHANNEL_ID,
           recepient,
           polkaWeiValue,
@@ -143,21 +127,33 @@ export default class Polkadot extends Api {
         // passing the injected account address as the first argument of signAndSend
         // will allow the api to retrieve the signer and the user will see the extension
         // popup asking to sign the balance transfer transaction
-        transferExtrinsic
+        burnExtrinsic
           .signAndSend(
             account.address,
             { signer: injector.signer },
-            ({ status }) => {
-              if (status.isInBlock) {
-                console.log(
-                  `Completed at block hash #${status.asInBlock.toString()}`,
-                );
-              } else {
-                console.log(`Current status: ${status.type}`);
-                // transaction is now considered as submitted
-                if (status.isReady) {
-                  self.dispatch(addTransaction({ ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION }));
-                }
+            (result) => {
+              if (result.status.isInBlock) {
+                pendingTransaction.hash = result.status.hash.toString();
+                //TODO: get nonce = ...
+                console.log("inblock, adding pendintx")
+                console.log({ pendingTransaction })
+                console.log({ result })
+                self.dispatch(addTransaction({ ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION }));
+                // subscribe to ETH dispatch event
+                self.net.eth?.incentivizedChannelContract?.events.MessageDelivered({})
+                  .on('data', (
+                    event: MessageDeliveredEvent
+                  ) => {
+                    // TODO: check nonce and dispatch on delivery
+                    // if (
+                    //   event.returnValues.nonce === xxx.nonce
+                    // ) {
+                    //   self.dispatch(ethMessageDelivered(event.returnValues.nonce, pendingTransaction.hash));
+                    // }
+                  });
+              }
+              else if (result.status.isFinalized) {
+                self.dispatch(setTransactionStatus(pendingTransaction.hash, TransactionStatus.FINALIZED_ON_CHAIN))
               }
             },
           )
@@ -168,7 +164,6 @@ export default class Polkadot extends Api {
             } else {
               // TODO: display error in modal
             }
-            unlockEventSubscription?.unsubscribe();
           });
       } else {
         throw new Error('Default Polkadot account not found');

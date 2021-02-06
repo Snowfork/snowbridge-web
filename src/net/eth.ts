@@ -8,12 +8,15 @@ import Net from './';
 import {
   APP_ETH_CONTRACT_ADDRESS,
   APP_ERC20_CONTRACT_ADDRESS,
+  INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
   REQUIRED_ETH_CONFIRMATIONS
 } from '../config';
 
 /* tslint:disable */
 import * as ETHApp from '../contracts/ETHApp.json';
 import * as ERC20App from '../contracts/ERC20App.json';
+import * as IncentivizedInboundChannel from '../contracts/IncentivizedInboundChannel.json';
+
 /* tslint:enable */
 
 import { Dispatch } from 'redux';
@@ -49,6 +52,7 @@ export default class Eth extends Api {
   public conn?: Web3;
   public eth_contract?: Contract;
   public erc20_contract?: Contract;
+  public incentivizedChannelContract?: Contract;
   private net: Net;
   public dispatch: Dispatch;
 
@@ -122,7 +126,7 @@ export default class Eth extends Api {
             sender: self.net.ethAddress,
             receiver: self.net.polkadotAddress,
             amount: amount,
-            status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
+            status: TransactionStatus.SUBMITTING_TO_CHAIN,
             isMinted: false,
             isBurned: false,
             chain: 'eth',
@@ -270,6 +274,23 @@ export default class Eth extends Api {
     }
   }
 
+  // Set Incentivized Channel contract
+  public setIncentivizedChannelContract() {
+    try {
+      if (this.conn) {
+        const contract = new this.conn.eth.Contract(
+          IncentivizedInboundChannel.abi as any,
+          INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+        );
+
+        this.erc20_contract = contract;
+      }
+    } catch (err) {
+      //Todo: Error fetching ERC20 contract
+      console.log(err);
+    }
+  }
+
   // Web3 API connector
   public static async connect(dispatch: Dispatch): Promise<Connector> {
     let locWindow = window as MyWindow;
@@ -312,6 +333,8 @@ export default class Eth extends Api {
         // Set contracts
         eth.set_eth_contract();
         eth.set_erc20_contract();
+        eth.setIncentivizedChannelContract();
+
         console.log('- Eth connected');
       }
     };

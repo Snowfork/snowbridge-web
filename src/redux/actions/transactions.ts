@@ -5,10 +5,10 @@ import {
     SET_TRANSACTION_STATUS,
     POLKA_ETH_BURNED,
     SET_PENDING_TRANSACTION,
-    ETH_UNLOCKED_EVENT,
+    ETH_MESSAGE_DELIVERED_EVENT,
     PARACHAIN_MESSAGE_DISPATCHED
 } from '../actionsTypes/transactions';
-import { EthUnlockEvent, PolkaEthBurnedEvent, Transaction, TransactionStatus } from '../reducers/transactions';
+import { PolkaEthBurnedEvent, Transaction, TransactionStatus } from '../reducers/transactions';
 
 export interface AddTransactionPayload { type: string, transaction: Transaction };
 export const addTransaction = (transaction: Transaction): AddTransactionPayload => ({
@@ -35,29 +35,29 @@ export const setTransactionStatus = (hash: string, status: TransactionStatus): S
     type: SET_TRANSACTION_STATUS,
     hash,
     status
-})
+});
 
 export interface ParachainMessageDispatchedPayload { type: string, nonce: string };
 export const parachainMessageDispatched = (nonce: string): ParachainMessageDispatchedPayload => ({
     type: PARACHAIN_MESSAGE_DISPATCHED,
     nonce
-})
+});
+
+export interface EthMessageDeliveredPayload { type: string, nonce: string, deliveryTransactionHash: string };
+export const ethMessageDelivered = (nonce: string, deliveryTransactionHash: string): EthMessageDeliveredPayload => ({
+    type: ETH_MESSAGE_DELIVERED_EVENT,
+    nonce,
+    deliveryTransactionHash
+});
 
 export interface PolkaEthBurnedPayload { type: string, event: PolkaEthBurnedEvent };
 export const polkaEthBurned = (event: PolkaEthBurnedEvent): PolkaEthBurnedPayload => ({
     type: POLKA_ETH_BURNED,
     event
-})
+});
 
 export interface SetPendingTransactionPayload { type: string, transaction: Transaction };
 export const setPendingTransaction = (transaction: Transaction): SetPendingTransactionPayload => ({
     type: SET_PENDING_TRANSACTION,
     transaction
-})
-
-export interface EthUnlockEventPayload { type: string; event: EthUnlockEvent; transaction: Transaction };
-export const ethUnlockedEvent = (event: EthUnlockEvent, transaction: Transaction): EthUnlockEventPayload => ({
-    type: ETH_UNLOCKED_EVENT,
-    event,
-    transaction
-})
+});

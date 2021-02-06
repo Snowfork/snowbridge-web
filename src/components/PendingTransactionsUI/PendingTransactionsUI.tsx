@@ -47,7 +47,7 @@ function PendingTransactionsUI({ transaction }: Props) {
             toolTip={`Waiting for ${REQUIRED_ETH_CONFIRMATIONS}`}
             status={transaction.status > TransactionStatus.CONFIRMING
               ? StepStatus.COMPLETE
-              : StepStatus.LOADING }
+              : StepStatus.LOADING}
           >
             {confirmationCount(transaction)}
           </Step>
@@ -61,8 +61,8 @@ function PendingTransactionsUI({ transaction }: Props) {
           />
           <S.StyledLine />
           <Step
-            status={getStepStatus(transaction, TransactionStatus.FINALIZED - 1)}
-            toolTip="Transaction finalized"
+            status={getStepStatus(transaction, TransactionStatus.DELIVERED - 1)}
+            toolTip="Transaction relayed and delivered"
           />
         </S.Container>
       </S.Wrapper>
