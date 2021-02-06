@@ -33,10 +33,10 @@ export enum TransactionStatus {
   CONFIRMING = 2,
   // eth transaction reached the eth confirmation threshold
   CONFIRMED_ON_ETHEREUM = 3,
-  // waiting for 'Minted' event on polkadot for eth transactions
+  // waiting for 'MessageDispatch' event on polkadot for eth transactions
   // or waiting for 'Unlock' event on Ethereum for polkadot transactions
   WAITING_FOR_RELAY = 4,
-  // recieved minted event on polkadot
+  // message dispatched on polkadot
   RELAYED = 5,
   // transaction finalized on both chains
   FINALIZED = 6
@@ -140,7 +140,7 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
               ? {
                 ...t,
                 isMinted: true,
-                status: t.confirmations > REQUIRED_ETH_CONFIRMATIONS ? TransactionStatus.RELAYED : t.status
+                status: TransactionStatus.RELAYED
               }
               : t
           )
