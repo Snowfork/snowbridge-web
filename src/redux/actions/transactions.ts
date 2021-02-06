@@ -1,6 +1,7 @@
 import {
     ADD_TRANSACTION,
     UPDATE_CONFIRMATIONS,
+    SET_NONCE,
     SET_TRANSACTION_STATUS,
     POLKA_ETH_BURNED,
     POLKA_ETH_MINTED,
@@ -20,6 +21,13 @@ export const updateConfirmations = (hash: string, confirmations: number): Update
     type: UPDATE_CONFIRMATIONS,
     hash,
     confirmations
+});
+
+export interface SetNoncePayload { type: string, hash: string, nonce: string };
+export const setNonce = (hash: string, nonce: string): SetNoncePayload => ({
+    type: SET_NONCE,
+    hash,
+    nonce
 });
 
 export interface SetTransactionStatusPayload { type: string, hash: string, status: TransactionStatus }

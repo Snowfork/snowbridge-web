@@ -9,6 +9,7 @@ import { Dispatch } from 'redux';
 import Api from './api';
 import Net from './';
 import { setPolkadotJSFound, setPolkadotJSMissing } from '../redux/actions';
+import _ from 'lodash';
 
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
@@ -17,7 +18,7 @@ import { addTransaction, ethUnlockedEvent, polkaEthBurned, polkaEthMinted, setPe
 import { EthUnlockEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
 import { notify } from '../redux/actions/notifications';
 
-const BigNumber = require('bignumber.js');
+const INCENTIVIZED_CHANNEL_ID = 1;
 
 // Polkadot API connector
 type Connector = (p: Polkadot, net: any) => void;
@@ -114,7 +115,7 @@ export default class Polkadot extends Api {
 
 
         // subscribe to ETH unlock event
-        const unlockEventSubscription = self.net.eth?.eth_contract?.events.Unlock({})
+        const unlockEventSubscription = self.net.eth?.eth_contract?.events.Unlocked({})
           .on('data', (
             event: EthUnlockEvent
           ) => {
@@ -130,6 +131,7 @@ export default class Polkadot extends Api {
         const polkaWeiValue = web3.utils.toWei(amount, 'ether');
 
         const transferExtrinsic = self.conn.tx.eth.burn(
+          INCENTIVIZED_CHANNEL_ID,
           recepient,
           polkaWeiValue,
         );
@@ -179,39 +181,33 @@ export default class Polkadot extends Api {
   // Subscribe to Parachain events
   public async subscribeEvents() {
     if (this.conn) {
-      this.conn.query.system.events((events) => {
-        console.log(`\nReceived ${events.length} events`);
-        // Loop through the events in the current block
-        events.forEach((record) => {
-          const { event } = record;
-          // Checks if the parachain emited event is for a Minted asset
-          if (event.section === 'eth' && event.method === 'Minted') {
-            // Notify local transaction object the asset is minted
-            this.dispatch(polkaEthMinted({
-              // Receiver of the sent PolkaEth
-              accountId: event.data[1].toString(),
-              // PolkaEth amount
-              amount: web3.utils.fromWei(event.data[2].toString()),
-            }
-            ));
+      this.conn.query.system.events((eventRecords) => {
+        console.log(`\nReceived ${eventRecords.length} new Polkadot events`);
+        const dispatchEvents = _.filter(eventRecords, eR => eR.event.section === 'dispatch')
+        const mintedEvents = _.filter(eventRecords, eR => eR.event.section === 'eth' && eR.event.method === 'Minted');
+        const burnedEvents = _.filter(eventRecords, eR => eR.event.section === 'eth' && eR.event.method === 'Burned');
+        dispatchEvents.forEach(({ event }) => {
 
-            this.dispatch(notify({ text: "PolkaEth Minted", color: "success" }));
-            // Checks if the parachain emited event is for a burned
-          } else if (event.section === 'asset' && event.method === 'Burned') {
-            console.log('Got Assets.Burned event');
-
-            // Notify local transaction object the asset is burned
-            this.dispatch(polkaEthBurned({
-              accountId: event.data[1].toString(),
-              amount: web3.utils.fromWei(event.data[2].toString()),
-            }
-            ));
-
-            this.dispatch(notify({ text: "PolkaEth Burned", color: "success" }));
-          }
-
-          // TODO: update new Polkadot account balance
         });
+        mintedEvents.forEach(({ event }) => {
+          this.dispatch(polkaEthMinted({
+            accountId: event.data[1].toString(),
+            amount: web3.utils.fromWei(event.data[2].toString()),
+          }
+          ));
+
+          this.dispatch(notify({ text: "PolkaEth Minted", color: "success" }));
+        });
+        burnedEvents.forEach(({ event }) => {
+          this.dispatch(polkaEthBurned({
+            accountId: event.data[1].toString(),
+            amount: web3.utils.fromWei(event.data[2].toString()),
+          }
+          ));
+
+          this.dispatch(notify({ text: "PolkaEth Burned", color: "success" }));
+        });
+        // TODO: update new Polkadot account balance
       });
     } else {
       throw new Error('Polkadot API not connected');
@@ -234,6 +230,7 @@ export default class Polkadot extends Api {
               "Incentivized": null
             }
           },
+          "MessageId": "(ChannelId, u64)",
           "Message": {
             "data": "Vec<u8>",
             "proof": "Proof"
@@ -266,11 +263,21 @@ export default class Polkadot extends Api {
           "Bloom": {
             "_": "[u8; 256]"
           },
+          "PruningRange": {
+            "oldestUnprunedBlock": "u64",
+            "oldestBlockToKeep": "u64"
+          },
           "AssetId": {
             "_enum": {
               "ETH": null,
               "Token": "H160"
             }
+          },
+          "InboundChannelData": {
+            "nonce": "u64"
+          },
+          "OutboundChannelData": {
+            "nonce": "u64"
           }
         }
       });

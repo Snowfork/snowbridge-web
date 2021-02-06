@@ -1,6 +1,7 @@
 import {
   ADD_TRANSACTION,
   UPDATE_CONFIRMATIONS,
+  SET_NONCE,
   SET_TRANSACTION_STATUS,
   POLKA_ETH_MINTED,
   POLKA_ETH_BURNED,
@@ -14,7 +15,8 @@ import {
   PolkaEthMintedPayload,
   PolkaEthBurnedPayload,
   SetPendingTransactionPayload,
-  EthUnlockEventPayload
+  EthUnlockEventPayload,
+  SetNoncePayload
 } from '../actions/transactions'
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { EventData } from 'web3-eth-contract';
@@ -24,7 +26,7 @@ export enum TransactionStatus {
   REJECTED = -1,
   // used when waiting for confirmation in metamask
   SUBMITTING_TO_ETHEREUM = 0,
-  // transaction hash recieved 
+  // transaction hash recieved
   WAITING_FOR_CONFIRMATION = 1,
   // used when the eth transaction is confirmed
   // and we are waiting to reach the confirmation threshold
@@ -43,6 +45,7 @@ export enum TransactionStatus {
 
 export interface Transaction {
   hash: string;
+  nonce?: string;
   confirmations: number;
   sender: string;
   receiver: string;
@@ -57,7 +60,7 @@ export interface Transaction {
   }
 }
 
-// Interface for the Ethereum 'Unlock' event, emitted by the ETHApp smart contract 
+// Interface for the Ethereum 'Unlock' event, emitted by the ETHApp smart contract
 export interface EthUnlockEvent extends EventData {
   returnValues: { _amount: string, _recipient: string, _sender: string }
 }
@@ -123,6 +126,13 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
       return ((action: SetTransactionStatusPayload) => {
         return Object.assign({}, state, {
           transactions: state.transactions.map((t) => t.hash === action.hash ? { ...t, status: action.status } : t)
+        });
+      })(action)
+    }
+    case SET_NONCE: {
+      return ((action: SetNoncePayload) => {
+        return Object.assign({}, state, {
+          transactions: state.transactions.map((t) => t.hash === action.hash ? { ...t, nonce: action.nonce } : t)
         });
       })(action)
     }

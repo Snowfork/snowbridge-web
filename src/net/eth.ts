@@ -23,6 +23,7 @@ import {
 } from '../redux/actions';
 import {
   addTransaction,
+  setNonce,
   setPendingTransaction,
   updateConfirmations,
 } from '../redux/actions/transactions';
@@ -146,6 +147,7 @@ export default class Eth extends Api {
               console.log('Transaction sent', payload);
             })
             .on('transactionHash', async function (hash: string) {
+              console.log('Transaction hash received', hash);
               transactionHash = hash;
 
               self.dispatch(
@@ -168,6 +170,29 @@ export default class Eth extends Api {
 
               self.dispatch(notify({ text: "ETH to SnowETH Transaction created" }));
             })
+            .on('receipt', async function (receipt: any) {
+              console.log('Transaction receipt received', receipt);
+              const outChannelLogFields = [
+                {
+                  type: 'address',
+                  name: 'source'
+                },
+                {
+                  type: 'uint64',
+                  name: 'nonce'
+                },
+                {
+                  type: 'bytes',
+                  name: 'payload',
+                }
+              ];
+              const channelEvent = receipt.events[0];
+              const decodedEvent = self.conn!.eth.abi.decodeLog(outChannelLogFields, channelEvent.raw.data, channelEvent.raw.topics);
+              const nonce = decodedEvent.nonce;
+              self.dispatch(
+                setNonce(transactionHash, nonce),
+              );
+            })
             .on(
               'confirmation',
               function (
@@ -175,14 +200,10 @@ export default class Eth extends Api {
                 receipt: any,
                 latestBlockHash: string,
               ) {
-                console.log('----------- Receipt ----------');
-                console.log(receipt);
-                console.log('----------- Block ------------');
-                console.log(latestBlockHash);
-
+                console.log(`Got confirmation ${confirmation} for ${receipt.transactionHash}`);
                 // update transaction confirmations
                 self.dispatch(
-                  updateConfirmations(transactionHash, confirmation),
+                  updateConfirmations(receipt.transactionHash, confirmation),
                 );
 
                 if (confirmation === 12) {
