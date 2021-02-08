@@ -283,7 +283,7 @@ export default class Eth extends Api {
           INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
         );
 
-        this.erc20_contract = contract;
+        this.incentivizedChannelContract = contract;
       }
     } catch (err) {
       //Todo: Error fetching ERC20 contract

@@ -134,20 +134,14 @@ export default class Polkadot extends Api {
             (result) => {
               if (result.status.isInBlock) {
                 pendingTransaction.hash = result.status.hash.toString();
-                //TODO: get nonce properly
-                const nonce = 'TODO';
+                const nonce = result.events[0].event.data[1].toString();
                 pendingTransaction.nonce = nonce;
-                console.log("inblock, adding pendintx")
-                console.log({ pendingTransaction })
-                console.log({ result })
                 self.dispatch(addTransaction({ ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION }));
                 // subscribe to ETH dispatch event
                 self.net.eth?.incentivizedChannelContract?.events.MessageDelivered({})
                   .on('data', (
                     event: MessageDeliveredEvent
                   ) => {
-                    console.log("new eth MessageDeliveredEvent");
-                    console.log({ event })
                     if (
                       event.returnValues.nonce === nonce
                     ) {
@@ -183,7 +177,7 @@ export default class Polkadot extends Api {
         const dispatchEvents = _.filter(eventRecords, eR => eR.event.section === 'dispatch')
         const burnedEvents = _.filter(eventRecords, eR => eR.event.section === 'eth' && eR.event.method === 'Burned');
         dispatchEvents.forEach(({ event }) => {
-          const nonce = (event.data as any)[0][1].toString();
+          const nonce = (event.data as any)[0].nonce.toString();
           // TODO: const dispatchSuccessNotification = (text: string) => this.dispatch(notify({ text, color: "success" }));
           console.log(`Got new dispatch event with nonce: ${nonce}`);
           this.dispatch(parachainMessageDispatched(nonce));
@@ -220,7 +214,11 @@ export default class Polkadot extends Api {
               "Incentivized": null
             }
           },
-          "MessageId": "(ChannelId, u64)",
+          "MessageNonce": "u64",
+          "MessageId": {
+            "channelId": "ChannelId",
+            "nonce": "u64"
+          },
           "Message": {
             "data": "Vec<u8>",
             "proof": "Proof"
