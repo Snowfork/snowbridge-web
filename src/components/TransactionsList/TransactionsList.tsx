@@ -57,7 +57,7 @@ function TransactionsList({
     return (
       <S.List>
         {transactions.map((transaction, index) => (
-          <TransactionItem transaction={transaction} transactionIndex={index} />
+          <TransactionItem key={index} transaction={transaction} transactionIndex={index} />
         ))}
       </S.List>
     );
