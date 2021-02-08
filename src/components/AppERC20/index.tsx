@@ -20,14 +20,14 @@ import {
 } from '@material-ui/core';
 
 // Local
-import { REFRESH_INTERVAL_MILLISECONDS } from './config';
-import { RootState } from './redux/reducers';
+import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
+import { RootState } from '../../redux/reducers';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchERC20Allowance, fetchERC20Balance, fetchERC20TokenName } from './redux/actions/ERC20Transactions';
-import * as ERC20Api from './utils/ERC20Api';
-import PolkadotAccount from './components/PolkadotAccount';
-import Net from './net';
-import { Token } from './types';
+import { fetchERC20Allowance, fetchERC20Balance, fetchERC20TokenName } from '../../redux/actions/ERC20Transactions';
+import * as ERC20Api from '../../utils/ERC20Api';
+import PolkadotAccount from '../PolkadotAccount';
+import Net from '../../net';
+import { Token } from '../../types';
 
 // ------------------------------------------
 //                  Props
@@ -237,12 +237,6 @@ function AppERC20({
           border: 'thin solid #E0E0E0',
         }}
       >
-        <Grid item xs={10}>
-          <Typography gutterBottom variant="h5">
-            ERC20 App
-          </Typography>
-        </Grid>
-        <Grid item xs={10}>
           {tokenContract && (
             <ApproveAndSendERC20
               contract={contract}
@@ -252,7 +246,6 @@ function AppERC20({
               selectedToken={selectedToken}
             />
           )}
-        </Grid>
       </Grid>
     </Grid>
   );

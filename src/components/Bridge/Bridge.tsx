@@ -9,7 +9,7 @@ import { Contract } from 'web3-eth-contract';
 
 import AppEthereum from '../AppEth';
 import AppPolkadot from '../AppPolkadot';
-import AppERC20 from '../../AppERC20';
+import AppERC20 from '../AppERC20/index';
 import EthTokenList from '../AppEth/tokenList.json'
 import PolkadotTokenList from '../AppPolkadot/tokenList.json';
 import Net from '../../net';
