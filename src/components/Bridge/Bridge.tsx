@@ -34,7 +34,6 @@ import { createContractInstance } from '../../redux/actions/ERC20Transactions';
 // ------------------------------------------
 type Props = {
   net: Net;
-  polkadotAddress: string;
   ethAddress: string;
 };
 
@@ -48,11 +47,10 @@ enum SwapDirection {
 // ------------------------------------------
 function Bridge({
   net,
-  polkadotAddress,
   ethAddress,
 }: Props): React.ReactElement<Props> {
   const [swapDirection, setSwapDirection] = useState(SwapDirection.EthereumToPolkadot);
-  const [showAssetSelector, setShowAssetSelector] = useState(true)
+  const [showAssetSelector, setShowAssetSelector] = useState(false)
   const [tokens, setTokens] = useState<Token[]>([EthTokenList.tokens[0] as Token]);
   const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
   const dispatch = useDispatch();
@@ -79,14 +77,13 @@ function Bridge({
   }, [net.eth, setTokens, swapDirection])
 
   // update the contract instance when the selected asset changes
-  useEffect(() => {
-    console.log('updating contract instance', selectedAsset)
-    if (selectedAsset.address !== '0x0') {
-      dispatch(createContractInstance(selectedAsset.address, net?.eth?.conn as Web3))
-    }
-  }, [dispatch, net, selectedAsset])
+  const handleAssetSelected = (asset: Token): void => {
+    setSelectedAsset(asset);
+    dispatch(createContractInstance(asset.address, net?.eth?.conn as Web3))
 
+  }
 
+  // update transaction direction between chains
   const handleSwap = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
       setSwapDirection(SwapDirection.PolkadotToEthereum);
@@ -153,7 +150,7 @@ function Bridge({
             <img src={selectedAsset.logoURI} alt={`${selectedAsset.name} icon`} style={{ width: '25px' }} />
             {selectedAsset.symbol}
           </Button>
-          <SelectTokenModal tokens={tokens} onTokenSelected={setSelectedAsset} open={showAssetSelector} onClose={() => setShowAssetSelector(false)} />
+          <SelectTokenModal tokens={tokens} onTokenSelected={handleAssetSelected} open={showAssetSelector} onClose={() => setShowAssetSelector(false)} />
       </Grid>
       <ChainApp />
 

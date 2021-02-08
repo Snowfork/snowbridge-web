@@ -87,7 +87,6 @@ function BridgeApp(props: Props) {
 			<Nav net={net.client} transactions={props.transactions} />
 			<Bridge
 				net={net.client!}
-				polkadotAddress={net.client.polkadotAddress}
 				ethAddress={net.client.ethAddress}
 			/>
 			<Modal

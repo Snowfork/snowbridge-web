@@ -61,10 +61,6 @@ function ApproveAndSendERC20({
   // Blockchain state from blockchain
   const allowance = useSelector((state: RootState) => state.ERC20Transactions.allowance)
   const balance = useSelector((state: RootState) => state.ERC20Transactions.balance)
-  const tokenContractInstance = useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
-
-
-  console.log('got contract instance:', tokenContractInstance._address)
 
   // User input state
   const [approvalAmount, setApprovalAmount] = useState(0);
@@ -72,19 +68,21 @@ function ApproveAndSendERC20({
 
   // queries the contract for allowance and balance
   useEffect(() => {
-    const fetchChainData = async () => {
-      dispatch(fetchERC20Allowance(contractERC20, defaultAccount, contract._address))
-      dispatch(fetchERC20Balance(contractERC20, defaultAccount))
-      dispatch(fetchERC20TokenName(contractERC20))
-    };
+  const fetchChainData = async () => {
+    dispatch(fetchERC20Allowance(contractERC20, defaultAccount, contract._address))
+    dispatch(fetchERC20Balance(contractERC20, defaultAccount))
+    dispatch(fetchERC20TokenName(contractERC20))
+  };
 
     fetchChainData();
-    setInterval(() => {
-      console.log('timeout')
+    
+    const pollTimer = setInterval(() => {
       fetchChainData();
     }, REFRESH_INTERVAL_MILLISECONDS);
-  }, [contract._address, contractERC20, contractERC20.methods,
-    defaultAccount, dispatch, tokenContractInstance]);
+    
+    return () => clearInterval(pollTimer);
+
+  }, [contract._address, contractERC20, defaultAccount, dispatch]);
 
   // Handlers
   const handleApproveERC20 = async () => {
@@ -216,10 +214,8 @@ function AppERC20({
   net,
   selectedToken
 }: Props): React.ReactElement<Props> {
-  // ERC20 token contract instance
-  const tokenContract = useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
-
-
+  const tokenContract= useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
+  
   if (defaultAccount === null || !defaultAccount) {
     return <p>Empty Account</p>;
   }
