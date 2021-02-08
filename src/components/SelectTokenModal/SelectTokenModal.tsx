@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as S from './SelectTokenModal.style';
 import ReactModal from 'react-modal';
-import { Token } from '../AppEth/AppETH';
+import { Token } from '../../types';
 
 const customStyles = {
   overlay: {},

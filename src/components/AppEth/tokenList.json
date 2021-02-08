@@ -283,7 +283,7 @@
             "symbol": "UNI",
             "decimals": 18,
             "chainId": 1,
-            "logoURI": "ipfs://QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg"
+            "logoURI": "https://cloudflare-ipfs.com/ipfs/QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg/"
         },
         {
             "name": "USDCoin",
@@ -347,7 +347,7 @@
             "symbol": "UNI",
             "decimals": 18,
             "chainId": 3,
-            "logoURI": "ipfs://QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg"
+            "logoURI": "https://cloudflare-ipfs.com/ipfs/QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg/"
         },
         {
             "name": "Wrapped Ether",

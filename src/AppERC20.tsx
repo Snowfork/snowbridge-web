@@ -5,7 +5,6 @@
 // General
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 
 // External
@@ -16,73 +15,37 @@ import {
   Button,
   Divider,
   Grid,
+  FormControl,
+  FormHelperText,
 } from '@material-ui/core';
 
 // Local
 import { REFRESH_INTERVAL_MILLISECONDS } from './config';
 import { RootState } from './redux/reducers';
 import { useDispatch, useSelector } from 'react-redux';
-import { createContractInstance, fetchERC20Allowance, fetchERC20Balance, fetchERC20TokenName, setContractAddress } from './redux/actions/ERC20Transactions';
+import { fetchERC20Allowance, fetchERC20Balance, fetchERC20TokenName } from './redux/actions/ERC20Transactions';
 import * as ERC20Api from './utils/ERC20Api';
+import PolkadotAccount from './components/PolkadotAccount';
+import Net from './net';
+import { Token } from './types';
 
 // ------------------------------------------
 //                  Props
 // ------------------------------------------
 type Props = {
-  web3: Web3;
+  net: Net;
   contract: Contract;
   defaultAccount: string | null | undefined;
-};
-
-type LoadERC20TokenProps = {
-  web3: Web3;
+  selectedToken: Token;
 };
 
 type ApproveAndSendProps = {
   defaultAccount: string;
   contract: any;
   contractERC20: any;
+  net: Net;
+  selectedToken: Token;
 };
-
-// ------------------------------------------
-//           LoadERC20Token component
-// ------------------------------------------
-function LoadERC20Token({
-  web3,
-}: LoadERC20TokenProps): React.ReactElement<Props> {
-  const contractAddress = useSelector((state: RootState): string => state.ERC20Transactions.contractAddress ?? "")
-  const dispatch = useDispatch();
-
-  // Fetch ERC20 token contract
-  useEffect(() => {
-    // create contract instance
-    dispatch(createContractInstance(contractAddress, web3))
-  }, [web3, contractAddress, dispatch]);
-
-  const setTokenAddress = (address: string): void => {
-    dispatch(setContractAddress(address))
-  }
-
-  // Render
-  return (
-    <Box>
-      <Typography gutterBottom>
-        What&apos;s the ERC20 token&apos;s contract address?
-      </Typography>
-      <TextField
-        InputProps={{
-          value: contractAddress,
-        }}
-        id="erc-input-token-address"
-        margin="normal"
-        onChange={(e) => setTokenAddress(e.target.value)}
-        placeholder="0xbeddb07..."
-        style={{ margin: 5 }}
-        variant="outlined"
-      />
-    </Box>
-  );
-}
 
 // ------------------------------------------
 //           ApproveAndSendERC20 component
@@ -91,19 +54,23 @@ function ApproveAndSendERC20({
   contract, // the bridge contract
   contractERC20, // the ERC20 token contract
   defaultAccount, // the users wallet address
+  net,
+  selectedToken
 }: ApproveAndSendProps): React.ReactElement<Props> {
   const dispatch = useDispatch()
   // Blockchain state from blockchain
   const allowance = useSelector((state: RootState) => state.ERC20Transactions.allowance)
   const balance = useSelector((state: RootState) => state.ERC20Transactions.balance)
   const tokenContractInstance = useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
-  const tokenName = useSelector((state: RootState) => state.ERC20Transactions.name)
+
+
+  console.log('got contract instance:', tokenContractInstance._address)
 
   // User input state
   const [approvalAmount, setApprovalAmount] = useState(0);
-  const [polkadotRecipient, setPolkadotRecipient] = useState(String);
   const [depositAmount, setDepositAmount] = useState(0);
 
+  // queries the contract for allowance and balance
   useEffect(() => {
     const fetchChainData = async () => {
       dispatch(fetchERC20Allowance(contractERC20, defaultAccount, contract._address))
@@ -113,6 +80,7 @@ function ApproveAndSendERC20({
 
     fetchChainData();
     setInterval(() => {
+      console.log('timeout')
       fetchChainData();
     }, REFRESH_INTERVAL_MILLISECONDS);
   }, [contract._address, contractERC20, contractERC20.methods,
@@ -126,7 +94,7 @@ function ApproveAndSendERC20({
 
   const handleSendERC20 = async () => {
     // Send ERC20 token to bank contract
-    await ERC20Api.sendERC20(defaultAccount, polkadotRecipient, contractERC20, contract,
+    await ERC20Api.sendERC20(defaultAccount, net.polkadotAddress, contractERC20, contract,
       await ERC20Api.addDecimals(contractERC20, depositAmount))
   };
 
@@ -157,7 +125,7 @@ function ApproveAndSendERC20({
       <Box alignItems="center" display="flex" justifyContent="space-around">
         <Box>
           <Typography>
-            Current ERC20 token balance: {Number(balance).toFixed(18)} {tokenName}
+            Current ERC20 token balance: {Number(balance).toFixed(18)} {selectedToken.symbol}
           </Typography>
         </Box>
         <Box
@@ -185,21 +153,14 @@ function ApproveAndSendERC20({
         </Typography>
       </Box>
       <Box display="flex" flexDirection="column">
-        <Box padding={1} />
-        <Typography gutterBottom>
-          What account would you like to fund on Polkadot?
-        </Typography>
-        <TextField
-          InputProps={{
-            value: polkadotRecipient,
-          }}
-          id="erc-input-recipient"
-          margin="normal"
-          onChange={(e) => setPolkadotRecipient(e.target.value)}
-          placeholder={'38j4dG5GzsL1bw...'}
-          style={{ margin: 5 }}
-          variant="outlined"
-        />
+        <Grid item xs={10}>
+          <FormControl>
+            <PolkadotAccount address={net.polkadotAddress} />
+          </FormControl>
+          <FormHelperText id="ethAmountDesc">
+            Polkadot Receiving Address
+          </FormHelperText>
+        </Grid>
         <Box padding={1} />
         <Typography gutterBottom>
           How many ERC20 tokens would you like to deposit
@@ -219,7 +180,7 @@ function ApproveAndSendERC20({
         <Box alignItems="center" display="flex" justifyContent="space-around">
           <Box>
             <Typography>
-              Current ERC20 App allowance: {Number(allowance).toFixed(18)} {tokenName}
+              Current ERC20 App allowance: {Number(allowance).toFixed(18)} {selectedToken.symbol}
             </Typography>
           </Box>
           <Box
@@ -252,7 +213,8 @@ function ApproveAndSendERC20({
 function AppERC20({
   contract,
   defaultAccount,
-  web3,
+  net,
+  selectedToken
 }: Props): React.ReactElement<Props> {
   // ERC20 token contract instance
   const tokenContract = useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
@@ -285,14 +247,13 @@ function AppERC20({
           </Typography>
         </Grid>
         <Grid item xs={10}>
-          <LoadERC20Token
-            web3={web3}
-          />
           {tokenContract && (
             <ApproveAndSendERC20
               contract={contract}
               contractERC20={tokenContract}
               defaultAccount={defaultAccount}
+              net={net}
+              selectedToken={selectedToken}
             />
           )}
         </Grid>

@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
@@ -10,7 +10,8 @@ import { Contract } from 'web3-eth-contract';
 import AppEthereum from '../AppEth';
 import AppPolkadot from '../AppPolkadot';
 import AppERC20 from '../../AppERC20';
-
+import EthTokenList from '../AppEth/tokenList.json'
+import PolkadotTokenList from '../AppPolkadot/tokenList.json';
 import Net from '../../net';
 
 
@@ -22,6 +23,11 @@ import {
 
 import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
 import IconButton from '../IconButton';
+import Button from '../Button'
+import SelectTokenModal from '../SelectTokenModal';
+import { Token } from '../../types';
+import { useDispatch } from 'react-redux';
+import { createContractInstance } from '../../redux/actions/ERC20Transactions';
 
 // ------------------------------------------
 //                  Props
@@ -46,6 +52,40 @@ function Bridge({
   ethAddress,
 }: Props): React.ReactElement<Props> {
   const [swapDirection, setSwapDirection] = useState(SwapDirection.EthereumToPolkadot);
+  const [showAssetSelector, setShowAssetSelector] = useState(true)
+  const [tokens, setTokens] = useState<Token[]>([EthTokenList.tokens[0] as Token]);
+  const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
+  const dispatch = useDispatch();
+
+
+  // update token list when the swap direction changes
+  useEffect(() => {
+    const currentChainId = Number.parseInt((net.eth?.conn?.currentProvider as any).chainId, 16)
+    let selectedTokenList: Token[];
+    // set eth token list
+    if (swapDirection === SwapDirection.EthereumToPolkadot) {
+      // only include tokens from current network
+      selectedTokenList = (EthTokenList.tokens as Token[])
+        .filter(
+          (token: Token) => token.chainId === currentChainId)
+    } else {
+      // set polkadot token list
+      selectedTokenList = PolkadotTokenList.tokens as Token[]
+    }
+
+    setTokens(selectedTokenList);
+    setSelectedAsset(selectedTokenList[0]);
+
+  }, [net.eth, setTokens, swapDirection])
+
+  // update the contract instance when the selected asset changes
+  useEffect(() => {
+    console.log('updating contract instance', selectedAsset)
+    if (selectedAsset.address !== '0x0') {
+      dispatch(createContractInstance(selectedAsset.address, net?.eth?.conn as Web3))
+    }
+  }, [dispatch, net, selectedAsset])
+
 
   const handleSwap = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
@@ -57,7 +97,17 @@ function Bridge({
 
   const ChainApp = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      return <AppEthereum net={net} handleSwap={handleSwap} />;
+      // check if should use eth app or erc20 app
+      if (selectedAsset.address === '0x0') {
+        return <AppEthereum net={net} handleSwap={handleSwap} />;
+      } else {
+        return <AppERC20
+          net={net}
+          contract={net?.eth?.erc20_contract as Contract}
+          defaultAccount={ethAddress}
+          selectedToken={selectedAsset}
+        />
+      }
     } else {
       return <AppPolkadot net={net} handleSwap={handleSwap} />;
     }
@@ -65,7 +115,7 @@ function Bridge({
 
   return (
     <div style={{ padding: '2em 0', }}>
-      {/* select direction */}
+      {/* select swap direction */}
       <Grid
         container
         item
@@ -98,13 +148,15 @@ function Bridge({
               Polkadot
             </S.HeadingContainer>
         </Typography>
+          <Typography gutterBottom>Select Asset</Typography>
+          <Button onClick={() => setShowAssetSelector(true)}>
+            <img src={selectedAsset.logoURI} alt={`${selectedAsset.name} icon`} style={{ width: '25px' }} />
+            {selectedAsset.symbol}
+          </Button>
+          <SelectTokenModal tokens={tokens} onTokenSelected={setSelectedAsset} open={showAssetSelector} onClose={() => setShowAssetSelector(false)} />
       </Grid>
       <ChainApp />
-      <AppERC20
-        web3={net?.eth?.conn as Web3}
-        contract={net?.eth?.erc20_contract as Contract}
-        defaultAccount={ethAddress}
-      />
+
     </div>
   );
 }
