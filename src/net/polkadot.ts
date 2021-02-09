@@ -14,8 +14,8 @@ import _ from 'lodash';
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
 
-import { addTransaction, ethMessageDelivered, setTransactionStatus, polkaEthBurned, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
-import { MessageDeliveredEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
+import { addTransaction, ethMessageDispatched, setTransactionStatus, polkaEthBurned, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
+import { MessageDispatchedEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
 import { notify } from '../redux/actions/notifications';
 
 const INCENTIVIZED_CHANNEL_ID = 1;
@@ -138,14 +138,14 @@ export default class Polkadot extends Api {
                 pendingTransaction.nonce = nonce;
                 self.dispatch(addTransaction({ ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION }));
                 // subscribe to ETH dispatch event
-                self.net.eth?.incentivizedChannelContract?.events.MessageDelivered({})
+                self.net.eth?.incentivizedChannelContract?.events.MessageDispatched({})
                   .on('data', (
-                    event: MessageDeliveredEvent
+                    event: MessageDispatchedEvent
                   ) => {
                     if (
                       event.returnValues.nonce === nonce
                     ) {
-                      self.dispatch(ethMessageDelivered(event.returnValues.nonce, pendingTransaction.nonce!));
+                      self.dispatch(ethMessageDispatched(event.returnValues.nonce, pendingTransaction.nonce!));
                     }
                   });
               }
@@ -175,21 +175,11 @@ export default class Polkadot extends Api {
     if (this.conn) {
       this.conn.query.system.events((eventRecords) => {
         const dispatchEvents = _.filter(eventRecords, eR => eR.event.section === 'dispatch')
-        const burnedEvents = _.filter(eventRecords, eR => eR.event.section === 'eth' && eR.event.method === 'Burned');
         dispatchEvents.forEach(({ event }) => {
           const nonce = (event.data as any)[0].nonce.toString();
           // TODO: const dispatchSuccessNotification = (text: string) => this.dispatch(notify({ text, color: "success" }));
           console.log(`Got new dispatch event with nonce: ${nonce}`);
           this.dispatch(parachainMessageDispatched(nonce));
-        });
-        burnedEvents.forEach(({ event }) => {
-          this.dispatch(polkaEthBurned({
-            accountId: event.data[1].toString(),
-            amount: web3.utils.fromWei(event.data[2].toString()),
-          }
-          ));
-
-          this.dispatch(notify({ text: "PolkaEth Burned", color: "success" }));
         });
         // TODO: update new Polkadot account balance
       });

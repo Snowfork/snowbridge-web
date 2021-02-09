@@ -5,8 +5,8 @@ import {
     SET_TRANSACTION_STATUS,
     POLKA_ETH_BURNED,
     SET_PENDING_TRANSACTION,
-    ETH_MESSAGE_DELIVERED_EVENT,
-    PARACHAIN_MESSAGE_DISPATCHED
+    PARACHAIN_MESSAGE_DISPATCHED,
+    ETH_MESSAGE_DISPATCHED_EVENT
 } from '../actionsTypes/transactions';
 import { PolkaEthBurnedEvent, Transaction, TransactionStatus } from '../reducers/transactions';
 
@@ -43,11 +43,11 @@ export const parachainMessageDispatched = (nonce: string): ParachainMessageDispa
     nonce
 });
 
-export interface EthMessageDeliveredPayload { type: string, nonce: string, deliveryTransactionHash: string };
-export const ethMessageDelivered = (nonce: string, deliveryTransactionHash: string): EthMessageDeliveredPayload => ({
-    type: ETH_MESSAGE_DELIVERED_EVENT,
+export interface EthMessageDispatchedPayload { type: string, nonce: string, dispatchTransactionHash: string };
+export const ethMessageDispatched = (nonce: string, dispatchTransactionHash: string): EthMessageDispatchedPayload => ({
+    type: ETH_MESSAGE_DISPATCHED_EVENT,
     nonce,
-    deliveryTransactionHash
+    dispatchTransactionHash
 });
 
 export interface PolkaEthBurnedPayload { type: string, event: PolkaEthBurnedEvent };

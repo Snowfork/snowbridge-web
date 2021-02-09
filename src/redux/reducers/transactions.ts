@@ -6,7 +6,7 @@ import {
   PARACHAIN_MESSAGE_DISPATCHED,
   POLKA_ETH_BURNED,
   SET_PENDING_TRANSACTION,
-  ETH_MESSAGE_DELIVERED_EVENT
+  ETH_MESSAGE_DISPATCHED_EVENT
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
@@ -15,7 +15,7 @@ import {
   ParachainMessageDispatchedPayload,
   PolkaEthBurnedPayload,
   SetPendingTransactionPayload,
-  EthMessageDeliveredPayload,
+  EthMessageDispatchedPayload,
   SetNoncePayload
 } from '../actions/transactions'
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
@@ -34,12 +34,12 @@ export enum TransactionStatus {
   // transaction finalized (for eth, when we reach enough confirmations. for parachain, when tx finalized)
   FINALIZED_ON_CHAIN = 3,
   // waiting for 'MessageDispatch' event on polkadot for eth transactions
-  // or waiting for 'MessageDelivered' event on Ethereum for polkadot transactions
+  // or waiting for 'MessageDispatched' event on Ethereum for polkadot transactions
   WAITING_FOR_RELAY = 4,
   // message dispatched on polkadot
   RELAYED = 5,
-  // transaction delivered to second chain
-  DELIVERED = 6
+  // transaction dispatched to second chain
+  DISPATCHED = 6
 }
 
 export interface Transaction {
@@ -57,11 +57,11 @@ export interface Transaction {
     deposited: 'eth' | 'polkaEth',
     recieved: 'eth' | 'polkaEth',
   },
-  deliveryTransactionHash?: string
+  dispatchTransactionHash?: string
 }
 
-// Interface for the Ethereum 'MessageDelivered' event, emitted by the Incentivized Channel smart contract
-export interface MessageDeliveredEvent extends EventData {
+// Interface for the Ethereum 'MessageDispatched' event, emitted by the Incentivized Channel smart contract
+export interface MessageDispatchedEvent extends EventData {
   returnValues: { nonce: string, result: boolean }
 }
 
@@ -167,8 +167,8 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         })
       })(action)
     }
-    case ETH_MESSAGE_DELIVERED_EVENT: {
-      return ((action: EthMessageDeliveredPayload) => {
+    case ETH_MESSAGE_DISPATCHED_EVENT: {
+      return ((action: EthMessageDispatchedPayload) => {
         const isMatchingTransaction = (transaction: Transaction): boolean => {
           return action.nonce === transaction.nonce
         }
@@ -176,8 +176,8 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
           transactions: state.transactions.map((t) => isMatchingTransaction(t)
             ? {
               ...t,
-              status: TransactionStatus.DELIVERED,
-              deliveryTransactionHash: action.deliveryTransactionHash
+              status: TransactionStatus.DISPATCHED,
+              dispatchTransactionHash: action.dispatchTransactionHash
             }
             : t)
         })

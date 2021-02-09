@@ -61,7 +61,7 @@ function PendingTransactionsUI({ transaction }: Props) {
           />
           <S.StyledLine />
           <Step
-            status={getStepStatus(transaction, TransactionStatus.DELIVERED - 1)}
+            status={getStepStatus(transaction, TransactionStatus.DISPATCHED - 1)}
             toolTip="Transaction relayed and delivered"
           />
         </S.Container>
