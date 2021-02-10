@@ -1,0 +1,723 @@
+{
+  "contractName": "InboundChannel",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "nonce",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "result",
+          "type": "bool"
+        }
+      ],
+      "name": "MessageDelivered",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "nonce",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "target",
+              "type": "address"
+            },
+            {
+              "internalType": "uint64",
+              "name": "nonce",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes",
+              "name": "payload",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct InboundChannel.Message[]",
+          "name": "commitment",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "submit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"result\",\"type\":\"bool\"}],\"name\":\"MessageDelivered\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"},{\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"internalType\":\"struct InboundChannel.Message[]\",\"name\":\"commitment\",\"type\":\"tuple[]\"}],\"name\":\"submit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/aidanmusnitzky/code/snowfork/polkadot-ethereum/ethereum/contracts/InboundChannel.sol\":\"InboundChannel\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/aidanmusnitzky/code/snowfork/polkadot-ethereum/ethereum/contracts/InboundChannel.sol\":{\"keccak256\":\"0x94c41af79c88e957e56b3f80fe346756e30f594b1d52852a57f356566b9e9707\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://1554e70888a84ec1c67d10241a4c8f65543358083547499ebe09482eb3a00322\",\"dweb:/ipfs/QmSLv4y7U222bLRGCgQYdSn5p239t1Bf8vYKHdqo7L8vg6\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity >=0.7.6;\npragma experimental ABIEncoderV2;\n\nabstract contract InboundChannel {\n\n    uint64 public nonce;\n\n    struct Message {\n        address target;\n        uint64 nonce;\n        bytes payload;\n    }\n\n    event MessageDelivered(uint64 nonce, bool result);\n\n    function submit(Message[] memory commitment) virtual public;\n}\n",
+  "sourcePath": "/Users/aidanmusnitzky/code/snowfork/polkadot-ethereum/ethereum/contracts/InboundChannel.sol",
+  "ast": {
+    "absolutePath": "/Users/aidanmusnitzky/code/snowfork/polkadot-ethereum/ethereum/contracts/InboundChannel.sol",
+    "exportedSymbols": {
+      "InboundChannel": [
+        778
+      ]
+    },
+    "id": 779,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 755,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.7",
+          ".6"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "32:24:4"
+      },
+      {
+        "id": 756,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "57:33:4"
+      },
+      {
+        "abstract": true,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": false,
+        "id": 778,
+        "linearizedBaseContracts": [
+          778
+        ],
+        "name": "InboundChannel",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "functionSelector": "affed0e0",
+            "id": 758,
+            "mutability": "mutable",
+            "name": "nonce",
+            "nodeType": "VariableDeclaration",
+            "scope": 778,
+            "src": "132:19:4",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint64",
+              "typeString": "uint64"
+            },
+            "typeName": {
+              "id": 757,
+              "name": "uint64",
+              "nodeType": "ElementaryTypeName",
+              "src": "132:6:4",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint64",
+                "typeString": "uint64"
+              }
+            },
+            "visibility": "public"
+          },
+          {
+            "canonicalName": "InboundChannel.Message",
+            "id": 765,
+            "members": [
+              {
+                "constant": false,
+                "id": 760,
+                "mutability": "mutable",
+                "name": "target",
+                "nodeType": "VariableDeclaration",
+                "scope": 765,
+                "src": "183:14:4",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 759,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "183:7:4",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 762,
+                "mutability": "mutable",
+                "name": "nonce",
+                "nodeType": "VariableDeclaration",
+                "scope": 765,
+                "src": "207:12:4",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint64",
+                  "typeString": "uint64"
+                },
+                "typeName": {
+                  "id": 761,
+                  "name": "uint64",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "207:6:4",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 764,
+                "mutability": "mutable",
+                "name": "payload",
+                "nodeType": "VariableDeclaration",
+                "scope": 765,
+                "src": "229:13:4",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes_storage_ptr",
+                  "typeString": "bytes"
+                },
+                "typeName": {
+                  "id": 763,
+                  "name": "bytes",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "229:5:4",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_storage_ptr",
+                    "typeString": "bytes"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "Message",
+            "nodeType": "StructDefinition",
+            "scope": 778,
+            "src": "158:91:4",
+            "visibility": "public"
+          },
+          {
+            "anonymous": false,
+            "id": 771,
+            "name": "MessageDelivered",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 770,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 767,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "nonce",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 771,
+                  "src": "278:12:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  },
+                  "typeName": {
+                    "id": 766,
+                    "name": "uint64",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "278:6:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint64",
+                      "typeString": "uint64"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 769,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "result",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 771,
+                  "src": "292:11:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 768,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "292:4:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "277:27:4"
+            },
+            "src": "255:50:4"
+          },
+          {
+            "functionSelector": "21d16868",
+            "id": 777,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "submit",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 775,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 774,
+                  "mutability": "mutable",
+                  "name": "commitment",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 777,
+                  "src": "327:27:4",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_Message_$765_memory_ptr_$dyn_memory_ptr",
+                    "typeString": "struct InboundChannel.Message[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 772,
+                      "name": "Message",
+                      "nodeType": "UserDefinedTypeName",
+                      "referencedDeclaration": 765,
+                      "src": "327:7:4",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Message_$765_storage_ptr",
+                        "typeString": "struct InboundChannel.Message"
+                      }
+                    },
+                    "id": 773,
+                    "nodeType": "ArrayTypeName",
+                    "src": "327:9:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_Message_$765_storage_$dyn_storage_ptr",
+                      "typeString": "struct InboundChannel.Message[]"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "326:29:4"
+            },
+            "returnParameters": {
+              "id": 776,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "370:0:4"
+            },
+            "scope": 778,
+            "src": "311:60:4",
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "public"
+          }
+        ],
+        "scope": 779,
+        "src": "92:281:4"
+      }
+    ],
+    "src": "32:342:4"
+  },
+  "legacyAST": {
+    "attributes": {
+      "absolutePath": "/Users/aidanmusnitzky/code/snowfork/polkadot-ethereum/ethereum/contracts/InboundChannel.sol",
+      "exportedSymbols": {
+        "InboundChannel": [
+          778
+        ]
+      },
+      "license": "MIT"
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            ">=",
+            "0.7",
+            ".6"
+          ]
+        },
+        "id": 755,
+        "name": "PragmaDirective",
+        "src": "32:24:4"
+      },
+      {
+        "attributes": {
+          "literals": [
+            "experimental",
+            "ABIEncoderV2"
+          ]
+        },
+        "id": 756,
+        "name": "PragmaDirective",
+        "src": "57:33:4"
+      },
+      {
+        "attributes": {
+          "abstract": true,
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "contract",
+          "fullyImplemented": false,
+          "linearizedBaseContracts": [
+            778
+          ],
+          "name": "InboundChannel",
+          "scope": 779
+        },
+        "children": [
+          {
+            "attributes": {
+              "constant": false,
+              "functionSelector": "affed0e0",
+              "mutability": "mutable",
+              "name": "nonce",
+              "scope": 778,
+              "stateVariable": true,
+              "storageLocation": "default",
+              "type": "uint64",
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "name": "uint64",
+                  "type": "uint64"
+                },
+                "id": 757,
+                "name": "ElementaryTypeName",
+                "src": "132:6:4"
+              }
+            ],
+            "id": 758,
+            "name": "VariableDeclaration",
+            "src": "132:19:4"
+          },
+          {
+            "attributes": {
+              "canonicalName": "InboundChannel.Message",
+              "name": "Message",
+              "scope": 778,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "target",
+                  "scope": 765,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "address",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "address",
+                      "stateMutability": "nonpayable",
+                      "type": "address"
+                    },
+                    "id": 759,
+                    "name": "ElementaryTypeName",
+                    "src": "183:7:4"
+                  }
+                ],
+                "id": 760,
+                "name": "VariableDeclaration",
+                "src": "183:14:4"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "nonce",
+                  "scope": 765,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint64",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint64",
+                      "type": "uint64"
+                    },
+                    "id": 761,
+                    "name": "ElementaryTypeName",
+                    "src": "207:6:4"
+                  }
+                ],
+                "id": 762,
+                "name": "VariableDeclaration",
+                "src": "207:12:4"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "mutability": "mutable",
+                  "name": "payload",
+                  "scope": 765,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "bytes",
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "bytes",
+                      "type": "bytes"
+                    },
+                    "id": 763,
+                    "name": "ElementaryTypeName",
+                    "src": "229:5:4"
+                  }
+                ],
+                "id": 764,
+                "name": "VariableDeclaration",
+                "src": "229:13:4"
+              }
+            ],
+            "id": 765,
+            "name": "StructDefinition",
+            "src": "158:91:4"
+          },
+          {
+            "attributes": {
+              "anonymous": false,
+              "name": "MessageDelivered"
+            },
+            "children": [
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "indexed": false,
+                      "mutability": "mutable",
+                      "name": "nonce",
+                      "scope": 771,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "uint64",
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "uint64",
+                          "type": "uint64"
+                        },
+                        "id": 766,
+                        "name": "ElementaryTypeName",
+                        "src": "278:6:4"
+                      }
+                    ],
+                    "id": 767,
+                    "name": "VariableDeclaration",
+                    "src": "278:12:4"
+                  },
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "indexed": false,
+                      "mutability": "mutable",
+                      "name": "result",
+                      "scope": 771,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "bool",
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "bool",
+                          "type": "bool"
+                        },
+                        "id": 768,
+                        "name": "ElementaryTypeName",
+                        "src": "292:4:4"
+                      }
+                    ],
+                    "id": 769,
+                    "name": "VariableDeclaration",
+                    "src": "292:11:4"
+                  }
+                ],
+                "id": 770,
+                "name": "ParameterList",
+                "src": "277:27:4"
+              }
+            ],
+            "id": 771,
+            "name": "EventDefinition",
+            "src": "255:50:4"
+          },
+          {
+            "attributes": {
+              "functionSelector": "21d16868",
+              "implemented": false,
+              "isConstructor": false,
+              "kind": "function",
+              "modifiers": [
+                null
+              ],
+              "name": "submit",
+              "scope": 778,
+              "stateMutability": "nonpayable",
+              "virtual": true,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "mutability": "mutable",
+                      "name": "commitment",
+                      "scope": 777,
+                      "stateVariable": false,
+                      "storageLocation": "memory",
+                      "type": "struct InboundChannel.Message[]",
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "type": "struct InboundChannel.Message[]"
+                        },
+                        "children": [
+                          {
+                            "attributes": {
+                              "name": "Message",
+                              "referencedDeclaration": 765,
+                              "type": "struct InboundChannel.Message"
+                            },
+                            "id": 772,
+                            "name": "UserDefinedTypeName",
+                            "src": "327:7:4"
+                          }
+                        ],
+                        "id": 773,
+                        "name": "ArrayTypeName",
+                        "src": "327:9:4"
+                      }
+                    ],
+                    "id": 774,
+                    "name": "VariableDeclaration",
+                    "src": "327:27:4"
+                  }
+                ],
+                "id": 775,
+                "name": "ParameterList",
+                "src": "326:29:4"
+              },
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 776,
+                "name": "ParameterList",
+                "src": "370:0:4"
+              }
+            ],
+            "id": 777,
+            "name": "FunctionDefinition",
+            "src": "311:60:4"
+          }
+        ],
+        "id": 778,
+        "name": "ContractDefinition",
+        "src": "92:281:4"
+      }
+    ],
+    "id": 779,
+    "name": "SourceUnit",
+    "src": "32:342:4"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.7.6+commit.7338295f.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.3",
+  "updatedAt": "2021-02-03T12:13:59.602Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}
