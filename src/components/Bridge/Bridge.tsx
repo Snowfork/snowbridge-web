@@ -145,12 +145,12 @@ function Bridge({
               Polkadot
             </S.HeadingContainer>
         </Typography>
-          <Typography gutterBottom>Select Asset</Typography>
-          <Button onClick={() => setShowAssetSelector(true)}>
-            <img src={selectedAsset.logoURI} alt={`${selectedAsset.name} icon`} style={{ width: '25px' }} />
-            {selectedAsset.symbol}
-          </Button>
-          <SelectTokenModal tokens={tokens} onTokenSelected={handleAssetSelected} open={showAssetSelector} onClose={() => setShowAssetSelector(false)} />
+        <Typography gutterBottom>Select Asset</Typography>
+        <Button onClick={() => setShowAssetSelector(true)}>
+          <img src={selectedAsset.logoURI} alt={`${selectedAsset.name} icon`} style={{ width: '25px' }} />
+          {selectedAsset.symbol}
+        </Button>
+        <SelectTokenModal tokens={tokens} onTokenSelected={handleAssetSelected} open={showAssetSelector} onClose={() => setShowAssetSelector(false)} />
       </Grid>
       <ChainApp />
 
