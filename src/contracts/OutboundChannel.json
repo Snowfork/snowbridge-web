@@ -53,7 +53,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"source\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"Message\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"submit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"submit(bytes)\":{\"details\":\"Sends a message across the channel\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/aidanmusnitzky/code/snowfork/polkadot-ethereum/ethereum/contracts/OutboundChannel.sol\":\"OutboundChannel\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/aidanmusnitzky/code/snowfork/polkadot-ethereum/ethereum/contracts/OutboundChannel.sol\":{\"keccak256\":\"0x6d6bbb03f59ce5bab5754efddfaf59101e2418949a395bb202d67adad68928a6\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://1a4ba8c552169e55bade5e8433df5f6718386d36cf6fe186d3201797857d38de\",\"dweb:/ipfs/QmfJNnkQ3xZ3Xk1vcKbf4KnpBgf4VcRf4BtgwG1iWS2sLd\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"source\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"Message\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"submit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"submit(bytes)\":{\"details\":\"Sends a message across the channel\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/home/ubuntu/aidan/polkadot-ethereum/ethereum/contracts/OutboundChannel.sol\":\"OutboundChannel\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/ubuntu/aidan/polkadot-ethereum/ethereum/contracts/OutboundChannel.sol\":{\"keccak256\":\"0xc07f7c5e5140380b99be11fe85d9fd45de5ba3ab94f984f5953cf0f7e336af1d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://71eab53eaa379943b288d33a92544fd7464d30a3900f4d53a9a473f3ebbba472\",\"dweb:/ipfs/QmSLRWR4pjF2WGbrn1eUZCq2PFr26rEBXjat3y1wxWeTLW\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -61,21 +61,21 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: MIT\npragma solidity >=0.7.6;\npragma experimental ABIEncoderV2;\n\n// OutboundChannel contains methods that all outgoing channels must implement\nabstract contract OutboundChannel {\n\n    uint64 public nonce;\n\n    event Message(\n        address source,\n        uint64 nonce,\n        bytes payload\n    );\n\n    /**\n     * @dev Sends a message across the channel\n     */\n    function submit(bytes memory payload)\n        public\n        virtual;\n}\n",
-  "sourcePath": "/Users/aidanmusnitzky/code/snowfork/polkadot-ethereum/ethereum/contracts/OutboundChannel.sol",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity >=0.7.6;\npragma experimental ABIEncoderV2;\n\n// OutboundChannel contains methods that all outgoing channels must implement\nabstract contract OutboundChannel {\n\n    // Nonce for last submitted message\n    uint64 public nonce;\n\n    event Message(\n        address source,\n        uint64 nonce,\n        bytes payload\n    );\n\n    /**\n     * @dev Sends a message across the channel\n     */\n    function submit(bytes memory payload)\n        public\n        virtual;\n}\n",
+  "sourcePath": "/home/ubuntu/aidan/polkadot-ethereum/ethereum/contracts/OutboundChannel.sol",
   "ast": {
-    "absolutePath": "/Users/aidanmusnitzky/code/snowfork/polkadot-ethereum/ethereum/contracts/OutboundChannel.sol",
+    "absolutePath": "/home/ubuntu/aidan/polkadot-ethereum/ethereum/contracts/OutboundChannel.sol",
     "exportedSymbols": {
       "OutboundChannel": [
-        1088
+        1067
       ]
     },
-    "id": 1089,
+    "id": 1068,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1070,
+        "id": 1049,
         "literals": [
           "solidity",
           ">=",
@@ -83,16 +83,16 @@
           ".6"
         ],
         "nodeType": "PragmaDirective",
-        "src": "32:24:8"
+        "src": "32:24:7"
       },
       {
-        "id": 1071,
+        "id": 1050,
         "literals": [
           "experimental",
           "ABIEncoderV2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "57:33:8"
+        "src": "57:33:7"
       },
       {
         "abstract": true,
@@ -100,9 +100,9 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": false,
-        "id": 1088,
+        "id": 1067,
         "linearizedBaseContracts": [
-          1088
+          1067
         ],
         "name": "OutboundChannel",
         "nodeType": "ContractDefinition",
@@ -110,12 +110,12 @@
           {
             "constant": false,
             "functionSelector": "affed0e0",
-            "id": 1073,
+            "id": 1052,
             "mutability": "mutable",
             "name": "nonce",
             "nodeType": "VariableDeclaration",
-            "scope": 1088,
-            "src": "211:19:8",
+            "scope": 1067,
+            "src": "251:19:7",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -123,10 +123,10 @@
               "typeString": "uint64"
             },
             "typeName": {
-              "id": 1072,
+              "id": 1051,
               "name": "uint64",
               "nodeType": "ElementaryTypeName",
-              "src": "211:6:8",
+              "src": "251:6:7",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint64",
                 "typeString": "uint64"
@@ -136,22 +136,22 @@
           },
           {
             "anonymous": false,
-            "id": 1081,
+            "id": 1060,
             "name": "Message",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1080,
+              "id": 1059,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1075,
+                  "id": 1054,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "source",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1081,
-                  "src": "260:14:8",
+                  "scope": 1060,
+                  "src": "300:14:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -159,10 +159,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1074,
+                    "id": 1053,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "260:7:8",
+                    "src": "300:7:7",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -173,13 +173,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1077,
+                  "id": 1056,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "nonce",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1081,
-                  "src": "284:12:8",
+                  "scope": 1060,
+                  "src": "324:12:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -187,10 +187,10 @@
                     "typeString": "uint64"
                   },
                   "typeName": {
-                    "id": 1076,
+                    "id": 1055,
                     "name": "uint64",
                     "nodeType": "ElementaryTypeName",
-                    "src": "284:6:8",
+                    "src": "324:6:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint64",
                       "typeString": "uint64"
@@ -200,13 +200,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1079,
+                  "id": 1058,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "payload",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1081,
-                  "src": "306:13:8",
+                  "scope": 1060,
+                  "src": "346:13:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -214,10 +214,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 1078,
+                    "id": 1057,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "306:5:8",
+                    "src": "346:5:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -226,36 +226,36 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "250:75:8"
+              "src": "290:75:7"
             },
-            "src": "237:89:8"
+            "src": "277:89:7"
           },
           {
             "documentation": {
-              "id": 1082,
+              "id": 1061,
               "nodeType": "StructuredDocumentation",
-              "src": "332:58:8",
+              "src": "372:58:7",
               "text": " @dev Sends a message across the channel"
             },
             "functionSelector": "ef7fa71b",
-            "id": 1087,
+            "id": 1066,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "submit",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1085,
+              "id": 1064,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1084,
+                  "id": 1063,
                   "mutability": "mutable",
                   "name": "payload",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1087,
-                  "src": "411:20:8",
+                  "scope": 1066,
+                  "src": "451:20:7",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -263,10 +263,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 1083,
+                    "id": 1062,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "411:5:8",
+                    "src": "451:5:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -275,33 +275,33 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "410:22:8"
+              "src": "450:22:7"
             },
             "returnParameters": {
-              "id": 1086,
+              "id": 1065,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "463:0:8"
+              "src": "503:0:7"
             },
-            "scope": 1088,
-            "src": "395:69:8",
+            "scope": 1067,
+            "src": "435:69:7",
             "stateMutability": "nonpayable",
             "virtual": true,
             "visibility": "public"
           }
         ],
-        "scope": 1089,
-        "src": "170:296:8"
+        "scope": 1068,
+        "src": "170:336:7"
       }
     ],
-    "src": "32:435:8"
+    "src": "32:475:7"
   },
   "legacyAST": {
     "attributes": {
-      "absolutePath": "/Users/aidanmusnitzky/code/snowfork/polkadot-ethereum/ethereum/contracts/OutboundChannel.sol",
+      "absolutePath": "/home/ubuntu/aidan/polkadot-ethereum/ethereum/contracts/OutboundChannel.sol",
       "exportedSymbols": {
         "OutboundChannel": [
-          1088
+          1067
         ]
       },
       "license": "MIT"
@@ -316,9 +316,9 @@
             ".6"
           ]
         },
-        "id": 1070,
+        "id": 1049,
         "name": "PragmaDirective",
-        "src": "32:24:8"
+        "src": "32:24:7"
       },
       {
         "attributes": {
@@ -327,9 +327,9 @@
             "ABIEncoderV2"
           ]
         },
-        "id": 1071,
+        "id": 1050,
         "name": "PragmaDirective",
-        "src": "57:33:8"
+        "src": "57:33:7"
       },
       {
         "attributes": {
@@ -343,10 +343,10 @@
           "contractKind": "contract",
           "fullyImplemented": false,
           "linearizedBaseContracts": [
-            1088
+            1067
           ],
           "name": "OutboundChannel",
-          "scope": 1089
+          "scope": 1068
         },
         "children": [
           {
@@ -355,7 +355,7 @@
               "functionSelector": "affed0e0",
               "mutability": "mutable",
               "name": "nonce",
-              "scope": 1088,
+              "scope": 1067,
               "stateVariable": true,
               "storageLocation": "default",
               "type": "uint64",
@@ -367,14 +367,14 @@
                   "name": "uint64",
                   "type": "uint64"
                 },
-                "id": 1072,
+                "id": 1051,
                 "name": "ElementaryTypeName",
-                "src": "211:6:8"
+                "src": "251:6:7"
               }
             ],
-            "id": 1073,
+            "id": 1052,
             "name": "VariableDeclaration",
-            "src": "211:19:8"
+            "src": "251:19:7"
           },
           {
             "attributes": {
@@ -390,7 +390,7 @@
                       "indexed": false,
                       "mutability": "mutable",
                       "name": "source",
-                      "scope": 1081,
+                      "scope": 1060,
                       "stateVariable": false,
                       "storageLocation": "default",
                       "type": "address",
@@ -403,14 +403,14 @@
                           "stateMutability": "nonpayable",
                           "type": "address"
                         },
-                        "id": 1074,
+                        "id": 1053,
                         "name": "ElementaryTypeName",
-                        "src": "260:7:8"
+                        "src": "300:7:7"
                       }
                     ],
-                    "id": 1075,
+                    "id": 1054,
                     "name": "VariableDeclaration",
-                    "src": "260:14:8"
+                    "src": "300:14:7"
                   },
                   {
                     "attributes": {
@@ -418,7 +418,7 @@
                       "indexed": false,
                       "mutability": "mutable",
                       "name": "nonce",
-                      "scope": 1081,
+                      "scope": 1060,
                       "stateVariable": false,
                       "storageLocation": "default",
                       "type": "uint64",
@@ -430,14 +430,14 @@
                           "name": "uint64",
                           "type": "uint64"
                         },
-                        "id": 1076,
+                        "id": 1055,
                         "name": "ElementaryTypeName",
-                        "src": "284:6:8"
+                        "src": "324:6:7"
                       }
                     ],
-                    "id": 1077,
+                    "id": 1056,
                     "name": "VariableDeclaration",
-                    "src": "284:12:8"
+                    "src": "324:12:7"
                   },
                   {
                     "attributes": {
@@ -445,7 +445,7 @@
                       "indexed": false,
                       "mutability": "mutable",
                       "name": "payload",
-                      "scope": 1081,
+                      "scope": 1060,
                       "stateVariable": false,
                       "storageLocation": "default",
                       "type": "bytes",
@@ -457,24 +457,24 @@
                           "name": "bytes",
                           "type": "bytes"
                         },
-                        "id": 1078,
+                        "id": 1057,
                         "name": "ElementaryTypeName",
-                        "src": "306:5:8"
+                        "src": "346:5:7"
                       }
                     ],
-                    "id": 1079,
+                    "id": 1058,
                     "name": "VariableDeclaration",
-                    "src": "306:13:8"
+                    "src": "346:13:7"
                   }
                 ],
-                "id": 1080,
+                "id": 1059,
                 "name": "ParameterList",
-                "src": "250:75:8"
+                "src": "290:75:7"
               }
             ],
-            "id": 1081,
+            "id": 1060,
             "name": "EventDefinition",
-            "src": "237:89:8"
+            "src": "277:89:7"
           },
           {
             "attributes": {
@@ -486,7 +486,7 @@
                 null
               ],
               "name": "submit",
-              "scope": 1088,
+              "scope": 1067,
               "stateMutability": "nonpayable",
               "virtual": true,
               "visibility": "public"
@@ -496,9 +496,9 @@
                 "attributes": {
                   "text": " @dev Sends a message across the channel"
                 },
-                "id": 1082,
+                "id": 1061,
                 "name": "StructuredDocumentation",
-                "src": "332:58:8"
+                "src": "372:58:7"
               },
               {
                 "children": [
@@ -507,7 +507,7 @@
                       "constant": false,
                       "mutability": "mutable",
                       "name": "payload",
-                      "scope": 1087,
+                      "scope": 1066,
                       "stateVariable": false,
                       "storageLocation": "memory",
                       "type": "bytes",
@@ -519,19 +519,19 @@
                           "name": "bytes",
                           "type": "bytes"
                         },
-                        "id": 1083,
+                        "id": 1062,
                         "name": "ElementaryTypeName",
-                        "src": "411:5:8"
+                        "src": "451:5:7"
                       }
                     ],
-                    "id": 1084,
+                    "id": 1063,
                     "name": "VariableDeclaration",
-                    "src": "411:20:8"
+                    "src": "451:20:7"
                   }
                 ],
-                "id": 1085,
+                "id": 1064,
                 "name": "ParameterList",
-                "src": "410:22:8"
+                "src": "450:22:7"
               },
               {
                 "attributes": {
@@ -540,24 +540,24 @@
                   ]
                 },
                 "children": [],
-                "id": 1086,
+                "id": 1065,
                 "name": "ParameterList",
-                "src": "463:0:8"
+                "src": "503:0:7"
               }
             ],
-            "id": 1087,
+            "id": 1066,
             "name": "FunctionDefinition",
-            "src": "395:69:8"
+            "src": "435:69:7"
           }
         ],
-        "id": 1088,
+        "id": 1067,
         "name": "ContractDefinition",
-        "src": "170:296:8"
+        "src": "170:336:7"
       }
     ],
-    "id": 1089,
+    "id": 1068,
     "name": "SourceUnit",
-    "src": "32:435:8"
+    "src": "32:475:7"
   },
   "compiler": {
     "name": "solc",
@@ -565,7 +565,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.3",
-  "updatedAt": "2021-02-03T12:13:59.611Z",
+  "updatedAt": "2021-02-08T10:53:05.003Z",
   "devdoc": {
     "kind": "dev",
     "methods": {
