@@ -34,8 +34,8 @@ function Bridge({
 
   const SelectPolkadotApp = (): React.ReactElement => {
     return (
-      <select style={{ float: 'right' }} onChange={handleSwap}>
-        <option selected value="ETH">
+      <select defaultValue="ETH" style={{ float: 'right' }} onChange={handleSwap}>
+        <option value="ETH">
           ETH to Polkadot
         </option>
         <option value="POLKADOT">Polkadot to ETH</option>
@@ -45,9 +45,9 @@ function Bridge({
 
   const SelectEthApp = (): React.ReactElement => {
     return (
-      <select style={{ float: 'right' }} onChange={handleSwap}>
+      <select defaultValue="POLKADOT" style={{ float: 'right' }} onChange={handleSwap}>
         <option value="ETH">ETH to Polkadot</option>
-        <option selected value="POLKADOT">
+        <option value="POLKADOT">
           Polkadot to ETH
         </option>
       </select>

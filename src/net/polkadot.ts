@@ -9,23 +9,23 @@ import { Dispatch } from 'redux';
 import Api from './api';
 import Net from './';
 import { setPolkadotJSFound, setPolkadotJSMissing } from '../redux/actions';
+import _ from 'lodash';
 
 // Config
-import { POLKADOT_API_PROVIDER, ETH_ASSET_ID } from '../config';
+import { POLKADOT_API_PROVIDER } from '../config';
 
-import { addTransaction, ethUnlockedEvent, polkaEthBurned, polkaEthMinted, setPendingTransaction } from '../redux/actions/transactions';
-import { EthUnlockEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
-import {notify} from '../redux/actions/notifications';
+import { addTransaction, ethMessageDispatched, setTransactionStatus, polkaEthBurned, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
+import { MessageDispatchedEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
+import { notify } from '../redux/actions/notifications';
+
+const INCENTIVIZED_CHANNEL_ID = 1;
 
 // Polkadot API connector
 type Connector = (p: Polkadot, net: any) => void;
 
-interface AssetAccountData {
-  [free: string]: any;
-}
-
 export default class Polkadot extends Api {
   public conn?: ApiPromise;
+  public ethAssetID: any;
   public net: Net;
   public dispatch: Dispatch;
 
@@ -66,17 +66,15 @@ export default class Polkadot extends Api {
     try {
       if (this.conn) {
         if (polkadotAddress) {
-          let accountData = await this.conn.query.asset.account(
-            ETH_ASSET_ID,
+          let balance = await this.conn.query.assets.balances(
+            this.ethAssetID,
             polkadotAddress,
           );
 
-          if ((accountData as AssetAccountData).free) {
-            return web3.utils.fromWei(
-              (accountData as AssetAccountData).free,
-              'ether',
-            );
-          }
+          return web3.utils.fromWei(
+            (balance as any).toString(),
+            'ether',
+          );
         }
 
         throw new Error('Default account not found');
@@ -103,7 +101,7 @@ export default class Polkadot extends Api {
           sender: self.net.polkadotAddress,
           receiver: self.net.ethAddress,
           amount: amount,
-          status: TransactionStatus.SUBMITTING_TO_ETHEREUM,
+          status: TransactionStatus.SUBMITTING_TO_CHAIN,
           isMinted: false,
           isBurned: false,
           chain: 'polkadot',
@@ -114,25 +112,10 @@ export default class Polkadot extends Api {
         }
         self.dispatch(setPendingTransaction(pendingTransaction));
 
-
-
-        // subscribe to ETH unlock event
-        const unlockEventSubscription = self.net.eth?.eth_contract?.events.Unlock({})
-          .on('data', (
-            event: EthUnlockEvent
-          ) => {
-            // TODO: find a better way to link this event to the transaction
-            if (
-              self.net.eth?.conn?.utils.fromWei(event.returnValues._amount) === pendingTransaction.amount &&
-              event.returnValues._recipient === pendingTransaction.receiver
-            ) {
-              self.dispatch(ethUnlockedEvent(event, pendingTransaction));
-            } 
-        })
-
         const polkaWeiValue = web3.utils.toWei(amount, 'ether');
 
-        const transferExtrinsic = self.conn.tx.eth.burn(
+        const burnExtrinsic = self.conn.tx.eth.burn(
+          INCENTIVIZED_CHANNEL_ID,
           recepient,
           polkaWeiValue,
         );
@@ -144,21 +127,30 @@ export default class Polkadot extends Api {
         // passing the injected account address as the first argument of signAndSend
         // will allow the api to retrieve the signer and the user will see the extension
         // popup asking to sign the balance transfer transaction
-        transferExtrinsic
+        burnExtrinsic
           .signAndSend(
             account.address,
             { signer: injector.signer },
-            ({ status }) => {
-              if (status.isInBlock) {
-                console.log(
-                  `Completed at block hash #${status.asInBlock.toString()}`,
-                );
-              } else {
-                console.log(`Current status: ${status.type}`);
-                // transaction is now considered as submitted
-                if (status.isReady) {
-                  self.dispatch(addTransaction({ ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION }));
-                }
+            (result) => {
+              if (result.status.isInBlock) {
+                pendingTransaction.hash = result.status.hash.toString();
+                const nonce = result.events[0].event.data[1].toString();
+                pendingTransaction.nonce = nonce;
+                self.dispatch(addTransaction({ ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION }));
+                // subscribe to ETH dispatch event
+                self.net.eth?.incentivizedChannelContract?.events.MessageDispatched({})
+                  .on('data', (
+                    event: MessageDispatchedEvent
+                  ) => {
+                    if (
+                      event.returnValues.nonce === nonce
+                    ) {
+                      self.dispatch(ethMessageDispatched(event.returnValues.nonce, pendingTransaction.nonce!));
+                    }
+                  });
+              }
+              else if (result.status.isFinalized) {
+                self.dispatch(setTransactionStatus(pendingTransaction.hash, TransactionStatus.FINALIZED_ON_CHAIN))
               }
             },
           )
@@ -169,7 +161,6 @@ export default class Polkadot extends Api {
             } else {
               // TODO: display error in modal
             }
-            unlockEventSubscription?.unsubscribe();
           });
       } else {
         throw new Error('Default Polkadot account not found');
@@ -182,43 +173,15 @@ export default class Polkadot extends Api {
   // Subscribe to Parachain events
   public async subscribeEvents() {
     if (this.conn) {
-      this.conn.query.system.events((events) => {
-        console.log(`\nReceived ${events.length} events`);
-        console.log({ events });
-        // Loop through the events in the current block
-        events.forEach((record) => {
-          const { event } = record;
-
-          // Checks if the parachain emited event is for a Minted asset
-          if (event.section === 'asset' && event.method === 'Minted') {
-            console.log('Got Assets.Minted event');
-
-            // Notify local transaction object the asset is minted
-            this.dispatch(polkaEthMinted({
-              // Receiver of the sent PolkaEth
-              accountId: event.data[1].toString(),
-              // PolkaEth amount
-              amount: web3.utils.fromWei(event.data[2].toString()),
-            }
-            ));
-
-            this.dispatch(notify({text: "PolkaEth Minted", color: "success"}));
-            // Checks if the parachain emited event is for a burned
-          } else if (event.section === 'asset' && event.method === 'Burned') {
-            console.log('Got Assets.Burned event');
-
-            // Notify local transaction object the asset is burned
-            this.dispatch(polkaEthBurned({
-              accountId: event.data[1].toString(),
-              amount: web3.utils.fromWei(event.data[2].toString()),
-            }
-            ));
-
-            this.dispatch(notify({text: "PolkaEth Burned", color: "success"}));
-	  }
-
-          // TODO: update new Polkadot account balance
+      this.conn.query.system.events((eventRecords) => {
+        const dispatchEvents = _.filter(eventRecords, eR => eR.event.section === 'dispatch')
+        dispatchEvents.forEach(({ event }) => {
+          const nonce = (event.data as any)[0].nonce.toString();
+          // TODO: const dispatchSuccessNotification = (text: string) => this.dispatch(notify({ text, color: "success" }));
+          console.log(`Got new dispatch event with nonce: ${nonce}`);
+          this.dispatch(parachainMessageDispatched(nonce));
         });
+        // TODO: update new Polkadot account balance
       });
     } else {
       throw new Error('Polkadot API not connected');
@@ -228,38 +191,79 @@ export default class Polkadot extends Api {
   // Polkadotjs API connector
   public static async connect(dispatch: Dispatch): Promise<Connector> {
     try {
-      const wsProvider = new WsProvider(POLKADOT_API_PROVIDER);
+      const provider = new WsProvider(POLKADOT_API_PROVIDER);
 
       const api = await ApiPromise.create({
-        provider: wsProvider,
+        provider,
         types: {
-          Address: 'AccountId',
-          LookupSource: 'AccountId',
-          AppId: '[u8; 20]',
-          Message: {
-            payload: 'Vec<u8>',
-            verification: 'VerificationInput',
+          "Address": "MultiAddress",
+          "LookupSource": "MultiAddress",
+          "ChannelId": {
+            "_enum": {
+              "Basic": null,
+              "Incentivized": null
+            }
           },
-          VerificationInput: {
-            _enum: {
-              Basic: 'VerificationBasic',
-              None: null,
-            },
+          "MessageNonce": "u64",
+          "MessageId": {
+            "channelId": "ChannelId",
+            "nonce": "u64"
           },
-          VerificationBasic: {
-            blockNumber: 'u64',
-            eventIndex: 'u32',
+          "Message": {
+            "data": "Vec<u8>",
+            "proof": "Proof"
           },
-          TokenId: 'H160',
-          BridgedAssetId: 'H160',
-          AssetAccountData: {
-            free: 'U256',
+          "Proof": {
+            "blockHash": "H256",
+            "txIndex": "u32",
+            "data": "(Vec<Vec<u8>>, Vec<Vec<u8>>)"
           },
-        },
+          "EthereumHeader": {
+            "parentHash": "H256",
+            "timestamp": "u64",
+            "number": "u64",
+            "author": "H160",
+            "transactionsRoot": "H256",
+            "ommersHash": "H256",
+            "extraData": "Vec<u8>",
+            "stateRoot": "H256",
+            "receiptsRoot": "H256",
+            "logBloom": "Bloom",
+            "gasUsed": "U256",
+            "gasLimit": "U256",
+            "difficulty": "U256",
+            "seal": "Vec<Vec<u8>>"
+          },
+          "EthashProofData": {
+            "dagNodes": "[H512; 2]",
+            "proof": "Vec<H128>"
+          },
+          "Bloom": {
+            "_": "[u8; 256]"
+          },
+          "PruningRange": {
+            "oldestUnprunedBlock": "u64",
+            "oldestBlockToKeep": "u64"
+          },
+          "AssetId": {
+            "_enum": {
+              "ETH": null,
+              "Token": "H160"
+            }
+          },
+          "InboundChannelData": {
+            "nonce": "u64"
+          },
+          "OutboundChannelData": {
+            "nonce": "u64"
+          }
+        }
       });
+
 
       return async (polkadot: Polkadot) => {
         polkadot.conn = api;
+        polkadot.ethAssetID = api.createType('AssetId', 'ETH');
 
         // Here we subscribe to the parachain events
         await polkadot.subscribeEvents();

@@ -19,19 +19,19 @@ import 'react-toastify/dist/ReactToastify.css';
 import { setNet } from './redux/actions';
 import { NetState } from './redux/reducers/net';
 import {
-  TransactionsState,
-  TransactionStatus,
+	TransactionsState,
+	TransactionStatus,
 } from './redux/reducers/transactions';
 import Modal from './components/Modal';
 import LoadingSpinner from './components/PendingTransactionsUI/LoadingSpinner';
-import { BLOCK_EXPLORER_URL } from './config';
+import { BLOCK_EXPLORER_URL, PERMITTED_METAMASK_NETWORK } from './config';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
 type Props = {
-  net: any;
-  transactions: TransactionsState;
+	net: any;
+	transactions: TransactionsState;
 };
 
 function BridgeApp(props: Props) {
@@ -68,9 +68,6 @@ function BridgeApp(props: Props) {
 		return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
 	}
 
-	// Ensure that network is ropsten
-	const PERMITTED_METAMASK_NETWORK =
-		process.env.PERMITTED_METAMASK_NETWORK || 'ropsten';
 	if (
 		net.metamaskNetwork.toLowerCase() !==
 		PERMITTED_METAMASK_NETWORK.toLowerCase()
@@ -98,53 +95,53 @@ function BridgeApp(props: Props) {
 				<div>
 					{/* submitting - waiting for confirmation in metamask */}
 					{transactions.pendingTransaction?.status ===
-						TransactionStatus.SUBMITTING_TO_ETHEREUM ? (
-							<div>
-								<div style={{ width: '40px', height: '40px' }}>
-									<LoadingSpinner />
-								</div>
-								<h3>Waiting for Confirmation</h3>
-								<h4>
-									Swapping
+						TransactionStatus.SUBMITTING_TO_CHAIN ? (
+						<div>
+							<div style={{ width: '40px', height: '40px' }}>
+								<LoadingSpinner />
+							</div>
+							<h3>Waiting for Confirmation</h3>
+							<h4>
+								Swapping
 									{' '}
-									{transactions.pendingTransaction?.amount}
-									{' '}
-									{transactions.pendingTransaction.assets.deposited}
-									{' '}
+								{transactions.pendingTransaction?.amount}
+								{' '}
+								{transactions.pendingTransaction.assets.deposited}
+								{' '}
 									for
 									{' '}
-									{transactions.pendingTransaction?.amount}
-									{' '}
-									{transactions.pendingTransaction.assets.recieved}
-								</h4>
-								<div>Confirm this transaction in your wallet</div>
-							</div>
-						) : null}
+								{transactions.pendingTransaction?.amount}
+								{' '}
+								{transactions.pendingTransaction.assets.recieved}
+							</h4>
+							<div>Confirm this transaction in your wallet</div>
+						</div>
+					) : null}
 					{/* submitted to ethereum - waiting to reach transaction confirmation threshold  */}
 					{transactions.pendingTransaction?.status ===
 						TransactionStatus.WAITING_FOR_CONFIRMATION ? (
-							<div>
-								<h3>Transaction Submitted</h3>
-								{/* link to etherscan */}
-								{ transactions.pendingTransaction.chain === 'eth' ?  <h4>
-									<a
-										target="_blank"
-										rel="noopener noreferrer"
-										href={`${BLOCK_EXPLORER_URL}/tx/${transactions.pendingTransaction.hash}`}
-									>
-										View on etherscan
+						<div>
+							<h3>Transaction Submitted</h3>
+							{/* link to etherscan */}
+							{ transactions.pendingTransaction.chain === 'eth' ? <h4>
+								<a
+									target="_blank"
+									rel="noopener noreferrer"
+									href={`${BLOCK_EXPLORER_URL}/tx/${transactions.pendingTransaction.hash}`}
+								>
+									View on etherscan
 									</a>
-								</h4> : null }
-							</div>
-						) : null}
+							</h4> : null}
+						</div>
+					) : null}
 					{/* error */}
 					{transactions.pendingTransaction?.status ===
 						TransactionStatus.REJECTED ? (
-							<div>
-								<h3>Error</h3>
-								<h4>Transactoin rejected.</h4>
-							</div>
-						) : null}
+						<div>
+							<h3>Error</h3>
+							<h4>Transactoin rejected.</h4>
+						</div>
+					) : null}
 				</div>
 			</Modal>
 
@@ -155,15 +152,15 @@ function BridgeApp(props: Props) {
 }
 
 const mapStateToProps = (
-  state: Props,
+	state: Props,
 ): {
-  net: NetState;
-  transactions: TransactionsState;
+	net: NetState;
+	transactions: TransactionsState;
 } => {
-  return {
-    net: state.net,
-    transactions: state.transactions,
-  };
+	return {
+		net: state.net,
+		transactions: state.transactions,
+	};
 };
 
 export default connect(mapStateToProps)(BridgeApp);

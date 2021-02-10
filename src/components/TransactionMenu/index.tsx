@@ -82,12 +82,12 @@ export default function TransactionMenu({
     }
 
     return (
-      <MenuItem>
+      <MenuItem key={transaction.hash}>
         <label>
           <small style={{ marginRight: '10em', color: color }}>
             ({transaction.confirmations} confirmations)
           </small>
-          {shortenWalletAddress(transaction.hash)}
+          {transaction.hash && shortenWalletAddress(transaction.hash)}
         </label>
       </MenuItem>
     );

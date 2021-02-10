@@ -1,20 +1,22 @@
 import {
   ADD_TRANSACTION,
   UPDATE_CONFIRMATIONS,
+  SET_NONCE,
   SET_TRANSACTION_STATUS,
-  POLKA_ETH_MINTED,
+  PARACHAIN_MESSAGE_DISPATCHED,
   POLKA_ETH_BURNED,
   SET_PENDING_TRANSACTION,
-  ETH_UNLOCKED_EVENT
+  ETH_MESSAGE_DISPATCHED_EVENT
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
   SetTransactionStatusPayload,
   UpdateConfirmationsPayload,
-  PolkaEthMintedPayload,
+  ParachainMessageDispatchedPayload,
   PolkaEthBurnedPayload,
   SetPendingTransactionPayload,
-  EthUnlockEventPayload
+  EthMessageDispatchedPayload,
+  SetNoncePayload
 } from '../actions/transactions'
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { EventData } from 'web3-eth-contract';
@@ -22,27 +24,27 @@ import { EventData } from 'web3-eth-contract';
 export enum TransactionStatus {
   // used for error states
   REJECTED = -1,
-  // used when waiting for confirmation in metamask
-  SUBMITTING_TO_ETHEREUM = 0,
-  // transaction hash recieved 
+  // used when waiting for confirmation from chain
+  SUBMITTING_TO_CHAIN = 0,
+  // transaction hash recieved
   WAITING_FOR_CONFIRMATION = 1,
   // used when the eth transaction is confirmed
   // and we are waiting to reach the confirmation threshold
   CONFIRMING = 2,
-  // eth transaction reached the eth confirmation threshold
-  CONFIRMED_ON_ETHEREUM = 3,
-  // waiting for 'Minted' event on polkadot for eth transactions
-  // or waiting for 'Unlock' event on Ethereum for polkadot transactions
+  // transaction finalized (for eth, when we reach enough confirmations. for parachain, when tx finalized)
+  FINALIZED_ON_CHAIN = 3,
+  // waiting for 'MessageDispatch' event on polkadot for eth transactions
+  // or waiting for 'MessageDispatched' event on Ethereum for polkadot transactions
   WAITING_FOR_RELAY = 4,
-  // recieved minted event on polkadot
+  // message dispatched on polkadot
   RELAYED = 5,
-  // transaction finalized on both chains
-  FINALIZED = 6
+  // transaction dispatched to second chain
+  DISPATCHED = 6
 }
-
 
 export interface Transaction {
   hash: string;
+  nonce?: string;
   confirmations: number;
   sender: string;
   receiver: string;
@@ -54,18 +56,13 @@ export interface Transaction {
   assets: {
     deposited: 'eth' | 'polkaEth',
     recieved: 'eth' | 'polkaEth',
-  }
+  },
+  dispatchTransactionHash?: string
 }
 
-// Interface for the Ethereum 'Unlock' event, emitted by the ETHApp smart contract 
-export interface EthUnlockEvent extends EventData {
-  returnValues: { _amount: string, _recipient: string, _sender: string }
-}
-
-// Interface for an PolkaEth 'Minted' event, emitted by the parachain
-export interface PolkaEthMintedEvent {
-  accountId: string;
-  amount: string;
+// Interface for the Ethereum 'MessageDispatched' event, emitted by the Incentivized Channel smart contract
+export interface MessageDispatchedEvent extends EventData {
+  returnValues: { nonce: string, result: boolean }
 }
 
 // Interface for an PolkaEth 'Burned' event, emitted by the parachain
@@ -102,7 +99,7 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
             if (transaction.isMinted) {
               return TransactionStatus.RELAYED
             } else {
-              return TransactionStatus.CONFIRMED_ON_ETHEREUM
+              return TransactionStatus.FINALIZED_ON_CHAIN
             }
           } else {
             return TransactionStatus.CONFIRMING
@@ -126,18 +123,23 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         });
       })(action)
     }
-    // TODO: Properly map Eth submitted assets to minted assets
+    case SET_NONCE: {
+      return ((action: SetNoncePayload) => {
+        return Object.assign({}, state, {
+          transactions: state.transactions.map((t) => t.hash === action.hash ? { ...t, nonce: action.nonce } : t)
+        });
+      })(action)
+    }
     // Called when an PolkaEth asset has been minted by the parachain
-    case POLKA_ETH_MINTED: {
-      return ((action: PolkaEthMintedPayload) => {
+    case PARACHAIN_MESSAGE_DISPATCHED: {
+      return ((action: ParachainMessageDispatchedPayload) => {
         return Object.assign({}, state, {
           transactions: state.transactions.map((t) =>
-            (t.amount === action.event.amount
-              && t.receiver === action.event.accountId)
+            (t.nonce === action.nonce)
               ? {
                 ...t,
                 isMinted: true,
-                status: t.confirmations > REQUIRED_ETH_CONFIRMATIONS ? TransactionStatus.RELAYED : t.status
+                status: TransactionStatus.RELAYED
               }
               : t
           )
@@ -165,18 +167,17 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         })
       })(action)
     }
-    case ETH_UNLOCKED_EVENT: {
-      return ((action: EthUnlockEventPayload) => {
+    case ETH_MESSAGE_DISPATCHED_EVENT: {
+      return ((action: EthMessageDispatchedPayload) => {
         const isMatchingTransaction = (transaction: Transaction): boolean => {
-          return action.transaction.amount === transaction.amount
-            && action.transaction.sender === transaction.sender
+          return action.nonce === transaction.nonce
         }
         return Object.assign({}, state, {
           transactions: state.transactions.map((t) => isMatchingTransaction(t)
             ? {
               ...t,
-              status: TransactionStatus.FINALIZED,
-              hash: action.event.transactionHash
+              status: TransactionStatus.DISPATCHED,
+              dispatchTransactionHash: action.dispatchTransactionHash
             }
             : t)
         })
