@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
+// Copyright 2017-2020 @polkadot/apps-routing authors & contributors
+// This software may be modified and distributed under the terms
+// of the Apache-2.0 license. See the LICENSE file for details.
+
+import React, {  useState } from 'react';
 import styled from 'styled-components';
-import Net from './net';
-import { shortenWalletAddress } from '../src/utils/common';
+// import * as S from './AppEth.style';
+import PolkadotAccount from '../PolkadotAccount/';
+import Net from '../../net';
 
 import {
   Typography,
@@ -18,13 +23,16 @@ import {
 // ------------------------------------------
 type Props = {
   net: Net;
+  handleSwap: any;
   children?: JSX.Element | JSX.Element[];
 };
 
 // ------------------------------------------
-//               AppPolkadot component
+//               AppETH component
 // ------------------------------------------
-function AppPolkadot({ net, children }: Props): React.ReactElement<Props> {
+function AppETH({
+  net,
+}: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
 
@@ -33,22 +41,21 @@ function AppPolkadot({ net, children }: Props): React.ReactElement<Props> {
       return (
         <Button
           color="primary"
-          onClick={() =>
-            net?.polkadot?.burn_polkaeth(depositAmount)
-          }
+          onClick={() => net?.eth?.send_eth(depositAmount)}
           variant="outlined"
         >
-          <Typography variant="button">Send Polkadot Asset</Typography>
+          <Typography variant="button">Send ETH</Typography>
         </Button>
       );
     } else {
       return (
         <Button disabled color="primary" variant="outlined">
-          <Typography variant="button">Send Polkadot Asset</Typography>
+          <Typography variant="button">Send ETH</Typography>
         </Button>
       );
     }
   }
+
   // Render
   return (
     <Grid container>
@@ -66,22 +73,18 @@ function AppPolkadot({ net, children }: Props): React.ReactElement<Props> {
           border: 'thin solid #E0E0E0',
         }}
       >
-        <Grid item xs={10}>
-          {children}
-          <Typography gutterBottom variant="h5">
-            Polkadot App
-          </Typography>
-        </Grid>
 
-        {/* Address Input */}
+        {/* SS58 Address Input */}
         <Grid item xs={10}>
-          <FormControl>{shortenWalletAddress(net.ethAddress)}</FormControl>
+          <FormControl>
+            <PolkadotAccount address={net.polkadotAddress} />
+          </FormControl>
           <FormHelperText id="ethAmountDesc">
-            ETH Receiving Address
+            Polkadot Receiving Address
           </FormHelperText>
         </Grid>
 
-        {/* Polkadot Asset Deposit Amount Input */}
+        {/* ETH Deposit Amount Input */}
         <Grid item xs={10}>
           <FormControl>
             <Typography gutterBottom>Amount</Typography>
@@ -93,12 +96,12 @@ function AppPolkadot({ net, children }: Props): React.ReactElement<Props> {
               type="number"
               margin="normal"
               onChange={(e) => setDepositAmount(e.target.value)}
-              placeholder="0.00 PolkaETH"
+              placeholder="0.00 ETH"
               style={{ margin: 5 }}
               variant="outlined"
             />
-            <FormHelperText id="polkaethAmountDesc">
-              How much PolkaETH would you like to burn and convert to ETH?
+            <FormHelperText id="ethAmountDesc">
+              How much ETH would you like to deposit?
             </FormHelperText>
           </FormControl>
         </Grid>
@@ -113,7 +116,7 @@ function AppPolkadot({ net, children }: Props): React.ReactElement<Props> {
   );
 }
 
-export default React.memo(styled(AppPolkadot)`
+export default React.memo(styled(AppETH)`
   opacity: 0.5;
   padding: 1rem 1.5rem;
 `);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import LoadingSpinner from '../LoadingSpinner';
+import LoadingSpinner from '../../LoadingSpinner';
 
 const CIRCLE_SIZE = 30;
 

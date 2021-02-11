@@ -6,7 +6,7 @@ const theme = {
   colors: {
     yellow2: '#c79f2260',
     primary: {
-      main: 'rgb(36, 41, 46)',
+      main: '#3f51b5',
     },
     secondary: {
       main: 'rgb(36, 41, 46)',

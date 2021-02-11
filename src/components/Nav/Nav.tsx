@@ -5,7 +5,6 @@ import Net from '../../net';
 import { shortenWalletAddress } from '../../utils/common';
 
 import Modal from '../Modal';
-import TransactionMenu from '../TransactionMenu/';
 import TransactionsList from '../TransactionsList/';
 
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
@@ -111,7 +110,6 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
             </Modal>
           )}
         </S.DisplayWrapper>
-        <TransactionMenu net={net} transactions={transactions} />
         <TransactionsList transactions={transactions} />
       </S.CurrencyList>
     </S.Wrapper>

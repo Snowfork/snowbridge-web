@@ -5,18 +5,15 @@ import Theme from './styles/theme';
 import GlobalStyle from './styles/globalStyle';
 
 import App from './App';
-
-// import { selectNet } from './actions';
-
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
-import { devToolsEnhancer } from 'redux-devtools-extension';
-
+import { createStore, applyMiddleware } from 'redux';
+import thunkMiddleware from 'redux-thunk'
+import { composeWithDevTools } from 'redux-devtools-extension';
 import reducers from './redux/reducers';
 
 export const store = createStore(
   reducers,
-  devToolsEnhancer({})
+  composeWithDevTools(applyMiddleware(thunkMiddleware))
 );
 
 

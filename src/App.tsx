@@ -9,7 +9,7 @@ import ReactModal from 'react-modal';
 import { connect } from 'react-redux';
 
 // local imports and components
-import Bridge from './Bridge';
+import Bridge from './components/Bridge/Bridge';
 import Nav from './components/Nav';
 import Net, { isConnected } from './net';
 import { useDispatch } from 'react-redux';
@@ -23,14 +23,14 @@ import {
 	TransactionStatus,
 } from './redux/reducers/transactions';
 import Modal from './components/Modal';
-import LoadingSpinner from './components/PendingTransactionsUI/LoadingSpinner';
+import LoadingSpinner from './components/LoadingSpinner';
 import { BLOCK_EXPLORER_URL, PERMITTED_METAMASK_NETWORK } from './config';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
 type Props = {
-	net: any;
+	net: NetState;
 	transactions: TransactionsState;
 };
 
@@ -74,7 +74,7 @@ function BridgeApp(props: Props) {
 	) {
 		return (
 			<p style={{ textAlign: 'center', color: '#fff' }}>
-				Please select Ropsten network in Metamask extension
+				Please select ${PERMITTED_METAMASK_NETWORK} network in Metamask extension
 			</p>
 		);
 	}
@@ -84,7 +84,6 @@ function BridgeApp(props: Props) {
 			<Nav net={net.client} transactions={props.transactions} />
 			<Bridge
 				net={net.client!}
-				polkadotAddress={net.client.polkadotAddress}
 				ethAddress={net.client.ethAddress}
 			/>
 			<Modal
