@@ -15,7 +15,7 @@ function TransactionItem({
   return (
     <S.Wrapper>
       <S.Details>
-        Swap { transaction.amount } {transaction.assets.deposited} for {transaction.amount} {transaction.assets.recieved}
+        Swap {transaction.amount} {transaction.token.symbol} for {transaction.amount} {transaction.token.symbol}
       </S.Details>
       <PendingTransactionsUI transaction={transaction} />
     </S.Wrapper>

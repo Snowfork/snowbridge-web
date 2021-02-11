@@ -2,11 +2,12 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React, {  useState } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 // import * as S from './AppEth.style';
 import PolkadotAccount from '../PolkadotAccount/';
 import Net from '../../net';
+import { Token } from '../../types';
 
 import {
   Typography,
@@ -24,6 +25,7 @@ import {
 type Props = {
   net: Net;
   handleSwap: any;
+  selectedToken: Token;
   children?: JSX.Element | JSX.Element[];
 };
 
@@ -32,6 +34,8 @@ type Props = {
 // ------------------------------------------
 function AppETH({
   net,
+  handleSwap,
+  selectedToken
 }: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
@@ -41,7 +45,7 @@ function AppETH({
       return (
         <Button
           color="primary"
-          onClick={() => net?.eth?.send_eth(depositAmount)}
+          onClick={() => net?.eth?.send_eth(depositAmount, selectedToken)}
           variant="outlined"
         >
           <Typography variant="button">Send ETH</Typography>
@@ -105,8 +109,6 @@ function AppETH({
             </FormHelperText>
           </FormControl>
         </Grid>
-
-        {/* Send ETH */}
         <Grid item xs={10}>
           <SendButton />
         </Grid>

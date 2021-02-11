@@ -105,13 +105,13 @@ function BridgeApp(props: Props) {
 									{' '}
 								{transactions.pendingTransaction?.amount}
 								{' '}
-								{transactions.pendingTransaction.assets.deposited}
+								{transactions.pendingTransaction.token.symbol}
 								{' '}
 									for
 									{' '}
 								{transactions.pendingTransaction?.amount}
 								{' '}
-								{transactions.pendingTransaction.assets.recieved}
+								{transactions.pendingTransaction.token.symbol}
 							</h4>
 							<div>Confirm this transaction in your wallet</div>
 						</div>

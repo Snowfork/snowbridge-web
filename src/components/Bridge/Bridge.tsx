@@ -11,7 +11,6 @@ import AppEthereum from '../AppEth';
 import AppPolkadot from '../AppPolkadot';
 import AppERC20 from '../AppERC20/index';
 import EthTokenList from '../AppEth/tokenList.json'
-import PolkadotTokenList from '../AppPolkadot/tokenList.json';
 import Net from '../../net';
 
 
@@ -61,15 +60,10 @@ function Bridge({
     const currentChainId = Number.parseInt((net.eth?.conn?.currentProvider as any).chainId, 16)
     let selectedTokenList: Token[];
     // set eth token list
-    if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      // only include tokens from current network
-      selectedTokenList = (EthTokenList.tokens as Token[])
-        .filter(
-          (token: Token) => token.chainId === currentChainId)
-    } else {
-      // set polkadot token list
-      selectedTokenList = PolkadotTokenList.tokens as Token[]
-    }
+    // only include tokens from current network
+    selectedTokenList = (EthTokenList.tokens as Token[])
+      .filter(
+        (token: Token) => token.chainId === currentChainId)
 
     setTokens(selectedTokenList);
     setSelectedAsset(selectedTokenList[0]);
@@ -96,7 +90,11 @@ function Bridge({
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
       // check if should use eth app or erc20 app
       if (selectedAsset.address === '0x0') {
-        return <AppEthereum net={net} handleSwap={handleSwap} />;
+        return <AppEthereum
+          net={net}
+          handleSwap={handleSwap}
+          selectedToken={selectedAsset}
+        />;
       } else {
         return <AppERC20
           net={net}
@@ -106,7 +104,10 @@ function Bridge({
         />
       }
     } else {
-      return <AppPolkadot net={net} handleSwap={handleSwap} />;
+      return <AppPolkadot net={net}
+        handleSwap={handleSwap}
+        selectedToken={selectedAsset}
+      />;
     }
   };
 

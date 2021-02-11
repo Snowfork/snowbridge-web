@@ -3,6 +3,7 @@ import { Contract } from 'web3-eth-contract';
 
 import Api, { ss58_to_u8 } from './api';
 import Net from './';
+import { Token } from '../types';
 
 // Import Contracts
 import {
@@ -108,7 +109,7 @@ export default class Eth extends Api {
   }
 
   // Lockup ETH To Default Polkadot Account via Incentivized Channel
-  public async send_eth(amount: string) {
+  public async send_eth(amount: string, token: Token) {
     try {
       const self: Eth = this;
       let default_address = await self.get_address();
@@ -130,10 +131,7 @@ export default class Eth extends Api {
             isMinted: false,
             isBurned: false,
             chain: 'eth',
-            assets: {
-              deposited: 'eth',
-              recieved: 'polkaEth'
-            }
+            token
           }
 
           const promiEvent = self.eth_contract.methods
@@ -166,10 +164,7 @@ export default class Eth extends Api {
                   isMinted: false,
                   isBurned: false,
                   chain: 'eth',
-                  assets: {
-                    deposited: 'eth',
-                    recieved: 'polkaEth'
-                  }
+                  token
                 }),
               );
 

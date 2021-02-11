@@ -10,6 +10,7 @@ import Api from './api';
 import Net from './';
 import { setPolkadotJSFound, setPolkadotJSMissing } from '../redux/actions';
 import _ from 'lodash';
+import { Token } from '../types';
 
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
@@ -87,7 +88,8 @@ export default class Polkadot extends Api {
     }
   }
 
-  public async burn_polkaeth(amount: string) {
+  public async burn_token(amount: string, token: Token) {
+
     const self = this;
 
     if (self.conn) {
@@ -105,20 +107,29 @@ export default class Polkadot extends Api {
           isMinted: false,
           isBurned: false,
           chain: 'polkadot',
-          assets: {
-            deposited: 'polkaEth',
-            recieved: 'eth'
-          }
+          token
         }
         self.dispatch(setPendingTransaction(pendingTransaction));
 
         const polkaWeiValue = web3.utils.toWei(amount, 'ether');
 
-        const burnExtrinsic = self.conn.tx.eth.burn(
-          INCENTIVIZED_CHANNEL_ID,
-          recepient,
-          polkaWeiValue,
-        );
+        let burnExtrinsic;
+        if (token.address === '0x0') {
+          burnExtrinsic = self.conn.tx.eth.burn(
+            INCENTIVIZED_CHANNEL_ID,
+            recepient,
+            polkaWeiValue,
+          );
+        } else {
+          burnExtrinsic = self.conn.tx.erc20.burn(
+            INCENTIVIZED_CHANNEL_ID,
+            token.address,
+            recepient,
+            polkaWeiValue,
+          );
+
+        }
+
 
         // to be able to retrieve the signer interface from this account
         // we can use web3FromSource which will return an InjectedExtension type
