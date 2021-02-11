@@ -19,7 +19,6 @@ import {
 // ------------------------------------------
 type Props = {
   net: Net;
-  handleSwap: any;
   selectedToken: Token;
   children?: JSX.Element | JSX.Element[];
 };
@@ -29,7 +28,6 @@ type Props = {
 // ------------------------------------------
 function AppPolkadot({
   net,
-  handleSwap,
   selectedToken,
   children,
 }: Props): React.ReactElement<Props> {

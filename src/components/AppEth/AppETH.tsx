@@ -24,7 +24,6 @@ import {
 // ------------------------------------------
 type Props = {
   net: Net;
-  handleSwap: any;
   selectedToken: Token;
   children?: JSX.Element | JSX.Element[];
 };
@@ -34,7 +33,6 @@ type Props = {
 // ------------------------------------------
 function AppETH({
   net,
-  handleSwap,
   selectedToken
 }: Props): React.ReactElement<Props> {
   // State

@@ -55,7 +55,6 @@ function Bridge({
   const dispatch = useDispatch();
 
 
-  // update token list when the swap direction changes
   useEffect(() => {
     const currentChainId = Number.parseInt((net.eth?.conn?.currentProvider as any).chainId, 16)
     let selectedTokenList: Token[];
@@ -68,7 +67,7 @@ function Bridge({
     setTokens(selectedTokenList);
     setSelectedAsset(selectedTokenList[0]);
 
-  }, [net.eth, setTokens, swapDirection])
+  }, [net.eth, setTokens])
 
   // update the contract instance when the selected asset changes
   const handleAssetSelected = (asset: Token): void => {
@@ -92,7 +91,6 @@ function Bridge({
       if (selectedAsset.address === '0x0') {
         return <AppEthereum
           net={net}
-          handleSwap={handleSwap}
           selectedToken={selectedAsset}
         />;
       } else {
@@ -104,8 +102,8 @@ function Bridge({
         />
       }
     } else {
-      return <AppPolkadot net={net}
-        handleSwap={handleSwap}
+      return <AppPolkadot
+        net={net}
         selectedToken={selectedAsset}
       />;
     }
