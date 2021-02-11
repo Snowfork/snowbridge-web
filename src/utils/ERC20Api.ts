@@ -1,3 +1,7 @@
+import { ss58_to_u8 } from '../net/api';
+
+const INCENTIVIZED_CHANNEL_ID = 1;
+
 /**
  * Queries a token contract to find the number of decimals supported by the token
  * @param {contractInstance} any The web3 contract instance for the ERC20 token
@@ -64,21 +68,24 @@ export async function approveERC20(ERC20ContractInstance: any, spenderAddress: a
 }
 
 /**
- * 
+ *
  * @param senderEthAddress The users eth wallet address
  * @param polkadotRecipientBytes The users polkadot wallet address
  * @param ERC20ContractInstance The ERC20 token contract instance
  * @param bridgeContractInstance The ERC20 bridge contract instance
  * @param amount The amount of ERC20 tokens to transfer to polkadot
  */
-export async function sendERC20(senderEthAddress: string, polkadotRecipientAddress: string,
+export async function lockERC20(senderEthAddress: string, polkadotRecipientAddress: string,
     ERC20ContractInstance: any, bridgeContractInstance: any, amount: number): Promise<void> {
-    
-    const polkadotRecipientBytes = Buffer.from(polkadotRecipientAddress, 'hex');
+
+    const polkadotRecipientBytes: Uint8Array = ss58_to_u8(
+        polkadotRecipientAddress,
+    );
+
 
     return bridgeContractInstance
         .methods
-        .sendERC20(polkadotRecipientBytes, ERC20ContractInstance._address, `${amount}`)
+        .lock(ERC20ContractInstance._address, polkadotRecipientBytes, `${amount}`, INCENTIVIZED_CHANNEL_ID)
         .send({
             from: senderEthAddress,
             gas: 500000,
@@ -91,8 +98,8 @@ export async function sendERC20(senderEthAddress: string, polkadotRecipientAddre
 
 /**
  * Converts human readable amount into units native to the contract
- * @param contractInstance 
- * @param amount 
+ * @param contractInstance
+ * @param amount
  * @return {Promise<number>}
  */
 export async function addDecimals(contractInstance: any, amount: number): Promise<number> {
@@ -102,8 +109,8 @@ export async function addDecimals(contractInstance: any, amount: number): Promis
 
 /**
  * Converts native contract units into a human readable number
- * @param contractInstance 
- * @param amount 
+ * @param contractInstance
+ * @param amount
  * @return {Promise<number>}
  */
 export async function removeDecimals(contractInstance: any, amount: number): Promise<number> {

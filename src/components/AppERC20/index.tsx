@@ -39,7 +39,7 @@ type Props = {
   selectedToken: Token;
 };
 
-type ApproveAndSendProps = {
+type ApproveAndLockProps = {
   defaultAccount: string;
   contract: any;
   contractERC20: any;
@@ -48,15 +48,15 @@ type ApproveAndSendProps = {
 };
 
 // ------------------------------------------
-//           ApproveAndSendERC20 component
+//           ApproveAndLockERC20 component
 // ------------------------------------------
-function ApproveAndSendERC20({
+function ApproveAndLockERC20({
   contract, // the bridge contract
   contractERC20, // the ERC20 token contract
   defaultAccount, // the users wallet address
   net,
   selectedToken
-}: ApproveAndSendProps): React.ReactElement<Props> {
+}: ApproveAndLockProps): React.ReactElement<Props> {
   const dispatch = useDispatch()
   // Blockchain state from blockchain
   const allowance = useSelector((state: RootState) => state.ERC20Transactions.allowance)
@@ -68,18 +68,18 @@ function ApproveAndSendERC20({
 
   // queries the contract for allowance and balance
   useEffect(() => {
-  const fetchChainData = async () => {
-    dispatch(fetchERC20Allowance(contractERC20, defaultAccount, contract._address))
-    dispatch(fetchERC20Balance(contractERC20, defaultAccount))
-    dispatch(fetchERC20TokenName(contractERC20))
-  };
+    const fetchChainData = async () => {
+      dispatch(fetchERC20Allowance(contractERC20, defaultAccount, contract._address))
+      dispatch(fetchERC20Balance(contractERC20, defaultAccount))
+      dispatch(fetchERC20TokenName(contractERC20))
+    };
 
     fetchChainData();
-    
+
     const pollTimer = setInterval(() => {
       fetchChainData();
     }, REFRESH_INTERVAL_MILLISECONDS);
-    
+
     return () => clearInterval(pollTimer);
 
   }, [contract._address, contractERC20, defaultAccount, dispatch]);
@@ -90,9 +90,9 @@ function ApproveAndSendERC20({
       defaultAccount, await ERC20Api.addDecimals(contractERC20, approvalAmount))
   };
 
-  const handleSendERC20 = async () => {
-    // Send ERC20 token to bank contract
-    await ERC20Api.sendERC20(defaultAccount, net.polkadotAddress, contractERC20, contract,
+  const handleLockERC20 = async () => {
+    // Lock ERC20 token in bank contract
+    await ERC20Api.lockERC20(defaultAccount, net.polkadotAddress, contractERC20, contract,
       await ERC20Api.addDecimals(contractERC20, depositAmount))
   };
 
@@ -193,7 +193,7 @@ function ApproveAndSendERC20({
               color="primary"
               disabled={allowance === 0}
               fullWidth={true}
-              onClick={() => handleSendERC20()}
+              onClick={() => handleLockERC20()}
               variant="outlined"
             >
               <Typography variant="button">Send</Typography>
@@ -214,8 +214,8 @@ function AppERC20({
   net,
   selectedToken
 }: Props): React.ReactElement<Props> {
-  const tokenContract= useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
-  
+  const tokenContract = useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
+
   if (defaultAccount === null || !defaultAccount) {
     return <p>Empty Account</p>;
   }
@@ -237,15 +237,15 @@ function AppERC20({
           border: 'thin solid #E0E0E0',
         }}
       >
-          {tokenContract && (
-            <ApproveAndSendERC20
-              contract={contract}
-              contractERC20={tokenContract}
-              defaultAccount={defaultAccount}
-              net={net}
-              selectedToken={selectedToken}
-            />
-          )}
+        {tokenContract && (
+          <ApproveAndLockERC20
+            contract={contract}
+            contractERC20={tokenContract}
+            defaultAccount={defaultAccount}
+            net={net}
+            selectedToken={selectedToken}
+          />
+        )}
       </Grid>
     </Grid>
   );
