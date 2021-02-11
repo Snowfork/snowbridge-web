@@ -11,7 +11,7 @@ export interface ERC20TransactionsState {
 }
 
 const initialState: ERC20TransactionsState = {
-  contractAddress: "0xad6d458402f60fd3bd25163575031acdce07538d", //set to dai for defualt during dev/testing
+  contractAddress: "", //set to dai for defualt during dev/testing
   contractInstance: null,
   allowance: 0,
   balance: 0,
@@ -45,7 +45,7 @@ function transactionsReducer(state: ERC20TransactionsState = initialState, actio
         });
       })(action)
     }
-      
+
     case SET_TOKEN_ALLOWANCE: {
       return ((action: SetERC20AllowancePayload) => {
         return Object.assign({}, state, {
@@ -53,7 +53,7 @@ function transactionsReducer(state: ERC20TransactionsState = initialState, actio
         });
       })(action)
     }
-      
+
     case SET_TOKEN_BALANCE: {
       return ((action: SetERC20BalancePayload) => {
         return Object.assign({}, state, {
@@ -69,7 +69,7 @@ function transactionsReducer(state: ERC20TransactionsState = initialState, actio
         });
       })(action)
     }
-      
+
     default:
       return state
   }
