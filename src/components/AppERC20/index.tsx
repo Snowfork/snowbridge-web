@@ -30,6 +30,7 @@ import Net from '../../net';
 import { Token } from '../../types';
 
 import ERC20Approve from './ERC20Approve';
+import ERC20Lock from './ERC20Lock';
 
 // ------------------------------------------
 //                  Props
@@ -101,7 +102,6 @@ function ApproveAndLockERC20({
   // Render
   return (
     <Box>
-
       <ERC20Approve
         bridgeERC20AppContract={contract}
         erc20TokenContract={contractERC20}
@@ -109,65 +109,14 @@ function ApproveAndLockERC20({
         selectedToken={selectedToken}
         currentTokenBalance={currentTokenBalance}
       />
-      <Box>
-        <Divider />
-        <Box marginTop={'15px'}>
-          <Typography gutterBottom variant="h5">
-            2. Send
-        </Typography>
-        </Box>
-        <Box display="flex" flexDirection="column">
-          <Grid item xs={10}>
-            <FormControl>
-              <PolkadotAccount address={net.polkadotAddress} />
-            </FormControl>
-            <FormHelperText id="ethAmountDesc">
-              Polkadot Receiving Address
-          </FormHelperText>
-          </Grid>
-          <Box padding={1} />
-          <Typography gutterBottom>
-            How many ERC20 tokens would you like to deposit
-        </Typography>
-          <TextField
-            InputProps={{
-              value: depositAmount,
-            }}
-            id="erc-input-amount"
-            margin="normal"
-            type="number"
-            onChange={(e) => setDepositAmount(Number(e.target.value))}
-            placeholder="20"
-            style={{ margin: 5 }}
-            variant="outlined"
-          />
-          <Box alignItems="center" display="flex" justifyContent="space-around">
-            <Box>
-              <Typography>
-                Current ERC20 App allowance: {Number(allowance).toFixed(18)} {selectedToken.symbol}
-              </Typography>
-            </Box>
-            <Box
-              alignItems="center"
-              display="flex"
-              height="100px"
-              paddingBottom={1}
-              paddingTop={2}
-              width="300px"
-            >
-              <Button
-                color="primary"
-                disabled={allowance === 0}
-                fullWidth={true}
-                onClick={() => handleLockERC20()}
-                variant="outlined"
-              >
-                <Typography variant="button">Send</Typography>
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+      <ERC20Lock
+        bridgeERC20AppContract={contract}
+        erc20TokenContract={contractERC20}
+        selectedEthAccount={selectedEthAccount}
+        net={net}
+        selectedToken={selectedToken}
+        currentTokenAllowance={allowance}
+      />
     </Box>
   );
 }
