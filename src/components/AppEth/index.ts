@@ -1,3 +1,3 @@
-import AppEth from './AppETH';
+import AppETH from './AppETH';
 
-export default AppEth;
+export default AppETH;

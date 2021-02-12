@@ -13,10 +13,10 @@ import {
 } from '@material-ui/core';
 
 // Local
-import { RootState } from '../../redux/reducers';
+import { RootState } from '../../../redux/reducers';
 import { useSelector } from 'react-redux';
-import * as ERC20Api from '../../utils/ERC20Api';
-import { Token } from '../../types';
+import * as ERC20Api from '../../../utils/ERC20Api';
+import { Token } from '../../../types';
 
 // ------------------------------------------
 //                  Props
@@ -46,7 +46,7 @@ function ERC20Approve({
   // Handlers
   const handleApproveERC20 = async () => {
     await ERC20Api.approveERC20(erc20TokenContract, bridgeERC20AppContract._address,
-      selectedEthAccount, await ERC20Api.addDecimals(erc20TokenContract, approvalAmount))
+      selectedEthAccount, await ERC20Api.addDecimals(erc20TokenContract, `${approvalAmount}`))
   };
 
   // Render

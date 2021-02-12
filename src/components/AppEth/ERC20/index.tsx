@@ -11,68 +11,58 @@ import { Contract } from 'web3-eth-contract';
 import {
   Box,
   Typography,
-  TextField,
-  Button,
   Divider,
   Grid,
-  FormControl,
-  FormHelperText,
 } from '@material-ui/core';
 
 // Local
-import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
-import { RootState } from '../../redux/reducers';
+import { REFRESH_INTERVAL_MILLISECONDS } from '../../../config';
+import { RootState } from '../../../redux/reducers';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchERC20Allowance, fetchERC20Balance, fetchERC20TokenName } from '../../redux/actions/ERC20Transactions';
-import * as ERC20Api from '../../utils/ERC20Api';
-import PolkadotAccount from '../PolkadotAccount';
-import Net from '../../net';
-import { Token } from '../../types';
+import { fetchERC20Allowance, fetchERC20Balance, fetchERC20TokenName } from '../../../redux/actions/ERC20Transactions';
+import Net from '../../../net';
+import { Token } from '../../../types';
 
 import ERC20Approve from './ERC20Approve';
-import ERC20Lock from './ERC20Lock';
+import LockToken from '../LockToken';
 
 // ------------------------------------------
 //                  Props
 // ------------------------------------------
 type Props = {
   net: Net;
-  contract: Contract;
-  selectedEthAccount: string;
   selectedToken: Token;
+  bridgeERC20AppContract: Contract;
+  selectedEthAccount: string;
 };
 
 type ApproveAndLockProps = {
-  selectedEthAccount: string;
-  contract: any;
-  contractERC20: any;
   net: Net;
   selectedToken: Token;
+  bridgeERC20AppContract: any;
+  contractERC20: any;
+  selectedEthAccount: string;
 };
 
 // ------------------------------------------
 //           ApproveAndLockERC20 component
 // ------------------------------------------
 function ApproveAndLockERC20({
-  contract, // the bridge contract
+  net,
+  selectedToken,
+  bridgeERC20AppContract, // the bridge contract
   contractERC20, // the ERC20 token contract
   selectedEthAccount, // the users wallet address
-  net,
-  selectedToken
 }: ApproveAndLockProps): React.ReactElement<Props> {
   const dispatch = useDispatch()
   // Blockchain state from blockchain
   const allowance = useSelector((state: RootState) => state.ERC20Transactions.allowance)
   const currentTokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance)
 
-  // User input state
-  const [approvalAmount, setApprovalAmount] = useState(0);
-  const [depositAmount, setDepositAmount] = useState(0);
-
   // queries the contract for allowance and balance
   useEffect(() => {
     const fetchChainData = async () => {
-      dispatch(fetchERC20Allowance(contractERC20, selectedEthAccount, contract._address))
+      dispatch(fetchERC20Allowance(contractERC20, selectedEthAccount, bridgeERC20AppContract._address))
       dispatch(fetchERC20Balance(contractERC20, selectedEthAccount))
       dispatch(fetchERC20TokenName(contractERC20))
     };
@@ -85,39 +75,29 @@ function ApproveAndLockERC20({
 
     return () => clearInterval(pollTimer);
 
-  }, [contract._address, contractERC20, selectedEthAccount, dispatch]);
+  }, [bridgeERC20AppContract._address, contractERC20, selectedEthAccount, dispatch]);
 
-  // Handlers
-  const handleApproveERC20 = async () => {
-    await ERC20Api.approveERC20(contractERC20, contract._address,
-      selectedEthAccount, await ERC20Api.addDecimals(contractERC20, approvalAmount))
-  };
-
-  const handleLockERC20 = async () => {
-    // Lock ERC20 token in bank contract
-    await ERC20Api.lockERC20(selectedEthAccount, net.polkadotAddress, contractERC20, contract,
-      await ERC20Api.addDecimals(contractERC20, depositAmount))
-  };
-
-  // Render
   return (
-    <Box>
+    <div>
       <ERC20Approve
-        bridgeERC20AppContract={contract}
+        bridgeERC20AppContract={bridgeERC20AppContract}
         erc20TokenContract={contractERC20}
         selectedEthAccount={selectedEthAccount}
         selectedToken={selectedToken}
         currentTokenBalance={currentTokenBalance}
       />
-      <ERC20Lock
-        bridgeERC20AppContract={contract}
-        erc20TokenContract={contractERC20}
-        selectedEthAccount={selectedEthAccount}
+      <Divider />
+      <Box marginTop={'15px'}>
+        <Typography gutterBottom variant="h5">
+          2. Send
+        </Typography>
+      </Box>
+      <LockToken
         net={net}
         selectedToken={selectedToken}
         currentTokenAllowance={allowance}
       />
-    </Box>
+    </div>
   );
 }
 
@@ -125,10 +105,10 @@ function ApproveAndLockERC20({
 //               AppERC20 component
 // ------------------------------------------
 function AppERC20({
-  contract,
-  selectedEthAccount,
   net,
-  selectedToken
+  selectedToken,
+  bridgeERC20AppContract,
+  selectedEthAccount
 }: Props): React.ReactElement<Props> {
   const tokenContract = useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
 
@@ -155,7 +135,7 @@ function AppERC20({
       >
         {tokenContract && (
           <ApproveAndLockERC20
-            contract={contract}
+            bridgeERC20AppContract={bridgeERC20AppContract}
             contractERC20={tokenContract}
             selectedEthAccount={selectedEthAccount}
             net={net}

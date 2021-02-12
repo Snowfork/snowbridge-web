@@ -38,6 +38,8 @@ import {
 } from '../redux/reducers/transactions';
 import { notify } from '../redux/actions/notifications';
 
+import * as ERC20Api from '../utils/ERC20Api';
+
 // Eth API connector
 type Connector = (e: Eth, net: any) => void;
 
@@ -108,15 +110,15 @@ export default class Eth extends Api {
     }
   }
 
-  // Lockup ETH To Default Polkadot Account via Incentivized Channel
-  public async send_eth(amount: string, token: Token) {
+  // Lockup Token To Selected Polkadot Account via Incentivized Channel
+  public async lock_token(amount: string, token: Token) {
     try {
       const self: Eth = this;
       let default_address = await self.get_address();
       let transactionHash: string;
 
       if (default_address) {
-        if (self.conn && self.eth_contract) {
+        if (self.conn && self.eth_contract && self.erc20_contract) {
           const polkadotAddress: Uint8Array = ss58_to_u8(
             self.net.polkadotAddress,
           );
@@ -134,18 +136,31 @@ export default class Eth extends Api {
             token
           }
 
-          const promiEvent = self.eth_contract.methods
-            .lock(polkadotAddress, INCENTIVIZED_CHANNEL_ID)
-            .send({
-              from: default_address,
-              gas: 500000,
-              value: self.conn.utils.toWei(amount, 'ether'),
-            })
-            .on('sending', async function (payload: any) {
-              console.log('Sending Transaction', payload);
-              // create transaction with default values to display in the modal
-              self.dispatch(setPendingTransaction(pendingTransaction));
-            })
+          let promiEvent: any;
+          if (token.address === '0x0') {
+            promiEvent = self.eth_contract.methods
+              .lock(polkadotAddress, INCENTIVIZED_CHANNEL_ID)
+              .send({
+                from: default_address,
+                gas: 500000,
+                value: self.conn.utils.toWei(amount, 'ether'),
+              });
+          } else {
+            const tokenAmountWithDecimals = await ERC20Api.addDecimals(token, amount);
+            promiEvent = self.erc20_contract.methods
+              .lock(token.address, polkadotAddress, tokenAmountWithDecimals, INCENTIVIZED_CHANNEL_ID)
+              .send({
+                from: default_address,
+                gas: 500000,
+                value: 0
+              });
+          }
+
+          promiEvent.on('sending', async function (payload: any) {
+            console.log('Sending Transaction', payload);
+            // create transaction with default values to display in the modal
+            self.dispatch(setPendingTransaction(pendingTransaction));
+          })
             .on('sent', async function (payload: any) {
               console.log('Transaction sent', payload);
             })
@@ -168,7 +183,7 @@ export default class Eth extends Api {
                 }),
               );
 
-              self.dispatch(notify({ text: "ETH to SnowETH Transaction created" }));
+              self.dispatch(notify({ text: `${token.symbol} to Snow${token.symbol} Transaction created` }));
             })
             .on('receipt', async function (receipt: any) {
               console.log('Transaction receipt received', receipt);
@@ -186,7 +201,8 @@ export default class Eth extends Api {
                   name: 'payload',
                 }
               ];
-              const channelEvent = receipt.events[0];
+              const logIndex = token.address === '0x0' ? 0 : 2;
+              const channelEvent = receipt.events[logIndex];
               const decodedEvent = self.conn!.eth.abi.decodeLog(outChannelLogFields, channelEvent.raw.data, channelEvent.raw.topics);
               const nonce = decodedEvent.nonce;
               self.dispatch(

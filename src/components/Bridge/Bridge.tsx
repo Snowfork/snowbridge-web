@@ -7,12 +7,10 @@ import styled from 'styled-components';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 
-import AppEthereum from '../AppEth';
 import AppPolkadot from '../AppPolkadot';
-import AppERC20 from '../AppERC20/index';
-import EthTokenList from '../AppEth/tokenList.json'
+import AppETH from '../AppETH/index';
+import EthTokenList from '../AppETH/tokenList.json'
 import Net from '../../net';
-
 
 import * as S from './Bridge.style';
 import {
@@ -54,7 +52,6 @@ function Bridge({
   const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
   const dispatch = useDispatch();
 
-
   useEffect(() => {
     const currentChainId = Number.parseInt((net.eth?.conn?.currentProvider as any).chainId, 16)
     let selectedTokenList: Token[];
@@ -87,20 +84,12 @@ function Bridge({
 
   const ChainApp = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      // check if should use eth app or erc20 app
-      if (selectedAsset.address === '0x0') {
-        return <AppEthereum
-          net={net}
-          selectedToken={selectedAsset}
-        />;
-      } else {
-        return <AppERC20
-          net={net}
-          contract={net?.eth?.erc20_contract as Contract}
-          selectedEthAccount={selectedEthAccount}
-          selectedToken={selectedAsset}
-        />
-      }
+      return <AppETH
+        net={net}
+        selectedToken={selectedAsset}
+        bridgeERC20AppContract={net?.eth?.erc20_contract as Contract}
+        selectedEthAccount={selectedEthAccount}
+      />
     } else {
       return <AppPolkadot
         net={net}

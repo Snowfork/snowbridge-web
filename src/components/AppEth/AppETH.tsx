@@ -2,22 +2,20 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 // import * as S from './AppEth.style';
-import PolkadotAccount from '../PolkadotAccount/';
 import Net from '../../net';
 import { Token } from '../../types';
+import { Contract } from 'web3-eth-contract';
 
 import {
-  Typography,
-  TextField,
-  Button,
   Grid,
-  FormControl,
-  FormHelperText,
   Divider,
 } from '@material-ui/core';
+
+import AppERC20 from './ERC20';
+import LockToken from './LockToken';
 
 // ------------------------------------------
 //                  Props
@@ -25,6 +23,8 @@ import {
 type Props = {
   net: Net;
   selectedToken: Token;
+  bridgeERC20AppContract: Contract;
+  selectedEthAccount: string;
   children?: JSX.Element | JSX.Element[];
 };
 
@@ -33,29 +33,25 @@ type Props = {
 // ------------------------------------------
 function AppETH({
   net,
-  selectedToken
+  selectedToken,
+  bridgeERC20AppContract,
+  selectedEthAccount
 }: Props): React.ReactElement<Props> {
-  // State
-  const [depositAmount, setDepositAmount] = useState(String);
 
-  function SendButton() {
-    if (Number(depositAmount) > 0) {
-      return (
-        <Button
-          color="primary"
-          onClick={() => net?.eth?.send_eth(depositAmount, selectedToken)}
-          variant="outlined"
-        >
-          <Typography variant="button">Send ETH</Typography>
-        </Button>
-      );
-    } else {
-      return (
-        <Button disabled color="primary" variant="outlined">
-          <Typography variant="button">Send ETH</Typography>
-        </Button>
-      );
-    }
+  const isERC20 = selectedToken.address !== '0x0';
+  let app;
+  if (isERC20) {
+    app = <AppERC20
+      net={net}
+      selectedToken={selectedToken}
+      bridgeERC20AppContract={bridgeERC20AppContract}
+      selectedEthAccount={selectedEthAccount}
+    />
+  } else {
+    app = <LockToken
+      net={net}
+      selectedToken={selectedToken}
+    />;
   }
 
   // Render
@@ -75,41 +71,7 @@ function AppETH({
           border: 'thin solid #E0E0E0',
         }}
       >
-
-        {/* SS58 Address Input */}
-        <Grid item xs={10}>
-          <FormControl>
-            <PolkadotAccount address={net.polkadotAddress} />
-          </FormControl>
-          <FormHelperText id="ethAmountDesc">
-            Polkadot Receiving Address
-          </FormHelperText>
-        </Grid>
-
-        {/* ETH Deposit Amount Input */}
-        <Grid item xs={10}>
-          <FormControl>
-            <Typography gutterBottom>Amount</Typography>
-            <TextField
-              InputProps={{
-                value: depositAmount,
-              }}
-              id="eth-input-amount"
-              type="number"
-              margin="normal"
-              onChange={(e) => setDepositAmount(e.target.value)}
-              placeholder="0.00 ETH"
-              style={{ margin: 5 }}
-              variant="outlined"
-            />
-            <FormHelperText id="ethAmountDesc">
-              How much ETH would you like to deposit?
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-        <Grid item xs={10}>
-          <SendButton />
-        </Grid>
+        {app}
       </Grid>
       <Divider />
     </Grid>

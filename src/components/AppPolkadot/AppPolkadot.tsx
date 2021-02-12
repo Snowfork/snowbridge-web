@@ -74,9 +74,9 @@ function AppPolkadot({
 
         {/* Address Input */}
         <Grid item xs={10}>
-          <FormControl>{shortenWalletAddress(net.ethAddress)}</FormControl>
+          <FormControl>{net.ethAddress}</FormControl>
           <FormHelperText id="ethReceivingAddress">
-            ETH Receiving Address
+            Ethereum Receiving Address
           </FormHelperText>
         </Grid>
 
