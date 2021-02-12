@@ -92,7 +92,7 @@ function LockToken({
         >
           <Button
             color="primary"
-            disabled={currentTokenAllowance === 0}
+            disabled={isERC20 && currentTokenAllowance === 0}
             fullWidth={true}
             onClick={() => handleLockToken()}
             variant="outlined"

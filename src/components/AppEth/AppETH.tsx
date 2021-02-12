@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 // import * as S from './AppEth.style';
 import Net from '../../net';
@@ -14,8 +14,13 @@ import {
   Divider,
 } from '@material-ui/core';
 
-import AppERC20 from './ERC20';
+import ERC20Approve from './ERC20Approve';
 import LockToken from './LockToken';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../redux/reducers';
+
+import { fetchERC20Allowance, fetchERC20Balance, fetchERC20TokenName } from '../../redux/actions/ERC20Transactions';
+import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 
 // ------------------------------------------
 //                  Props
@@ -23,7 +28,7 @@ import LockToken from './LockToken';
 type Props = {
   net: Net;
   selectedToken: Token;
-  bridgeERC20AppContract: Contract;
+  bridgeERC20AppContract: any;
   selectedEthAccount: string;
   children?: JSX.Element | JSX.Element[];
 };
@@ -37,22 +42,35 @@ function AppETH({
   bridgeERC20AppContract,
   selectedEthAccount
 }: Props): React.ReactElement<Props> {
-
   const isERC20 = selectedToken.address !== '0x0';
-  let app;
-  if (isERC20) {
-    app = <AppERC20
-      net={net}
-      selectedToken={selectedToken}
-      bridgeERC20AppContract={bridgeERC20AppContract}
-      selectedEthAccount={selectedEthAccount}
-    />
-  } else {
-    app = <LockToken
-      net={net}
-      selectedToken={selectedToken}
-    />;
-  }
+
+  const dispatch = useDispatch()
+  // Blockchain state from blockchain
+  const erc20TokenContract = useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
+
+  const currentTokenAllowance = useSelector((state: RootState) => state.ERC20Transactions.allowance)
+  const currentTokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance)
+
+  useEffect(() => {
+    const fetchERC20Data = async () => {
+      dispatch(fetchERC20Allowance(erc20TokenContract, selectedEthAccount, bridgeERC20AppContract._address))
+      dispatch(fetchERC20Balance(erc20TokenContract, selectedEthAccount))
+      dispatch(fetchERC20TokenName(erc20TokenContract))
+    };
+
+    if (isERC20) {
+      fetchERC20Data();
+    }
+
+    const pollTimer = setInterval(() => {
+      if (isERC20) {
+        fetchERC20Data();
+      }
+    }, REFRESH_INTERVAL_MILLISECONDS);
+
+    return () => clearInterval(pollTimer);
+
+  }, [bridgeERC20AppContract._address, erc20TokenContract, selectedEthAccount, dispatch]);
 
   // Render
   return (
@@ -71,7 +89,19 @@ function AppETH({
           border: 'thin solid #E0E0E0',
         }}
       >
-        {app}
+        {isERC20 && <ERC20Approve
+          bridgeERC20AppContract={bridgeERC20AppContract}
+          erc20TokenContract={erc20TokenContract}
+          selectedEthAccount={selectedEthAccount}
+          selectedToken={selectedToken}
+          currentTokenBalance={currentTokenBalance}
+        />
+        }
+        <LockToken
+          net={net}
+          selectedToken={selectedToken}
+          currentTokenAllowance={currentTokenAllowance}
+        />
       </Grid>
       <Divider />
     </Grid>

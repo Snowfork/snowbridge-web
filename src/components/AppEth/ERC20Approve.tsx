@@ -13,10 +13,8 @@ import {
 } from '@material-ui/core';
 
 // Local
-import { RootState } from '../../../redux/reducers';
-import { useSelector } from 'react-redux';
-import * as ERC20Api from '../../../utils/ERC20Api';
-import { Token } from '../../../types';
+import * as ERC20Api from '../../utils/ERC20Api';
+import { Token } from '../../types';
 
 // ------------------------------------------
 //                  Props
@@ -41,12 +39,12 @@ function ERC20Approve({
 }: ERC20ApproveProps): React.ReactElement {
 
   // User input state
-  const [approvalAmount, setApprovalAmount] = useState(0);
+  const [approvalAmount, setApprovalAmount] = useState<Number | null>(null);
 
   // Handlers
   const handleApproveERC20 = async () => {
     await ERC20Api.approveERC20(erc20TokenContract, bridgeERC20AppContract._address,
-      selectedEthAccount, await ERC20Api.addDecimals(erc20TokenContract, `${approvalAmount}`))
+      selectedEthAccount, await ERC20Api.addDecimals(selectedToken, `${approvalAmount}`))
   };
 
   // Render
@@ -70,14 +68,14 @@ function ERC20Approve({
           margin="normal"
           type="number"
           onChange={(e) => setApprovalAmount(Number(e.target.value))}
-          placeholder="20"
+          placeholder={`0.00 ${selectedToken.symbol}`}
           style={{ margin: 5 }}
           variant="outlined"
         />
         <Box alignItems="center" display="flex" justifyContent="space-around">
           <Box>
             <Typography>
-              Current {selectedToken.symbol} token balance: {Number(currentTokenBalance).toFixed(18)} {selectedToken.symbol}
+              Current {selectedToken.symbol} token balance: {Number(currentTokenBalance).toFixed(selectedToken.decimals)} {selectedToken.symbol}
             </Typography>
           </Box>
           <Box
@@ -98,6 +96,12 @@ function ERC20Approve({
             </Button>
           </Box>
         </Box>
+      </Box>
+      <Divider />
+      <Box marginTop={'15px'}>
+        <Typography gutterBottom variant="h5">
+          2. Send
+        </Typography>
       </Box>
     </Box >
   );
