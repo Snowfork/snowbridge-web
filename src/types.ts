@@ -3,6 +3,6 @@ export interface Token {
   address: string;
   name: string;
   symbol: string;
-  decimals: 18;
+  decimals: number;
   logoURI: string;
 }

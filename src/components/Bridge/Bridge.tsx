@@ -7,13 +7,10 @@ import styled from 'styled-components';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 
-import AppEthereum from '../AppEth';
 import AppPolkadot from '../AppPolkadot';
-import AppERC20 from '../AppERC20/index';
-import EthTokenList from '../AppEth/tokenList.json'
-import PolkadotTokenList from '../AppPolkadot/tokenList.json';
+import AppETH from '../AppETH/index';
+import EthTokenList from '../AppETH/tokenList.json'
 import Net from '../../net';
-
 
 import * as S from './Bridge.style';
 import {
@@ -34,7 +31,7 @@ import { createContractInstance } from '../../redux/actions/ERC20Transactions';
 // ------------------------------------------
 type Props = {
   net: Net;
-  ethAddress: string;
+  selectedEthAccount: string;
 };
 
 enum SwapDirection {
@@ -47,7 +44,7 @@ enum SwapDirection {
 // ------------------------------------------
 function Bridge({
   net,
-  ethAddress,
+  selectedEthAccount,
 }: Props): React.ReactElement<Props> {
   const [swapDirection, setSwapDirection] = useState(SwapDirection.EthereumToPolkadot);
   const [showAssetSelector, setShowAssetSelector] = useState(false)
@@ -55,26 +52,19 @@ function Bridge({
   const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
   const dispatch = useDispatch();
 
-
-  // update token list when the swap direction changes
   useEffect(() => {
     const currentChainId = Number.parseInt((net.eth?.conn?.currentProvider as any).chainId, 16)
     let selectedTokenList: Token[];
     // set eth token list
-    if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      // only include tokens from current network
-      selectedTokenList = (EthTokenList.tokens as Token[])
-        .filter(
-          (token: Token) => token.chainId === currentChainId)
-    } else {
-      // set polkadot token list
-      selectedTokenList = PolkadotTokenList.tokens as Token[]
-    }
+    // only include tokens from current network
+    selectedTokenList = (EthTokenList.tokens as Token[])
+      .filter(
+        (token: Token) => token.chainId === currentChainId)
 
     setTokens(selectedTokenList);
     setSelectedAsset(selectedTokenList[0]);
 
-  }, [net.eth, setTokens, swapDirection])
+  }, [net.eth, setTokens])
 
   // update the contract instance when the selected asset changes
   const handleAssetSelected = (asset: Token): void => {
@@ -94,19 +84,17 @@ function Bridge({
 
   const ChainApp = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      // check if should use eth app or erc20 app
-      if (selectedAsset.address === '0x0') {
-        return <AppEthereum net={net} handleSwap={handleSwap} />;
-      } else {
-        return <AppERC20
-          net={net}
-          contract={net?.eth?.erc20_contract as Contract}
-          defaultAccount={ethAddress}
-          selectedToken={selectedAsset}
-        />
-      }
+      return <AppETH
+        net={net}
+        selectedToken={selectedAsset}
+        bridgeERC20AppContract={net?.eth?.erc20_contract as Contract}
+        selectedEthAccount={selectedEthAccount}
+      />
     } else {
-      return <AppPolkadot net={net} handleSwap={handleSwap} />;
+      return <AppPolkadot
+        net={net}
+        selectedToken={selectedAsset}
+      />;
     }
   };
 

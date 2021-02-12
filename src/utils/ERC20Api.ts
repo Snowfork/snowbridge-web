@@ -1,4 +1,7 @@
 import { ss58_to_u8 } from '../net/api';
+import Web3 from 'web3';
+
+import { Token } from '../types';
 
 const INCENTIVIZED_CHANNEL_ID = 1;
 
@@ -57,9 +60,9 @@ export async function fetchERC20Name(tokenContractInstance: any): Promise<string
  * @return {Promise<void>}
  */
 export async function approveERC20(ERC20ContractInstance: any, spenderAddress: any, ownerAddress: any,
-    approvalAmount: number): Promise<void> {
+    approvalAmount: string): Promise<void> {
     return ERC20ContractInstance.methods
-        .approve(spenderAddress, `${approvalAmount}`)
+        .approve(spenderAddress, approvalAmount)
         .send({
             from: ownerAddress,
             gas: 500000,
@@ -102,9 +105,11 @@ export async function lockERC20(senderEthAddress: string, polkadotRecipientAddre
  * @param amount
  * @return {Promise<number>}
  */
-export async function addDecimals(contractInstance: any, amount: number): Promise<number> {
-    let decimals = await fetchERC20Decimals(contractInstance);
-    return amount * 10 ** decimals;
+export async function addDecimals(token: Token, amount: string): Promise<string> {
+    const bnAmount = Web3.utils.toBN(amount);
+    const bnDecimals = Web3.utils.toBN(token.decimals);
+    const bnDecimalsMultiplier = Web3.utils.toBN(10).pow(bnDecimals);
+    return bnAmount.mul(bnDecimalsMultiplier).toString();
 }
 
 /**

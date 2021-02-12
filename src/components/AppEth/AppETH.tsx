@@ -2,28 +2,33 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React, {  useState } from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 // import * as S from './AppEth.style';
-import PolkadotAccount from '../PolkadotAccount/';
 import Net from '../../net';
+import { Token } from '../../types';
 
 import {
-  Typography,
-  TextField,
-  Button,
   Grid,
-  FormControl,
-  FormHelperText,
   Divider,
 } from '@material-ui/core';
+
+import ERC20Approve from './ERC20Approve';
+import LockToken from './LockToken';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../redux/reducers';
+
+import { fetchERC20Allowance, fetchERC20Balance, fetchERC20TokenName } from '../../redux/actions/ERC20Transactions';
+import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 
 // ------------------------------------------
 //                  Props
 // ------------------------------------------
 type Props = {
   net: Net;
-  handleSwap: any;
+  selectedToken: Token;
+  bridgeERC20AppContract: any;
+  selectedEthAccount: string;
   children?: JSX.Element | JSX.Element[];
 };
 
@@ -32,29 +37,39 @@ type Props = {
 // ------------------------------------------
 function AppETH({
   net,
+  selectedToken,
+  bridgeERC20AppContract,
+  selectedEthAccount
 }: Props): React.ReactElement<Props> {
-  // State
-  const [depositAmount, setDepositAmount] = useState(String);
+  const isERC20 = selectedToken.address !== '0x0';
 
-  function SendButton() {
-    if (Number(depositAmount) > 0) {
-      return (
-        <Button
-          color="primary"
-          onClick={() => net?.eth?.send_eth(depositAmount)}
-          variant="outlined"
-        >
-          <Typography variant="button">Send ETH</Typography>
-        </Button>
-      );
-    } else {
-      return (
-        <Button disabled color="primary" variant="outlined">
-          <Typography variant="button">Send ETH</Typography>
-        </Button>
-      );
+  const dispatch = useDispatch()
+  // Blockchain state from blockchain
+  const erc20TokenContract = useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
+
+  const currentTokenAllowance = useSelector((state: RootState) => state.ERC20Transactions.allowance)
+  const currentTokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance)
+
+  useEffect(() => {
+    const fetchERC20Data = async () => {
+      dispatch(fetchERC20Allowance(erc20TokenContract, selectedEthAccount, bridgeERC20AppContract._address))
+      dispatch(fetchERC20Balance(erc20TokenContract, selectedEthAccount))
+      dispatch(fetchERC20TokenName(erc20TokenContract))
+    };
+
+    if (isERC20) {
+      fetchERC20Data();
     }
-  }
+
+    const pollTimer = setInterval(() => {
+      if (isERC20) {
+        fetchERC20Data();
+      }
+    }, REFRESH_INTERVAL_MILLISECONDS);
+
+    return () => clearInterval(pollTimer);
+
+  }, [bridgeERC20AppContract._address, erc20TokenContract, selectedEthAccount, isERC20, dispatch]);
 
   // Render
   return (
@@ -73,43 +88,19 @@ function AppETH({
           border: 'thin solid #E0E0E0',
         }}
       >
-
-        {/* SS58 Address Input */}
-        <Grid item xs={10}>
-          <FormControl>
-            <PolkadotAccount address={net.polkadotAddress} />
-          </FormControl>
-          <FormHelperText id="ethAmountDesc">
-            Polkadot Receiving Address
-          </FormHelperText>
-        </Grid>
-
-        {/* ETH Deposit Amount Input */}
-        <Grid item xs={10}>
-          <FormControl>
-            <Typography gutterBottom>Amount</Typography>
-            <TextField
-              InputProps={{
-                value: depositAmount,
-              }}
-              id="eth-input-amount"
-              type="number"
-              margin="normal"
-              onChange={(e) => setDepositAmount(e.target.value)}
-              placeholder="0.00 ETH"
-              style={{ margin: 5 }}
-              variant="outlined"
-            />
-            <FormHelperText id="ethAmountDesc">
-              How much ETH would you like to deposit?
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-
-        {/* Send ETH */}
-        <Grid item xs={10}>
-          <SendButton />
-        </Grid>
+        {isERC20 && <ERC20Approve
+          bridgeERC20AppContract={bridgeERC20AppContract}
+          erc20TokenContract={erc20TokenContract}
+          selectedEthAccount={selectedEthAccount}
+          selectedToken={selectedToken}
+          currentTokenBalance={currentTokenBalance}
+        />
+        }
+        <LockToken
+          net={net}
+          selectedToken={selectedToken}
+          currentTokenAllowance={currentTokenAllowance}
+        />
       </Grid>
       <Divider />
     </Grid>

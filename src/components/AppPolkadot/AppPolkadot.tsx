@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Net from '../../net';
-import { shortenWalletAddress } from '../../utils/common';
+import { Token } from '../../types';
 
 import {
   Typography,
@@ -18,7 +18,7 @@ import {
 // ------------------------------------------
 type Props = {
   net: Net;
-  handleSwap: any;
+  selectedToken: Token;
   children?: JSX.Element | JSX.Element[];
 };
 
@@ -27,26 +27,28 @@ type Props = {
 // ------------------------------------------
 function AppPolkadot({
   net,
+  selectedToken,
   children,
 }: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
+  const tokenSymbol = `Snow${selectedToken.symbol}`
 
   function SendButton() {
     if (Number(depositAmount) > 0) {
       return (
         <Button
           color="primary"
-          onClick={() => net?.polkadot?.burn_polkaeth(depositAmount)}
+          onClick={() => net?.polkadot?.burn_token(depositAmount, selectedToken)}
           variant="outlined"
         >
-          <Typography variant="button">Send Polkadot Asset</Typography>
+          <Typography variant="button">Send {tokenSymbol}</Typography>
         </Button>
       );
     } else {
       return (
         <Button disabled color="primary" variant="outlined">
-          <Typography variant="button">Send Polkadot Asset</Typography>
+          <Typography variant="button">Send {tokenSymbol}</Typography>
         </Button>
       );
     }
@@ -71,9 +73,9 @@ function AppPolkadot({
 
         {/* Address Input */}
         <Grid item xs={10}>
-          <FormControl>{shortenWalletAddress(net.ethAddress)}</FormControl>
-          <FormHelperText id="ethAmountDesc">
-            ETH Receiving Address
+          <FormControl>{net.ethAddress}</FormControl>
+          <FormHelperText id="ethReceivingAddress">
+            Ethereum Receiving Address
           </FormHelperText>
         </Grid>
 
@@ -85,21 +87,19 @@ function AppPolkadot({
               InputProps={{
                 value: depositAmount,
               }}
-              id="eth-input-amount"
+              id="token-input-amount"
               type="number"
               margin="normal"
               onChange={(e) => setDepositAmount(e.target.value)}
-              placeholder="0.00 PolkaETH"
+              placeholder={`0.00 ${tokenSymbol}`}
               style={{ margin: 5 }}
               variant="outlined"
             />
-            <FormHelperText id="polkaethAmountDesc">
-              How much PolkaETH would you like to burn and convert to ETH?
+            <FormHelperText id="tokenAmountDesc">
+              How much {tokenSymbol} would you like to burn and convert to {selectedToken.symbol}?
             </FormHelperText>
           </FormControl>
         </Grid>
-
-        {/* Send ETH */}
         <Grid item xs={10}>
           <SendButton />
         </Grid>

@@ -20,6 +20,7 @@ import {
 } from '../actions/transactions'
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { EventData } from 'web3-eth-contract';
+import { Token } from '../../types';
 
 export enum TransactionStatus {
   // used for error states
@@ -53,10 +54,7 @@ export interface Transaction {
   isMinted: boolean;
   isBurned: boolean;
   chain: 'eth' | 'polkadot';
-  assets: {
-    deposited: 'eth' | 'polkaEth',
-    recieved: 'eth' | 'polkaEth',
-  },
+  token: Token;
   dispatchTransactionHash?: string
 }
 
