@@ -3,9 +3,8 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // General
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Contract } from 'web3-eth-contract';
 
 // External
 import {
@@ -13,7 +12,6 @@ import {
   Typography,
   TextField,
   Button,
-  Divider,
   Grid,
   FormControl,
   FormHelperText,
@@ -38,7 +36,7 @@ function LockToken({
   selectedToken,
   currentTokenAllowance
 }: LockTokenProps): React.ReactElement {
-  const [depositAmount, setDepositAmount] = useState<Number | null>(null);
+  const [depositAmount, setDepositAmount] = useState<Number | string>('');
 
   const handleLockToken = async () => {
     await net?.eth?.lock_token(`${depositAmount}`, selectedToken);
@@ -67,7 +65,7 @@ function LockToken({
           id="token-input-amount"
           type="number"
           margin="normal"
-          onChange={(e) => setDepositAmount(e.target.value ? Number(e.target.value) : null)}
+          onChange={(e) => setDepositAmount(e.target.value ? Number(e.target.value) : '')}
           placeholder={`0.00 ${selectedToken.symbol}`}
           style={{ margin: 5 }}
           variant="outlined"

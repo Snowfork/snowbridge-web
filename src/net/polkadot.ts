@@ -15,7 +15,7 @@ import { Token } from '../types';
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
 
-import { addTransaction, ethMessageDispatched, setTransactionStatus, polkaEthBurned, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
+import { addTransaction, ethMessageDispatched, setTransactionStatus, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
 import { MessageDispatchedEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
 import { notify } from '../redux/actions/notifications';
 

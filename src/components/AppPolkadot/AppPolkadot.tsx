@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Net from '../../net';
-import { shortenWalletAddress } from '../../utils/common';
 import { Token } from '../../types';
 
 import {

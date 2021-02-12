@@ -2,12 +2,11 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 // import * as S from './AppEth.style';
 import Net from '../../net';
 import { Token } from '../../types';
-import { Contract } from 'web3-eth-contract';
 
 import {
   Grid,
@@ -70,7 +69,7 @@ function AppETH({
 
     return () => clearInterval(pollTimer);
 
-  }, [bridgeERC20AppContract._address, erc20TokenContract, selectedEthAccount, dispatch]);
+  }, [bridgeERC20AppContract._address, erc20TokenContract, selectedEthAccount, isERC20, dispatch]);
 
   // Render
   return (

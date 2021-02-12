@@ -9,7 +9,6 @@ import {
   TextField,
   Button,
   Divider,
-  Grid,
 } from '@material-ui/core';
 
 // Local
@@ -39,7 +38,7 @@ function ERC20Approve({
 }: ERC20ApproveProps): React.ReactElement {
 
   // User input state
-  const [approvalAmount, setApprovalAmount] = useState<Number | null>(null);
+  const [approvalAmount, setApprovalAmount] = useState<Number | string>('');
 
   // Handlers
   const handleApproveERC20 = async () => {
@@ -67,7 +66,7 @@ function ERC20Approve({
           id="erc-input-approval"
           margin="normal"
           type="number"
-          onChange={(e) => setApprovalAmount(Number(e.target.value))}
+          onChange={(e) => setApprovalAmount(e.target.value ? Number(e.target.value) : '')}
           placeholder={`0.00 ${selectedToken.symbol}`}
           style={{ margin: 5 }}
           variant="outlined"
