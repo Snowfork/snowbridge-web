@@ -33,7 +33,7 @@ import { createContractInstance } from '../../redux/actions/ERC20Transactions';
 // ------------------------------------------
 type Props = {
   net: Net;
-  ethAddress: string;
+  selectedEthAccount: string;
 };
 
 enum SwapDirection {
@@ -46,7 +46,7 @@ enum SwapDirection {
 // ------------------------------------------
 function Bridge({
   net,
-  ethAddress,
+  selectedEthAccount,
 }: Props): React.ReactElement<Props> {
   const [swapDirection, setSwapDirection] = useState(SwapDirection.EthereumToPolkadot);
   const [showAssetSelector, setShowAssetSelector] = useState(false)
@@ -97,7 +97,7 @@ function Bridge({
         return <AppERC20
           net={net}
           contract={net?.eth?.erc20_contract as Contract}
-          defaultAccount={ethAddress}
+          selectedEthAccount={selectedEthAccount}
           selectedToken={selectedAsset}
         />
       }

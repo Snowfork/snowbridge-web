@@ -29,18 +29,20 @@ import PolkadotAccount from '../PolkadotAccount';
 import Net from '../../net';
 import { Token } from '../../types';
 
+import ERC20Approve from './ERC20Approve';
+
 // ------------------------------------------
 //                  Props
 // ------------------------------------------
 type Props = {
   net: Net;
   contract: Contract;
-  defaultAccount: string | null | undefined;
+  selectedEthAccount: string;
   selectedToken: Token;
 };
 
 type ApproveAndLockProps = {
-  defaultAccount: string;
+  selectedEthAccount: string;
   contract: any;
   contractERC20: any;
   net: Net;
@@ -53,14 +55,14 @@ type ApproveAndLockProps = {
 function ApproveAndLockERC20({
   contract, // the bridge contract
   contractERC20, // the ERC20 token contract
-  defaultAccount, // the users wallet address
+  selectedEthAccount, // the users wallet address
   net,
   selectedToken
 }: ApproveAndLockProps): React.ReactElement<Props> {
   const dispatch = useDispatch()
   // Blockchain state from blockchain
   const allowance = useSelector((state: RootState) => state.ERC20Transactions.allowance)
-  const balance = useSelector((state: RootState) => state.ERC20Transactions.balance)
+  const currentTokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance)
 
   // User input state
   const [approvalAmount, setApprovalAmount] = useState(0);
@@ -69,8 +71,8 @@ function ApproveAndLockERC20({
   // queries the contract for allowance and balance
   useEffect(() => {
     const fetchChainData = async () => {
-      dispatch(fetchERC20Allowance(contractERC20, defaultAccount, contract._address))
-      dispatch(fetchERC20Balance(contractERC20, defaultAccount))
+      dispatch(fetchERC20Allowance(contractERC20, selectedEthAccount, contract._address))
+      dispatch(fetchERC20Balance(contractERC20, selectedEthAccount))
       dispatch(fetchERC20TokenName(contractERC20))
     };
 
@@ -82,122 +84,87 @@ function ApproveAndLockERC20({
 
     return () => clearInterval(pollTimer);
 
-  }, [contract._address, contractERC20, defaultAccount, dispatch]);
+  }, [contract._address, contractERC20, selectedEthAccount, dispatch]);
 
   // Handlers
   const handleApproveERC20 = async () => {
     await ERC20Api.approveERC20(contractERC20, contract._address,
-      defaultAccount, await ERC20Api.addDecimals(contractERC20, approvalAmount))
+      selectedEthAccount, await ERC20Api.addDecimals(contractERC20, approvalAmount))
   };
 
   const handleLockERC20 = async () => {
     // Lock ERC20 token in bank contract
-    await ERC20Api.lockERC20(defaultAccount, net.polkadotAddress, contractERC20, contract,
+    await ERC20Api.lockERC20(selectedEthAccount, net.polkadotAddress, contractERC20, contract,
       await ERC20Api.addDecimals(contractERC20, depositAmount))
   };
 
   // Render
   return (
     <Box>
-      <Box marginTop={'15px'} />
-      <Divider />
-      <Box marginTop={'15px'} />
-      <Typography gutterBottom variant="h5">
-        1. Approve
-      </Typography>
-      <Typography gutterBottom>
-        How many ERC20 tokens would you like to approve to the ERC20 App?
-      </Typography>
-      <TextField
-        InputProps={{
-          value: approvalAmount,
-        }}
-        id="erc-input-approval"
-        margin="normal"
-        type="number"
-        onChange={(e) => setApprovalAmount(Number(e.target.value))}
-        placeholder="20"
-        style={{ margin: 5 }}
-        variant="outlined"
+
+      <ERC20Approve
+        bridgeERC20AppContract={contract}
+        erc20TokenContract={contractERC20}
+        selectedEthAccount={selectedEthAccount}
+        selectedToken={selectedToken}
+        currentTokenBalance={currentTokenBalance}
       />
-      <Box alignItems="center" display="flex" justifyContent="space-around">
-        <Box>
-          <Typography>
-            Current ERC20 token balance: {Number(balance).toFixed(18)} {selectedToken.symbol}
-          </Typography>
-        </Box>
-        <Box
-          alignItems="center"
-          display="flex"
-          height="100px"
-          paddingBottom={1}
-          paddingTop={2}
-          width="300px"
-        >
-          <Button
-            color="primary"
-            fullWidth={true}
-            onClick={() => handleApproveERC20()}
-            variant="outlined"
-          >
-            <Typography variant="button">Approve</Typography>
-          </Button>
-        </Box>
-      </Box>
-      <Divider />
-      <Box marginTop={'15px'}>
-        <Typography gutterBottom variant="h5">
-          2. Send
+      <Box>
+        <Divider />
+        <Box marginTop={'15px'}>
+          <Typography gutterBottom variant="h5">
+            2. Send
         </Typography>
-      </Box>
-      <Box display="flex" flexDirection="column">
-        <Grid item xs={10}>
-          <FormControl>
-            <PolkadotAccount address={net.polkadotAddress} />
-          </FormControl>
-          <FormHelperText id="ethAmountDesc">
-            Polkadot Receiving Address
+        </Box>
+        <Box display="flex" flexDirection="column">
+          <Grid item xs={10}>
+            <FormControl>
+              <PolkadotAccount address={net.polkadotAddress} />
+            </FormControl>
+            <FormHelperText id="ethAmountDesc">
+              Polkadot Receiving Address
           </FormHelperText>
-        </Grid>
-        <Box padding={1} />
-        <Typography gutterBottom>
-          How many ERC20 tokens would you like to deposit
+          </Grid>
+          <Box padding={1} />
+          <Typography gutterBottom>
+            How many ERC20 tokens would you like to deposit
         </Typography>
-        <TextField
-          InputProps={{
-            value: depositAmount,
-          }}
-          id="erc-input-amount"
-          margin="normal"
-          type="number"
-          onChange={(e) => setDepositAmount(Number(e.target.value))}
-          placeholder="20"
-          style={{ margin: 5 }}
-          variant="outlined"
-        />
-        <Box alignItems="center" display="flex" justifyContent="space-around">
-          <Box>
-            <Typography>
-              Current ERC20 App allowance: {Number(allowance).toFixed(18)} {selectedToken.symbol}
-            </Typography>
-          </Box>
-          <Box
-            alignItems="center"
-            display="flex"
-            height="100px"
-            paddingBottom={1}
-            paddingTop={2}
-            width="300px"
-          >
-            <Button
-              color="primary"
-              disabled={allowance === 0}
-              fullWidth={true}
-              onClick={() => handleLockERC20()}
-              variant="outlined"
+          <TextField
+            InputProps={{
+              value: depositAmount,
+            }}
+            id="erc-input-amount"
+            margin="normal"
+            type="number"
+            onChange={(e) => setDepositAmount(Number(e.target.value))}
+            placeholder="20"
+            style={{ margin: 5 }}
+            variant="outlined"
+          />
+          <Box alignItems="center" display="flex" justifyContent="space-around">
+            <Box>
+              <Typography>
+                Current ERC20 App allowance: {Number(allowance).toFixed(18)} {selectedToken.symbol}
+              </Typography>
+            </Box>
+            <Box
+              alignItems="center"
+              display="flex"
+              height="100px"
+              paddingBottom={1}
+              paddingTop={2}
+              width="300px"
             >
-              <Typography variant="button">Send</Typography>
-            </Button>
+              <Button
+                color="primary"
+                disabled={allowance === 0}
+                fullWidth={true}
+                onClick={() => handleLockERC20()}
+                variant="outlined"
+              >
+                <Typography variant="button">Send</Typography>
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Box>
@@ -210,13 +177,13 @@ function ApproveAndLockERC20({
 // ------------------------------------------
 function AppERC20({
   contract,
-  defaultAccount,
+  selectedEthAccount,
   net,
   selectedToken
 }: Props): React.ReactElement<Props> {
   const tokenContract = useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
 
-  if (defaultAccount === null || !defaultAccount) {
+  if (selectedEthAccount === null || !selectedEthAccount) {
     return <p>Empty Account</p>;
   }
 
@@ -241,7 +208,7 @@ function AppERC20({
           <ApproveAndLockERC20
             contract={contract}
             contractERC20={tokenContract}
-            defaultAccount={defaultAccount}
+            selectedEthAccount={selectedEthAccount}
             net={net}
             selectedToken={selectedToken}
           />

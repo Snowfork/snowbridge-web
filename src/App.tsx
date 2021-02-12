@@ -84,7 +84,7 @@ function BridgeApp(props: Props) {
 			<Nav net={net.client} transactions={props.transactions} />
 			<Bridge
 				net={net.client!}
-				ethAddress={net.client.ethAddress}
+				selectedEthAccount={net.client.ethAddress}
 			/>
 			<Modal
 				isOpen={isPendingModalOpen}
