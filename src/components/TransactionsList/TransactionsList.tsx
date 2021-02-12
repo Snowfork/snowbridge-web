@@ -32,7 +32,7 @@ function TransactionsList({
   const [lastTransactionCount, setLastTransactionCount] = useState(
     transactions.length,
   );
-
+  const noTransactions = transactions.length === 0 || !transactions;
   // fires when the transaction list is updated
   // check if a new transaction has been added
   // to open the modal
@@ -51,7 +51,7 @@ function TransactionsList({
   }
 
   function getTransactions() {
-    if (transactions.length === 0 || !transactions) {
+    if (noTransactions) {
       return <div>No transactions</div>;
     }
     return (
@@ -67,7 +67,7 @@ function TransactionsList({
     <div>
       <Button
         onClick={openModal}
-        icon={<LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
+        icon={!noTransactions && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
       >
         Transaction list
       </Button>

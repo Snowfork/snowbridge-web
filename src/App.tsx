@@ -79,6 +79,9 @@ function BridgeApp(props: Props) {
 		);
 	}
 
+	const ethToSnow = transactions?.pendingTransaction?.chain === 'eth';
+	const baseTokenSymbol = transactions?.pendingTransaction?.token.symbol;
+	const snowTokenSymbol = `Snow${baseTokenSymbol}`;
 	return (
 		<main>
 			<Nav net={net.client} transactions={props.transactions} />
@@ -99,19 +102,19 @@ function BridgeApp(props: Props) {
 							<div style={{ width: '40px', height: '40px' }}>
 								<LoadingSpinner />
 							</div>
-							<h3>Waiting for Confirmation</h3>
+							<h3>Waiting for transaction to be submitted</h3>
 							<h4>
-								Swapping
-									{' '}
+								Bridging
+								{' '}
 								{transactions.pendingTransaction?.amount}
 								{' '}
-								{transactions.pendingTransaction.token.symbol}
+								{ethToSnow ? baseTokenSymbol : snowTokenSymbol}
 								{' '}
-									for
-									{' '}
+								to
+								{' '}
 								{transactions.pendingTransaction?.amount}
 								{' '}
-								{transactions.pendingTransaction.token.symbol}
+								{ethToSnow ? snowTokenSymbol : baseTokenSymbol}
 							</h4>
 							<div>Confirm this transaction in your wallet</div>
 						</div>
@@ -138,7 +141,7 @@ function BridgeApp(props: Props) {
 						TransactionStatus.REJECTED ? (
 						<div>
 							<h3>Error</h3>
-							<h4>Transactoin rejected.</h4>
+							<h4>Transaction rejected.</h4>
 						</div>
 					) : null}
 				</div>

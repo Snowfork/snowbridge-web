@@ -2,13 +2,12 @@
 
 A Bridge UI that enables the transfer of ETH and ERC20 tokens from Ethereum to Substrate via Metamask.
 
-- [Demo](https://polkaeth-demo.netlify.app/)
+- [Demo](https://snowbridge-demo.snowfork.com/)
 
 ## Requirements
 
 - [Metamask Browser Extension](https://metamask.io/)
 - [Polkadot.js Browser Extension](https://polkadot.js.org/extension/)
-
 
 ## Development
 
