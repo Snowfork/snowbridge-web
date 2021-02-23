@@ -8,8 +8,8 @@ import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 
 import AppPolkadot from '../AppPolkadot';
-import AppETH from '../AppETH/index';
-import EthTokenList from '../AppETH/tokenList.json'
+import AppETH from '../AppEth';
+import EthTokenList from '../AppEth/tokenList.json'
 import Net from '../../net';
 
 import * as S from './Bridge.style';
