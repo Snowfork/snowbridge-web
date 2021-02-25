@@ -9,6 +9,7 @@ export default class Net {
   polkadot?: Polkadot;
   polkadotAddress: string = '';
   polkadotEthBalance?: string;
+  parachainTokenBalance?: string;
 
   // Start net
   public async start(dispatch: Dispatch) {
@@ -20,8 +21,10 @@ export default class Net {
     let firstPolkadotAddress =
       polkadotAddresses && polkadotAddresses[0] && polkadotAddresses[0].address;
     let polkadotEthBalance;
+    let parachainTokenBalance;
     if (firstPolkadotAddress) {
       polkadotEthBalance = await polkadot.get_eth_balance(firstPolkadotAddress);
+      parachainTokenBalance = await polkadot.get_gas_currency_balance(firstPolkadotAddress);
     }
 
     if (
@@ -38,6 +41,7 @@ export default class Net {
       this.polkadot = polkadot;
       this.polkadotAddress = firstPolkadotAddress;
       this.polkadotEthBalance = polkadotEthBalance;
+      this.parachainTokenBalance = parachainTokenBalance;
 
       console.log('- Network Started');
       console.log(`  Polkadot Address: ${firstPolkadotAddress}`);

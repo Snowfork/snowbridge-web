@@ -75,7 +75,7 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
         <S.DisplayWrapper>
           <S.DisplayTitle>Polkadot Wallet</S.DisplayTitle>
           <S.DisplayContainer>
-            <S.Amount>{net.polkadotEthBalance!.toString()} PolkaETH</S.Amount>
+            <S.Amount>{net.parachainTokenBalance?.toString()}</S.Amount>
             <S.Address onClick={openModal}>
               {polkadotAccs.length > 0 &&
                 shortenWalletAddress(net.polkadotAddress!)}
@@ -100,7 +100,7 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
                     onChange={handleChange}
                   >
                     {polkadotAccs.map((acc, index) => (
-                      <MenuItem value={index}>
+                      <MenuItem value={index} key={index}>
                         {shortenWalletAddress(acc.address)}
                       </MenuItem>
                     ))}

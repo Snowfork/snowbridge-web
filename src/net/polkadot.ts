@@ -1,10 +1,11 @@
 import web3 from 'web3';
-import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ApiPromise, WsProvider, } from '@polkadot/api';
 import {
   web3Accounts,
   web3Enable,
   web3FromSource,
 } from '@polkadot/extension-dapp';
+import {formatBalance} from '@polkadot/util'
 import { Dispatch } from 'redux';
 import Api from './api';
 import Net from './';
@@ -17,7 +18,6 @@ import { POLKADOT_API_PROVIDER } from '../config';
 
 import { addTransaction, ethMessageDispatched, setTransactionStatus, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
 import { MessageDispatchedEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
-import { notify } from '../redux/actions/notifications';
 
 const INCENTIVIZED_CHANNEL_ID = 1;
 
@@ -36,7 +36,7 @@ export default class Polkadot extends Api {
     connector(this, net);
     this.dispatch = dispatch;
   }
-
+  
   // Get all polkadot addresses
   public async get_addresses() {
     // returns an array of all the injected sources
@@ -59,6 +59,20 @@ export default class Polkadot extends Api {
       return allAccounts[0];
     } else {
       return null;
+    }
+  }
+
+  public async get_gas_currency_balance(polkadotAddress: string): Promise<string> {
+    try {
+      const account = await this.conn?.query.system.account(polkadotAddress);
+      
+      return formatBalance(account!.data!.free, {
+        decimals: this.conn?.registry.chainDecimals[0],
+        withUnit: this.conn?.registry.chainTokens[0]
+      })
+    } catch (err) {
+      console.log('error getting polkadot gas balance', err)
+      throw err;
     }
   }
 
