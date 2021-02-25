@@ -21,6 +21,8 @@ import {
 import PolkadotAccount from '../PolkadotAccount';
 import Net from '../../net';
 import { Token } from '../../types';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../redux/reducers';
 
 type LockTokenProps = {
   net: Net;
@@ -36,13 +38,29 @@ function LockToken({
   selectedToken,
   currentTokenAllowance
 }: LockTokenProps): React.ReactElement {
-  const [depositAmount, setDepositAmount] = useState<Number | string>('');
+  const [depositAmount, setDepositAmount] = useState<number | string>('');
+  const [helperText, setHelperText] = useState<string>('') 
+  const erc20TokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance)
+  
+  const isERC20 = selectedToken.address !== '0x0';
+
+  // return total balance of ETH or ERC20
+  const getMaxTokenBalance = () : number => {
+    if (isERC20) {
+      return erc20TokenBalance as number;
+    }
+    return Number.parseFloat(net!.ethBalance!) as number
+  }
 
   const handleLockToken = async () => {
-    await net?.eth?.lock_token(`${depositAmount}`, selectedToken);
+    // check if the user has enough funds
+    if (depositAmount > getMaxTokenBalance()) {
+      setHelperText('Insufficient funds.')
+    } else {
+      setHelperText('')
+      await net?.eth?.lock_token(`${depositAmount}`, selectedToken);
+    }
   };
-
-  const isERC20 = selectedToken.address !== '0x0';
 
   // Render
   return (
@@ -58,7 +76,12 @@ function LockToken({
       <Box padding={1} />
       <FormControl>
         <Typography gutterBottom>Amount</Typography>
+        <FormHelperText >
+          MAX: {getMaxTokenBalance()}
+        </FormHelperText>
         <TextField
+          error={!!helperText}
+          helperText={helperText}
           InputProps={{
             value: depositAmount,
           }}
@@ -72,7 +95,7 @@ function LockToken({
         />
         <FormHelperText id="ethAmountDesc">
           How much {selectedToken.symbol} would you like to deposit?
-            </FormHelperText>
+        </FormHelperText>
       </FormControl>
       <Box alignItems="center" display="flex" justifyContent="space-around">
         {isERC20 && <Box>
