@@ -307,11 +307,16 @@ export default class Eth extends Api {
     let locWindow = window as MyWindow;
     let web3: Web3;
 
-    const connectionComplete = (web3: any) => {
+    const connectionComplete = (web3: Web3) => {
       dispatch(setMetamaskFound());
       web3.eth.net
         .getNetworkType()
         .then((network: string) => dispatch(setMetamaskNetwork(network)));
+
+      // reload app on account change
+        locWindow.ethereum.on('accountsChanged', (accounts: Array<string>) => {
+          window.location.pathname = '/'
+        });
     };
 
     if (locWindow.ethereum) {
