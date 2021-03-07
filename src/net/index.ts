@@ -20,28 +20,20 @@ export default class Net {
     let polkadotAddresses = await polkadot.get_addresses();
     let firstPolkadotAddress =
       polkadotAddresses && polkadotAddresses[0] && polkadotAddresses[0].address;
-    let polkadotEthBalance;
-    let parachainTokenBalance;
-    if (firstPolkadotAddress) {
-      polkadotEthBalance = await polkadot.get_eth_balance(firstPolkadotAddress);
-      parachainTokenBalance = await polkadot.get_gas_currency_balance(firstPolkadotAddress);
-    }
+
 
     if (
       eth &&
       ethAddress &&
       ethBalance &&
       polkadot &&
-      firstPolkadotAddress &&
-      polkadotEthBalance
+      firstPolkadotAddress
     ) {
       this.eth = eth;
       this.ethAddress = ethAddress;
       this.ethBalance = ethBalance;
       this.polkadot = polkadot;
-      this.polkadotAddress = firstPolkadotAddress;
-      this.polkadotEthBalance = polkadotEthBalance;
-      this.parachainTokenBalance = parachainTokenBalance;
+      await this.set_selected_polkadot_address(firstPolkadotAddress)
 
       console.log('- Network Started');
       console.log(`  Polkadot Address: ${firstPolkadotAddress}`);
@@ -50,6 +42,17 @@ export default class Net {
       console.log(`  Polkadot ETH Balance: ${this.polkadotEthBalance}`);
     }
   }
+
+  // update selected polkadot address
+  public async set_selected_polkadot_address(address: string) {
+    // update selected address
+    this.polkadotAddress = address;
+    // fetch parachain token balance
+    this.parachainTokenBalance = await this.polkadot?.get_gas_currency_balance(address);
+    // fetch snowEth balance
+    this.polkadotEthBalance = await this.polkadot?.get_eth_balance(address) as string;
+  }
+
 }
 
 export function isConnected(net: Net) {

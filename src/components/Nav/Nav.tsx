@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as S from './Nav.style';
 import Net from '../../net';
 
@@ -22,37 +22,101 @@ type Props = {
 };
 
 const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    formControl: {
-      margin: theme.spacing(1),
-      minWidth: 120,
-    },
-    selectEmpty: {
-      marginTop: theme.spacing(2),
-    },
-  }),
+createStyles({
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 120,
+  },
+  selectEmpty: {
+    marginTop: theme.spacing(2),
+  },
+}),
 );
 
 function Nav({ net, transactions }: Props): React.ReactElement<Props> {
   const classes = useStyles();
+  const [polkadotAccounts, setPolkadotAccounts] = useState<string[]>([]);
+  const [isPolkadotAccountSelectorOpen, setIsPolkadotAccountSelectorOpen] = useState<boolean>(false)
+  
+  // fetch polkadot accounts on mount
+  useEffect(() => {
+    async function fetchAccounts() {
+      const accounts = await net.polkadot?.get_addresses() as any;
+      setPolkadotAccounts(
+        accounts
+          .map(
+            (account: any) => account.address
+          ))
+    }
 
-  const [polkadotAccIndex, setPolkadotAccIndex] = useState(0);
+    fetchAccounts()
+  }, [net])
 
-  const [isOpen, setIsOpen] = useState(false);
-
-  function openModal() {
-    setIsOpen(true);
+  type AccountSelectorProps = {
+    currentAddress: string,
+    accounts: string[],
+    onAccountChange: (account: string) => void,
+    isOpen: boolean,
+    onClose: () => void
+      
   }
 
-  function closeModal() {
-    setIsOpen(false);
+  const AccountSelector = ({ accounts, onAccountChange, currentAddress, isOpen, onClose }: AccountSelectorProps): React.ReactElement<AccountSelectorProps> => {
+    const [selectedAccount, setSelectedAccount] = useState(currentAddress)    
+    const handleChange = (event: React.ChangeEvent<{
+      name?: string | undefined;
+      value: unknown;
+    }>) => {
+      // get value from select
+      const account: string = event.target.value as string;
+      // update local state
+      setSelectedAccount(account)
+      // fire callback from parent to update global state
+      onAccountChange(account)
+    }
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        closeModal={onClose}
+        buttonText="Close"
+      >
+      <S.ModalContainer>
+        <S.ModalHeader>
+          <S.ModalTitle>Account</S.ModalTitle>
+          </S.ModalHeader>
+          
+          <S.Address >
+            {selectedAccount}
+          </S.Address>
+
+        <FormControl className={classes.formControl}>
+          <InputLabel id="polkadot-js-addresses">
+            Select Account:
+          </InputLabel>
+          <Select
+            labelId="polkadot-js-addresses"
+            id="polkadot-js-addressess-select"
+            value={selectedAccount}
+            onChange={handleChange}
+          >
+            {accounts.map((address, index) => (
+                <MenuItem value={address} key={index}>
+                  {shortenWalletAddress(address)}
+                </MenuItem>
+              ))}
+          </Select>
+        </FormControl>
+      </S.ModalContainer>
+    </Modal>
+  )
+}
+
+  // handle account changed event from account selector
+  // update selected polkadot address in global state
+  const onPolkadotAccountSelected = (address: string) => {
+    net.set_selected_polkadot_address(address)
   }
-
-  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setPolkadotAccIndex(event.target.value as number);
-  };
-
-  const polkadotAccs = [{ address: '123' }, { address: '345' }];
 
   return (
     <S.Wrapper>
@@ -71,44 +135,31 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
               {shortenWalletAddress(net.ethAddress)}
             </S.Address>
           </S.DisplayContainer>
+
+        {/* No account selector for eth since metamask only 
+            exposes a single address at a time. We instead detect address changes
+            and reload the app
+        */}
+        
         </S.DisplayWrapper>
         <S.DisplayWrapper>
           <S.DisplayTitle>Polkadot Wallet</S.DisplayTitle>
           <S.DisplayContainer>
             <S.Amount>{net.parachainTokenBalance?.toString()}</S.Amount>
-            <S.Address onClick={openModal}>
-              {polkadotAccs.length > 0 &&
-                shortenWalletAddress(net.polkadotAddress!)}
+            <S.Address onClick={() => setIsPolkadotAccountSelectorOpen(true)}>
+                {shortenWalletAddress(net.polkadotAddress!)}
             </S.Address>
           </S.DisplayContainer>
-          {isOpen && polkadotAccs.length > 0 && (
-            <Modal isOpen={isOpen} closeModal={closeModal} buttonText="Close">
-              <S.ModalContainer>
-                <S.ModalHeader>
-                  <S.ModalTitle>Account</S.ModalTitle>
-                  <div>X</div>
-                </S.ModalHeader>
-
-                <FormControl className={classes.formControl}>
-                  <InputLabel id="polkadot-js-addresses">
-                    Select Account:
-                  </InputLabel>
-                  <Select
-                    labelId="polkadot-js-addresses"
-                    id="polkadot-js-addressess-select"
-                    value={polkadotAccIndex}
-                    onChange={handleChange}
-                  >
-                    {polkadotAccs.map((acc, index) => (
-                      <MenuItem value={index} key={index}>
-                        {shortenWalletAddress(acc.address)}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </S.ModalContainer>
-            </Modal>
-          )}
+          
+          {/* Polkadot account selector */}
+          <AccountSelector
+            accounts={polkadotAccounts}
+            onAccountChange={onPolkadotAccountSelected}
+            currentAddress={net.polkadotAddress}
+            isOpen={isPolkadotAccountSelectorOpen}
+            onClose={()=>{setIsPolkadotAccountSelectorOpen(false)}}
+          />
+          
         </S.DisplayWrapper>
         <TransactionsList transactions={transactions} />
       </S.CurrencyList>
