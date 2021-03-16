@@ -3,6 +3,7 @@ import {
   UPDATE_CONFIRMATIONS,
   SET_NONCE,
   SET_TRANSACTION_STATUS,
+  UPDATE_TRANSACTION,
   PARACHAIN_MESSAGE_DISPATCHED,
   POLKA_ETH_BURNED,
   SET_PENDING_TRANSACTION,
@@ -11,6 +12,7 @@ import {
 import {
   AddTransactionPayload,
   SetTransactionStatusPayload,
+  UpdateTransactionPayload,
   UpdateConfirmationsPayload,
   ParachainMessageDispatchedPayload,
   PolkaEthBurnedPayload,
@@ -118,6 +120,13 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
       return ((action: SetTransactionStatusPayload) => {
         return Object.assign({}, state, {
           transactions: state.transactions.map((t) => t.hash === action.hash ? { ...t, status: action.status } : t)
+        });
+      })(action)
+    }
+    case UPDATE_TRANSACTION: {
+      return ((action: UpdateTransactionPayload) => {
+        return Object.assign({}, state, {
+          transactions: state.transactions.map((t) => t.hash === action.hash ? { ...t, ...action.updates } : t)
         });
       })(action)
     }

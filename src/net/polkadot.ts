@@ -16,7 +16,7 @@ import { Token } from '../types';
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
 
-import { addTransaction, ethMessageDispatched, setTransactionStatus, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
+import { addTransaction, ethMessageDispatched, setTransactionStatus, updateTransaction, parachainMessageDispatched, setPendingTransaction } from '../redux/actions/transactions';
 import { MessageDispatchedEvent, Transaction, TransactionStatus } from '../redux/reducers/transactions';
 
 const INCENTIVIZED_CHANNEL_ID = 1;
@@ -157,11 +157,13 @@ export default class Polkadot extends Api {
             account.address,
             { signer: injector.signer },
             (result) => {
-              if (result.status.isInBlock) {
+              if (result.status.isReady) {
                 pendingTransaction.hash = result.status.hash.toString();
-                const nonce = result.events[0].event.data[1].toString();
-                pendingTransaction.nonce = nonce;
                 self.dispatch(addTransaction({ ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION }));
+              }
+              if (result.status.isInBlock) {
+                const nonce = result.events[0].event.data[1].toString();
+                self.dispatch(updateTransaction(pendingTransaction.hash, { nonce, status: TransactionStatus.FINALIZED_ON_CHAIN }));
                 // subscribe to ETH dispatch event
                 self.net.eth?.incentivizedChannelContract?.events.MessageDispatched({})
                   .on('data', (

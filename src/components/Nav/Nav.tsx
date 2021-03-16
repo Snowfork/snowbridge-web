@@ -145,9 +145,9 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
         <S.DisplayWrapper>
           <S.DisplayTitle>Polkadot Wallet</S.DisplayTitle>
           <S.DisplayContainer>
-            <S.Amount>{net.parachainTokenBalance?.toString()}</S.Amount>
+            <S.Amount>{net.polkadotEthBalance!.toString()} SnowETH</S.Amount>
             <S.Address onClick={() => setIsPolkadotAccountSelectorOpen(true)}>
-                {shortenWalletAddress(net.polkadotAddress!)}
+              {shortenWalletAddress(net.polkadotAddress!)}
             </S.Address>
           </S.DisplayContainer>
           
