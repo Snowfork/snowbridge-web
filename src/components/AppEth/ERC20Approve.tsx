@@ -14,13 +14,14 @@ import {
 // Local
 import * as ERC20Api from '../../utils/ERC20Api';
 import { Token } from '../../types';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../redux/reducers';
 
 // ------------------------------------------
 //                  Props
 // ------------------------------------------
 type ERC20ApproveProps = {
   selectedEthAccount: string;
-  bridgeERC20AppContract: any;
   erc20TokenContract: any;
   selectedToken: Token;
   currentTokenBalance: Number;
@@ -30,7 +31,6 @@ type ERC20ApproveProps = {
 //           ERC20Approve component
 // ------------------------------------------
 function ERC20Approve({
-  bridgeERC20AppContract,
   erc20TokenContract,
   selectedEthAccount,
   selectedToken,
@@ -39,10 +39,11 @@ function ERC20Approve({
 
   // User input state
   const [approvalAmount, setApprovalAmount] = useState<Number | string>('');
+  const bridgeERC20AppContract = useSelector((state: RootState) => state.net.erc20Contract);
 
   // Handlers
   const handleApproveERC20 = async () => {
-    await ERC20Api.approveERC20(erc20TokenContract, bridgeERC20AppContract._address,
+    await ERC20Api.approveERC20(erc20TokenContract, bridgeERC20AppContract!.options.address,
       selectedEthAccount, await ERC20Api.addDecimals(selectedToken, `${approvalAmount}`))
   };
 

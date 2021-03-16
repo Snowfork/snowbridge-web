@@ -102,20 +102,20 @@ export default class Polkadot extends Api {
     }
   }
 
-  public async burn_token(amount: string, token: Token) {
+  public async burn_token(amount: string, token: Token, recepientEthAddress: string) {
 
     const self = this;
 
     if (self.conn) {
       const account = await self.get_default_address();
-      const recepient = self.net.ethAddress;
+      const recepient = recepientEthAddress;
 
       if (account) {
         const pendingTransaction: Transaction = {
           hash: '',
           confirmations: 0,
           sender: self.net.polkadotAddress,
-          receiver: self.net.ethAddress,
+          receiver: recepientEthAddress,
           amount: amount,
           status: TransactionStatus.SUBMITTING_TO_CHAIN,
           isMinted: false,

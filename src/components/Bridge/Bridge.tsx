@@ -5,8 +5,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
-
 import AppPolkadot from '../AppPolkadot';
 import AppETH from '../AppEth';
 import EthTokenList from '../AppEth/tokenList.json'
@@ -23,8 +21,9 @@ import IconButton from '../IconButton';
 import Button from '../Button'
 import SelectTokenModal from '../SelectTokenModal';
 import { Token } from '../../types';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { createContractInstance } from '../../redux/actions/ERC20Transactions';
+import { RootState } from '../../redux/reducers';
 
 // ------------------------------------------
 //                  Props
@@ -50,10 +49,12 @@ function Bridge({
   const [showAssetSelector, setShowAssetSelector] = useState(false)
   const [tokens, setTokens] = useState<Token[]>([EthTokenList.tokens[0] as Token]);
   const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
+  const { web3 } = useSelector((state: RootState) => state.net);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const currentChainId = Number.parseInt((net.eth?.conn?.currentProvider as any).chainId, 16)
+    const currentChainId = Number.parseInt((web3!.currentProvider as any).chainId, 16)
     let selectedTokenList: Token[];
     // set eth token list
     // only include tokens from current network
@@ -64,7 +65,7 @@ function Bridge({
     setTokens(selectedTokenList);
     setSelectedAsset(selectedTokenList[0]);
 
-  }, [net.eth, setTokens])
+  }, [web3])
 
   // update the contract instance when the selected asset changes
   const handleAssetSelected = (asset: Token): void => {
@@ -87,7 +88,6 @@ function Bridge({
       return <AppETH
         net={net}
         selectedToken={selectedAsset}
-        bridgeERC20AppContract={net?.eth?.erc20_contract as Contract}
         selectedEthAccount={selectedEthAccount}
       />
     } else {

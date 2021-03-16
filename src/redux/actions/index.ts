@@ -7,7 +7,13 @@ import {
   SET_METAMASK_MISSING,
   SET_POLKADOTJS_MISSING,
   SET_METAMASK_NETWORK,
+  SET_ETH_CONTRACT,
+  SET_WEB3,
+  SET_ERC20_CONTRACT,
+  SET_INCENTIVIZED_CHANNEL_CONTRACT
 } from '../actionsTypes';
+import { Contract } from 'web3-eth-contract';
+import Web3 from 'web3';
 
 export const setNet = (net: any) => {
   return {
@@ -58,3 +64,27 @@ export const setPolkadotJSMissing = () => {
     type: SET_POLKADOTJS_MISSING,
   };
 };
+
+export interface SetWeb3Payload { type: string, web3: Web3 };
+export const setWeb3 = (web3: Web3) => ({
+  type: SET_WEB3,
+  web3
+})
+
+export interface SetEthContractPayload { type: string, contract: Contract };
+export const setEthContract = (contract: Contract) : SetEthContractPayload => ({
+  type: SET_ETH_CONTRACT,
+  contract
+})
+
+export interface SetERC20ContractPayload { type: string, contract: Contract };
+export const setERC20Contract = (contract: Contract): SetEthContractPayload => ({
+  type: SET_ERC20_CONTRACT,
+  contract
+})
+
+export interface SetIncentivizedChannelContractPayload { type: string, contract: Contract };
+export const setIncentivizedChannelContract = (contract: Contract): SetIncentivizedChannelContractPayload => ({
+  type: SET_INCENTIVIZED_CHANNEL_CONTRACT,
+  contract
+})

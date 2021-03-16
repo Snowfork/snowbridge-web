@@ -13,7 +13,7 @@ import { Transaction } from "../redux/reducers/transactions";
  * shortenWalletAddress('0xda4F4d0123456789a4D771111b36512345DcB10C')
  * // returns "0xda4F...B10C"
  */
-export function shortenWalletAddress(str: String, prefix = 6, suffix = 4) {
+export function shortenWalletAddress(str: string, prefix = 6, suffix = 4) {
   return `${str.slice(0, prefix)}...${str.slice(
     str.length - suffix,
     str.length,

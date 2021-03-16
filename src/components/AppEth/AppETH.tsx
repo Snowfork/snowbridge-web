@@ -38,7 +38,6 @@ type Props = {
 function AppETH({
   net,
   selectedToken,
-  bridgeERC20AppContract,
   selectedEthAccount
 }: Props): React.ReactElement<Props> {
   const isERC20 = selectedToken.address !== '0x0';
@@ -52,9 +51,21 @@ function AppETH({
 
   useEffect(() => {
     const fetchERC20Data = async () => {
-      dispatch(fetchERC20Allowance(erc20TokenContract, selectedEthAccount, bridgeERC20AppContract._address))
-      dispatch(fetchERC20Balance(erc20TokenContract, selectedEthAccount))
-      dispatch(fetchERC20TokenName(erc20TokenContract))
+      try {
+        dispatch(fetchERC20Allowance(erc20TokenContract, selectedEthAccount))
+      } catch (e) {
+        console.log('error fetching allowance') 
+      }
+      try {
+        dispatch(fetchERC20Balance(erc20TokenContract, selectedEthAccount))
+      } catch (e) {
+        console.log('error fetching balance')
+      }
+      try {
+        dispatch(fetchERC20TokenName(erc20TokenContract))
+      } catch (e) {
+        console.log('error fetching token name')
+      }
     };
 
     if (isERC20) {
@@ -69,7 +80,7 @@ function AppETH({
 
     return () => clearInterval(pollTimer);
 
-  }, [bridgeERC20AppContract._address, erc20TokenContract, selectedEthAccount, isERC20, dispatch]);
+  }, [erc20TokenContract, selectedEthAccount, isERC20, dispatch]);
 
   // Render
   return (
@@ -89,7 +100,6 @@ function AppETH({
         }}
       >
         {isERC20 && <ERC20Approve
-          bridgeERC20AppContract={bridgeERC20AppContract}
           erc20TokenContract={erc20TokenContract}
           selectedEthAccount={selectedEthAccount}
           selectedToken={selectedToken}

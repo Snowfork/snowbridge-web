@@ -3,6 +3,7 @@ import { ThunkAction, ThunkDispatch } from "redux-thunk";
 import Web3 from "web3";
 import { CREATE_CONTRACT_INSTANCE, SET_CONTRACT_ADDRESS, SET_TOKEN_ALLOWANCE, SET_TOKEN_BALANCE, SET_TOKEN_NAME } from "../actionsTypes/ERC20Transactions";
 import * as ERC20Api from '../../utils/ERC20Api';
+import { RootState } from "../reducers";
 
 // action creators
 export interface SetContractAddressPayload { type: string, contractAddress: string };
@@ -37,10 +38,13 @@ export const setTokenName = (name: string): SetTokenNamePayload => ({
 })
 
 // async middleware actions
-export const fetchERC20Allowance = (contractInstance: any, userAddress: string, ERC20BridgeContractAddress: string):
+export const fetchERC20Allowance = (contractInstance: any, userAddress: string):
     ThunkAction<Promise<void>, {}, {}, AnyAction> => {
-        return async (dispatch: ThunkDispatch<{}, {}, AnyAction>): Promise<void> => {
-            const allowance: number = await ERC20Api.fetchERC20Allowance(contractInstance, userAddress, ERC20BridgeContractAddress);
+    return async (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState): Promise<void> => {
+            const state = getState() as RootState;
+            const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
+
+            const allowance: number = await ERC20Api.fetchERC20Allowance(contractInstance, userAddress, erc20BridgeContractAddress);
             const formattedAllowance: number = await ERC20Api.removeDecimals(contractInstance, allowance);
             dispatch(setERC20Allowance(formattedAllowance));
         }

@@ -7,7 +7,9 @@ import {
   PARACHAIN_MESSAGE_DISPATCHED,
   POLKA_ETH_BURNED,
   SET_PENDING_TRANSACTION,
-  ETH_MESSAGE_DISPATCHED_EVENT
+  ETH_MESSAGE_DISPATCHED_EVENT,
+  SET_ETH_ADDRESS,
+  SET_ETH_BALANCE
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
@@ -18,7 +20,9 @@ import {
   PolkaEthBurnedPayload,
   SetPendingTransactionPayload,
   EthMessageDispatchedPayload,
-  SetNoncePayload
+  SetNoncePayload,
+  SetEthAddressPayload,
+  SetEthBalancePayload
 } from '../actions/transactions'
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { EventData } from 'web3-eth-contract';
@@ -73,12 +77,17 @@ export interface PolkaEthBurnedEvent {
 
 export interface TransactionsState {
   transactions: Transaction[],
-  pendingTransaction?: Transaction
+  pendingTransaction?: Transaction,
+  ethAddress?: string,
+  ethBalance?: string
 }
 
 const initialState: TransactionsState = {
   transactions: [],
-  pendingTransaction: undefined
+  pendingTransaction: undefined,
+  // use new module?
+  ethAddress: undefined,
+  ethBalance: undefined
 };
 
 function transactionsReducer(state: TransactionsState = initialState, action: any) {
@@ -190,6 +199,20 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         })
       })(action)
     }
+    case SET_ETH_ADDRESS: {
+      return ((action: SetEthAddressPayload) => {
+        return Object.assign({}, state, {
+          ethAddress: action.address
+        })
+      })(action)
+    }
+    case SET_ETH_BALANCE: {
+      return ((action: SetEthBalancePayload) => {
+        return Object.assign({}, state, {
+          ethBalance: action.balance
+        })
+      })(action)
+      }
     default:
       return state
   }

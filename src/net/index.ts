@@ -4,8 +4,6 @@ import { Dispatch } from 'redux';
 
 export default class Net {
   eth?: Eth;
-  ethAddress: string = '';
-  ethBalance?: string;
   polkadot?: Polkadot;
   polkadotAddress: string = '';
   polkadotEthBalance?: string;
@@ -14,8 +12,6 @@ export default class Net {
   // Start net
   public async start(dispatch: Dispatch) {
     let eth = new Eth(await Eth.connect(dispatch), this, dispatch);
-    let ethAddress = await eth.get_address();
-    let ethBalance = await eth.get_balance();
     let polkadot = new Polkadot(await Polkadot.connect(dispatch), this, dispatch);
     let polkadotAddresses = await polkadot.get_addresses();
     let firstPolkadotAddress =
@@ -24,21 +20,17 @@ export default class Net {
 
     if (
       eth &&
-      ethAddress &&
-      ethBalance &&
       polkadot &&
       firstPolkadotAddress
     ) {
       this.eth = eth;
-      this.ethAddress = ethAddress;
-      this.ethBalance = ethBalance;
       this.polkadot = polkadot;
       await this.set_selected_polkadot_address(firstPolkadotAddress)
 
       console.log('- Network Started');
       console.log(`  Polkadot Address: ${firstPolkadotAddress}`);
-      console.log(`  Ethereum Address: ${this.ethAddress}`);
-      console.log(`  Ethereum Balance: ${this.ethBalance}`);
+      // console.log(`  Ethereum Address: ${this.ethAddress}`);
+      // console.log(`  Ethereum Balance: ${this.ethBalance}`);
       console.log(`  Polkadot ETH Balance: ${this.polkadotEthBalance}`);
     }
   }

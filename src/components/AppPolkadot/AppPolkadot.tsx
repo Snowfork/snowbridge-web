@@ -12,6 +12,8 @@ import {
   FormHelperText,
   Divider,
 } from '@material-ui/core';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../redux/reducers';
 
 // ------------------------------------------
 //                  Props
@@ -32,6 +34,8 @@ function AppPolkadot({
 }: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
+  const { ethAddress } = useSelector((state: RootState) => state.transactions);
+
   const tokenSymbol = `Snow${selectedToken.symbol}`
 
   function SendButton() {
@@ -39,7 +43,7 @@ function AppPolkadot({
       return (
         <Button
           color="primary"
-          onClick={() => net?.polkadot?.burn_token(depositAmount, selectedToken)}
+          onClick={() => net?.polkadot?.burn_token(depositAmount, selectedToken, ethAddress!)}
           variant="outlined"
         >
           <Typography variant="button">Send {tokenSymbol}</Typography>
@@ -73,7 +77,7 @@ function AppPolkadot({
 
         {/* Address Input */}
         <Grid item xs={10}>
-          <FormControl>{net.ethAddress}</FormControl>
+          <FormControl>{ethAddress}</FormControl>
           <FormHelperText id="ethReceivingAddress">
             Ethereum Receiving Address
           </FormHelperText>

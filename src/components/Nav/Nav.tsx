@@ -15,6 +15,8 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { TransactionsState } from '../../redux/reducers/transactions';
 import { BLOCK_EXPLORER_URL } from '../../config';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../redux/reducers';
 
 type Props = {
   net: Net;
@@ -37,6 +39,8 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
   const classes = useStyles();
   const [polkadotAccounts, setPolkadotAccounts] = useState<string[]>([]);
   const [isPolkadotAccountSelectorOpen, setIsPolkadotAccountSelectorOpen] = useState<boolean>(false)
+
+  const { ethBalance, ethAddress } = useSelector((state: RootState) => state.transactions)
   
   // fetch polkadot accounts on mount
   useEffect(() => {
@@ -125,14 +129,14 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
         <S.DisplayWrapper>
           <S.DisplayTitle>Ethereum Wallet</S.DisplayTitle>
           <S.DisplayContainer>
-            <S.Amount>{net.ethBalance} ETH</S.Amount>
+            <S.Amount>{ethBalance} ETH</S.Amount>
             <S.Address
               as="a"
-              href={`${BLOCK_EXPLORER_URL}/address/${net.ethAddress}`}
+              href={`${BLOCK_EXPLORER_URL}/address/${ethAddress}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              {shortenWalletAddress(net.ethAddress)}
+              {shortenWalletAddress(ethAddress || '')}
             </S.Address>
           </S.DisplayContainer>
 

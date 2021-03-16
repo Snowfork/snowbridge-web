@@ -16,7 +16,6 @@ import { useDispatch } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { setNet } from './redux/actions';
 import { NetState } from './redux/reducers/net';
 import {
 	TransactionsState,
@@ -25,6 +24,8 @@ import {
 import Modal from './components/Modal';
 import LoadingSpinner from './components/LoadingSpinner';
 import { BLOCK_EXPLORER_URL, PERMITTED_METAMASK_NETWORK } from './config';
+import { fetchEthAddress, fetchEthBalance } from './redux/actions/transactions';
+import { setNet } from './redux/actions';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
@@ -36,7 +37,7 @@ type Props = {
 
 function BridgeApp(props: Props) {
 	const { net, transactions } = props;
-
+	
 	const dispatch = useDispatch();
 	const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
 
@@ -47,6 +48,15 @@ function BridgeApp(props: Props) {
 			await net.start(dispatch);
 
 			dispatch(setNet(net));
+
+			// TODO: start network here
+
+			// fetch addresses
+			dispatch(fetchEthAddress())
+
+			// fetch balances
+			dispatch(fetchEthBalance())
+
 		};
 
 		start();

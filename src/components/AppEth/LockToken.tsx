@@ -21,8 +21,10 @@ import {
 import PolkadotAccount from '../PolkadotAccount';
 import Net from '../../net';
 import { Token } from '../../types';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/reducers';
+import { lockToken } from '../../redux/actions/transactions';
+
 
 type LockTokenProps = {
   net: Net;
@@ -41,7 +43,9 @@ function LockToken({
   const [depositAmount, setDepositAmount] = useState<number | string>('');
   const [helperText, setHelperText] = useState<string>('') 
   const erc20TokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance)
-  
+  const { ethBalance } = useSelector((state: RootState) => state.transactions)
+  const dispatch = useDispatch();
+
   const isERC20 = selectedToken.address !== '0x0';
 
   // return total balance of ETH or ERC20
@@ -49,7 +53,7 @@ function LockToken({
     if (isERC20) {
       return erc20TokenBalance as number;
     }
-    return Number.parseFloat(net!.ethBalance!) as number
+    return Number.parseFloat(ethBalance!) as number
   }
 
   const handleLockToken = async () => {
@@ -58,7 +62,11 @@ function LockToken({
       setHelperText('Insufficient funds.')
     } else {
       setHelperText('')
-      await net?.eth?.lock_token(`${depositAmount}`, selectedToken);
+      dispatch(lockToken(
+        depositAmount.toString(),
+        selectedToken,
+        net.polkadotAddress
+      ))
     }
   };
 
