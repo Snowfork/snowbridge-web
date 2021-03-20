@@ -1,59 +1,73 @@
 import {
-  SET_NET,
+  SET_NETWORK_CONNECTED,
   SET_METAMASK_FOUND,
-  SET_POLKADOTJS_FOUND,
+  // SET_POLKADOTJS_FOUND,
   SET_METAMASK_CONNECTED,
   SET_POLKADOTJS_CONNECTED,
   SET_METAMASK_MISSING,
-  SET_POLKADOTJS_MISSING,
+  // SET_POLKADOTJS_MISSING,
   SET_METAMASK_NETWORK,
   SET_ETH_CONTRACT,
   SET_WEB3,
-  SET_ERC20_CONTRACT
-} from '../actionsTypes';
+  SET_ERC20_CONTRACT,
+  SET_INCENTIVIZED_CHANNEL_CONTRACT,
+  SET_POLKADOT_ADDRESS,
+  SET_ETH_ADDRESS,
+  SET_ETH_ASSET_ID,
+  SET_POLKADOT_API
+} from '../actionsTypes/net';
 import { Contract } from 'web3-eth-contract';
-import { SetERC20ContractPayload, SetEthContractPayload, SetWeb3Payload } from '../actions';
+import { SetERC20ContractPayload, SetEthAddressPayload, SetEthAssetIdPayload, SetEthContractPayload, SetIncentivizedChannelContractPayload, SetIsNetworkConnectedPayload, SetPolkadotAddressPayload, SetPolkadotApiPayload, SetWeb3Payload } from '../actions/net';
 import Web3 from 'web3';
+import { ApiPromise } from '@polkadot/api';
 
 export interface NetState {
-  client: any,
   metamaskFound: boolean,
-  polkadotJSFound: boolean,
+  // polkadotJSFound: boolean,
   metamaskConnected: boolean,
   polkadotJSConnected: boolean,
   metamaskMissing: boolean,
-  polkadotJSMissing: boolean,
+  // polkadotJSMissing: boolean,
   metamaskNetwork: string,
   web3?: Web3,
   ethContract?: Contract,
-  erc20Contract?: Contract
+  erc20Contract?: Contract,
+  incentivizedChannelContract?: Contract,
+  polkadotApi?: ApiPromise,
+  polkadotAddress?: string,
+  ethAddress?: string,
+  // polkadot AssetId for the eth asset
+  ethAssetId?: any,
+  isNetworkConnected: boolean
 }
 
 const initialState : NetState = {
-  client: null,
   metamaskFound: false,
-  polkadotJSFound: false,
+  // polkadotJSFound: false,
   metamaskConnected: false,
   polkadotJSConnected: false,
   metamaskMissing: false,
-  polkadotJSMissing: false,
+  // polkadotJSMissing: false,
   metamaskNetwork: '',
   web3: undefined,
   ethContract: undefined,
-  erc20Contract: undefined
+  erc20Contract: undefined,
+  incentivizedChannelContract: undefined,
+  polkadotApi: undefined,
+  polkadotAddress: undefined,
+  ethAddress: undefined,
+  ethAssetId: undefined,
+  isNetworkConnected: false
 };
 
 function netReducer(state = initialState, action: any) {
   switch (action.type) {
-    case SET_NET: {
-      return Object.assign({}, state, { client: action.payload });
-    }
     case SET_METAMASK_FOUND: {
       return Object.assign({}, state, { metamaskFound: true });
     }
-    case SET_POLKADOTJS_FOUND: {
-      return Object.assign({}, state, { polkadotJSFound: true });
-    }
+    // case SET_POLKADOTJS_FOUND: {
+    //   return Object.assign({}, state, { polkadotJSFound: true });
+    // }
     case SET_METAMASK_CONNECTED: {
       return Object.assign({}, state, { metamaskConnected: true });
     }
@@ -63,9 +77,9 @@ function netReducer(state = initialState, action: any) {
     case SET_METAMASK_MISSING: {
       return Object.assign({}, state, { metamaskMissing: true });
     }
-    case SET_POLKADOTJS_MISSING: {
-      return Object.assign({}, state, { polkadotJSMissing: true });
-    }
+    // case SET_POLKADOTJS_MISSING: {
+    //   return Object.assign({}, state, { polkadotJSMissing: true });
+    // }
     case SET_METAMASK_NETWORK: {
       return Object.assign({}, state, {
         metamaskNetwork: action.metamaskNetwork,
@@ -92,7 +106,48 @@ function netReducer(state = initialState, action: any) {
         });
       })(action)
     }
-
+    case SET_INCENTIVIZED_CHANNEL_CONTRACT: {
+      return ((action: SetIncentivizedChannelContractPayload): NetState => {
+        return Object.assign({}, state, {
+          incentivizedChannelContract: action.contract
+        });
+      })(action)
+    }
+    case SET_ETH_ADDRESS: {
+      return ((action: SetEthAddressPayload) => {
+        return Object.assign({}, state, {
+          ethAddress: action.address
+        })
+      })(action)
+    }
+    case SET_POLKADOT_ADDRESS: {
+      return ((action: SetPolkadotAddressPayload): NetState => {
+        return Object.assign({}, state, {
+          polkadotAddress: action.address
+        });
+      })(action)
+    }
+    case SET_ETH_ASSET_ID: {
+      return ((action: SetEthAssetIdPayload): NetState => {
+        return Object.assign({}, state, {
+          ethAssetId: action.assetId
+        });
+      })(action)
+    }
+    case SET_POLKADOT_API: {
+      return ((action: SetPolkadotApiPayload): NetState => {
+        return Object.assign({}, state, {
+          polkadotApi: action.polkadotApi
+        });
+      })(action)
+    }
+    case SET_NETWORK_CONNECTED: {
+      return ((action: SetIsNetworkConnectedPayload): NetState => {
+        return Object.assign({}, state, {
+          isNetworkConnected: action.isConnected
+        });
+      })(action)
+    }
     default:
       return state;
   }

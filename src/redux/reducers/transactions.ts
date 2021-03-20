@@ -8,8 +8,9 @@ import {
   POLKA_ETH_BURNED,
   SET_PENDING_TRANSACTION,
   ETH_MESSAGE_DISPATCHED_EVENT,
-  SET_ETH_ADDRESS,
-  SET_ETH_BALANCE
+  SET_ETH_BALANCE,
+  SET_POLKAETH_BALANCE,
+  SET_POLKADOT_GAS_BALANCE
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
@@ -21,8 +22,9 @@ import {
   SetPendingTransactionPayload,
   EthMessageDispatchedPayload,
   SetNoncePayload,
-  SetEthAddressPayload,
-  SetEthBalancePayload
+  SetEthBalancePayload,
+  SetPolkadotEthBalance,
+  SetPolkadotGasBalancePayload
 } from '../actions/transactions'
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { EventData } from 'web3-eth-contract';
@@ -78,16 +80,19 @@ export interface PolkaEthBurnedEvent {
 export interface TransactionsState {
   transactions: Transaction[],
   pendingTransaction?: Transaction,
-  ethAddress?: string,
-  ethBalance?: string
+  ethBalance?: string,
+  // locked tokens
+  polkadotEthBalance?: string
+  // native tokens
+  polkadotGasBalance?: string
 }
 
 const initialState: TransactionsState = {
   transactions: [],
   pendingTransaction: undefined,
-  // use new module?
-  ethAddress: undefined,
-  ethBalance: undefined
+  ethBalance: undefined,
+  polkadotEthBalance: undefined,
+  polkadotGasBalance: undefined
 };
 
 function transactionsReducer(state: TransactionsState = initialState, action: any) {
@@ -199,13 +204,7 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         })
       })(action)
     }
-    case SET_ETH_ADDRESS: {
-      return ((action: SetEthAddressPayload) => {
-        return Object.assign({}, state, {
-          ethAddress: action.address
-        })
-      })(action)
-    }
+
     case SET_ETH_BALANCE: {
       return ((action: SetEthBalancePayload) => {
         return Object.assign({}, state, {
@@ -213,6 +212,20 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         })
       })(action)
       }
+    case SET_POLKAETH_BALANCE: {
+      return ((action: SetPolkadotEthBalance) => {
+        return Object.assign({}, state, {
+          polkadotEthBalance: action.balance
+        })
+      })(action)
+    }
+    case SET_POLKADOT_GAS_BALANCE: {
+      return ((action: SetPolkadotGasBalancePayload) => {
+        return Object.assign({}, state, {
+          polkadotGasBalance: action.balance
+        })
+      })(action)
+    }
     default:
       return state
   }

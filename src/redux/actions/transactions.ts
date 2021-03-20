@@ -11,17 +11,21 @@ import {
     PARACHAIN_MESSAGE_DISPATCHED,
     ETH_MESSAGE_DISPATCHED_EVENT,
     UPDATE_TRANSACTION,
-    SET_ETH_ADDRESS,
-    SET_ETH_BALANCE
+    SET_ETH_BALANCE,
+    SET_POLKAETH_BALANCE,
+    SET_POLKADOT_GAS_BALANCE
 } from '../actionsTypes/transactions';
-import { PolkaEthBurnedEvent, Transaction, TransactionStatus } from '../reducers/transactions';
-import * as EthApi from '../../utils/EthApi'
+import { MessageDispatchedEvent, PolkaEthBurnedEvent, Transaction, TransactionStatus } from '../reducers/transactions';
+import EthApi from  '../../net/eth'
 import Web3 from 'web3';
 import { notify } from './notifications';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { ss58_to_u8 } from '../../net/api';
 import * as ERC20Api from '../../utils/ERC20Api';
 import { RootState } from '../reducers';
+import Polkadot from '../../net/polkadot';
+import { web3FromSource } from '@polkadot/extension-dapp';
+import { setEthAddress } from './net';
 
 // TODO: move to config?
 const INCENTIVIZED_CHANNEL_ID = 1;
@@ -85,11 +89,7 @@ export const setPendingTransaction = (transaction: Transaction): SetPendingTrans
     transaction
 });
 
-export interface SetEthAddressPayload { type: string, address: string };
-export const setEthAddress = (address: string) => ({
-    type: SET_ETH_ADDRESS,
-    address
-})
+
 
 export interface SetEthBalancePayload { type: string, balance: string };
 export const setEthBalance = (balance: string) => ({
@@ -98,6 +98,9 @@ export const setEthBalance = (balance: string) => ({
 })
 
 // async thunk actions
+// 
+// Eth transactions
+// 
 export const fetchEthAddress = ():
     ThunkAction<Promise<void>, {}, {}, AnyAction> => {
     return async (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState): Promise<void> => {
@@ -128,10 +131,13 @@ export const lockToken = (
     ThunkAction<Promise<void>, {}, {}, AnyAction> => {
     return async (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState): Promise<void> => {
         const state = getState() as RootState;
-        const ethAddress = state.transactions.ethAddress as string;
-        const ethContract = state.net.ethContract!;
-        const erc20Contract = state.net.erc20Contract!;
-        const web3 = state.net.web3!;
+        const {
+            ethContract,
+            erc20Contract,
+            web3,
+            ethAddress
+        } = state.net;
+            
 
         try {
             let default_address = ethAddress;
@@ -146,7 +152,7 @@ export const lockToken = (
                     const pendingTransaction: Transaction = {
                         hash: '',
                         confirmations: 0,
-                        sender: ethAddress,
+                        sender: ethAddress!,
                         receiver: _polkadotAddress,
                         amount: amount,
                         status: TransactionStatus.SUBMITTING_TO_CHAIN,
@@ -192,7 +198,7 @@ export const lockToken = (
                                 addTransaction({
                                     hash,
                                     confirmations: 0,
-                                    sender: ethAddress,
+                                    sender: ethAddress!,
                                     receiver: _polkadotAddress,
                                     amount: amount,
                                     status: TransactionStatus.WAITING_FOR_CONFIRMATION,
@@ -272,6 +278,147 @@ export const lockToken = (
             console.log(err);
         }
 
+
+    }
+}
+
+
+// 
+// Polkadot transactions
+// 
+
+export interface SetPolkadotEthBalance { type: string, balance: string };
+export const setPolkadotEthBalance = (balance: string) => ({
+    type: SET_POLKAETH_BALANCE,
+    balance
+})
+
+export interface SetPolkadotGasBalancePayload { type: string, balance: string };
+export const setPolkadotGasBalance = (balance: string): SetPolkadotGasBalancePayload => ({
+    type: SET_POLKADOT_GAS_BALANCE,
+    balance
+})
+
+export const fetchPolkadotEthBalance = ():
+    ThunkAction<Promise<void>, {}, {}, AnyAction> => {
+    return async (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState): Promise<void> => {
+        const state = getState() as RootState;
+        const {polkadotApi, polkadotAddress, ethAssetId} = state.net;
+
+        const balance = await Polkadot.get_eth_balance(polkadotApi!, polkadotAddress, ethAssetId);
+        dispatch(setPolkadotEthBalance(balance))
+    }
+}
+
+export const fetchPolkadotGasBalance = ():
+    ThunkAction<Promise<void>, {}, {}, AnyAction> => {
+    return async (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState): Promise<void> => {
+        const state = getState() as RootState;
+        const { polkadotApi, polkadotAddress } = state.net;
+
+        const balance = await Polkadot.get_gas_currency_balance(polkadotApi!, polkadotAddress!);
+        dispatch(setPolkadotGasBalance(balance))
+        
+    }
+}
+
+// burns token on polkadot and unlocks on ethereum
+
+export const burnToken = (amount: string, token: Token, recepientEthAddress: string):
+    ThunkAction<Promise<void>, {}, {}, AnyAction> => {
+    return async (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState): Promise<void> => {
+        const state = getState() as RootState;
+        const { web3, polkadotApi, polkadotAddress, incentivizedChannelContract } = state.net;
+
+        if (polkadotApi) {
+            const account = await Polkadot.get_default_address();
+            const recepient = recepientEthAddress;
+
+            if (account) {
+                const pendingTransaction: Transaction = {
+                    hash: '',
+                    confirmations: 0,
+                    sender: polkadotAddress!,
+                    receiver: recepientEthAddress,
+                    amount: amount,
+                    status: TransactionStatus.SUBMITTING_TO_CHAIN,
+                    isMinted: false,
+                    isBurned: false,
+                    chain: 'polkadot',
+                    token
+                }
+                dispatch(setPendingTransaction(pendingTransaction));
+
+                const polkaWeiValue = web3!.utils.toWei(amount, 'ether');
+
+                let burnExtrinsic;
+                if (token.address === '0x0') {
+                    burnExtrinsic = polkadotApi.tx.eth.burn(
+                        INCENTIVIZED_CHANNEL_ID,
+                        recepient,
+                        polkaWeiValue,
+                    );
+                } else {
+                    burnExtrinsic = polkadotApi.tx.erc20.burn(
+                        INCENTIVIZED_CHANNEL_ID,
+                        token.address,
+                        recepient,
+                        polkaWeiValue,
+                    );
+
+                }
+
+
+                // to be able to retrieve the signer interface from this account
+                // we can use web3FromSource which will return an InjectedExtension type
+                const injector = await web3FromSource(account.meta.source);
+
+                // passing the injected account address as the first argument of signAndSend
+                // will allow the api to retrieve the signer and the user will see the extension
+                // popup asking to sign the balance transfer transaction
+                burnExtrinsic
+                    .signAndSend(
+                        account.address,
+                        { signer: injector.signer },
+                        (result) => {
+                            if (result.status.isReady) {
+                                pendingTransaction.hash = result.status.hash.toString();
+                                dispatch(addTransaction({ ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION }));
+                            }
+                            if (result.status.isInBlock) {
+                                const nonce = result.events[0].event.data[1].toString();
+                                dispatch(updateTransaction(pendingTransaction.hash, { nonce, status: TransactionStatus.FINALIZED_ON_CHAIN }));
+                                // subscribe to ETH dispatch event
+                                incentivizedChannelContract?.events.MessageDispatched({})
+                                    .on('data', (
+                                        event: MessageDispatchedEvent
+                                    ) => {
+                                        if (
+                                            event.returnValues.nonce === nonce
+                                        ) {
+                                            dispatch(ethMessageDispatched(event.returnValues.nonce, pendingTransaction.nonce!));
+                                        }
+                                    });
+                            }
+                            else if (result.status.isFinalized) {
+                                dispatch(setTransactionStatus(pendingTransaction.hash, TransactionStatus.FINALIZED_ON_CHAIN))
+                            }
+                        },
+                    )
+                    .catch((error: any) => {
+                        console.log(':( transaction failed', error);
+                        if (error.toString() === 'Error: Cancelled') {
+                            dispatch(setPendingTransaction({ ...pendingTransaction, status: TransactionStatus.REJECTED }));
+                        } else {
+                            // TODO: display error in modal
+                        }
+                    });
+            } else {
+                throw new Error('Default Polkadot account not found');
+            }
+        } else {
+            throw new Error('Polkadot API not connected');
+        }
 
     }
 }

@@ -1,8 +1,5 @@
 import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
-
 import Api from './api';
-import Net from './';
 
 // Import Contracts
 import {
@@ -17,8 +14,6 @@ import * as ERC20App from '../contracts/ERC20App.json';
 import * as IncentivizedInboundChannel from '../contracts/IncentivizedInboundChannel.json';
 
 /* tslint:enable */
-
-import { Dispatch } from 'redux';
 import {
   setERC20Contract,
   setEthContract,
@@ -27,10 +22,8 @@ import {
   setMetamaskMissing,
   setMetamaskNetwork,
   setWeb3,
-} from '../redux/actions';
-
-// Eth API connector
-type Connector = (e: Eth, net: any) => void;
+} from '../redux/actions/net';
+import { fetchEthAddress, fetchEthBalance } from '../redux/actions/transactions';
 
 // window wrapper
 type MyWindow = typeof window & {
@@ -38,17 +31,9 @@ type MyWindow = typeof window & {
   web3: Web3;
 };
 export default class Eth extends Api {
-  public incentivizedChannelContract?: Contract;
-  public dispatch: Dispatch;
-
-  constructor(connecter: Connector, net: Net, dispatch: Dispatch) {
-    super();
-    connecter(this, net);
-    this.dispatch = dispatch;
-  }
 
   // Web3 API connector
-  public static async connect(dispatch: Dispatch): Promise<Connector> {
+  public static async connect(dispatch: any){
     let locWindow = window as MyWindow;
     let web3: Web3;
 
@@ -63,6 +48,36 @@ export default class Eth extends Api {
         locWindow.ethereum.on('accountsChanged', (accounts: Array<string>) => {
           window.location.pathname = '/'
         });
+      
+      if (web3) {
+        // Set contracts
+        const ethContract = new web3.eth.Contract(
+          ETHApp.abi as any,
+          APP_ETH_CONTRACT_ADDRESS,
+        );
+        dispatch(setEthContract(ethContract))
+
+        const erc20contract = new web3.eth.Contract(
+          ERC20App.abi as any,
+          APP_ERC20_CONTRACT_ADDRESS,
+        );
+        dispatch(setERC20Contract(erc20contract));
+
+        const incentivizedChannelContract = new web3.eth.Contract(
+          IncentivizedInboundChannel.abi as any,
+          INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+        );
+        dispatch(setIncentivizedChannelContract(incentivizedChannelContract));
+
+
+        // fetch addresses
+        dispatch(fetchEthAddress())
+
+        // fetch balances
+        dispatch(fetchEthBalance())
+
+        console.log('- Eth connected');
+      }
     };
 
     if (locWindow.ethereum) {
@@ -88,31 +103,58 @@ export default class Eth extends Api {
     else {
       dispatch(setMetamaskMissing());
     }
-
-    return (eth: Eth) => {
-      if (web3) {
-        eth.conn = web3;
-        // Set contracts
-        const ethContract = new web3.eth.Contract(
-          ETHApp.abi as any,
-          APP_ETH_CONTRACT_ADDRESS,
-        );
-        dispatch(setEthContract(ethContract))
-        
-        const erc20contract = new web3.eth.Contract(
-          ERC20App.abi as any,
-          APP_ERC20_CONTRACT_ADDRESS,
-        );
-        dispatch(setERC20Contract(erc20contract));
-
-        const incentivizedChannelContract = new web3.eth.Contract(
-          IncentivizedInboundChannel.abi as any,
-          INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-        );
-        dispatch(setIncentivizedChannelContract(incentivizedChannelContract));
-
-        console.log('- Eth connected');
-      }
-    };
   }
+
+  /**
+   * Get default web3 account
+   * @param {web3} Web3 web3 instance
+   * @return {Promise<string>} The default web3 account
+   */
+  public static async getAddress(web3: Web3): Promise<string> {
+    try {
+      const accs = await web3.eth.getAccounts();
+
+      if (accs) {
+        return accs[0];
+      } else {
+        throw new Error('Ethereum Account Not Set');
+      }
+    } catch (err) {
+      console.log(err);
+      throw new Error('Ethereum Account Not Set');
+    }
+  }
+
+
+/**
+ * Get ETH balance of default Ethereum account
+ * @param {web3} Web3 web3 instance
+ * @return {Promise<string>} The default web3 account
+ */
+public static async getBalance(conn: Web3): Promise<string> {
+  try {
+    if (conn) {
+      let default_address = await Eth.getAddress(conn);
+
+      if (default_address) {
+        const currentBalance = await conn.eth.getBalance(default_address);
+
+        if (currentBalance) {
+          return parseFloat(conn.utils.fromWei(currentBalance)).toFixed(4);
+        }
+
+        throw new Error('Balance not found');
+      }
+
+      throw new Error('Default Address not found');
+    } else {
+      throw new Error('Web3 API not connected');
+    }
+  } catch (err) {
+    console.log(err);
+    throw new Error('Error reading balance');
+
+  }
+}
+
 }

@@ -1,25 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import * as S from './Nav.style';
-import Net from '../../net';
-
-import { shortenWalletAddress } from '../../utils/common';
-
-import Modal from '../Modal';
-import TransactionsList from '../TransactionsList/';
-
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
+import { useDispatch, useSelector } from 'react-redux';
+import * as S from './Nav.style';
+import { shortenWalletAddress } from '../../utils/common';
+import Modal from '../Modal';
+import TransactionsList from '../TransactionsList/';
 import { TransactionsState } from '../../redux/reducers/transactions';
-import { BLOCK_EXPLORER_URL } from '../../config';
-import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/reducers';
+import { setPolkadotAddress } from '../../redux/actions/net';
+import { BLOCK_EXPLORER_URL } from '../../config';
+import Polkadot from '../../net/polkadot';
 
 type Props = {
-  net: Net;
   transactions: TransactionsState;
 };
 
@@ -35,17 +31,20 @@ createStyles({
 }),
 );
 
-function Nav({ net, transactions }: Props): React.ReactElement<Props> {
+function Nav({ transactions }: Props): React.ReactElement<Props> {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const [polkadotAccounts, setPolkadotAccounts] = useState<string[]>([]);
   const [isPolkadotAccountSelectorOpen, setIsPolkadotAccountSelectorOpen] = useState<boolean>(false)
 
-  const { ethBalance, ethAddress } = useSelector((state: RootState) => state.transactions)
+  const { ethBalance, polkadotGasBalance } = useSelector((state: RootState) => state.transactions)
+  const { polkadotAddress, ethAddress } = useSelector((state: RootState) => state.net)
+
   
   // fetch polkadot accounts on mount
   useEffect(() => {
     async function fetchAccounts() {
-      const accounts = await net.polkadot?.get_addresses() as any;
+      const accounts = await Polkadot.get_addresses() as any;
       setPolkadotAccounts(
         accounts
           .map(
@@ -54,7 +53,7 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
     }
 
     fetchAccounts()
-  }, [net])
+  }, []);
 
   type AccountSelectorProps = {
     currentAddress: string,
@@ -119,7 +118,7 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
   // handle account changed event from account selector
   // update selected polkadot address in global state
   const onPolkadotAccountSelected = (address: string) => {
-    net.set_selected_polkadot_address(address)
+    dispatch(setPolkadotAddress(address))
   }
 
   return (
@@ -149,9 +148,9 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
         <S.DisplayWrapper>
           <S.DisplayTitle>Polkadot Wallet</S.DisplayTitle>
           <S.DisplayContainer>
-            <S.Amount>{net.polkadotEthBalance!.toString()} SnowETH</S.Amount>
+            <S.Amount>{polkadotGasBalance?.toString()}</S.Amount>
             <S.Address onClick={() => setIsPolkadotAccountSelectorOpen(true)}>
-              {shortenWalletAddress(net.polkadotAddress!)}
+              {shortenWalletAddress(polkadotAddress || '')}
             </S.Address>
           </S.DisplayContainer>
           
@@ -159,7 +158,7 @@ function Nav({ net, transactions }: Props): React.ReactElement<Props> {
           <AccountSelector
             accounts={polkadotAccounts}
             onAccountChange={onPolkadotAccountSelected}
-            currentAddress={net.polkadotAddress}
+            currentAddress={polkadotAddress!}
             isOpen={isPolkadotAccountSelectorOpen}
             onClose={()=>{setIsPolkadotAccountSelectorOpen(false)}}
           />

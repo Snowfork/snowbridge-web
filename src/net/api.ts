@@ -1,10 +1,7 @@
-import Web3 from 'web3';
-import { ApiPromise } from '@polkadot/api';
 import { Keyring } from '@polkadot/keyring';
 import { u8aToHex } from '@polkadot/util';
 
 export default class Api {
-  public conn?: Web3 | ApiPromise;
 }
 
 // Encode SS58 formated Address to Uint8array

@@ -6,57 +6,38 @@
 import React, { useEffect, useState } from 'react';
 import ReactModal from 'react-modal';
 
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 // local imports and components
 import Bridge from './components/Bridge/Bridge';
 import Nav from './components/Nav';
-import Net, { isConnected } from './net';
+import Net  from './net';
 import { useDispatch } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-import { NetState } from './redux/reducers/net';
 import {
-	TransactionsState,
 	TransactionStatus,
 } from './redux/reducers/transactions';
 import Modal from './components/Modal';
 import LoadingSpinner from './components/LoadingSpinner';
 import { BLOCK_EXPLORER_URL, PERMITTED_METAMASK_NETWORK } from './config';
-import { fetchEthAddress, fetchEthBalance } from './redux/actions/transactions';
-import { setNet } from './redux/actions';
+import { RootState } from './redux/reducers';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
-type Props = {
-	net: NetState;
-	transactions: TransactionsState;
-};
-
-function BridgeApp(props: Props) {
-	const { net, transactions } = props;
-	
+function BridgeApp() {
 	const dispatch = useDispatch();
 	const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
+	const { isNetworkConnected, metamaskNetwork, ethAddress } = useSelector((state: RootState) => state.net)
+	const transactions = useSelector((state: RootState) => state.transactions)
+
+
 
 	// Start Network
 	useEffect(() => {
 		const start = async () => {
-			const net = await new Net();
-			await net.start(dispatch);
-
-			dispatch(setNet(net));
-
-			// TODO: start network here
-
-			// fetch addresses
-			dispatch(fetchEthAddress())
-
-			// fetch balances
-			dispatch(fetchEthBalance())
-
+			await Net.start(dispatch);
 		};
 
 		start();
@@ -74,12 +55,12 @@ function BridgeApp(props: Props) {
 	};
 
 	// Check if Network has been started
-	if (!isConnected(net.client)) {
+	if (!isNetworkConnected) {
 		return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
 	}
 
 	if (
-		net.metamaskNetwork.toLowerCase() !==
+		metamaskNetwork.toLowerCase() !==
 		PERMITTED_METAMASK_NETWORK.toLowerCase()
 	) {
 		return (
@@ -94,10 +75,9 @@ function BridgeApp(props: Props) {
 	const snowTokenSymbol = `Snow${baseTokenSymbol}`;
 	return (
 		<main>
-			<Nav net={net.client} transactions={props.transactions} />
+			<Nav transactions={transactions} />
 			<Bridge
-				net={net.client!}
-				selectedEthAccount={net.client.ethAddress}
+				selectedEthAccount={ethAddress!}
 			/>
 			<Modal
 				isOpen={isPendingModalOpen}
@@ -163,16 +143,4 @@ function BridgeApp(props: Props) {
 
 }
 
-const mapStateToProps = (
-	state: Props,
-): {
-	net: NetState;
-	transactions: TransactionsState;
-} => {
-	return {
-		net: state.net,
-		transactions: state.transactions,
-	};
-};
-
-export default connect(mapStateToProps)(BridgeApp);
+export default BridgeApp;

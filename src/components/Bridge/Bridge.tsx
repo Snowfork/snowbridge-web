@@ -4,12 +4,9 @@
 
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Web3 from 'web3';
 import AppPolkadot from '../AppPolkadot';
 import AppETH from '../AppEth';
 import EthTokenList from '../AppEth/tokenList.json'
-import Net from '../../net';
-
 import * as S from './Bridge.style';
 import {
   Typography,
@@ -29,7 +26,6 @@ import { RootState } from '../../redux/reducers';
 //                  Props
 // ------------------------------------------
 type Props = {
-  net: Net;
   selectedEthAccount: string;
 };
 
@@ -42,10 +38,9 @@ enum SwapDirection {
 //               Bank component
 // ------------------------------------------
 function Bridge({
-  net,
   selectedEthAccount,
 }: Props): React.ReactElement<Props> {
-  const [swapDirection, setSwapDirection] = useState(SwapDirection.EthereumToPolkadot);
+  const [swapDirection, setSwapDirection] = useState(SwapDirection.PolkadotToEthereum);
   const [showAssetSelector, setShowAssetSelector] = useState(false)
   const [tokens, setTokens] = useState<Token[]>([EthTokenList.tokens[0] as Token]);
   const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
@@ -70,8 +65,7 @@ function Bridge({
   // update the contract instance when the selected asset changes
   const handleAssetSelected = (asset: Token): void => {
     setSelectedAsset(asset);
-    dispatch(createContractInstance(asset.address, net?.eth?.conn as Web3))
-
+    dispatch(createContractInstance(asset.address, web3!))
   }
 
   // update transaction direction between chains
@@ -86,13 +80,11 @@ function Bridge({
   const ChainApp = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
       return <AppETH
-        net={net}
         selectedToken={selectedAsset}
         selectedEthAccount={selectedEthAccount}
       />
     } else {
       return <AppPolkadot
-        net={net}
         selectedToken={selectedAsset}
       />;
     }

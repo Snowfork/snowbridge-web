@@ -25,7 +25,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/reducers';
 import { lockToken } from '../../redux/actions/transactions';
 
-
 type LockTokenProps = {
   net: Net;
   selectedToken: Token;
@@ -44,6 +43,8 @@ function LockToken({
   const [helperText, setHelperText] = useState<string>('') 
   const erc20TokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance)
   const { ethBalance } = useSelector((state: RootState) => state.transactions)
+  const { polkadotAddress } = useSelector((state: RootState) => state.net)
+
   const dispatch = useDispatch();
 
   const isERC20 = selectedToken.address !== '0x0';
@@ -65,7 +66,7 @@ function LockToken({
       dispatch(lockToken(
         depositAmount.toString(),
         selectedToken,
-        net.polkadotAddress
+        polkadotAddress!
       ))
     }
   };
@@ -75,7 +76,7 @@ function LockToken({
     <Box display="flex" flexDirection="column">
       <Grid item xs={10}>
         <FormControl>
-          <PolkadotAccount address={net.polkadotAddress} />
+          <PolkadotAccount address={polkadotAddress!} />
         </FormControl>
         <FormHelperText id="ethAmountDesc">
           Polkadot Receiving Address

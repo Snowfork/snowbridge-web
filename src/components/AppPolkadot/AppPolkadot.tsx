@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import Net from '../../net';
 import { Token } from '../../types';
 
 import {
@@ -12,38 +11,47 @@ import {
   FormHelperText,
   Divider,
 } from '@material-ui/core';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/reducers';
+import { burnToken } from '../../redux/actions/transactions';
 
 // ------------------------------------------
 //                  Props
 // ------------------------------------------
 type Props = {
-  net: Net;
   selectedToken: Token;
-  children?: JSX.Element | JSX.Element[];
 };
 
 // ------------------------------------------
 //               AppPolkadot component
 // ------------------------------------------
 function AppPolkadot({
-  net,
   selectedToken,
-  children,
 }: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
-  const { ethAddress } = useSelector((state: RootState) => state.transactions);
+  const { ethAddress } = useSelector((state: RootState) => state.net)
+  const {polkadotEthBalance} = useSelector((state: RootState) => state.transactions)
 
+
+  const dispatch = useDispatch();
   const tokenSymbol = `Snow${selectedToken.symbol}`
+
+  // return total balance of polkaETH or polkaERC20
+  const getMaxTokenBalance = (): number => {
+    // if (isERC20) {
+      // return erc20TokenBalance as number;
+    // }
+    return Number.parseFloat(polkadotEthBalance!) as number
+  }
+
 
   function SendButton() {
     if (Number(depositAmount) > 0) {
       return (
         <Button
           color="primary"
-          onClick={() => net?.polkadot?.burn_token(depositAmount, selectedToken, ethAddress!)}
+          onClick={() => dispatch(burnToken(depositAmount, selectedToken, ethAddress!))}
           variant="outlined"
         >
           <Typography variant="button">Send {tokenSymbol}</Typography>
@@ -87,6 +95,9 @@ function AppPolkadot({
         <Grid item xs={10}>
           <FormControl>
             <Typography gutterBottom>Amount</Typography>
+            <FormHelperText >
+              MAX: {getMaxTokenBalance()}
+            </FormHelperText>
             <TextField
               InputProps={{
                 value: depositAmount,

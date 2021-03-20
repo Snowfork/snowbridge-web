@@ -38,10 +38,12 @@ export const setTokenName = (name: string): SetTokenNamePayload => ({
 })
 
 // async middleware actions
-export const fetchERC20Allowance = (contractInstance: any, userAddress: string):
+export const fetchERC20Allowance = ():
     ThunkAction<Promise<void>, {}, {}, AnyAction> => {
     return async (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState): Promise<void> => {
             const state = getState() as RootState;
+            const { contractInstance } = state.ERC20Transactions
+            const userAddress = state.net.ethAddress!;
             const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
 
             const allowance: number = await ERC20Api.fetchERC20Allowance(contractInstance, userAddress, erc20BridgeContractAddress);
@@ -50,18 +52,23 @@ export const fetchERC20Allowance = (contractInstance: any, userAddress: string):
         }
 }
     
-export const fetchERC20Balance = (contractInstance: any, userAddress: string):
+export const fetchERC20Balance = ():
     ThunkAction<Promise<void>, {}, {}, AnyAction> => {
-    return async (dispatch: ThunkDispatch<{}, {},AnyAction>) => {
-        const balance: number = await ERC20Api.fetchERC20Balance(contractInstance,userAddress)
+    return async (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState) => {
+        const state = getState() as RootState;
+        const { contractInstance } = state.ERC20Transactions;
+        const userAddress = state.net.ethAddress;
+        const balance: number = await ERC20Api.fetchERC20Balance(contractInstance,userAddress!)
         const formattedBalance = await ERC20Api.removeDecimals(contractInstance, balance)
         dispatch(setERC20Balance(formattedBalance))
     }
 }
 
-export const fetchERC20TokenName = (contractInstance: any):
+export const fetchERC20TokenName = ():
     ThunkAction<Promise<void>, {}, {}, AnyAction> => {
-    return async (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
+    return async (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState) => {
+        const state = getState() as RootState;
+        const {contractInstance} = state.ERC20Transactions
         const name = await ERC20Api.fetchERC20Name(contractInstance)
         dispatch(setTokenName(name))
     }

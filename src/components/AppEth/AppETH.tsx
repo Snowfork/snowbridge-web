@@ -52,17 +52,17 @@ function AppETH({
   useEffect(() => {
     const fetchERC20Data = async () => {
       try {
-        dispatch(fetchERC20Allowance(erc20TokenContract, selectedEthAccount))
+        dispatch(fetchERC20Allowance())
       } catch (e) {
         console.log('error fetching allowance') 
       }
       try {
-        dispatch(fetchERC20Balance(erc20TokenContract, selectedEthAccount))
+        dispatch(fetchERC20Balance())
       } catch (e) {
         console.log('error fetching balance')
       }
       try {
-        dispatch(fetchERC20TokenName(erc20TokenContract))
+        dispatch(fetchERC20TokenName())
       } catch (e) {
         console.log('error fetching token name')
       }
