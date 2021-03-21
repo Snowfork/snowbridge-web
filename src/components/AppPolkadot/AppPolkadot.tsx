@@ -32,7 +32,7 @@ function AppPolkadot({
   const [depositAmount, setDepositAmount] = useState(String);
   const { ethAddress } = useSelector((state: RootState) => state.net)
   const {polkadotEthBalance} = useSelector((state: RootState) => state.transactions)
-
+  const isErc20 = selectedToken.address !== '0x0'
 
   const dispatch = useDispatch();
   const tokenSymbol = `Snow${selectedToken.symbol}`

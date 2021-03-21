@@ -21,6 +21,7 @@ import { Token } from '../../types';
 import { useDispatch, useSelector } from 'react-redux';
 import { createContractInstance } from '../../redux/actions/ERC20Transactions';
 import { RootState } from '../../redux/reducers';
+import { fetchPolkadotEthBalance } from '../../redux/actions/transactions';
 
 // ------------------------------------------
 //                  Props
@@ -65,7 +66,11 @@ function Bridge({
   // update the contract instance when the selected asset changes
   const handleAssetSelected = (asset: Token): void => {
     setSelectedAsset(asset);
-    dispatch(createContractInstance(asset.address, web3!))
+    dispatch(createContractInstance(asset.address, web3!));
+
+    // if (swapDirection === SwapDirection.PolkadotToEthereum) {
+      dispatch(fetchPolkadotEthBalance())
+    // }
   }
 
   // update transaction direction between chains

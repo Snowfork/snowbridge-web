@@ -14,6 +14,7 @@ import { RootState } from '../../redux/reducers';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
 import Polkadot from '../../net/polkadot';
+import { fetchPolkadotEthBalance } from '../../redux/actions/transactions';
 
 type Props = {
   transactions: TransactionsState;
@@ -118,7 +119,9 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
   // handle account changed event from account selector
   // update selected polkadot address in global state
   const onPolkadotAccountSelected = (address: string) => {
-    dispatch(setPolkadotAddress(address))
+    dispatch(setPolkadotAddress(address));
+    // fetch balance for updated account
+    dispatch(fetchPolkadotEthBalance());
   }
 
   return (
