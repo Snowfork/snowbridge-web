@@ -11,6 +11,7 @@ import * as S from './Bridge.style';
 import {
   Typography,
   Grid,
+  Box,
 } from '@material-ui/core';
 
 import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
@@ -41,7 +42,7 @@ enum SwapDirection {
 function Bridge({
   selectedEthAccount,
 }: Props): React.ReactElement<Props> {
-  const [swapDirection, setSwapDirection] = useState(SwapDirection.PolkadotToEthereum);
+  const [swapDirection, setSwapDirection] = useState(SwapDirection.EthereumToPolkadot);
   const [showAssetSelector, setShowAssetSelector] = useState(false)
   const [tokens, setTokens] = useState<Token[]>([EthTokenList.tokens[0] as Token]);
   const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
@@ -69,7 +70,7 @@ function Bridge({
     dispatch(createContractInstance(asset.address, web3!));
 
     // if (swapDirection === SwapDirection.PolkadotToEthereum) {
-      dispatch(fetchPolkadotEthBalance())
+    dispatch(fetchPolkadotEthBalance())
     // }
   }
 
@@ -130,11 +131,13 @@ function Bridge({
               Polkadot
             </S.HeadingContainer>
         </Typography>
-        <Typography gutterBottom>Select Asset</Typography>
-        <Button onClick={() => setShowAssetSelector(true)}>
-          <img src={selectedAsset.logoURI} alt={`${selectedAsset.name} icon`} style={{ width: '25px' }} />
-          {selectedAsset.symbol}
-        </Button>
+        <Box marginLeft="10%">
+          <Typography gutterBottom display="block">Select Asset</Typography>
+          <Button onClick={() => setShowAssetSelector(true)}>
+            <img src={selectedAsset.logoURI} alt={`${selectedAsset.name} icon`} style={{ width: '25px' }} />
+            {selectedAsset.symbol}
+          </Button>
+        </Box>
         <SelectTokenModal tokens={tokens} onTokenSelected={handleAssetSelected} open={showAssetSelector} onClose={() => setShowAssetSelector(false)} />
       </Grid>
       <ChainApp />

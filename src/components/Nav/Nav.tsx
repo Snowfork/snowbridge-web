@@ -42,7 +42,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
   const { polkadotAddress, ethAddress } = useSelector((state: RootState) => state.net)
 
   
-  // fetch polkadot accounts on mount
+  // fetch polkadot accountsfor the account selector on mount
   useEffect(() => {
     async function fetchAccounts() {
       const accounts = await Polkadot.get_addresses() as any;
