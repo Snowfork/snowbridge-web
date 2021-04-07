@@ -4,22 +4,22 @@
 
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import AppPolkadot from '../AppPolkadot';
-import AppETH from '../AppEth';
-import EthTokenList from '../AppEth/tokenList.json'
-import * as S from './Bridge.style';
 import {
   Typography,
   Grid,
   Box,
 } from '@material-ui/core';
-
 import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
+import { useDispatch, useSelector } from 'react-redux';
+import AppPolkadot from '../AppPolkadot';
+import AppETH from '../AppEth';
+import EthTokenList from '../AppEth/tokenList.json';
+import * as S from './Bridge.style';
+
 import IconButton from '../IconButton';
-import Button from '../Button'
+import Button from '../Button';
 import SelectTokenModal from '../SelectTokenModal';
 import { Token } from '../../types';
-import { useDispatch, useSelector } from 'react-redux';
 import { createContractInstance } from '../../redux/actions/ERC20Transactions';
 import { RootState } from '../../redux/reducers';
 import { fetchPolkadotEthBalance } from '../../redux/actions/transactions';
@@ -43,7 +43,7 @@ function Bridge({
   selectedEthAccount,
 }: Props): React.ReactElement<Props> {
   const [swapDirection, setSwapDirection] = useState(SwapDirection.EthereumToPolkadot);
-  const [showAssetSelector, setShowAssetSelector] = useState(false)
+  const [showAssetSelector, setShowAssetSelector] = useState(false);
   const [tokens, setTokens] = useState<Token[]>([EthTokenList.tokens[0] as Token]);
   const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
   const { web3 } = useSelector((state: RootState) => state.net);
@@ -51,18 +51,17 @@ function Bridge({
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const currentChainId = Number.parseInt((web3!.currentProvider as any).chainId, 16)
-    let selectedTokenList: Token[];
+    const currentChainId = Number.parseInt((web3!.currentProvider as any).chainId, 16);
     // set eth token list
     // only include tokens from current network
-    selectedTokenList = (EthTokenList.tokens as Token[])
+    const selectedTokenList = (EthTokenList.tokens as Token[])
       .filter(
-        (token: Token) => token.chainId === currentChainId)
+        (token: Token) => token.chainId === currentChainId,
+      );
 
     setTokens(selectedTokenList);
     setSelectedAsset(selectedTokenList[0]);
-
-  }, [web3])
+  }, [web3]);
 
   // update the contract instance when the selected asset changes
   const handleAssetSelected = (asset: Token): void => {
@@ -70,9 +69,9 @@ function Bridge({
     dispatch(createContractInstance(asset.address, web3!));
 
     // if (swapDirection === SwapDirection.PolkadotToEthereum) {
-    dispatch(fetchPolkadotEthBalance())
+    dispatch(fetchPolkadotEthBalance());
     // }
-  }
+  };
 
   // update transaction direction between chains
   const handleSwap = () => {
@@ -85,19 +84,22 @@ function Bridge({
 
   const ChainApp = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      return <AppETH
-        selectedToken={selectedAsset}
-        selectedEthAccount={selectedEthAccount}
-      />
-    } else {
-      return <AppPolkadot
-        selectedToken={selectedAsset}
-      />;
+      return (
+        <AppETH
+          selectedToken={selectedAsset}
+          selectedEthAccount={selectedEthAccount}
+        />
+      );
     }
+    return (
+      <AppPolkadot
+        selectedToken={selectedAsset}
+      />
+    );
   };
 
   return (
-    <div style={{ padding: '2em 0', }}>
+    <div style={{ padding: '2em 0' }}>
       {/* select swap direction */}
       <Grid
         container
@@ -116,7 +118,7 @@ function Bridge({
         <Typography gutterBottom variant="h5">
           <S.HeadingContainer>
             Eth
-              <IconButton
+            <IconButton
               primary={swapDirection === SwapDirection.PolkadotToEthereum}
               style={{ marginLeft: '10px' }}
               icon={<FaLongArrowAltLeft size="2.5em" />}
@@ -128,8 +130,8 @@ function Bridge({
               icon={<FaLongArrowAltRight size="2.5em" />}
               onClick={() => handleSwap()}
             />
-              Polkadot
-            </S.HeadingContainer>
+            Polkadot
+          </S.HeadingContainer>
         </Typography>
         <Box marginLeft="10%">
           <Typography gutterBottom display="block">Select Asset</Typography>
@@ -138,7 +140,12 @@ function Bridge({
             {selectedAsset.symbol}
           </Button>
         </Box>
-        <SelectTokenModal tokens={tokens} onTokenSelected={handleAssetSelected} open={showAssetSelector} onClose={() => setShowAssetSelector(false)} />
+        <SelectTokenModal
+          tokens={tokens}
+          onTokenSelected={handleAssetSelected}
+          open={showAssetSelector}
+          onClose={() => setShowAssetSelector(false)}
+        />
       </Grid>
       <ChainApp />
 

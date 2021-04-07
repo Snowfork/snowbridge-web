@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import * as S from './SelectTokenModal.style';
 import ReactModal from 'react-modal';
+import { Button } from '@material-ui/core';
+import * as S from './SelectTokenModal.style';
 import { Token } from '../../types';
 
 const customStyles = {
@@ -24,19 +25,18 @@ type Props = {
   onClose: () => any;
 };
 
-
 function SelectTokenModal({
   tokens,
   onTokenSelected: setSelectedToken,
   open,
-  onClose
+  onClose,
 }: Props): React.ReactElement<Props> {
   const [isOpen, setIsOpen] = useState(open);
   const [searchInput, setSearchInput] = useState('');
 
   useEffect(() => {
-      setIsOpen(open)
-  }, [open, setIsOpen])
+    setIsOpen(open);
+  }, [open, setIsOpen]);
 
   function closeModal() {
     setIsOpen(false);
@@ -64,19 +64,17 @@ function SelectTokenModal({
           <S.Heading>Select Token</S.Heading>
           <S.Input onChange={handleInputChange} />
           <S.TokenList>
-            {tokens.filter((token) =>
-              token.name.toLowerCase().includes(searchInput) || 
-              token.symbol.toLowerCase().includes(searchInput)
-            ).map((token) => (
-              <S.Token key={`${token.chainId}-${token.address}`}>
-                <button onClick={() => handleTokenSelection(token)}>
-                  <img src={token.logoURI} alt={`${token.name} icon`} />
-                  <div>
-                    <h3>{token.symbol}</h3>
-                    <p>{token.name}</p>
-                  </div>
-                </button>
-              </S.Token>
+            {tokens.filter((token) => token.name.toLowerCase().includes(searchInput)
+              || token.symbol.toLowerCase().includes(searchInput)).map((token) => (
+                <S.Token key={`${token.chainId}-${token.address}`}>
+                  <Button onClick={() => handleTokenSelection(token)}>
+                    <img src={token.logoURI} alt={`${token.name} icon`} />
+                    <div>
+                      <h3>{token.symbol}</h3>
+                      <p>{token.name}</p>
+                    </div>
+                  </Button>
+                </S.Token>
             ))}
           </S.TokenList>
           <S.Button onClick={closeModal}>Close</S.Button>

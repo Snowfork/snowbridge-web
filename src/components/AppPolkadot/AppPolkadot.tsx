@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Token } from '../../types';
 
 import {
   Typography,
@@ -12,6 +11,7 @@ import {
   Divider,
 } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
+import { Token } from '../../types';
 import { RootState } from '../../redux/reducers';
 import { burnToken } from '../../redux/actions/transactions';
 
@@ -30,21 +30,21 @@ function AppPolkadot({
 }: Props): React.ReactElement<Props> {
   // State
   const [depositAmount, setDepositAmount] = useState(String);
-  const { ethAddress } = useSelector((state: RootState) => state.net)
-  const {polkadotEthBalance} = useSelector((state: RootState) => state.transactions)
-  const isErc20 = selectedToken.address !== '0x0'
+  const { ethAddress } = useSelector((state: RootState) => state.net);
+  const { polkadotEthBalance } = useSelector((state: RootState) => state.transactions);
+  const isErc20 = selectedToken.address !== '0x0';
 
   const dispatch = useDispatch();
-  const tokenSymbol = `Snow${selectedToken.symbol}`
+  const tokenSymbol = `Snow${selectedToken.symbol}`;
 
   // return total balance of polkaETH or polkaERC20
   const getMaxTokenBalance = (): number => {
-    // if (isERC20) {
+    if (isErc20) {
+      return 0;
       // return erc20TokenBalance as number;
-    // }
-    return Number.parseFloat(polkadotEthBalance!) as number
-  }
-
+    }
+    return Number.parseFloat(polkadotEthBalance!) as number;
+  };
 
   function SendButton() {
     if (Number(depositAmount) > 0) {
@@ -54,16 +54,21 @@ function AppPolkadot({
           onClick={() => dispatch(burnToken(depositAmount, selectedToken, ethAddress!))}
           variant="outlined"
         >
-          <Typography variant="button">Send {tokenSymbol}</Typography>
-        </Button>
-      );
-    } else {
-      return (
-        <Button disabled color="primary" variant="outlined">
-          <Typography variant="button">Send {tokenSymbol}</Typography>
+          <Typography variant="button">
+            Send
+            {tokenSymbol}
+          </Typography>
         </Button>
       );
     }
+    return (
+      <Button disabled color="primary" variant="outlined">
+        <Typography variant="button">
+          Send
+          {tokenSymbol}
+        </Typography>
+      </Button>
+    );
   }
   // Render
   return (
@@ -95,8 +100,10 @@ function AppPolkadot({
         <Grid item xs={10}>
           <FormControl>
             <Typography gutterBottom>Amount</Typography>
-            <FormHelperText >
-              MAX: {getMaxTokenBalance()}
+            <FormHelperText>
+              MAX:
+              {' '}
+              {getMaxTokenBalance()}
             </FormHelperText>
             <TextField
               InputProps={{
@@ -111,7 +118,14 @@ function AppPolkadot({
               variant="outlined"
             />
             <FormHelperText id="tokenAmountDesc">
-              How much {tokenSymbol} would you like to burn and convert to {selectedToken.symbol}?
+              How much
+              {' '}
+              {tokenSymbol}
+              {' '}
+              would you like to burn and convert to
+              {' '}
+              {selectedToken.symbol}
+              ?
             </FormHelperText>
           </FormControl>
         </Grid>

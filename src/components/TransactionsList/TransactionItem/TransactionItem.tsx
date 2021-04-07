@@ -5,12 +5,10 @@ import PendingTransactionsUI from '../../PendingTransactionsUI';
 
 type Props = {
   transaction: Transaction;
-  transactionIndex?: number;
 };
 
 function TransactionItem({
   transaction,
-  transactionIndex, // This index is incase you want to track the item
 }: Props): React.ReactElement<Props> {
   const ethToSnow = transaction.chain === 'eth';
   const baseTokenSymbol = transaction.token.symbol;
@@ -19,7 +17,17 @@ function TransactionItem({
   return (
     <S.Wrapper>
       <S.Details>
-        Bridge {transaction.amount} {ethToSnow ? baseTokenSymbol : snowTokenSymbol} to {transaction.amount} {ethToSnow ? snowTokenSymbol : baseTokenSymbol}
+        Bridge
+        {' '}
+        {transaction.amount}
+        {' '}
+        {ethToSnow ? baseTokenSymbol : snowTokenSymbol}
+        {' '}
+        to
+        {' '}
+        {transaction.amount}
+        {' '}
+        {ethToSnow ? snowTokenSymbol : baseTokenSymbol}
       </S.Details>
       <PendingTransactionsUI transaction={transaction} />
     </S.Wrapper>

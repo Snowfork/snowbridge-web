@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as S from './Nav.style';
 import { shortenWalletAddress } from '../../utils/common';
 import Modal from '../Modal';
-import TransactionsList from '../TransactionsList/';
+import TransactionsList from '../TransactionsList';
 import { TransactionsState } from '../../redux/reducers/transactions';
 import { RootState } from '../../redux/reducers';
 import { setPolkadotAddress } from '../../redux/actions/net';
@@ -20,8 +20,7 @@ type Props = {
   transactions: TransactionsState;
 };
 
-const useStyles = makeStyles((theme: Theme) =>
-createStyles({
+const useStyles = makeStyles((theme: Theme) => createStyles({
   formControl: {
     margin: theme.spacing(1),
     minWidth: 120,
@@ -29,31 +28,33 @@ createStyles({
   selectEmpty: {
     marginTop: theme.spacing(2),
   },
-}),
-);
+}));
 
 function Nav({ transactions }: Props): React.ReactElement<Props> {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [polkadotAccounts, setPolkadotAccounts] = useState<string[]>([]);
-  const [isPolkadotAccountSelectorOpen, setIsPolkadotAccountSelectorOpen] = useState<boolean>(false)
+  const [
+    isPolkadotAccountSelectorOpen,
+    setIsPolkadotAccountSelectorOpen,
+  ] = useState<boolean>(false);
 
-  const { ethBalance, polkadotGasBalance } = useSelector((state: RootState) => state.transactions)
-  const { polkadotAddress, ethAddress } = useSelector((state: RootState) => state.net)
+  const { ethBalance, polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
+  const { polkadotAddress, ethAddress } = useSelector((state: RootState) => state.net);
 
-  
   // fetch polkadot accountsfor the account selector on mount
   useEffect(() => {
     async function fetchAccounts() {
-      const accounts = await Polkadot.get_addresses() as any;
+      const accounts = await Polkadot.getAddresses() as any;
       setPolkadotAccounts(
         accounts
           .map(
-            (account: any) => account.address
-          ))
+            (account: any) => account.address,
+          ),
+      );
     }
 
-    fetchAccounts()
+    fetchAccounts();
   }, []);
 
   type AccountSelectorProps = {
@@ -62,11 +63,13 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     onAccountChange: (account: string) => void,
     isOpen: boolean,
     onClose: () => void
-      
+
   }
 
-  const AccountSelector = ({ accounts, onAccountChange, currentAddress, isOpen, onClose }: AccountSelectorProps): React.ReactElement<AccountSelectorProps> => {
-    const [selectedAccount, setSelectedAccount] = useState(currentAddress)    
+  const AccountSelector = ({
+    accounts, onAccountChange, currentAddress, isOpen, onClose,
+  }: AccountSelectorProps): React.ReactElement<AccountSelectorProps> => {
+    const [selectedAccount, setSelectedAccount] = useState(currentAddress);
     const handleChange = (event: React.ChangeEvent<{
       name?: string | undefined;
       value: unknown;
@@ -74,10 +77,10 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
       // get value from select
       const account: string = event.target.value as string;
       // update local state
-      setSelectedAccount(account)
+      setSelectedAccount(account);
       // fire callback from parent to update global state
-      onAccountChange(account)
-    }
+      onAccountChange(account);
+    };
 
     return (
       <Modal
@@ -85,36 +88,36 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
         closeModal={onClose}
         buttonText="Close"
       >
-      <S.ModalContainer>
-        <S.ModalHeader>
-          <S.ModalTitle>Account</S.ModalTitle>
+        <S.ModalContainer>
+          <S.ModalHeader>
+            <S.ModalTitle>Account</S.ModalTitle>
           </S.ModalHeader>
-          
-          <S.Address >
+
+          <S.Address>
             {selectedAccount}
           </S.Address>
 
-        <FormControl className={classes.formControl}>
-          <InputLabel id="polkadot-js-addresses">
-            Select Account:
-          </InputLabel>
-          <Select
-            labelId="polkadot-js-addresses"
-            id="polkadot-js-addressess-select"
-            value={selectedAccount}
-            onChange={handleChange}
-          >
-            {accounts.map((address, index) => (
-                <MenuItem value={address} key={index}>
+          <FormControl className={classes.formControl}>
+            <InputLabel id="polkadot-js-addresses">
+              Select Account:
+            </InputLabel>
+            <Select
+              labelId="polkadot-js-addresses"
+              id="polkadot-js-addressess-select"
+              value={selectedAccount}
+              onChange={handleChange}
+            >
+              {accounts.map((address) => (
+                <MenuItem value={address} key={address}>
                   {shortenWalletAddress(address)}
                 </MenuItem>
               ))}
-          </Select>
-        </FormControl>
-      </S.ModalContainer>
-    </Modal>
-  )
-}
+            </Select>
+          </FormControl>
+        </S.ModalContainer>
+      </Modal>
+    );
+  };
 
   // handle account changed event from account selector
   // update selected polkadot address in global state
@@ -122,7 +125,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     dispatch(setPolkadotAddress(address));
     // fetch balance for updated account
     dispatch(fetchPolkadotEthBalance());
-  }
+  };
 
   return (
     <S.Wrapper>
@@ -131,7 +134,11 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
         <S.DisplayWrapper>
           <S.DisplayTitle>Ethereum Wallet</S.DisplayTitle>
           <S.DisplayContainer>
-            <S.Amount>{ethBalance} ETH</S.Amount>
+            <S.Amount>
+              {ethBalance}
+              {' '}
+              ETH
+            </S.Amount>
             <S.Address
               as="a"
               href={`${BLOCK_EXPLORER_URL}/address/${ethAddress}`}
@@ -142,11 +149,11 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
             </S.Address>
           </S.DisplayContainer>
 
-        {/* No account selector for eth since metamask only 
+          {/* No account selector for eth since metamask only
             exposes a single address at a time. We instead detect address changes
             and reload the app
         */}
-        
+
         </S.DisplayWrapper>
         <S.DisplayWrapper>
           <S.DisplayTitle>Polkadot Wallet</S.DisplayTitle>
@@ -156,16 +163,16 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
               {shortenWalletAddress(polkadotAddress || '')}
             </S.Address>
           </S.DisplayContainer>
-          
+
           {/* Polkadot account selector */}
           <AccountSelector
             accounts={polkadotAccounts}
             onAccountChange={onPolkadotAccountSelected}
             currentAddress={polkadotAddress!}
             isOpen={isPolkadotAccountSelectorOpen}
-            onClose={()=>{setIsPolkadotAccountSelectorOpen(false)}}
+            onClose={() => { setIsPolkadotAccountSelectorOpen(false); }}
           />
-          
+
         </S.DisplayWrapper>
         <TransactionsList transactions={transactions} />
       </S.CurrencyList>

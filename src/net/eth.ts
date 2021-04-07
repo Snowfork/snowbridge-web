@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import Web3 from 'web3';
 import Api from './api';
 
@@ -31,31 +32,30 @@ type MyWindow = typeof window & {
   web3: Web3;
 };
 export default class Eth extends Api {
-
   // Web3 API connector
-  public static async connect(dispatch: any){
-    let locWindow = window as MyWindow;
+  public static async connect(dispatch: any): Promise<void> {
+    const locWindow = window as MyWindow;
     let web3: Web3;
 
     const connectionComplete = (web3: Web3) => {
-      dispatch(setWeb3(web3))
+      dispatch(setWeb3(web3));
       dispatch(setMetamaskFound());
       web3.eth.net
         .getNetworkType()
         .then((network: string) => dispatch(setMetamaskNetwork(network)));
 
       // reload app on account change
-        locWindow.ethereum.on('accountsChanged', (accounts: Array<string>) => {
-          window.location.pathname = '/'
-        });
-      
+      locWindow.ethereum.on('accountsChanged', () => {
+        window.location.pathname = '/';
+      });
+
       if (web3) {
         // Set contracts
         const ethContract = new web3.eth.Contract(
           ETHApp.abi as any,
           APP_ETH_CONTRACT_ADDRESS,
         );
-        dispatch(setEthContract(ethContract))
+        dispatch(setEthContract(ethContract));
 
         const erc20contract = new web3.eth.Contract(
           ERC20App.abi as any,
@@ -69,12 +69,11 @@ export default class Eth extends Api {
         );
         dispatch(setIncentivizedChannelContract(incentivizedChannelContract));
 
-
         // fetch addresses
-        dispatch(fetchEthAddress())
+        dispatch(fetchEthAddress());
 
         // fetch balances
-        dispatch(fetchEthBalance())
+        dispatch(fetchEthBalance());
 
         console.log('- Eth connected');
       }
@@ -90,17 +89,14 @@ export default class Eth extends Api {
       } catch (error) {
         console.error(error);
       }
-    }
-
-    // Legacy dapp browsers...
-    else if (locWindow.web3) {
+    } else if (locWindow.web3) {
+      // Legacy dapp browsers...
       web3 = locWindow.web3;
       connectionComplete(web3);
 
       console.log('- Injected web3 detected');
-    }
-    // Fallback to localhost; use dev console port by default...
-    else {
+    } else {
+      // Fallback to localhost; use dev console port by default...
       dispatch(setMetamaskMissing());
     }
   }
@@ -116,45 +112,41 @@ export default class Eth extends Api {
 
       if (accs) {
         return accs[0];
-      } else {
-        throw new Error('Ethereum Account Not Set');
       }
+      throw new Error('Ethereum Account Not Set');
     } catch (err) {
       console.log(err);
       throw new Error('Ethereum Account Not Set');
     }
   }
 
-
-/**
+  /**
  * Get ETH balance of default Ethereum account
  * @param {web3} Web3 web3 instance
  * @return {Promise<string>} The default web3 account
  */
-public static async getBalance(conn: Web3): Promise<string> {
-  try {
-    if (conn) {
-      let default_address = await Eth.getAddress(conn);
+  public static async getBalance(conn: Web3): Promise<string> {
+    try {
+      if (conn) {
+        const defaultAddress = await Eth.getAddress(conn);
 
-      if (default_address) {
-        const currentBalance = await conn.eth.getBalance(default_address);
+        if (defaultAddress) {
+          const currentBalance = await conn.eth.getBalance(defaultAddress);
 
-        if (currentBalance) {
-          return parseFloat(conn.utils.fromWei(currentBalance)).toFixed(4);
+          if (currentBalance) {
+            return parseFloat(conn.utils.fromWei(currentBalance)).toFixed(4);
+          }
+
+          throw new Error('Balance not found');
         }
 
-        throw new Error('Balance not found');
+        throw new Error('Default Address not found');
+      } else {
+        throw new Error('Web3 API not connected');
       }
-
-      throw new Error('Default Address not found');
-    } else {
-      throw new Error('Web3 API not connected');
+    } catch (err) {
+      console.log(err);
+      throw new Error('Error reading balance');
     }
-  } catch (err) {
-    console.log(err);
-    throw new Error('Error reading balance');
-
   }
-}
-
 }

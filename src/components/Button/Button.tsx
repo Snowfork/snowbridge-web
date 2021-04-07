@@ -11,15 +11,15 @@ export interface IButtonProps {
 const Button: React.FC<IButtonProps> = ({
   children,
   icon,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   onClick = () => {},
   ...props
-}) => {
-  return (
-    <S.StyledButton icon={icon} onClick={onClick} {...props}>
-      {children}
-      {icon && <S.Icon>{icon}</S.Icon>}
-    </S.StyledButton>
-  );
-};
+}: IButtonProps) => (
+  // eslint-disable-next-line react/jsx-props-no-spreading
+  <S.StyledButton icon={icon} onClick={onClick} {...props}>
+    {children}
+    {icon && <S.Icon>{icon}</S.Icon>}
+  </S.StyledButton>
+);
 
 export default Button;

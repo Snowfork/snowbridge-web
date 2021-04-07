@@ -1,3 +1,17 @@
+import { Contract } from 'web3-eth-contract';
+import Web3 from 'web3';
+import { ApiPromise } from '@polkadot/api';
+import {
+  SetERC20ContractPayload,
+  SetEthAddressPayload,
+  SetEthAssetIdPayload,
+  SetEthContractPayload,
+  SetIncentivizedChannelContractPayload,
+  SetIsNetworkConnectedPayload,
+  SetPolkadotAddressPayload,
+  SetPolkadotApiPayload,
+  SetWeb3Payload,
+} from '../actions/net';
 import {
   SET_NETWORK_CONNECTED,
   SET_METAMASK_FOUND,
@@ -14,12 +28,8 @@ import {
   SET_POLKADOT_ADDRESS,
   SET_ETH_ADDRESS,
   SET_ETH_ASSET_ID,
-  SET_POLKADOT_API
+  SET_POLKADOT_API,
 } from '../actionsTypes/net';
-import { Contract } from 'web3-eth-contract';
-import { SetERC20ContractPayload, SetEthAddressPayload, SetEthAssetIdPayload, SetEthContractPayload, SetIncentivizedChannelContractPayload, SetIsNetworkConnectedPayload, SetPolkadotAddressPayload, SetPolkadotApiPayload, SetWeb3Payload } from '../actions/net';
-import Web3 from 'web3';
-import { ApiPromise } from '@polkadot/api';
 
 export interface NetState {
   metamaskFound: boolean,
@@ -57,96 +67,86 @@ const initialState : NetState = {
   polkadotAddress: undefined,
   ethAddress: undefined,
   ethAssetId: undefined,
-  isNetworkConnected: false
+  isNetworkConnected: false,
 };
 
 function netReducer(state = initialState, action: any) {
   switch (action.type) {
     case SET_METAMASK_FOUND: {
-      return Object.assign({}, state, { metamaskFound: true });
+      return { ...state, metamaskFound: true };
     }
     // case SET_POLKADOTJS_FOUND: {
     //   return Object.assign({}, state, { polkadotJSFound: true });
     // }
     case SET_METAMASK_CONNECTED: {
-      return Object.assign({}, state, { metamaskConnected: true });
+      return { ...state, metamaskConnected: true };
     }
     case SET_POLKADOTJS_CONNECTED: {
-      return Object.assign({}, state, { polkadotJSConnected: true });
+      return { ...state, polkadotJSConnected: true };
     }
     case SET_METAMASK_MISSING: {
-      return Object.assign({}, state, { metamaskMissing: true });
+      return { ...state, metamaskMissing: true };
     }
     // case SET_POLKADOTJS_MISSING: {
     //   return Object.assign({}, state, { polkadotJSMissing: true });
     // }
     case SET_METAMASK_NETWORK: {
-      return Object.assign({}, state, {
-        metamaskNetwork: action.metamaskNetwork,
-      });
+      return { ...state, metamaskNetwork: action.metamaskNetwork };
     }
     case SET_WEB3: {
-      return ((action: SetWeb3Payload) => {
-        return Object.assign({}, state, {
-          web3: action.web3
-        });
-      })(action)
+      return ((action: SetWeb3Payload) => ({ ...state, web3: action.web3 }))(action);
     }
     case SET_ETH_CONTRACT: {
-      return ((action: SetEthContractPayload) => {
-        return Object.assign({}, state, {
-          ethContract: action.contract
-        });
-      })(action)
+      return ((action: SetEthContractPayload) => (
+        {
+          ...state,
+          ethContract: action.contract,
+        }))(action);
     }
     case SET_ERC20_CONTRACT: {
-      return ((action: SetERC20ContractPayload) => {
-        return Object.assign({}, state, {
-          erc20Contract: action.contract
-        });
-      })(action)
+      return ((action: SetERC20ContractPayload) => (
+        {
+          ...state,
+          erc20Contract: action.contract,
+        }))(action);
     }
     case SET_INCENTIVIZED_CHANNEL_CONTRACT: {
-      return ((action: SetIncentivizedChannelContractPayload): NetState => {
-        return Object.assign({}, state, {
-          incentivizedChannelContract: action.contract
-        });
-      })(action)
+      return ((action: SetIncentivizedChannelContractPayload): NetState => (
+        {
+          ...state,
+          incentivizedChannelContract: action.contract,
+        }))(action);
     }
     case SET_ETH_ADDRESS: {
-      return ((action: SetEthAddressPayload) => {
-        return Object.assign({}, state, {
-          ethAddress: action.address
-        })
-      })(action)
+      return ((action: SetEthAddressPayload) => ({ ...state, ethAddress: action.address }))(action);
     }
     case SET_POLKADOT_ADDRESS: {
-      return ((action: SetPolkadotAddressPayload): NetState => {
-        return Object.assign({}, state, {
-          polkadotAddress: action.address
-        });
-      })(action)
+      return ((action: SetPolkadotAddressPayload): NetState => (
+        {
+          ...state,
+          polkadotAddress: action.address,
+        }))(action);
     }
     case SET_ETH_ASSET_ID: {
-      return ((action: SetEthAssetIdPayload): NetState => {
-        return Object.assign({}, state, {
-          ethAssetId: action.assetId
-        });
-      })(action)
+      return ((action: SetEthAssetIdPayload): NetState => (
+        {
+          ...state,
+          ethAssetId: action.assetId,
+        }))(action);
     }
     case SET_POLKADOT_API: {
-      return ((action: SetPolkadotApiPayload): NetState => {
-        return Object.assign({}, state, {
-          polkadotApi: action.polkadotApi
-        });
-      })(action)
+      return ((action: SetPolkadotApiPayload): NetState => (
+        {
+          ...state,
+          polkadotApi: action.polkadotApi,
+        }))(action);
     }
     case SET_NETWORK_CONNECTED: {
-      return ((action: SetIsNetworkConnectedPayload): NetState => {
-        return Object.assign({}, state, {
-          isNetworkConnected: action.isConnected
-        });
-      })(action)
+      return ((action: SetIsNetworkConnectedPayload): NetState => (
+        {
+          ...state,
+          isNetworkConnected: action.isConnected,
+        }))(action);
     }
     default:
       return state;
