@@ -64,7 +64,7 @@ function ERC20Approve({
       {isApprovalLoading ?
         <Box width="60%" alignItems="center" justifyContent="space-between" display="flex">
           <Typography gutterBottom >
-            Approving {selectedToken.symbol}
+            Approving {selectedToken?.symbol}
           </Typography>
           <LoadingSpinner spinnerHeight="40px" spinnerWidth="40px" />
         </Box>
@@ -78,7 +78,7 @@ function ERC20Approve({
               1. Approve
             </Typography>
             <Typography gutterBottom>
-              How many {selectedToken.symbol} tokens would you like to approve to the ERC20 bridge?
+              How many {selectedToken?.symbol} tokens would you like to approve to the ERC20 bridge?
             </Typography>
             <TextField
               InputProps={{
@@ -88,7 +88,7 @@ function ERC20Approve({
               margin="normal"
               type="number"
               onChange={(e) => setApprovalAmount(e.target.value ? Number(e.target.value) : '')}
-              placeholder={`0.00 ${selectedToken.symbol}`}
+              placeholder={`0.00 ${selectedToken?.symbol}`}
               style={{ margin: 5 }}
               variant="outlined"
             />
@@ -96,7 +96,7 @@ function ERC20Approve({
 
               <Box>
                 <Typography>
-                  Current {selectedToken.symbol} token balance: {Number(currentTokenBalance).toFixed(selectedToken.decimals)} {selectedToken.symbol}
+                  Current {selectedToken?.symbol} token balance: {Number(currentTokenBalance).toFixed(selectedToken?.decimals)} {selectedToken?.symbol}
                 </Typography>
               </Box>
               <Box

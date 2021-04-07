@@ -47,7 +47,7 @@ function LockToken({
 
   const dispatch = useDispatch();
 
-  const isERC20 = selectedToken.address !== '0x0';
+  const isERC20 = selectedToken?.address !== '0x0';
 
   // return total balance of ETH or ERC20
   const getMaxTokenBalance = () : number => {
@@ -98,18 +98,18 @@ function LockToken({
           type="number"
           margin="normal"
           onChange={(e) => setDepositAmount(e.target.value ? Number(e.target.value) : '')}
-          placeholder={`0.00 ${selectedToken.symbol}`}
+          placeholder={`0.00 ${selectedToken?.symbol}`}
           style={{ margin: 5 }}
           variant="outlined"
         />
         <FormHelperText id="ethAmountDesc">
-          How much {selectedToken.symbol} would you like to deposit?
+          How much {selectedToken?.symbol} would you like to deposit?
         </FormHelperText>
       </FormControl>
       <Box alignItems="center" display="flex" justifyContent="space-around">
         {isERC20 && <Box>
           <Typography>
-            Current {selectedToken.symbol} allowance for bridge: {Number(currentTokenAllowance).toFixed(18)} {selectedToken.symbol}
+            Current {selectedToken?.symbol} allowance for bridge: {Number(currentTokenAllowance).toFixed(18)} {selectedToken?.symbol}
           </Typography>
         </Box>}
         <Box

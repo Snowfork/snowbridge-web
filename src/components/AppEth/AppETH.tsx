@@ -40,7 +40,7 @@ function AppETH({
   selectedToken,
   selectedEthAccount
 }: Props): React.ReactElement<Props> {
-  const isERC20 = selectedToken.address !== '0x0';
+  const isERC20 = selectedToken?.address !== '0x0';
 
   const dispatch = useDispatch()
   // Blockchain state from blockchain

@@ -131,7 +131,7 @@ export default class Eth extends Api {
  * @param {web3} Web3 web3 instance
  * @return {Promise<string>} The default web3 account
  */
-public static async getBalance(conn: Web3): Promise<string> {
+  public static async getBalance(conn: Web3): Promise<string> {
   try {
     if (conn) {
       let default_address = await Eth.getAddress(conn);

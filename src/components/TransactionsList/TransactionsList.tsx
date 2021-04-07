@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import * as S from './TransactionsList.style';
 import ReactModal from 'react-modal';
-import Button from '../Button';
 import LoadingSpinner from '../LoadingSpinner';
 
 import { TransactionsState } from '../../redux/reducers/transactions';
 
 import TransactionItem from './TransactionItem';
+import { Button } from '@material-ui/core';
 
 const customStyles = {
   overlay: {},
@@ -66,8 +66,9 @@ function TransactionsList({
   return (
     <div>
       <Button
+        variant="contained"
         onClick={openModal}
-        icon={!noTransactions && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
+        // icon={!noTransactions && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
       >
         Transaction list
       </Button>

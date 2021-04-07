@@ -9,8 +9,11 @@ export default class Net {
     try {
       // connect to ethereum
       await Eth.connect(dispatch);
+      console.log('connected eth')
       // connect to polkadot
       await Polkadot.connect(dispatch);
+      console.log('connected polkadot')
+
 
       dispatch(setIsNetworkConnected(true));
     } catch (e) {

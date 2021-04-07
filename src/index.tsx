@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom';
 import React, { Suspense } from 'react';
 
-import Theme from './styles/theme';
+import theme from './styles/theme';
 import GlobalStyle from './styles/globalStyle';
 
 import App from './App';
@@ -10,6 +10,7 @@ import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension';
 import reducers from './redux/reducers';
+import { ThemeProvider } from 'styled-components';
 
 export const store = createStore(
   reducers,
@@ -19,12 +20,12 @@ export const store = createStore(
 
 ReactDOM.render(
   <Provider store={store}>
-    <Theme>
+    <ThemeProvider theme={theme}>
       <GlobalStyle />
       <Suspense fallback="...">
         <App />
       </Suspense>
-    </Theme>
+    </ThemeProvider>
   </Provider>,
   document.getElementById('root'),
 );
