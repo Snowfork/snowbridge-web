@@ -322,7 +322,6 @@ export const fetchPolkadotEthBalance = ():
 ): Promise<void> => {
   const state = getState() as RootState;
   const { polkadotApi, polkadotAddress, ethAssetId } = state.net;
-
   if (polkadotApi) {
     const balance = await Polkadot.getEthBalance(polkadotApi, polkadotAddress, ethAssetId);
     dispatch(setPolkadotEthBalance(balance));

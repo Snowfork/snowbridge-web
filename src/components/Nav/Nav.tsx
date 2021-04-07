@@ -14,7 +14,7 @@ import { RootState } from '../../redux/reducers';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
 import Polkadot from '../../net/polkadot';
-import { fetchPolkadotEthBalance } from '../../redux/actions/transactions';
+import { fetchPolkadotEthBalance, fetchPolkadotGasBalance } from '../../redux/actions/transactions';
 
 type Props = {
   transactions: TransactionsState;
@@ -125,6 +125,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     dispatch(setPolkadotAddress(address));
     // fetch balance for updated account
     dispatch(fetchPolkadotEthBalance());
+    dispatch(fetchPolkadotGasBalance());
   };
 
   return (

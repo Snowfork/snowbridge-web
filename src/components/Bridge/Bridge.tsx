@@ -7,26 +7,21 @@ import styled from 'styled-components';
 import {
   Typography,
   Grid,
-  Box,
   Paper,
   makeStyles,
   Theme,
   createStyles,
   InputBase,
   Divider,
-  SvgIcon,
   useTheme,
   Button,
 } from '@material-ui/core';
-import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import AppPolkadot from '../AppPolkadot';
-import AppETH from '../AppEth';
+// import AppPolkadot from '../AppPolkadot';
+// import AppETH from '../AppEth';
 import EthTokenList from '../AppEth/tokenList.json';
-import * as S from './Bridge.style';
-
 import SelectTokenModal from '../SelectTokenModal';
 import { Token } from '../../types';
 import { createContractInstance } from '../../redux/actions/ERC20Transactions';
@@ -56,7 +51,7 @@ function Bridge({
   const [tokens, setTokens] = useState<Token[]>([EthTokenList.tokens[0] as Token]);
   const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
   const { web3 } = useSelector((state: RootState) => state.net);
-  const currentTokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance);
+  // const currentTokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance);
   const { ethBalance, polkadotEthBalance } = useSelector((state: RootState) => state.transactions);
 
   const dispatch = useDispatch();
@@ -94,21 +89,21 @@ function Bridge({
     }
   };
 
-  const ChainApp = () => {
-    if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      return (
-        <AppETH
-          selectedToken={selectedAsset}
-          selectedEthAccount={selectedEthAccount}
-        />
-      );
-    }
-    return (
-      <AppPolkadot
-        selectedToken={selectedAsset}
-      />
-    );
-  };
+  // const ChainApp = () => {
+  //   if (swapDirection === SwapDirection.EthereumToPolkadot) {
+  //     return (
+  //       <AppETH
+  //         selectedToken={selectedAsset}
+  //         selectedEthAccount={selectedEthAccount}
+  //       />
+  //     );
+  //   }
+  //   return (
+  //     <AppPolkadot
+  //       selectedToken={selectedAsset}
+  //     />
+  //   );
+  // };
 
   const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -144,20 +139,6 @@ function Bridge({
     switch: {
       margin: 'auto',
     },
-    fromLabel: {
-      color: theme.palette.primary.dark,
-      background: theme.palette.primary.light,
-      width: 'fit-content',
-      'border-radius': theme.shape.borderRadius,
-      padding: theme.spacing(1),
-    },
-    toLabel: {
-      color: theme.palette.secondary.dark,
-      background: theme.palette.secondary.light,
-      width: 'fit-content',
-      'border-radius': theme.shape.borderRadius,
-      padding: theme.spacing(1),
-    },
   }));
 
   const getNetworkNames = (direction: SwapDirection) => (
@@ -175,6 +156,8 @@ function Bridge({
       }
       return polkadotEthBalance;
     }
+
+    return 0;
   };
 
   const getDestinationNetworkTokenBalance = (direction: SwapDirection, token: Token) => {
@@ -186,6 +169,8 @@ function Bridge({
       }
       return ethBalance;
     }
+
+    return 0;
   };
 
   const classes = useStyles(theme);
@@ -198,7 +183,7 @@ function Bridge({
           {/* From section */}
           <Grid item>
             <Grid item>
-              <Typography className={classes.fromLabel}>FROM</Typography>
+              <Typography>FROM</Typography>
               <Typography variant="subtitle1" gutterBottom>{ getNetworkNames(swapDirection).from}</Typography>
             </Grid>
             {/* amount input */}
@@ -245,7 +230,7 @@ function Bridge({
           {/* To section */}
           <Grid item container>
             <Grid item>
-              <Typography className={classes.toLabel}>TO</Typography>
+              <Typography>TO</Typography>
             </Grid>
             <Grid item container justify="space-between">
               <Typography gutterBottom display="block">{getNetworkNames(swapDirection).to}</Typography>

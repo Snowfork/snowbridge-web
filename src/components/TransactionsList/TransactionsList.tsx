@@ -70,9 +70,9 @@ function TransactionsList({
       <Button
         variant="contained"
         onClick={openModal}
-        // icon={!noTransactions && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
       >
         Transaction list
+        {!noTransactions && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
       </Button>
       <ReactModal
         isOpen={isOpen}
