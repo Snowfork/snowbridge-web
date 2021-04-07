@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Copyright 2017-2020 @polkadot/apps-routing authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
@@ -5,17 +6,16 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 // import * as S from './AppEth.style';
-import Net from '../../net';
-import { Token } from '../../types';
-
 import {
   Grid,
   Divider,
 } from '@material-ui/core';
+import { useDispatch, useSelector } from 'react-redux';
+import Net from '../../net';
+import { Token } from '../../types';
 
 import ERC20Approve from './ERC20Approve';
 import LockToken from './LockToken';
-import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/reducers';
 
 import { fetchERC20Allowance, fetchERC20Balance, fetchERC20TokenName } from '../../redux/actions/ERC20Transactions';
@@ -27,9 +27,7 @@ import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 type Props = {
   net: Net;
   selectedToken: Token;
-  bridgeERC20AppContract: any;
   selectedEthAccount: string;
-  children?: JSX.Element | JSX.Element[];
 };
 
 // ------------------------------------------
@@ -38,33 +36,37 @@ type Props = {
 function AppETH({
   net,
   selectedToken,
-  selectedEthAccount
+  selectedEthAccount,
 }: Props): React.ReactElement<Props> {
   const isERC20 = selectedToken?.address !== '0x0';
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   // Blockchain state from blockchain
-  const erc20TokenContract = useSelector((state: RootState) => state.ERC20Transactions.contractInstance)
+  const erc20TokenContract = useSelector(
+    (state: RootState) => state.ERC20Transactions.contractInstance,
+  );
 
-  const currentTokenAllowance = useSelector((state: RootState) => state.ERC20Transactions.allowance)
-  const currentTokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance)
+  const currentTokenAllowance = useSelector(
+    (state: RootState) => state.ERC20Transactions.allowance,
+  );
+  const currentTokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance);
 
   useEffect(() => {
     const fetchERC20Data = async () => {
       try {
-        dispatch(fetchERC20Allowance())
+        dispatch(fetchERC20Allowance());
       } catch (e) {
-        console.log('error fetching allowance') 
+        console.log('error fetching allowance');
       }
       try {
-        dispatch(fetchERC20Balance())
+        dispatch(fetchERC20Balance());
       } catch (e) {
-        console.log('error fetching balance')
+        console.log('error fetching balance');
       }
       try {
-        dispatch(fetchERC20TokenName())
+        dispatch(fetchERC20TokenName());
       } catch (e) {
-        console.log('error fetching token name')
+        console.log('error fetching token name');
       }
     };
 
@@ -79,7 +81,6 @@ function AppETH({
     }, REFRESH_INTERVAL_MILLISECONDS);
 
     return () => clearInterval(pollTimer);
-
   }, [erc20TokenContract, selectedEthAccount, isERC20, dispatch]);
 
   // Render
@@ -99,15 +100,15 @@ function AppETH({
           border: 'thin solid #E0E0E0',
         }}
       >
-        {isERC20 && <ERC20Approve
+        {isERC20 && (
+        <ERC20Approve
           erc20TokenContract={erc20TokenContract}
           selectedEthAccount={selectedEthAccount}
           selectedToken={selectedToken}
           currentTokenBalance={currentTokenBalance}
         />
-        }
+        )}
         <LockToken
-          net={net}
           selectedToken={selectedToken}
           currentTokenAllowance={currentTokenAllowance}
         />

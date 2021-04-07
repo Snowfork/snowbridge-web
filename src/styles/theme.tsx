@@ -1,5 +1,5 @@
 import { createMuiTheme } from '@material-ui/core';
-import React, { ReactNode } from 'react';
+// import React, { ReactNode } from 'react';
 // import { ThemeProvider } from 'styled-components';
 
 // const theme = {
@@ -29,13 +29,16 @@ import React, { ReactNode } from 'react';
 
 // export default Theme;
 
-
 const theme = createMuiTheme({
   palette: {
     primary: {
-      main: "#3f51b5"
-    }
-  }
-})
+      main: '#3f51b5',
+    },
+  },
+});
+// // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+// const Theme = ({ children }: Props) => (
+//   <ThemeProvider theme={theme}>{children}</ThemeProvider>
+// );
 
 export default theme;

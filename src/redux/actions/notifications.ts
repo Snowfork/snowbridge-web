@@ -1,4 +1,4 @@
-import { toast } from "react-toastify";
+import { toast } from 'react-toastify';
 
 import {
   ADD_NOTIFICATION,
@@ -22,25 +22,26 @@ export interface RemoveNotificationPayload {
 }
 
 export function notify(
-  notification: Notification,
+  _notification: Notification,
 ): AddNotificationPayload {
   const date = Date.now();
+  const notification = _notification;
   notification.id = date;
 
-    switch(notification.color){
-	case 'success':
-	    toast.success(notification.text);
-	    break;
-	case 'warning':
-	    toast.warning(notification.text);
-	    break;
-	case 'error':
-	    toast.error(notification.text);
-	    break;
-	default:
-	    toast.info(notification.text);
-    }
-    
+  switch (notification.color) {
+    case 'success':
+      toast.success(notification.text);
+      break;
+    case 'warning':
+      toast.warning(notification.text);
+      break;
+    case 'error':
+      toast.error(notification.text);
+      break;
+    default:
+      toast.info(notification.text);
+  }
+
   return {
     type: ADD_NOTIFICATION,
     notification,

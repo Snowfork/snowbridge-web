@@ -4,10 +4,6 @@
 
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import AppPolkadot from '../AppPolkadot';
-import AppETH from '../AppEth';
-import EthTokenList from '../AppEth/tokenList.json'
-import * as S from './Bridge.style';
 import {
   Typography,
   Grid,
@@ -19,20 +15,23 @@ import {
   InputBase,
   Divider,
   SvgIcon,
-  useTheme
+  useTheme,
+  Button,
 } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
-import IconButton from '../IconButton';
-// import Button from '../Button'
+import { useDispatch, useSelector } from 'react-redux';
+import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import AppPolkadot from '../AppPolkadot';
+import AppETH from '../AppEth';
+import EthTokenList from '../AppEth/tokenList.json';
+import * as S from './Bridge.style';
+
 import SelectTokenModal from '../SelectTokenModal';
 import { Token } from '../../types';
-import { useDispatch, useSelector } from 'react-redux';
 import { createContractInstance } from '../../redux/actions/ERC20Transactions';
 import { RootState } from '../../redux/reducers';
 import { fetchPolkadotEthBalance } from '../../redux/actions/transactions';
-import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 
 // ------------------------------------------
 //                  Props
@@ -53,29 +52,28 @@ function Bridge({
   selectedEthAccount,
 }: Props): React.ReactElement<Props> {
   const [swapDirection, setSwapDirection] = useState(SwapDirection.EthereumToPolkadot);
-  const [showAssetSelector, setShowAssetSelector] = useState(false)
+  const [showAssetSelector, setShowAssetSelector] = useState(false);
   const [tokens, setTokens] = useState<Token[]>([EthTokenList.tokens[0] as Token]);
   const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
   const { web3 } = useSelector((state: RootState) => state.net);
-  const currentTokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance)
-  const { ethBalance, polkadotEthBalance } = useSelector((state: RootState) => state.transactions)
+  const currentTokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance);
+  const { ethBalance, polkadotEthBalance } = useSelector((state: RootState) => state.transactions);
 
   const dispatch = useDispatch();
   const theme = useTheme();
 
   useEffect(() => {
-    const currentChainId = Number.parseInt((web3!.currentProvider as any).chainId, 16)
-    let selectedTokenList: Token[];
+    const currentChainId = Number.parseInt((web3!.currentProvider as any).chainId, 16);
     // set eth token list
     // only include tokens from current network
-    selectedTokenList = (EthTokenList.tokens as Token[])
+    const selectedTokenList = (EthTokenList.tokens as Token[])
       .filter(
-        (token: Token) => token.chainId === currentChainId)
+        (token: Token) => token.chainId === currentChainId,
+      );
 
     setTokens(selectedTokenList);
     setSelectedAsset(selectedTokenList[0]);
-
-  }, [web3])
+  }, [web3]);
 
   // update the contract instance when the selected asset changes
   const handleAssetSelected = (asset: Token): void => {
@@ -83,9 +81,9 @@ function Bridge({
     dispatch(createContractInstance(asset.address, web3!));
 
     // if (swapDirection === SwapDirection.PolkadotToEthereum) {
-    dispatch(fetchPolkadotEthBalance())
+    dispatch(fetchPolkadotEthBalance());
     // }
-  }
+  };
 
   // update transaction direction between chains
   const changeTransactionDirection = () => {
@@ -98,75 +96,75 @@ function Bridge({
 
   const ChainApp = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      return <AppETH
-        selectedToken={selectedAsset}
-        selectedEthAccount={selectedEthAccount}
-      />
-    } else {
-      return <AppPolkadot
-        selectedToken={selectedAsset}
-      />;
+      return (
+        <AppETH
+          selectedToken={selectedAsset}
+          selectedEthAccount={selectedEthAccount}
+        />
+      );
     }
+    return (
+      <AppPolkadot
+        selectedToken={selectedAsset}
+      />
+    );
   };
 
-  const useStyles = makeStyles((theme: Theme) => {
-    return createStyles({
-      root: {
-        padding: '2px 4px',
-        display: 'flex',
-        alignItems: 'center',
-        margin: '0 auto',
-        maxWidth: 400
-      },
-      amountInput: {
-        padding: '2px 4px',
-        display: 'flex',
-        alignItems: 'center',
-        margin: '0 auto',
-        marginBottom: theme.spacing(2),
-      },
-      paper: {
-        padding: theme.spacing(2),
-        margin: '0 auto',
-        maxWidth: 500,
-      },
-      input: {
-        marginLeft: theme.spacing(1),
-        flex: 1,
-      },
-      divider: {
-        height: 28,
-        margin: 4,
-      },
-      transfer: {
-        width: '100%'
-      },
-      switch: {
-        margin: 'auto'
-      },
-      fromLabel: {
-        color: theme.palette.primary.dark,
-        background: theme.palette.primary.light,
-        width: 'fit-content',
-        'border-radius': theme.shape.borderRadius,
-        padding: theme.spacing(1)
-      },
-      toLabel: {
-        color: theme.palette.secondary.dark,
-        background: theme.palette.secondary.light,
-        width: 'fit-content',
-        'border-radius': theme.shape.borderRadius,
-        padding: theme.spacing(1)
-      }
-    })
+  const useStyles = makeStyles((theme: Theme) => createStyles({
+    root: {
+      padding: '2px 4px',
+      display: 'flex',
+      alignItems: 'center',
+      margin: '0 auto',
+      maxWidth: 400,
+    },
+    amountInput: {
+      padding: '2px 4px',
+      display: 'flex',
+      alignItems: 'center',
+      margin: '0 auto',
+      marginBottom: theme.spacing(2),
+    },
+    paper: {
+      padding: theme.spacing(2),
+      margin: '0 auto',
+      maxWidth: 500,
+    },
+    input: {
+      marginLeft: theme.spacing(1),
+      flex: 1,
+    },
+    divider: {
+      height: 28,
+      margin: 4,
+    },
+    transfer: {
+      width: '100%',
+    },
+    switch: {
+      margin: 'auto',
+    },
+    fromLabel: {
+      color: theme.palette.primary.dark,
+      background: theme.palette.primary.light,
+      width: 'fit-content',
+      'border-radius': theme.shape.borderRadius,
+      padding: theme.spacing(1),
+    },
+    toLabel: {
+      color: theme.palette.secondary.dark,
+      background: theme.palette.secondary.light,
+      width: 'fit-content',
+      'border-radius': theme.shape.borderRadius,
+      padding: theme.spacing(1),
+    },
+  }));
 
-  });
-
-  const getNetworkNames = (direction: SwapDirection) => {
-    return direction === SwapDirection.EthereumToPolkadot
+  const getNetworkNames = (direction: SwapDirection) => (
+    direction === SwapDirection.EthereumToPolkadot
       ? { from: 'Ethereum', to: 'Polkadot' }
-      : { from: 'Polkadot', to: 'Ethereum' };
-  }
+      : { from: 'Polkadot', to: 'Ethereum' }
+  );
 
   const getSourceNetworkTokenBalance = (direction: SwapDirection, token: Token) => {
     // native eth asset
@@ -174,11 +172,10 @@ function Bridge({
       // return eth on ethereum balance
       if (direction === SwapDirection.EthereumToPolkadot) {
         return ethBalance;
-      } else {
-        return polkadotEthBalance;
       }
+      return polkadotEthBalance;
     }
-  }
+  };
 
   const getDestinationNetworkTokenBalance = (direction: SwapDirection, token: Token) => {
     // native eth asset
@@ -186,14 +183,12 @@ function Bridge({
       // return eth on polkadot balance
       if (direction === SwapDirection.EthereumToPolkadot) {
         return polkadotEthBalance;
-      } else {
-        return ethBalance;
       }
+      return ethBalance;
     }
-  }
+  };
 
   const classes = useStyles(theme);
-
 
   return (
 
@@ -214,7 +209,7 @@ function Bridge({
                   placeholder="0.0"
                   inputProps={{ 'aria-label': '0.0' }}
                 />
-                <Button size="small" >MAX</Button>
+                <Button size="small">MAX</Button>
                 <Divider className={classes.divider} orientation="vertical" />
                 <Button onClick={() => setShowAssetSelector(true)}>
                   {selectedAsset?.name}
@@ -222,21 +217,23 @@ function Bridge({
                 </Button>
               </Paper>
             </Grid>
-            
+
             <Grid item container justify="space-between">
-              <Typography gutterBottom >$0.00</Typography>
+              <Typography gutterBottom>$0.00</Typography>
               <Grid item>
                 <Typography gutterBottom variant="caption">
                   Available Balance:
-              </Typography>
-                <Typography gutterBottom >
-                  {getSourceNetworkTokenBalance(swapDirection, selectedAsset)} {selectedAsset.symbol}
+                </Typography>
+                <Typography gutterBottom>
+                  {getSourceNetworkTokenBalance(swapDirection, selectedAsset)}
+                  {' '}
+                  {selectedAsset.symbol}
                 </Typography>
               </Grid>
             </Grid>
           </Grid>
 
-          <Grid item className={classes.switch} >
+          <Grid item className={classes.switch}>
             <Button onClick={changeTransactionDirection}>
               <SwapVerticalCircleIcon height="40px" color="primary" />
             </Button>
@@ -255,10 +252,12 @@ function Bridge({
               <Grid item>
                 <Typography gutterBottom variant="caption">
                   Available Balance:
-              </Typography>
-                <Typography gutterBottom >
-                  {getDestinationNetworkTokenBalance(swapDirection, selectedAsset)} {selectedAsset.symbol}
-              </Typography>
+                </Typography>
+                <Typography gutterBottom>
+                  {getDestinationNetworkTokenBalance(swapDirection, selectedAsset)}
+                  {' '}
+                  {selectedAsset.symbol}
+                </Typography>
               </Grid>
             </Grid>
           </Grid>
@@ -271,66 +270,72 @@ function Bridge({
             size="large"
             className={classes.transfer}
             color="primary"
-          >Transfer</Button>
+          >
+            Transfer
+          </Button>
         </Grid>
 
       </Paper>
-     <SelectTokenModal tokens={tokens} onTokenSelected={handleAssetSelected} open={showAssetSelector} onClose={() => setShowAssetSelector(false)} />
+      <SelectTokenModal
+        tokens={tokens}
+        onTokenSelected={handleAssetSelected}
+        open={showAssetSelector}
+        onClose={() => setShowAssetSelector(false)}
+      />
 
     </div>
 
+  // <div style={{ padding: '2em 0', }}>
+  //   {/* select swap direction */}
+  //   <Grid
+  //     container
+  //     item
+  //     xs={10}
+  //     md={8}
+  //     justify="center"
+  //     spacing={3}
+  //     style={{
+  //       background: 'white',
+  //       margin: '0 auto',
+  //       padding: '2em 0',
+  //       border: 'thin solid #E0E0E0',
+  //     }}
+  //   >
+  //     <Typography gutterBottom variant="h5">
+  //       <S.HeadingContainer>
+  //         Eth
+  //           <IconButton
+  //           primary={swapDirection === SwapDirection.PolkadotToEthereum}
+  //           style={{ marginLeft: '10px' }}
+  //           icon={<FaLongArrowAltLeft size="2.5em" />}
+  //           onClick={() => handleSwap()}
+  //         />
+  //         <IconButton
+  //           primary={swapDirection === SwapDirection.EthereumToPolkadot}
+  //           style={{ marginRight: '10px' }}
+  //           icon={<FaLongArrowAltRight size="2.5em" />}
+  //           onClick={() => handleSwap()}
+  //         />
+  //           Polkadot
+  //         </S.HeadingContainer>
+  //     </Typography>
+  //     <Box marginLeft="10%">
+  //       <Typography gutterBottom display="block">Select Asset</Typography>
+  //       <Button onClick={() => setShowAssetSelector(true)}>
+  //         <img src={selectedAsset?.logoURI}
+  //  alt = {`${selectedAsset?.name} icon`
+  // } style = {{ width: '25px' }} />
+  //         {selectedAsset?.symbol}
+  //       </Button>
+  //     </Box>
+  //     <SelectTokenModal tokens={tokens}
+  //  onTokenSelected={handleAssetSelected}
+  // open = { showAssetSelector } onClose = {() => setShowAssetSelector(false)
+  // } />
+  //   </Grid>
+  //   <ChainApp />
 
-
-    // <div style={{ padding: '2em 0', }}>
-    //   {/* select swap direction */}
-    //   <Grid
-    //     container
-    //     item
-    //     xs={10}
-    //     md={8}
-    //     justify="center"
-    //     spacing={3}
-    //     style={{
-    //       background: 'white',
-    //       margin: '0 auto',
-    //       padding: '2em 0',
-    //       border: 'thin solid #E0E0E0',
-    //     }}
-    //   >
-    //     <Typography gutterBottom variant="h5">
-    //       <S.HeadingContainer>
-    //         Eth
-    //           <IconButton
-    //           primary={swapDirection === SwapDirection.PolkadotToEthereum}
-    //           style={{ marginLeft: '10px' }}
-    //           icon={<FaLongArrowAltLeft size="2.5em" />}
-    //           onClick={() => handleSwap()}
-    //         />
-    //         <IconButton
-    //           primary={swapDirection === SwapDirection.EthereumToPolkadot}
-    //           style={{ marginRight: '10px' }}
-    //           icon={<FaLongArrowAltRight size="2.5em" />}
-    //           onClick={() => handleSwap()}
-    //         />
-    //           Polkadot
-    //         </S.HeadingContainer>
-    //     </Typography>
-    //     <Box marginLeft="10%">
-    //       <Typography gutterBottom display="block">Select Asset</Typography>
-    //       <Button onClick={() => setShowAssetSelector(true)}>
-    //         <img src={selectedAsset?.logoURI} alt={`${selectedAsset?.name} icon`} style={{ width: '25px' }} />
-    //         {selectedAsset?.symbol}
-    //       </Button>
-    //     </Box>
-    //     <SelectTokenModal tokens={tokens} onTokenSelected={handleAssetSelected} open={showAssetSelector} onClose={() => setShowAssetSelector(false)} />
-    //   </Grid>
-    //   <ChainApp />
-
-
-
-
-    // </div>
-
+  // </div>
 
   );
 }

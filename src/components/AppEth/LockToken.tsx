@@ -18,32 +18,29 @@ import {
 } from '@material-ui/core';
 
 // Local
-import PolkadotAccount from '../PolkadotAccount';
-import Net from '../../net';
-import { Token } from '../../types';
 import { useDispatch, useSelector } from 'react-redux';
+import PolkadotAccount from '../PolkadotAccount';
+import { Token } from '../../types';
 import { RootState } from '../../redux/reducers';
 import { lockToken } from '../../redux/actions/transactions';
 
 type LockTokenProps = {
-  net: Net;
   selectedToken: Token;
-  currentTokenAllowance?: Number;
+  currentTokenAllowance: number;
 };
 
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
 function LockToken({
-  net,
   selectedToken,
-  currentTokenAllowance
+  currentTokenAllowance,
 }: LockTokenProps): React.ReactElement {
   const [depositAmount, setDepositAmount] = useState<number | string>('');
-  const [helperText, setHelperText] = useState<string>('') 
-  const erc20TokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance)
-  const { ethBalance } = useSelector((state: RootState) => state.transactions)
-  const { polkadotAddress } = useSelector((state: RootState) => state.net)
+  const [helperText, setHelperText] = useState<string>('');
+  const erc20TokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance);
+  const { ethBalance } = useSelector((state: RootState) => state.transactions);
+  const { polkadotAddress } = useSelector((state: RootState) => state.net);
 
   const dispatch = useDispatch();
 
@@ -54,20 +51,20 @@ function LockToken({
     if (isERC20) {
       return erc20TokenBalance as number;
     }
-    return Number.parseFloat(ethBalance!) as number
-  }
+    return Number.parseFloat(ethBalance!) as number;
+  };
 
   const handleLockToken = async () => {
     // check if the user has enough funds
     if (depositAmount > getMaxTokenBalance()) {
-      setHelperText('Insufficient funds.')
+      setHelperText('Insufficient funds.');
     } else {
-      setHelperText('')
+      setHelperText('');
       dispatch(lockToken(
         depositAmount.toString(),
         selectedToken,
-        polkadotAddress!
-      ))
+        polkadotAddress!,
+      ));
     }
   };
 
@@ -80,13 +77,15 @@ function LockToken({
         </FormControl>
         <FormHelperText id="ethAmountDesc">
           Polkadot Receiving Address
-          </FormHelperText>
+        </FormHelperText>
       </Grid>
       <Box padding={1} />
       <FormControl>
         <Typography gutterBottom>Amount</Typography>
-        <FormHelperText >
-          MAX: {getMaxTokenBalance()}
+        <FormHelperText>
+          MAX:
+          {' '}
+          {getMaxTokenBalance()}
         </FormHelperText>
         <TextField
           error={!!helperText}
@@ -103,15 +102,29 @@ function LockToken({
           variant="outlined"
         />
         <FormHelperText id="ethAmountDesc">
-          How much {selectedToken?.symbol} would you like to deposit?
+          How much
+          {' '}
+          {selectedToken.symbol}
+          {' '}
+          would you like to deposit?
         </FormHelperText>
       </FormControl>
       <Box alignItems="center" display="flex" justifyContent="space-around">
-        {isERC20 && <Box>
+        {isERC20 && (
+        <Box>
           <Typography>
-            Current {selectedToken?.symbol} allowance for bridge: {Number(currentTokenAllowance).toFixed(18)} {selectedToken?.symbol}
+            Current
+            {' '}
+            {selectedToken.symbol}
+            {' '}
+            allowance for bridge:
+            {' '}
+            {Number(currentTokenAllowance).toFixed(18)}
+            {' '}
+            {selectedToken.symbol}
           </Typography>
-        </Box>}
+        </Box>
+        )}
         <Box
           alignItems="center"
           display="flex"
@@ -123,7 +136,7 @@ function LockToken({
           <Button
             color="primary"
             disabled={isERC20 && currentTokenAllowance === 0}
-            fullWidth={true}
+            fullWidth
             onClick={() => handleLockToken()}
             variant="outlined"
           >

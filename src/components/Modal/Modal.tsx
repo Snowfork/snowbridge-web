@@ -1,3 +1,4 @@
+import { Button } from '@material-ui/core';
 import React, { ReactNode } from 'react';
 import ReactModal from 'react-modal';
 
@@ -19,7 +20,9 @@ type Props = {
   buttonText: string;
 };
 
-function Modal({ children, isOpen, closeModal, buttonText }: Props) {
+function Modal({
+  children, isOpen, closeModal, buttonText,
+}: Props): JSX.Element {
   return (
     <div>
       <ReactModal
@@ -29,7 +32,7 @@ function Modal({ children, isOpen, closeModal, buttonText }: Props) {
         contentLabel="Example Modal"
       >
         {children}
-        <button onClick={closeModal}>{buttonText}</button>
+        <Button onClick={closeModal}>{buttonText}</Button>
       </ReactModal>
     </div>
   );

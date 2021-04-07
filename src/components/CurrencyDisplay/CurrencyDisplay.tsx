@@ -20,7 +20,7 @@ function CurrencyDisplay({
   address,
   icon,
   provider,
-}: Props) {
+}: Props): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
 
   function openModal() {
@@ -36,7 +36,9 @@ function CurrencyDisplay({
       <S.Icon src={icon} alt={`${provider} currency`} />
       <S.Container>
         <S.Amount>
-          {formatToDecimalString(balance, 3)} {currencyCode}
+          {formatToDecimalString(balance, 3)}
+          {' '}
+          {currencyCode}
         </S.Amount>
         <S.Address onClick={openModal}>
           {shortenWalletAddress(address)}

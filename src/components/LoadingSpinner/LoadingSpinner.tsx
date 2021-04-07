@@ -36,29 +36,27 @@ const Wrapper = styled.div<StyledProps>`
 const LoadingSpinner: React.FC<ISpinnerProps> = ({
   spinnerHeight = '40%',
   spinnerWidth = '40%',
-}) => {
-  return (
-    <Wrapper
-      borderSize="3px"
-      spinnerWidth={spinnerWidth}
-      spinnerHeight={spinnerHeight}
-      mainColor="#868686"
-      accentColor="#000000"
-    >
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-    </Wrapper>
-  );
-};
+}: ISpinnerProps) => (
+  <Wrapper
+    borderSize="3px"
+    spinnerWidth={spinnerWidth}
+    spinnerHeight={spinnerHeight}
+    mainColor="#868686"
+    accentColor="#000000"
+  >
+    <div />
+    <div />
+    <div />
+    <div />
+    <div />
+    <div />
+    <div />
+    <div />
+    <div />
+    <div />
+    <div />
+    <div />
+  </Wrapper>
+);
 
 export default LoadingSpinner;

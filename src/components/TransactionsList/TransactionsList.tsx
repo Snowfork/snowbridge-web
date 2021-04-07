@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import * as S from './TransactionsList.style';
 import ReactModal from 'react-modal';
+import { Button } from '@material-ui/core';
+import * as S from './TransactionsList.style';
 import LoadingSpinner from '../LoadingSpinner';
 
 import { TransactionsState } from '../../redux/reducers/transactions';
 
 import TransactionItem from './TransactionItem';
-import { Button } from '@material-ui/core';
 
 const customStyles = {
   overlay: {},
@@ -33,6 +33,12 @@ function TransactionsList({
     transactions.length,
   );
   const noTransactions = transactions.length === 0 || !transactions;
+  function closeModal() {
+    setIsOpen(false);
+  }
+  function openModal() {
+    setIsOpen(true);
+  }
   // fires when the transaction list is updated
   // check if a new transaction has been added
   // to open the modal
@@ -43,21 +49,17 @@ function TransactionsList({
     setLastTransactionCount(transactions.length);
   }, [lastTransactionCount, transactions]);
 
-  function closeModal() {
-    setIsOpen(false);
-  }
-  function openModal() {
-    setIsOpen(true);
-  }
-
   function getTransactions() {
     if (noTransactions) {
       return <div>No transactions</div>;
     }
     return (
       <S.List>
-        {transactions.map((transaction, index) => (
-          <TransactionItem transaction={transaction} transactionIndex={index} key={transaction.hash} />
+        {transactions.map((transaction) => (
+          <TransactionItem
+            transaction={transaction}
+            key={transaction.hash}
+          />
         ))}
       </S.List>
     );

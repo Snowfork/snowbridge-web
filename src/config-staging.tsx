@@ -1,5 +1,5 @@
 export default {
-  //Contract Addresses
+  // Contract Addresses
   APP_ETH_CONTRACT_ADDRESS: '0x5941874f9e7bb28d6DcBf3b638b72aBDD714496D',
   APP_ERC20_CONTRACT_ADDRESS: '0x3f999b67fA68BC85f66eb76D0F857A655d06Ef75',
   BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS: '0x73514B8591CA6040576472316759fF7BECDbD577',
@@ -20,6 +20,6 @@ export default {
   // URL to the block explorer the UI will redirect to
   BLOCK_EXPLORER_URL: 'https://ropsten.etherscan.io',
 
-  PERMITTED_METAMASK_NETWORK: 'ropsten'
+  PERMITTED_METAMASK_NETWORK: 'ropsten',
 
 };
