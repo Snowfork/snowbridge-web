@@ -70,7 +70,7 @@ const initialState : NetState = {
   isNetworkConnected: false,
 };
 
-function netReducer(state = initialState, action: any) {
+function netReducer(state = initialState, action: any): NetState {
   switch (action.type) {
     case SET_METAMASK_FOUND: {
       return { ...state, metamaskFound: true };

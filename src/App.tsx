@@ -22,6 +22,8 @@ import Modal from './components/Modal';
 import LoadingSpinner from './components/LoadingSpinner';
 import { BLOCK_EXPLORER_URL, PERMITTED_METAMASK_NETWORK } from './config';
 import { RootState } from './redux/reducers';
+import { initializeTokens } from './redux/actions/bridge';
+import EthTokenList from './components/AppEth/tokenList.json';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
@@ -40,6 +42,8 @@ function BridgeApp() {
   useEffect(() => {
     const start = async () => {
       await Net.start(dispatch);
+
+      dispatch(initializeTokens(EthTokenList.tokens));
     };
 
     start();
