@@ -10,6 +10,7 @@ import * as S from './SelectTokenModal.style';
 import { RootState } from '../../redux/reducers';
 import { setSelectedAsset } from '../../redux/actions/bridge';
 import { TokenData } from '../../redux/reducers/bridge';
+import { fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
 
 const customStyles = {
   overlay: {},
@@ -54,6 +55,7 @@ function SelectTokenModal({
 
   function handleTokenSelection(selectedAsset: TokenData) {
     dispatch(setSelectedAsset(selectedAsset));
+    dispatch(fetchERC20Allowance());
     closeModal();
   }
 

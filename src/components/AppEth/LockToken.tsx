@@ -3,14 +3,11 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // General
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 // External
 import {
-  Box,
-  Typography,
-  TextField,
   Button,
   Grid,
   FormControl,
@@ -20,131 +17,99 @@ import {
 // Local
 import { useDispatch, useSelector } from 'react-redux';
 import PolkadotAccount from '../PolkadotAccount';
-import { Token } from '../../types';
 import { RootState } from '../../redux/reducers';
 import { lockToken } from '../../redux/actions/transactions';
-
-type LockTokenProps = {
-  selectedToken: Token;
-  currentTokenAllowance: number;
-};
+import { approveERC20 } from '../../redux/actions/ERC20Transactions';
 
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
-function LockToken({
-  selectedToken,
-  currentTokenAllowance,
-}: LockTokenProps): React.ReactElement {
-  const [depositAmount, setDepositAmount] = useState<number | string>('');
-  const [helperText, setHelperText] = useState<string>('');
-  const erc20TokenBalance = useSelector((state: RootState) => state.ERC20Transactions.balance);
-  const { ethBalance } = useSelector((state: RootState) => state.transactions);
+function LockToken(): React.ReactElement {
+  const { allowance } = useSelector((state: RootState) => state.ERC20Transactions);
   const { polkadotAddress } = useSelector((state: RootState) => state.net);
+  const { selectedAsset, depositAmount } = useSelector((state: RootState) => state.bridge);
 
   const dispatch = useDispatch();
 
-  const isERC20 = selectedToken?.address !== '0x0';
+  const isERC20 = selectedAsset?.token?.address !== '0x0';
+  const currentTokenAllowance = allowance;
 
   // return total balance of ETH or ERC20
-  const getMaxTokenBalance = () : number => {
-    if (isERC20) {
-      return erc20TokenBalance as number;
-    }
-    return Number.parseFloat(ethBalance!) as number;
+  // const getMaxTokenBalance = () : number => 0;
+
+  // lock assets
+  const handleDepositToken = async () => {
+    // check if the user has enough funds
+    // if (depositAmount > getMaxTokenBalance()) {
+    //   // setHelperText('Insufficient funds.');
+    // } else {
+    //   // setHelperText('');
+    // }
+    dispatch(lockToken(
+      depositAmount.toString(),
+        selectedAsset!.token,
+        polkadotAddress!,
+    ));
   };
 
-  const handleLockToken = async () => {
-    // check if the user has enough funds
-    if (depositAmount > getMaxTokenBalance()) {
-      setHelperText('Insufficient funds.');
-    } else {
-      setHelperText('');
-      dispatch(lockToken(
-        depositAmount.toString(),
-        selectedToken,
-        polkadotAddress!,
-      ));
+  // approve spending of token
+  const handleTokenUnlock = async () => {
+    dispatch(approveERC20(`${depositAmount}`));
+  };
+
+  const DepositButton = () => {
+    if (isERC20) {
+      if (
+        Number.parseFloat(currentTokenAllowance.toString())
+        < Number.parseFloat(depositAmount.toString())
+      ) {
+        return (
+          <Button
+            variant="contained"
+            size="large"
+            color="primary"
+            onClick={handleTokenUnlock}
+          >
+            Unlock Token
+          </Button>
+        );
+      }
     }
+    return (
+      <Button
+        variant="contained"
+        size="large"
+        color="primary"
+        onClick={handleDepositToken}
+      >
+        Deposit
+        {' '}
+        {selectedAsset?.token.symbol }
+      </Button>
+    );
   };
 
   // Render
   return (
-    <Box display="flex" flexDirection="column">
-      <Grid item xs={10}>
-        <FormControl>
-          <PolkadotAccount address={polkadotAddress!} />
-        </FormControl>
-        <FormHelperText id="ethAmountDesc">
-          Polkadot Receiving Address
-        </FormHelperText>
-      </Grid>
-      <Box padding={1} />
+    <Grid container>
       <FormControl>
-        <Typography gutterBottom>Amount</Typography>
-        <FormHelperText>
-          MAX:
-          {' '}
-          {getMaxTokenBalance()}
-        </FormHelperText>
-        <TextField
-          error={!!helperText}
-          helperText={helperText}
-          InputProps={{
-            value: depositAmount,
-          }}
-          id="token-input-amount"
-          type="number"
-          margin="normal"
-          onChange={(e) => setDepositAmount(e.target.value ? Number(e.target.value) : '')}
-          placeholder={`0.00 ${selectedToken?.symbol}`}
-          style={{ margin: 5 }}
-          variant="outlined"
-        />
-        <FormHelperText id="ethAmountDesc">
-          How much
-          {' '}
-          {selectedToken.symbol}
-          {' '}
-          would you like to deposit?
-        </FormHelperText>
+        <PolkadotAccount address={polkadotAddress!} />
       </FormControl>
-      <Box alignItems="center" display="flex" justifyContent="space-around">
-        {isERC20 && (
-        <Box>
-          <Typography>
-            Current
-            {' '}
-            {selectedToken.symbol}
-            {' '}
-            allowance for bridge:
-            {' '}
-            {Number(currentTokenAllowance).toFixed(18)}
-            {' '}
-            {selectedToken.symbol}
-          </Typography>
-        </Box>
-        )}
-        <Box
-          alignItems="center"
-          display="flex"
-          height="100px"
-          paddingBottom={1}
-          paddingTop={2}
-          width="300px"
-        >
-          <Button
-            color="primary"
-            disabled={isERC20 && currentTokenAllowance === 0}
-            fullWidth
-            onClick={() => handleLockToken()}
-            variant="outlined"
-          >
-            <Typography variant="button">Send</Typography>
-          </Button>
-        </Box>
-      </Box>
-    </Box>
+      <FormHelperText id="ethAmountDesc">
+        Polkadot Receiving Address
+      </FormHelperText>
+      {
+        isERC20 && (
+        <div>
+          Current allowance:
+          {' '}
+          {currentTokenAllowance}
+        </div>
+        )
+      }
+
+      <DepositButton />
+    </Grid>
   );
 }
 

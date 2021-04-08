@@ -28,13 +28,12 @@ import EthTokenList from './components/AppEth/tokenList.json';
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
-function BridgeApp() {
+function BridgeApp(): JSX.Element {
   const dispatch = useDispatch();
   const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
   const {
     isNetworkConnected,
     metamaskNetwork,
-    ethAddress,
   } = useSelector((state: RootState) => state.net);
   const transactions = useSelector((state: RootState) => state.transactions);
 
@@ -85,9 +84,7 @@ function BridgeApp() {
   return (
     <main>
       <Nav transactions={transactions} />
-      <Bridge
-        selectedEthAccount={ethAddress!}
-      />
+      <Bridge />
       <Modal
         isOpen={isPendingModalOpen}
         closeModal={closeModal}

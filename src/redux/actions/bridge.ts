@@ -1,13 +1,18 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import { Token } from '../../types';
+import { SwapDirection, Token } from '../../types';
 import { RootState } from '../reducers';
 import * as ERC20 from '../../contracts/ERC20.json';
 import * as ERC20Api from '../../utils/ERC20Api';
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
-import { SET_TOKEN_LIST, SET_SELECTED_ASSET } from '../actionsTypes/bridge';
+import {
+  SET_TOKEN_LIST,
+  SET_SELECTED_ASSET,
+  SET_DEPOSIT_AMOUNT,
+  SET_SWAP_DIRECTION,
+} from '../actionsTypes/bridge';
 import { TokenData } from '../reducers/bridge';
 
 export interface SetTokenListPayload { type: string, list: TokenData[] }
@@ -21,6 +26,18 @@ export const setSelectedAsset = (asset: TokenData)
     : SetSelectedAssetPayload => ({
   type: SET_SELECTED_ASSET,
   asset,
+});
+
+export interface SetDepositAmountPayload { type: string, amount: number }
+export const setDepositAmount = (amount: number): SetDepositAmountPayload => ({
+  type: SET_DEPOSIT_AMOUNT,
+  amount,
+});
+
+export interface SetSwapDirectionPayload { type: string, direction: SwapDirection }
+export const setSwapDirection = (direction: SwapDirection): SetSwapDirectionPayload => ({
+  type: SET_SWAP_DIRECTION,
+  direction,
 });
 
 // async middleware actions
@@ -55,12 +72,13 @@ export const initializeTokens = (tokens: Token[]):
                 token.address,
           );
           const balance = await ERC20Api.fetchERC20Balance(contractInstance, ethAddress!);
+          const formatted = Number.parseFloat(web3.utils.fromWei(balance.toString())).toFixed(4);
           // TODO: fetch polkadot balance
           return {
             token,
             instance: contractInstance,
             balance: {
-              eth: balance.toString(),
+              eth: formatted,
               polkadot: '0',
             },
           };

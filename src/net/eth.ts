@@ -123,7 +123,7 @@ export default class Eth extends Api {
   /**
  * Get ETH balance of default Ethereum account
  * @param {web3} Web3 web3 instance
- * @return {Promise<string>} The default web3 account
+ * @return {Promise<string>} The eth balance of the account
  */
   public static async getBalance(conn: Web3): Promise<string> {
     try {

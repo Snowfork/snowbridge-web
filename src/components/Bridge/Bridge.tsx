@@ -16,61 +16,52 @@ import {
   useTheme,
   Button,
 } from '@material-ui/core';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-// import AppPolkadot from '../AppPolkadot';
-// import AppETH from '../AppEth';
+import AppPolkadot from '../AppPolkadot';
+import AppETH from '../AppEth';
 import SelectTokenModal from '../SelectTokenModal';
 import { RootState } from '../../redux/reducers';
+import { setDepositAmount, setSwapDirection } from '../../redux/actions/bridge';
+import { SwapDirection } from '../../types';
 
 // ------------------------------------------
 //                  Props
 // ------------------------------------------
-type Props = {
-  selectedEthAccount: string;
-};
-
-enum SwapDirection {
-  EthereumToPolkadot,
-  PolkadotToEthereum
-}
 
 // ------------------------------------------
 //               Bank component
 // ------------------------------------------
-function Bridge({
-  selectedEthAccount,
-}: Props): React.ReactElement<Props> {
-  const [swapDirection, setSwapDirection] = useState(SwapDirection.EthereumToPolkadot);
+function Bridge(): React.ReactElement {
   const [showAssetSelector, setShowAssetSelector] = useState(false);
-  const { selectedAsset } = useSelector((state: RootState) => state.bridge);
+  const {
+    selectedAsset,
+    depositAmount,
+    swapDirection,
+  } = useSelector((state: RootState) => state.bridge);
   const theme = useTheme();
+  const dispatch = useDispatch();
 
   // update transaction direction between chains
   const changeTransactionDirection = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      setSwapDirection(SwapDirection.PolkadotToEthereum);
+      dispatch(setSwapDirection(SwapDirection.PolkadotToEthereum));
     } else {
-      setSwapDirection(SwapDirection.EthereumToPolkadot);
+      dispatch(setSwapDirection(SwapDirection.EthereumToPolkadot));
     }
   };
 
-  // const ChainApp = () => {
-  //   if (swapDirection === SwapDirection.EthereumToPolkadot) {
-  //     return (
-  //       <AppETH
-  //         selectedToken={selectedAsset}
-  //         selectedEthAccount={selectedEthAccount}
-  //       />
-  //     );
-  //   }
-  //   return (
-  //     <AppPolkadot
-  //       selectedToken={selectedAsset}
-  //     />
-  //   );
-  // };
+  const ChainApp = () => {
+    if (swapDirection === SwapDirection.EthereumToPolkadot) {
+      return (
+        <AppETH />
+      );
+    }
+    return (
+      <AppPolkadot />
+    );
+  };
 
   const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -107,6 +98,7 @@ function Bridge({
       margin: 'auto',
     },
   }));
+  const classes = useStyles(theme);
 
   const getNetworkNames = (direction: SwapDirection) => (
     direction === SwapDirection.EthereumToPolkadot
@@ -116,8 +108,6 @@ function Bridge({
 
   const getTokenBalances = (direction: SwapDirection)
     : { sourceNetwork: string, destinationNetwork: string } => {
-    // native eth asset
-    // return eth on ethereum balance
     if (direction === SwapDirection.EthereumToPolkadot) {
       return {
         sourceNetwork: selectedAsset!.balance.eth,
@@ -130,7 +120,16 @@ function Bridge({
     };
   };
 
-  const classes = useStyles(theme);
+  const handleMaxClicked = () => {
+    const amount = swapDirection === SwapDirection.EthereumToPolkadot
+      ? selectedAsset?.balance.eth
+      : selectedAsset?.balance.polkadot;
+    dispatch(setDepositAmount(Number.parseFloat(amount!)));
+  };
+
+  const handleDepositAmountChanged = (e: any) => {
+    dispatch(setDepositAmount(e.target.value));
+  };
 
   return (
 
@@ -141,7 +140,9 @@ function Bridge({
           <Grid item>
             <Grid item>
               <Typography>FROM</Typography>
-              <Typography variant="subtitle1" gutterBottom>{ getNetworkNames(swapDirection).from}</Typography>
+              <Typography variant="subtitle1" gutterBottom>
+                {getNetworkNames(swapDirection).from}
+              </Typography>
             </Grid>
             {/* amount input */}
             <Grid item>
@@ -150,8 +151,11 @@ function Bridge({
                   className={classes.input}
                   placeholder="0.0"
                   inputProps={{ 'aria-label': '0.0' }}
+                  value={depositAmount}
+                  onChange={handleDepositAmountChanged}
+                  type="number"
                 />
-                <Button size="small">MAX</Button>
+                <Button size="small" onClick={handleMaxClicked}>MAX</Button>
                 <Divider className={classes.divider} orientation="vertical" />
                 <Button onClick={() => setShowAssetSelector(true)}>
                   {selectedAsset?.token?.name}
@@ -212,16 +216,7 @@ function Bridge({
 
         </Grid>
 
-        <Grid container direction="row">
-          <Button
-            variant="contained"
-            size="large"
-            className={classes.transfer}
-            color="primary"
-          >
-            Transfer
-          </Button>
-        </Grid>
+        <ChainApp />
 
       </Paper>
       <SelectTokenModal
@@ -234,7 +229,6 @@ function Bridge({
   );
 }
 
-// export default React.memo(styled(Bridge)`
 export default styled(Bridge)`
   opacity: 0.5;
   padding: 1rem 1.5rem;

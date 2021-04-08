@@ -1,48 +1,17 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import Web3 from 'web3';
 import {
-  CREATE_CONTRACT_INSTANCE,
-  SET_CONTRACT_ADDRESS,
   SET_TOKEN_ALLOWANCE,
-  SET_TOKEN_BALANCE,
-  SET_TOKEN_NAME,
 } from '../actionsTypes/ERC20Transactions';
 import * as ERC20Api from '../../utils/ERC20Api';
 import { RootState } from '../reducers';
 
-// action creators
-export interface SetContractAddressPayload { type: string, contractAddress: string }
-export const setContractAddress = (contractAddress: string): SetContractAddressPayload => ({
-  type: SET_CONTRACT_ADDRESS,
-  contractAddress,
-});
-
-export interface CreateContractInstancePayload { type: string, contractAddress: string, web3: Web3 }
-export const createContractInstance = (contractAddress: string, web3: Web3)
-  : CreateContractInstancePayload => ({
-  type: CREATE_CONTRACT_INSTANCE,
-  contractAddress,
-  web3,
-});
-
+// // action creators
 export interface SetERC20AllowancePayload { type: string, allowance: number }
 export const setERC20Allowance = (allowance: number): SetERC20AllowancePayload => ({
   type: SET_TOKEN_ALLOWANCE,
   allowance,
-});
-
-export interface SetERC20BalancePayload { type: string, balance: number }
-export const setERC20Balance = (balance: number): SetERC20BalancePayload => ({
-  type: SET_TOKEN_BALANCE,
-  balance,
-});
-
-export interface SetTokenNamePayload { type: string, name: string }
-export const setTokenName = (name: string): SetTokenNamePayload => ({
-  type: SET_TOKEN_NAME,
-  name,
 });
 
 // async middleware actions
@@ -51,37 +20,40 @@ export const fetchERC20Allowance = ():
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
 ): Promise<void> => {
   const state = getState() as RootState;
-  const { contractInstance } = state.ERC20Transactions;
   const userAddress = state.net.ethAddress!;
   const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
-
-  const allowance: number = await ERC20Api.fetchERC20Allowance(
-    contractInstance,
-    userAddress,
-    erc20BridgeContractAddress,
-  );
-  const formattedAllowance: number = await ERC20Api.removeDecimals(contractInstance, allowance);
-  dispatch(setERC20Allowance(formattedAllowance));
+  const contractInstance = state.bridge.selectedAsset?.instance;
+  if (state.bridge.selectedAsset?.token.address !== '0x0') {
+    const allowance: number = await ERC20Api.fetchERC20Allowance(
+      contractInstance,
+      userAddress,
+      erc20BridgeContractAddress,
+    );
+    dispatch(setERC20Allowance(allowance));
+  }
 };
 
-export const fetchERC20Balance = ():
+// grant spender permission to spend owner ERC20 tokens
+export const approveERC20 = (amount: string):
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
-) => {
+): Promise<void> => {
   const state = getState() as RootState;
-  const { contractInstance } = state.ERC20Transactions;
-  const userAddress = state.net.ethAddress;
-  const balance: number = await ERC20Api.fetchERC20Balance(contractInstance, userAddress!);
-  const formattedBalance = await ERC20Api.removeDecimals(contractInstance, balance);
-  dispatch(setERC20Balance(formattedBalance));
-};
+  const userAddress = state.net.ethAddress!;
+  const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
+  const { selectedAsset } = state.bridge;
 
-export const fetchERC20TokenName = ():
-  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
-  dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
-) => {
-  const state = getState() as RootState;
-  const { contractInstance } = state.ERC20Transactions;
-  const name = await ERC20Api.fetchERC20Name(contractInstance);
-  dispatch(setTokenName(name));
+  try {
+    await ERC20Api.approveERC20(
+      selectedAsset?.instance,
+      erc20BridgeContractAddress,
+      userAddress,
+      amount,
+    );
+
+    dispatch(fetchERC20Allowance());
+  } catch (e) {
+    console.log('error approving!', e);
+    throw new Error('Failed approcing ERC20.');
+  }
 };
