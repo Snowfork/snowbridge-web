@@ -1,5 +1,6 @@
 import { REQUIRED_ETH_CONFIRMATIONS } from '../config';
 import { Transaction } from '../redux/reducers/transactions';
+import { SwapDirection } from '../types';
 
 /**
  * Shortens a wallet address, showing X number of letters, an ellipsis, and
@@ -57,3 +58,9 @@ export const pendingTransactions = (transactions: Transaction[])
   : number => transactions.filter(
   (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
 ).length;
+
+export const getNetworkNames = (swapDirection: SwapDirection) => (
+  swapDirection === SwapDirection.EthereumToPolkadot
+    ? { from: 'Ethereum', to: 'Polkadot' }
+    : { from: 'Polkadot', to: 'Ethereum' }
+);

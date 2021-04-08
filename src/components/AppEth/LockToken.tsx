@@ -9,14 +9,10 @@ import styled from 'styled-components';
 // External
 import {
   Button,
-  Grid,
-  FormControl,
-  FormHelperText,
 } from '@material-ui/core';
 
 // Local
 import { useDispatch, useSelector } from 'react-redux';
-import PolkadotAccount from '../PolkadotAccount';
 import { RootState } from '../../redux/reducers';
 import { lockToken } from '../../redux/actions/transactions';
 import { approveERC20 } from '../../redux/actions/ERC20Transactions';
@@ -91,25 +87,7 @@ function LockToken(): React.ReactElement {
 
   // Render
   return (
-    <Grid container>
-      <FormControl>
-        <PolkadotAccount address={polkadotAddress!} />
-      </FormControl>
-      <FormHelperText id="ethAmountDesc">
-        Polkadot Receiving Address
-      </FormHelperText>
-      {
-        isERC20 && (
-        <div>
-          Current allowance:
-          {' '}
-          {currentTokenAllowance}
-        </div>
-        )
-      }
-
-      <DepositButton />
-    </Grid>
+    <DepositButton />
   );
 }
 

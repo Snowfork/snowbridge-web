@@ -18,50 +18,32 @@ import {
 } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
+
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import AppPolkadot from '../AppPolkadot';
-import AppETH from '../AppEth';
+
 import SelectTokenModal from '../SelectTokenModal';
 import { RootState } from '../../redux/reducers';
 import { setDepositAmount, setSwapDirection } from '../../redux/actions/bridge';
 import { SwapDirection } from '../../types';
-
-// ------------------------------------------
-//                  Props
-// ------------------------------------------
+import ConfirmTransactionModal from '../ConfirmTransactionModal';
+import { getNetworkNames } from '../../utils/common';
 
 // ------------------------------------------
 //               Bank component
 // ------------------------------------------
 function Bridge(): React.ReactElement {
+  // state
   const [showAssetSelector, setShowAssetSelector] = useState(false);
+  const [showConfirmTransactionModal, setShowConfirmTransactionModal] = useState(false);
+
   const {
     selectedAsset,
     depositAmount,
     swapDirection,
   } = useSelector((state: RootState) => state.bridge);
+
   const theme = useTheme();
   const dispatch = useDispatch();
-
-  // update transaction direction between chains
-  const changeTransactionDirection = () => {
-    if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      dispatch(setSwapDirection(SwapDirection.PolkadotToEthereum));
-    } else {
-      dispatch(setSwapDirection(SwapDirection.EthereumToPolkadot));
-    }
-  };
-
-  const ChainApp = () => {
-    if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      return (
-        <AppETH />
-      );
-    }
-    return (
-      <AppPolkadot />
-    );
-  };
 
   const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -100,12 +82,7 @@ function Bridge(): React.ReactElement {
   }));
   const classes = useStyles(theme);
 
-  const getNetworkNames = (direction: SwapDirection) => (
-    direction === SwapDirection.EthereumToPolkadot
-      ? { from: 'Ethereum', to: 'Polkadot' }
-      : { from: 'Polkadot', to: 'Ethereum' }
-  );
-
+  // utils
   const getTokenBalances = (direction: SwapDirection)
     : { sourceNetwork: string, destinationNetwork: string } => {
     if (direction === SwapDirection.EthereumToPolkadot) {
@@ -120,15 +97,31 @@ function Bridge(): React.ReactElement {
     };
   };
 
+  // Event handlers
+
+  // update transaction direction between chains
+  const changeTransactionDirection = () => {
+    if (swapDirection === SwapDirection.EthereumToPolkadot) {
+      dispatch(setSwapDirection(SwapDirection.PolkadotToEthereum));
+    } else {
+      dispatch(setSwapDirection(SwapDirection.EthereumToPolkadot));
+    }
+  };
+
+  // set deposit amount to balance of current asset
   const handleMaxClicked = () => {
-    const amount = swapDirection === SwapDirection.EthereumToPolkadot
-      ? selectedAsset?.balance.eth
-      : selectedAsset?.balance.polkadot;
+    const amount = getTokenBalances(swapDirection).sourceNetwork;
     dispatch(setDepositAmount(Number.parseFloat(amount!)));
   };
 
+  // update deposit amount in redux store
   const handleDepositAmountChanged = (e: any) => {
     dispatch(setDepositAmount(e.target.value));
+  };
+
+  // show confirm transaction modal
+  const handleTransferClicked = () => {
+    setShowConfirmTransactionModal(true);
   };
 
   return (
@@ -216,12 +209,23 @@ function Bridge(): React.ReactElement {
 
         </Grid>
 
-        <ChainApp />
+        <Button
+          variant="contained"
+          fullWidth
+          color="primary"
+          onClick={handleTransferClicked}
+        >
+          Transfer
+        </Button>
 
       </Paper>
       <SelectTokenModal
         open={showAssetSelector}
         onClose={() => setShowAssetSelector(false)}
+      />
+      <ConfirmTransactionModal
+        open={showConfirmTransactionModal}
+        onClose={() => setShowConfirmTransactionModal(false)}
       />
 
     </div>
