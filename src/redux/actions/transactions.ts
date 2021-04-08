@@ -348,26 +348,36 @@ export const fetchPolkadotGasBalance = ():
 
 // burns token on polkadot and unlocks on ethereum
 
-export const burnToken = (amount: string, token: Token, recepientEthAddress: string):
+export const burnToken = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>,
   getState,
 ): Promise<void> => {
   const state = getState() as RootState;
   const {
-    web3, polkadotApi, polkadotAddress, incentivizedChannelContract,
+    web3,
+    polkadotApi,
+    polkadotAddress,
+    incentivizedChannelContract,
+    ethAddress,
   } = state.net;
+  const {
+    selectedAsset,
+    depositAmount,
+  } = state.bridge;
 
   if (polkadotApi) {
     const account = await Polkadot.getDefaultAddress();
-    const recepient = recepientEthAddress;
+    const recepient = ethAddress;
+    const token = selectedAsset!.token!;
+    const amount = depositAmount.toString();
 
     if (account) {
       const pendingTransaction: Transaction = {
         hash: '',
         confirmations: 0,
         sender: polkadotAddress!,
-        receiver: recepientEthAddress,
+        receiver: recepient!,
         amount,
         status: TransactionStatus.SUBMITTING_TO_CHAIN,
         isMinted: false,
