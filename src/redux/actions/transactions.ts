@@ -181,7 +181,8 @@ export const lockToken = (
         let promiEvent: any;
         if (token.address === '0x0') {
           promiEvent = ethContract.methods
-            .lock(polkadotAddress, INCENTIVIZED_CHANNEL_ID)
+          // TODO: SET incentivized channel ID
+            .lock(polkadotAddress, 0)
             .send({
               from: defaultAddress,
               gas: 500000,

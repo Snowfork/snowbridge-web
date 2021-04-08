@@ -63,22 +63,24 @@ export const initializeTokens = (tokens: Token[]):
     // create a web3 contract instance for each ERC20
     const tokenContractList = tokenList.map(
       async (token: Token) => {
-        //   create token contract instance
         // All valid contract addresses have 42 characters ('0x' + address)
-        // ERC20:
+        // return ERC20 data:
         if (token.address.length === 42) {
+          //   create token contract instance
           const contractInstance = new web3.eth.Contract(
                 ERC20.abi as any,
                 token.address,
           );
-          const balance = await ERC20Api.fetchERC20Balance(contractInstance, ethAddress!);
-          const formatted = Number.parseFloat(web3.utils.fromWei(balance.toString())).toFixed(4);
+          const erc20Balance = await ERC20Api.fetchERC20Balance(contractInstance, ethAddress!);
+          const erc20BalanceFormatted = Number.parseFloat(
+            web3.utils.fromWei(erc20Balance.toString()),
+          ).toFixed(4);
           // TODO: fetch polkadot balance
           return {
             token,
             instance: contractInstance,
             balance: {
-              eth: formatted,
+              eth: erc20BalanceFormatted,
               polkadot: '0',
             },
           };

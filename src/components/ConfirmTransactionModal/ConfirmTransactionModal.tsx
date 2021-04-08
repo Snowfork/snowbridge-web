@@ -95,7 +95,7 @@ function ConfirmTransactionModal({
                   {getNetworkNames(swapDirection).from}
                 </Typography>
                 <Typography variant="caption">
-                  Receiving Address
+                  Sending Address
                 </Typography>
                 <Typography>
                   {
