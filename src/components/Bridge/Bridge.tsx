@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import {
   Typography,
@@ -22,6 +22,7 @@ import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import { formatBalance } from '@polkadot/util';
+import BigNumber from 'bignumber.js';
 import SelectTokenModal from '../SelectTokenModal';
 import { RootState } from '../../redux/reducers';
 import { setDepositAmount, setSwapDirection } from '../../redux/actions/bridge';
@@ -36,6 +37,7 @@ function Bridge(): React.ReactElement {
   // state
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const [showConfirmTransactionModal, setShowConfirmTransactionModal] = useState(false);
+  const [errorText, setErrorText] = useState('Insufficient funds.');
 
   const {
     selectedAsset,
@@ -45,6 +47,37 @@ function Bridge(): React.ReactElement {
 
   const theme = useTheme();
   const dispatch = useDispatch();
+
+  // utils
+  const getTokenBalances = (direction: SwapDirection)
+    : { sourceNetwork: string, destinationNetwork: string } => {
+    let sourceNetworkBalance = selectedAsset?.balance.polkadot;
+    let destinationNetworkBalance = selectedAsset?.balance.eth;
+
+    if (direction === SwapDirection.EthereumToPolkadot) {
+      sourceNetworkBalance = selectedAsset?.balance.eth;
+      destinationNetworkBalance = selectedAsset?.balance.polkadot;
+    }
+
+    return {
+      sourceNetwork: formatBalance(sourceNetworkBalance, { forceUnit: '', withSi: false }),
+      destinationNetwork: formatBalance(destinationNetworkBalance, { forceUnit: '', withSi: false }),
+    };
+  };
+  // side effects
+  // validate deposit amount on update
+  useEffect(() => {
+    if (
+      new BigNumber(depositAmount)
+        .isGreaterThan(
+          new BigNumber(getTokenBalances(swapDirection).sourceNetwork),
+        )
+    ) {
+      setErrorText('Insufficient funds');
+    } else {
+      setErrorText('');
+    }
+  }, [depositAmount, swapDirection]);
 
   const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -83,23 +116,6 @@ function Bridge(): React.ReactElement {
   }));
   const classes = useStyles(theme);
 
-  // utils
-  const getTokenBalances = (direction: SwapDirection)
-    : { sourceNetwork: string, destinationNetwork: string } => {
-    let sourceNetworkBalance = selectedAsset?.balance.polkadot;
-    let destinationNetworkBalance = selectedAsset?.balance.eth;
-
-    if (direction === SwapDirection.EthereumToPolkadot) {
-      sourceNetworkBalance = selectedAsset!.balance.eth;
-      destinationNetworkBalance = selectedAsset!.balance.polkadot;
-    }
-
-    return {
-      sourceNetwork: formatBalance(sourceNetworkBalance!, { forceUnit: '', withSi: false }),
-      destinationNetwork: formatBalance(destinationNetworkBalance!, { forceUnit: '', withSi: false }),
-    };
-  };
-
   // Event handlers
 
   // update transaction direction between chains
@@ -114,7 +130,7 @@ function Bridge(): React.ReactElement {
   // set deposit amount to balance of current asset
   const handleMaxClicked = () => {
     const amount = getTokenBalances(swapDirection).sourceNetwork;
-    dispatch(setDepositAmount(Number.parseFloat(amount!)));
+    dispatch(setDepositAmount(Number.parseFloat(amount)));
   };
 
   // update deposit amount in redux store
@@ -211,12 +227,16 @@ function Bridge(): React.ReactElement {
           </Grid>
 
         </Grid>
+        <Typography color="error">
+          {errorText}
+        </Typography>
 
         <Button
           variant="contained"
           fullWidth
           color="primary"
           onClick={handleTransferClicked}
+          disabled={!!errorText}
         >
           Transfer
         </Button>

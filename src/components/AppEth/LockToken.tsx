@@ -23,7 +23,7 @@ import LoadingSpinner from '../LoadingSpinner';
 // ------------------------------------------
 function LockToken(): React.ReactElement {
   const { allowance } = useSelector((state: RootState) => state.ERC20Transactions);
-  const { polkadotAddress, web3 } = useSelector((state: RootState) => state.net);
+  const { polkadotAddress } = useSelector((state: RootState) => state.net);
   const { selectedAsset, depositAmount } = useSelector((state: RootState) => state.bridge);
   const [isApprovalPending, setIsApprovalPending] = useState(false);
 
@@ -32,20 +32,8 @@ function LockToken(): React.ReactElement {
   const isERC20 = selectedAsset?.token?.address !== '0x0';
   const currentTokenAllowance = allowance;
 
-  // return total balance of ETH or ERC20
-  // const getMaxTokenBalance = () : number => 0;
-
   // lock assets
   const handleDepositToken = async () => {
-    // check if the user has enough funds
-    // if (depositAmount > getMaxTokenBalance()) {
-    //   // setHelperText('Insufficient funds.');
-    // } else {
-    //   // setHelperText('');
-    // }
-    // const amountWei = web3?.utils.toWei(depositAmount.toString(), 'ether');
-
-    console.log('depositing', depositAmount);
     dispatch(lockToken(
       depositAmount.toString(),
         selectedAsset!.token,
@@ -87,8 +75,6 @@ function LockToken(): React.ReactElement {
         );
       }
     }
-
-    console.log('allowance', allowance);
 
     return (
       <Button

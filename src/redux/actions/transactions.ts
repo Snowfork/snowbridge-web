@@ -26,7 +26,6 @@ import EthApi from '../../net/eth';
 import { notify } from './notifications';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { ss58ToU8 } from '../../net/api';
-import * as ERC20Api from '../../utils/ERC20Api';
 import { RootState } from '../reducers';
 import Polkadot from '../../net/polkadot';
 import { setEthAddress } from './net';
