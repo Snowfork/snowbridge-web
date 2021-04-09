@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // General
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 
 // External
@@ -16,14 +16,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/reducers';
 import { lockToken } from '../../redux/actions/transactions';
 import { approveERC20 } from '../../redux/actions/ERC20Transactions';
+import LoadingSpinner from '../LoadingSpinner';
 
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
 function LockToken(): React.ReactElement {
   const { allowance } = useSelector((state: RootState) => state.ERC20Transactions);
-  const { polkadotAddress } = useSelector((state: RootState) => state.net);
+  const { polkadotAddress, web3 } = useSelector((state: RootState) => state.net);
   const { selectedAsset, depositAmount } = useSelector((state: RootState) => state.bridge);
+  const [isApprovalPending, setIsApprovalPending] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -41,6 +43,9 @@ function LockToken(): React.ReactElement {
     // } else {
     //   // setHelperText('');
     // }
+    // const amountWei = web3?.utils.toWei(depositAmount.toString(), 'ether');
+
+    console.log('depositing', depositAmount);
     dispatch(lockToken(
       depositAmount.toString(),
         selectedAsset!.token,
@@ -50,7 +55,14 @@ function LockToken(): React.ReactElement {
 
   // approve spending of token
   const handleTokenUnlock = async () => {
-    dispatch(approveERC20(`${depositAmount}`));
+    try {
+      setIsApprovalPending(true);
+      await dispatch(approveERC20(`${depositAmount}`));
+    } catch (e) {
+      console.log('error approving!');
+    } finally {
+      setIsApprovalPending(false);
+    }
   };
 
   const DepositButton = () => {
@@ -65,12 +77,19 @@ function LockToken(): React.ReactElement {
             size="large"
             color="primary"
             onClick={handleTokenUnlock}
+            disabled={isApprovalPending}
           >
             Unlock Token
+            {
+              isApprovalPending && <LoadingSpinner spinnerWidth="40px" spinnerHeight="40px" />
+            }
           </Button>
         );
       }
     }
+
+    console.log('allowance', allowance);
+
     return (
       <Button
         variant="contained"
