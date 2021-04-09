@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { RootState } from '../../redux/reducers';
 import { burnToken } from '../../redux/actions/transactions';
+import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 
 // ------------------------------------------
 //               AppPolkadot component
@@ -15,11 +16,21 @@ function AppPolkadot(): React.ReactElement {
   const dispatch = useDispatch();
   const tokenSymbol = ` Snow${selectedAsset?.token.symbol}`;
 
+  async function handleDepositClicked() {
+    try {
+      dispatch(burnToken());
+    } catch (e) {
+      console.log('failed burning token', e);
+    } finally {
+      dispatch(setShowConfirmTransactionModal(false));
+    }
+  }
+
   function SendButton() {
     return (
       <Button
         color="primary"
-        onClick={() => dispatch(burnToken())}
+        onClick={handleDepositClicked}
         variant="contained"
         disabled={Number(depositAmount) <= 0}
       >

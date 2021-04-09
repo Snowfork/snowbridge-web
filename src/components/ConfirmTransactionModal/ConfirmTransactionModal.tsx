@@ -6,12 +6,13 @@ import {
   Typography,
 } from '@material-ui/core';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getNetworkNames, shortenWalletAddress } from '../../utils/common';
 import AppPolkadot from '../AppPolkadot';
 import AppETH from '../AppEth';
 import { RootState } from '../../redux/reducers';
 import { SwapDirection } from '../../types';
+import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 
 const customStyles = {
   overlay: {},
@@ -29,13 +30,12 @@ const customStyles = {
 
 type Props = {
   open: boolean;
-  onClose: () => any;
 };
 
 function ConfirmTransactionModal({
   open,
-  onClose,
 }: Props): React.ReactElement<Props> {
+  const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(open);
   const {
     ethAddress,
@@ -53,7 +53,7 @@ function ConfirmTransactionModal({
 
   function closeModal() {
     setIsOpen(false);
-    onClose();
+    dispatch(setShowConfirmTransactionModal(false));
   }
 
   const addresses = {

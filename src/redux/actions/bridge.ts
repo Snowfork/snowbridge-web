@@ -12,6 +12,7 @@ import {
   SET_SELECTED_ASSET,
   SET_DEPOSIT_AMOUNT,
   SET_SWAP_DIRECTION,
+  SET_SHOW_CONFIRM_TRANSACTION_MODAL,
 } from '../actionsTypes/bridge';
 import { TokenData } from '../reducers/bridge';
 import { fetchERC20Allowance } from './ERC20Transactions';
@@ -39,6 +40,13 @@ export interface SetSwapDirectionPayload { type: string, direction: SwapDirectio
 export const setSwapDirection = (direction: SwapDirection): SetSwapDirectionPayload => ({
   type: SET_SWAP_DIRECTION,
   direction,
+});
+
+export interface SetShowConfirmTransactionModalPayload {type: string, open: boolean}
+export const setShowConfirmTransactionModal = (open: boolean)
+  : SetShowConfirmTransactionModalPayload => ({
+  type: SET_SHOW_CONFIRM_TRANSACTION_MODAL,
+  open,
 });
 
 // async middleware actions

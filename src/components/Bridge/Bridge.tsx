@@ -25,7 +25,7 @@ import { formatBalance } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 import SelectTokenModal from '../SelectTokenModal';
 import { RootState } from '../../redux/reducers';
-import { setDepositAmount, setSwapDirection } from '../../redux/actions/bridge';
+import { setDepositAmount, setShowConfirmTransactionModal, setSwapDirection } from '../../redux/actions/bridge';
 import { SwapDirection } from '../../types';
 import ConfirmTransactionModal from '../ConfirmTransactionModal';
 import { getNetworkNames } from '../../utils/common';
@@ -36,7 +36,7 @@ import { getNetworkNames } from '../../utils/common';
 function Bridge(): React.ReactElement {
   // state
   const [showAssetSelector, setShowAssetSelector] = useState(false);
-  const [showConfirmTransactionModal, setShowConfirmTransactionModal] = useState(false);
+  const { showConfirmTransactionModal } = useSelector((state: RootState) => state.bridge);
   const [errorText, setErrorText] = useState('Insufficient funds.');
 
   const {
@@ -140,7 +140,7 @@ function Bridge(): React.ReactElement {
 
   // show confirm transaction modal
   const handleTransferClicked = () => {
-    setShowConfirmTransactionModal(true);
+    dispatch(setShowConfirmTransactionModal(true));
   };
 
   return (
@@ -248,7 +248,6 @@ function Bridge(): React.ReactElement {
       />
       <ConfirmTransactionModal
         open={showConfirmTransactionModal}
-        onClose={() => setShowConfirmTransactionModal(false)}
       />
 
     </div>

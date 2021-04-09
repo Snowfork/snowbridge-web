@@ -17,6 +17,7 @@ import { RootState } from '../../redux/reducers';
 import { lockToken } from '../../redux/actions/transactions';
 import { approveERC20 } from '../../redux/actions/ERC20Transactions';
 import LoadingSpinner from '../LoadingSpinner';
+import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 
 // ------------------------------------------
 //           LockToken component
@@ -34,11 +35,17 @@ function LockToken(): React.ReactElement {
 
   // lock assets
   const handleDepositToken = async () => {
-    dispatch(lockToken(
-      depositAmount.toString(),
+    try {
+      await dispatch(lockToken(
+        depositAmount.toString(),
         selectedAsset!.token,
         polkadotAddress!,
-    ));
+      ));
+    } catch (e) {
+      console.log('Failed to lock eth asset', e);
+    } finally {
+      dispatch(setShowConfirmTransactionModal(false));
+    }
   };
 
   // approve spending of token
