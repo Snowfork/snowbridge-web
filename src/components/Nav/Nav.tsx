@@ -5,6 +5,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { useDispatch, useSelector } from 'react-redux';
+import { formatBalance } from '@polkadot/util';
 import * as S from './Nav.style';
 import { shortenWalletAddress } from '../../utils/common';
 import Modal from '../Modal';
@@ -40,7 +41,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
   ] = useState<boolean>(false);
 
   const { ethBalance, polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
-  const { polkadotAddress, ethAddress } = useSelector((state: RootState) => state.net);
+  const { polkadotAddress, ethAddress, polkadotApi } = useSelector((state: RootState) => state.net);
 
   // fetch polkadot accountsfor the account selector on mount
   useEffect(() => {
@@ -128,6 +129,16 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     dispatch(fetchPolkadotGasBalance());
   };
 
+  const polkadotGasBalanceFormatted = formatBalance(polkadotGasBalance, {
+    decimals: polkadotApi?.registry.chainDecimals[0],
+    withUnit: polkadotApi?.registry.chainTokens[0],
+  });
+
+  const ethBalanceFormatted = formatBalance(ethBalance, {
+    decimals: 18,
+    withUnit: 'ETH',
+  });
+
   return (
     <S.Wrapper>
       <S.Heading>Snowbridge</S.Heading>
@@ -136,9 +147,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
           <S.DisplayTitle>Ethereum Wallet</S.DisplayTitle>
           <S.DisplayContainer>
             <S.Amount>
-              {ethBalance}
-              {' '}
-              ETH
+              {ethBalanceFormatted}
             </S.Amount>
             <S.Address
               as="a"
@@ -159,7 +168,9 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
         <S.DisplayWrapper>
           <S.DisplayTitle>Polkadot Wallet</S.DisplayTitle>
           <S.DisplayContainer>
-            <S.Amount>{polkadotGasBalance?.toString()}</S.Amount>
+            <S.Amount>
+              {polkadotGasBalanceFormatted}
+            </S.Amount>
             <S.Address onClick={() => setIsPolkadotAccountSelectorOpen(true)}>
               {shortenWalletAddress(polkadotAddress || '')}
             </S.Address>

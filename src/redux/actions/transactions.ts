@@ -127,15 +127,16 @@ export const fetchEthAddress = ():
 };
 
 export const fetchEthBalance = ():
-  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  ThunkAction<Promise<string>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>,
   getState,
-): Promise<void> => {
+): Promise<string> => {
   const state = getState() as RootState;
   const web3: Web3 = state.net.web3!;
 
   const balance = await EthApi.getBalance(web3);
   dispatch(setEthBalance(balance));
+  return balance;
 };
 
 export const lockToken = (
@@ -189,7 +190,10 @@ export const lockToken = (
               value: web3.utils.toWei(amount, 'ether'),
             });
         } else {
-          const tokenAmountWithDecimals = await ERC20Api.addDecimals(token, amount);
+          // const tokenAmountWithDecimals = await ERC20Api.addDecimals(token, amount);
+          const tokenAmountWithDecimals = amount;
+
+          console.log('locking ', tokenAmountWithDecimals);
           promiEvent = erc20Contract.methods
             .lock(token.address, polkadotAddress, tokenAmountWithDecimals, INCENTIVIZED_CHANNEL_ID)
             .send({
@@ -427,7 +431,7 @@ export const burnToken = ():
               );
             }
             if (result.status.isInBlock) {
-              const nonce = result.events[0].event.data[1].toString();
+              const nonce = result.events[0].event.data[0].toString();
               dispatch(
                 updateTransaction(
                   pendingTransaction.hash, { nonce, status: TransactionStatus.FINALIZED_ON_CHAIN },

@@ -6,11 +6,12 @@ import {
 } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { formatBalance } from '@polkadot/util';
 import * as S from './SelectTokenModal.style';
 import { RootState } from '../../redux/reducers';
-import { setSelectedAsset } from '../../redux/actions/bridge';
+import { updateSelectedAsset } from '../../redux/actions/bridge';
 import { TokenData } from '../../redux/reducers/bridge';
-import { fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
+import { SwapDirection } from '../../types';
 
 const customStyles = {
   overlay: {},
@@ -37,7 +38,7 @@ function SelectTokenModal({
 }: Props): React.ReactElement<Props> {
   const [isOpen, setIsOpen] = useState(open);
   const [searchInput, setSearchInput] = useState('');
-  const { tokens } = useSelector((state: RootState) => state.bridge);
+  const { tokens, swapDirection } = useSelector((state: RootState) => state.bridge);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -54,9 +55,15 @@ function SelectTokenModal({
   }
 
   function handleTokenSelection(selectedAsset: TokenData) {
-    dispatch(setSelectedAsset(selectedAsset));
-    dispatch(fetchERC20Allowance());
+    dispatch(updateSelectedAsset(selectedAsset));
     closeModal();
+  }
+
+  function getTokenBalance(tokenData: TokenData): string {
+    if (swapDirection === SwapDirection.EthereumToPolkadot) {
+      return formatBalance(tokenData.balance.eth, { withSi: false });
+    }
+    return formatBalance(tokenData.balance.polkadot, { withSi: false });
   }
 
   return (
@@ -83,7 +90,7 @@ function SelectTokenModal({
                         <img src={tokenData.token.logoURI} alt={`${tokenData.token.name} icon`} />
                         <div>
                           <Typography variant="caption">{tokenData.token.symbol}</Typography>
-                          <Typography>{ tokenData.balance.eth}</Typography>
+                          <Typography>{ getTokenBalance(tokenData)}</Typography>
                         </div>
                       </Button>
                     </S.Token>

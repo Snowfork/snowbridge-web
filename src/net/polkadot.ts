@@ -1,11 +1,8 @@
-import web3 from 'web3';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import {
   web3Accounts,
   web3Enable,
 } from '@polkadot/extension-dapp';
-import { formatBalance } from '@polkadot/util';
-import Api from './api';
 import {
   setEthAssetId, setPolkadotAddress, setPolkadotApi, subscribeEvents,
 } from '../redux/actions/net';
@@ -16,6 +13,7 @@ import { POLKADOT_API_PROVIDER } from '../config';
 import {
   fetchPolkadotEthBalance, fetchPolkadotGasBalance,
 } from '../redux/actions/transactions';
+import Api from './api';
 
 export default class Polkadot extends Api {
   // Get all polkadot addresses
@@ -48,10 +46,10 @@ export default class Polkadot extends Api {
     try {
       const account = await polkadotApi.query.system.account(polkadotAddress);
 
-      return formatBalance(account!.data!.free, {
-        decimals: polkadotApi.registry.chainDecimals[0],
-        withUnit: polkadotApi.registry.chainTokens[0],
-      });
+      if (account.data.free) {
+        return account.data.free.toString();
+      }
+      throw new Error('Polkadot balance not found');
     } catch (err) {
       console.log('error getting polkadot gas balance', err);
       throw err;
@@ -70,10 +68,7 @@ export default class Polkadot extends Api {
             polkadotAddress,
           );
 
-          return web3.utils.fromWei(
-            (balance as any).toString(),
-            'ether',
-          );
+          return balance.toString();
         }
 
         throw new Error('Default account not found');

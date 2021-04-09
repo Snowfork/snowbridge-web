@@ -21,6 +21,7 @@ import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
+import { formatBalance } from '@polkadot/util';
 import SelectTokenModal from '../SelectTokenModal';
 import { RootState } from '../../redux/reducers';
 import { setDepositAmount, setSwapDirection } from '../../redux/actions/bridge';
@@ -85,15 +86,17 @@ function Bridge(): React.ReactElement {
   // utils
   const getTokenBalances = (direction: SwapDirection)
     : { sourceNetwork: string, destinationNetwork: string } => {
+    let sourceNetworkBalance = selectedAsset?.balance.polkadot;
+    let destinationNetworkBalance = selectedAsset?.balance.eth;
+
     if (direction === SwapDirection.EthereumToPolkadot) {
-      return {
-        sourceNetwork: selectedAsset!.balance.eth,
-        destinationNetwork: selectedAsset!.balance.polkadot,
-      };
+      sourceNetworkBalance = selectedAsset!.balance.eth;
+      destinationNetworkBalance = selectedAsset!.balance.polkadot;
     }
+
     return {
-      sourceNetwork: selectedAsset!.balance.polkadot,
-      destinationNetwork: selectedAsset!.balance.eth,
+      sourceNetwork: formatBalance(sourceNetworkBalance!, { forceUnit: '', withSi: false }),
+      destinationNetwork: formatBalance(destinationNetworkBalance!, { forceUnit: '', withSi: false }),
     };
   };
 

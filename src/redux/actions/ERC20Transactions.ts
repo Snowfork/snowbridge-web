@@ -7,7 +7,7 @@ import {
 import * as ERC20Api from '../../utils/ERC20Api';
 import { RootState } from '../reducers';
 
-// // action creators
+// action creators
 export interface SetERC20AllowancePayload { type: string, allowance: number }
 export const setERC20Allowance = (allowance: number): SetERC20AllowancePayload => ({
   type: SET_TOKEN_ALLOWANCE,

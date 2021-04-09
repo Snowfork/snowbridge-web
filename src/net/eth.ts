@@ -134,7 +134,7 @@ export default class Eth extends Api {
           const currentBalance = await conn.eth.getBalance(defaultAddress);
 
           if (currentBalance) {
-            return parseFloat(conn.utils.fromWei(currentBalance)).toFixed(4);
+            return currentBalance;
           }
 
           throw new Error('Balance not found');

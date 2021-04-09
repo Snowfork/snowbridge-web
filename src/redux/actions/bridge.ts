@@ -14,6 +14,7 @@ import {
   SET_SWAP_DIRECTION,
 } from '../actionsTypes/bridge';
 import { TokenData } from '../reducers/bridge';
+import { fetchERC20Allowance } from './ERC20Transactions';
 
 export interface SetTokenListPayload { type: string, list: TokenData[] }
 export const setTokenList = (list: TokenData[]): SetTokenListPayload => ({
@@ -41,6 +42,18 @@ export const setSwapDirection = (direction: SwapDirection): SetSwapDirectionPayl
 });
 
 // async middleware actions
+// dispatches setSelectedAsset and subscribes to
+// logs to keep the balance in sync
+export const updateSelectedAsset = (asset: TokenData):
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
+): Promise<void> => {
+  // upate selected asset
+  dispatch(setSelectedAsset(asset));
+
+  // update erc spending allowance
+  dispatch(fetchERC20Allowance());
+};
 
 // use the token list to instantiate contract instances
 // and store them in redux. We also query the balance of each token for
@@ -60,35 +73,39 @@ export const initializeTokens = (tokens: Token[]):
               === Number.parseInt((web3.currentProvider as any).chainId, 16),
     );
 
+    const ethAssetId = polkadotApi!.createType('AssetId', 'ETH');
+
     // create a web3 contract instance for each ERC20
     const tokenContractList = tokenList.map(
       async (token: Token) => {
-        // All valid contract addresses have 42 characters ('0x' + address)
         // return ERC20 data:
+        // All valid contract addresses have 42 characters ('0x' + address)
         if (token.address.length === 42) {
           //   create token contract instance
           const contractInstance = new web3.eth.Contract(
                 ERC20.abi as any,
                 token.address,
           );
+
           const erc20Balance = await ERC20Api.fetchERC20Balance(contractInstance, ethAddress!);
-          const erc20BalanceFormatted = Number.parseFloat(
-            web3.utils.fromWei(erc20Balance.toString()),
-          ).toFixed(4);
-          // TODO: fetch polkadot balance
+
+          const erc20AssetId = polkadotApi!.createType('AssetId', { Token: token.address });
+          const polkadotErc20Balance = await Polkadot.getEthBalance(
+                polkadotApi!,
+                polkadotAddress,
+                erc20AssetId,
+          );
           return {
             token,
             instance: contractInstance,
             balance: {
-              eth: erc20BalanceFormatted,
-              polkadot: '0',
+              eth: erc20Balance.toString(),
+              polkadot: polkadotErc20Balance,
             },
           };
         }
 
         // return ETH data:
-        // TODO: fetch polkadot balance
-        const ethAssetId = polkadotApi!.createType('AssetId', 'ETH');
         const polkadotBalance = await Polkadot.getEthBalance(
                 polkadotApi!,
                 polkadotAddress,
@@ -96,6 +113,7 @@ export const initializeTokens = (tokens: Token[]):
         );
         return {
           token,
+          // eth 'tokens' don't have any contract instance
           instance: null,
           balance: {
             eth: await EthApi.getBalance(web3),
@@ -106,7 +124,8 @@ export const initializeTokens = (tokens: Token[]):
     );
     Promise.all(tokenContractList).then((tokenList) => {
       dispatch(setTokenList(tokenList));
-      dispatch(setSelectedAsset(tokenList[0]));
+      // set default selected token to first token from list
+      dispatch(updateSelectedAsset(tokenList[0]));
     });
   }
 };
