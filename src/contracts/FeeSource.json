@@ -20,7 +20,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"feePayer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"burnFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/home/jamie/dev/crypto/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol\":\"FeeSource\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/jamie/dev/crypto/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol\":{\"keccak256\":\"0x5707c61628b397c740230df2232fae1254fe5054d7e2b900ab16da92cc99955d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://5f4e2dff77f6843b06408d9a7342985ccee777ba6ed9a48b9fd8c07ba092fb63\",\"dweb:/ipfs/QmZHJm139hD78LdPrSjLAcAJWfACAsPg3G8uByLLELvrQB\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"feePayer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"burnFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/home/jamie/dev/clients/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol\":\"FeeSource\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/jamie/dev/clients/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol\":{\"keccak256\":\"0x5707c61628b397c740230df2232fae1254fe5054d7e2b900ab16da92cc99955d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://5f4e2dff77f6843b06408d9a7342985ccee777ba6ed9a48b9fd8c07ba092fb63\",\"dweb:/ipfs/QmZHJm139hD78LdPrSjLAcAJWfACAsPg3G8uByLLELvrQB\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -29,9 +29,9 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity >=0.7.6;\npragma experimental ABIEncoderV2;\n\n// Something that can burn a fee from a feepayer account.\ninterface FeeSource {\n    function burnFee(address feePayer, uint256 _amount) external;\n}\n",
-  "sourcePath": "/home/jamie/dev/crypto/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol",
+  "sourcePath": "/home/jamie/dev/clients/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol",
   "ast": {
-    "absolutePath": "/home/jamie/dev/crypto/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol",
+    "absolutePath": "/home/jamie/dev/clients/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol",
     "exportedSymbols": {
       "FeeSource": [
         1111
@@ -162,7 +162,7 @@
     "src": "32:208:6"
   },
   "legacyAST": {
-    "absolutePath": "/home/jamie/dev/crypto/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol",
+    "absolutePath": "/home/jamie/dev/clients/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol",
     "exportedSymbols": {
       "FeeSource": [
         1111
@@ -298,7 +298,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.5",
-  "updatedAt": "2021-04-08T13:11:56.378Z",
+  "updatedAt": "2021-04-12T08:59:23.058Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
