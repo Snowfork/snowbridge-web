@@ -473,7 +473,7 @@ export const burnToken = ():
               const nonce = result.events[0].event.data[0].toString();
               dispatch(
                 updateTransaction(
-                  pendingTransaction.hash, { nonce, status: TransactionStatus.FINALIZED_ON_CHAIN },
+                  pendingTransaction.hash, { nonce, status: TransactionStatus.WAITING_FOR_RELAY },
                 ),
               );
               // subscribe to ETH dispatch event
@@ -492,7 +492,7 @@ export const burnToken = ():
                 });
             } else if (result.status.isFinalized) {
               dispatch(
-                setTransactionStatus(pendingTransaction.hash, TransactionStatus.FINALIZED_ON_CHAIN),
+                setTransactionStatus(pendingTransaction.hash, TransactionStatus.WAITING_FOR_RELAY),
               );
             }
           },

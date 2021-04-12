@@ -118,7 +118,6 @@ export const subscribeEvents = ():
 ): Promise<void> => {
   const state = getState() as RootState;
   const { polkadotApi } = state.net;
-
   if (polkadotApi) {
     polkadotApi.query.system.events((eventRecords) => {
       const dispatchEvents = _.filter(eventRecords, (eR) => eR.event.section === 'dispatch');
