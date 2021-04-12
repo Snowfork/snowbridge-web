@@ -113,18 +113,29 @@ export const initializeTokens = (tokens: Token[]):
           };
         }
 
+        let ethBalance = '0';
+        let polkadotBalance = '0';
+        try {
         // return ETH data:
-        const polkadotBalance = await Polkadot.getEthBalance(
-                polkadotApi!,
-                polkadotAddress,
-                ethAssetId,
-        );
+          polkadotBalance = await Polkadot.getEthBalance(
+            polkadotApi!,
+            polkadotAddress,
+            ethAssetId,
+          );
+        } catch (e) {
+          console.log('failed reading polkadot balance', e);
+        }
+        try {
+          ethBalance = await EthApi.getBalance(web3);
+        } catch (e) {
+          console.log('failed reading eth balance', e);
+        }
         return {
           token,
           // eth 'tokens' don't have any contract instance
           instance: null,
           balance: {
-            eth: await EthApi.getBalance(web3),
+            eth: ethBalance,
             polkadot: polkadotBalance,
           },
         };

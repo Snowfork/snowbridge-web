@@ -1,7 +1,7 @@
 import { EventData } from 'web3-eth-contract';
 import {
   ADD_TRANSACTION,
-  UPDATE_CONFIRMATIONS,
+  SET_CONFIRMATIONS,
   SET_NONCE,
   SET_TRANSACTION_STATUS,
   UPDATE_TRANSACTION,
@@ -17,7 +17,7 @@ import {
   AddTransactionPayload,
   SetTransactionStatusPayload,
   UpdateTransactionPayload,
-  UpdateConfirmationsPayload,
+  SetConfirmationsPayload,
   ParachainMessageDispatchedPayload,
   PolkaEthBurnedPayload,
   SetPendingTransactionPayload,
@@ -107,8 +107,8 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         pendingTransaction: action.transaction,
       }))(action);
     }
-    case UPDATE_CONFIRMATIONS: {
-      return ((action: UpdateConfirmationsPayload) => {
+    case SET_CONFIRMATIONS: {
+      return ((action: SetConfirmationsPayload) => {
         const getTransactionStatus = (transaction: Transaction): TransactionStatus => {
           // check if the transaction has already been relayed to polkadot
           if (action.confirmations >= REQUIRED_ETH_CONFIRMATIONS) {
@@ -160,7 +160,7 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
     }
     // Called when an PolkaEth asset has been minted by the parachain
     case PARACHAIN_MESSAGE_DISPATCHED: {
-      return ((action: ParachainMessageDispatchedPayload) => ({
+      return ((action: ParachainMessageDispatchedPayload): TransactionsState => ({
         ...state,
         transactions: state.transactions.map((t) => ((t.nonce === action.nonce)
           ? {

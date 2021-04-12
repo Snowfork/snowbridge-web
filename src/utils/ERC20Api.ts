@@ -77,8 +77,8 @@ export async function fetchERC20Name(tokenContractInstance: any)
  */
 export async function approveERC20(
   ERC20ContractInstance: any,
-  spenderAddress: any,
-  ownerAddress: any,
+  spenderAddress: string,
+  ownerAddress: string,
   approvalAmount: string,
 ): Promise<void> {
   return ERC20ContractInstance.methods

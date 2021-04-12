@@ -29,6 +29,7 @@ function TransactionItem({
         {' '}
         {ethToSnow ? snowTokenSymbol : baseTokenSymbol}
       </S.Details>
+      {transaction.status}
       <PendingTransactionsUI transaction={transaction} />
     </S.Wrapper>
   );

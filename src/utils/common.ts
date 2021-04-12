@@ -59,7 +59,7 @@ export const pendingTransactions = (transactions: Transaction[])
   (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
 ).length;
 
-export const getNetworkNames = (swapDirection: SwapDirection) => (
+export const getNetworkNames = (swapDirection: SwapDirection): {from: string, to: string} => (
   swapDirection === SwapDirection.EthereumToPolkadot
     ? { from: 'Ethereum', to: 'Polkadot' }
     : { from: 'Polkadot', to: 'Ethereum' }

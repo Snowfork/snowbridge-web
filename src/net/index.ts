@@ -9,16 +9,16 @@ export default class Net {
     try {
       // connect to ethereum
       await Eth.connect(dispatch);
-      console.log('connected eth')
+      console.log('connected eth');
       // connect to polkadot
       await Polkadot.connect(dispatch);
-      console.log('connected polkadot')
-
+      console.log('connected polkadot');
 
       dispatch(setIsNetworkConnected(true));
     } catch (e) {
       console.log('failed starting the network!');
       console.log(e);
+      throw new Error(e.toString());
     }
   }
 }

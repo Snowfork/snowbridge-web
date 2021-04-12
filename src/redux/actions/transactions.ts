@@ -7,7 +7,7 @@ import { web3FromSource } from '@polkadot/extension-dapp';
 import { Token } from '../../types';
 import {
   ADD_TRANSACTION,
-  UPDATE_CONFIRMATIONS,
+  SET_CONFIRMATIONS,
   SET_NONCE,
   SET_TRANSACTION_STATUS,
   POLKA_ETH_BURNED,
@@ -39,10 +39,10 @@ export const addTransaction = (transaction: Transaction): AddTransactionPayload 
   transaction,
 });
 
-export interface UpdateConfirmationsPayload { type: string, hash: string, confirmations: number }
-export const updateConfirmations = (hash: string, confirmations: number)
-  : UpdateConfirmationsPayload => ({
-  type: UPDATE_CONFIRMATIONS,
+export interface SetConfirmationsPayload { type: string, hash: string, confirmations: number }
+export const setConfirmations = (hash: string, confirmations: number)
+  : SetConfirmationsPayload => ({
+  type: SET_CONFIRMATIONS,
   hash,
   confirmations,
 });
@@ -132,12 +132,50 @@ export const fetchEthBalance = ():
 ): Promise<string> => {
   const state = getState() as RootState;
   const web3: Web3 = state.net.web3!;
-
-  const balance = await EthApi.getBalance(web3);
-  dispatch(setEthBalance(balance));
+  let balance = '0';
+  try {
+    balance = await EthApi.getBalance(web3);
+  } catch (e) {
+    console.log('failed reading balance', e);
+  } finally {
+    dispatch(setEthBalance(balance));
+  }
   return balance;
 };
 
+export const updateConfirmations = (
+  hash: string, confirmations: number,
+):
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  dispatch: ThunkDispatch<{}, {}, AnyAction>,
+  getState,
+): Promise<void> => {
+  const state = getState() as RootState;
+  const { transactions } = state.transactions;
+  dispatch(setConfirmations(hash, confirmations));
+
+  // ensure we don't downgrade the status
+  const shouldUpdate = transactions
+    .filter(
+      (transaction) => transaction.hash === hash
+            && transaction.status < TransactionStatus.WAITING_FOR_RELAY,
+    ).length > 0;
+
+  if (
+    confirmations >= REQUIRED_ETH_CONFIRMATIONS
+    && shouldUpdate
+  ) {
+    dispatch(setTransactionStatus(hash, TransactionStatus.WAITING_FOR_RELAY));
+  }
+};
+
+/**
+ * Locks tokens on Ethereum and mints tokens on Polkadot
+ * @param {amount} string The amount of tokens (in base units) to lock
+ * @param {token} Token The contract data for the token to lock
+ * @param {_polkadotAddress} string The ss58 formatted address of the polkadot recipient
+ * @return {Promise<void>}
+ */
 export const lockToken = (
   amount: string,
   token: Token,
@@ -194,7 +232,8 @@ export const lockToken = (
 
           console.log('locking ', tokenAmountWithDecimals);
           promiEvent = erc20Contract.methods
-            .lock(token.address, polkadotAddress, tokenAmountWithDecimals, INCENTIVIZED_CHANNEL_ID)
+          // TODO: SET incentivized channel ID
+            .lock(token.address, polkadotAddress, tokenAmountWithDecimals, 0)
             .send({
               from: defaultAddress,
               gas: 500000,
@@ -281,6 +320,7 @@ export const lockToken = (
             },
           )
           .on('error', (error: Error) => {
+            console.log('error locking tokens', error);
             // TODO: render error message
             dispatch(setPendingTransaction({
               ...pendingTransaction,
@@ -359,7 +399,6 @@ export const burnToken = ():
 ): Promise<void> => {
   const state = getState() as RootState;
   const {
-    web3,
     polkadotApi,
     polkadotAddress,
     incentivizedChannelContract,
@@ -372,16 +411,18 @@ export const burnToken = ():
 
   if (polkadotApi) {
     const account = await Polkadot.getDefaultAddress();
-    const recepient = ethAddress;
+    const recipient = ethAddress;
     const token = selectedAsset!.token!;
     const amount = depositAmount.toString();
+    // const polkaWeiValue = web3!.utils.toWei(amount, 'ether');
+    const polkaWeiValue = amount;
 
     if (account) {
       const pendingTransaction: Transaction = {
         hash: '',
         confirmations: 0,
         sender: polkadotAddress!,
-        receiver: recepient!,
+        receiver: recipient!,
         amount,
         status: TransactionStatus.SUBMITTING_TO_CHAIN,
         isMinted: false,
@@ -391,20 +432,19 @@ export const burnToken = ():
       };
       dispatch(setPendingTransaction(pendingTransaction));
 
-      const polkaWeiValue = web3!.utils.toWei(amount, 'ether');
-
       let burnExtrinsic;
       if (token.address === '0x0') {
         burnExtrinsic = polkadotApi.tx.eth.burn(
           INCENTIVIZED_CHANNEL_ID,
-          recepient,
+          recipient,
           polkaWeiValue,
         );
       } else {
         burnExtrinsic = polkadotApi.tx.erc20.burn(
-          INCENTIVIZED_CHANNEL_ID,
+          // TODO: set incentivized channel ID
+          0,
           token.address,
-          recepient,
+          recipient,
           polkaWeiValue,
         );
       }
@@ -437,6 +477,7 @@ export const burnToken = ():
                 ),
               );
               // subscribe to ETH dispatch event
+              // eslint-disable-next-line no-unused-expressions
               incentivizedChannelContract?.events.MessageDispatched({})
                 .on('data', (
                   event: MessageDispatchedEvent,

@@ -54,6 +54,6 @@ export const approveERC20 = (amount: string):
     dispatch(fetchERC20Allowance());
   } catch (e) {
     console.log('error approving!', e);
-    throw new Error('Failed approcing ERC20.');
+    throw new Error('Failed approving ERC20.');
   }
 };
