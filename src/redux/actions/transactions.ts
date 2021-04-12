@@ -403,6 +403,7 @@ export const burnToken = ():
     polkadotAddress,
     incentivizedChannelContract,
     ethAddress,
+    basicChannelContract,
   } = state.net;
   const {
     selectedAsset,
@@ -479,6 +480,22 @@ export const burnToken = ():
               // subscribe to ETH dispatch event
               // eslint-disable-next-line no-unused-expressions
               incentivizedChannelContract?.events.MessageDispatched({})
+                .on('data', (
+                  event: MessageDispatchedEvent,
+                ) => {
+                  if (
+                    event.returnValues.nonce === nonce
+                  ) {
+                    dispatch(
+                      ethMessageDispatched(event.returnValues.nonce, pendingTransaction.nonce!),
+                    );
+                  }
+                });
+
+              // TODO: replace with incentivized channel?
+              // use basic channel for ERC20
+              // eslint-disable-next-line no-unused-expressions
+              basicChannelContract?.events.MessageDispatched({})
                 .on('data', (
                   event: MessageDispatchedEvent,
                 ) => {

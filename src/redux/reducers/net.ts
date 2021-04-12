@@ -2,6 +2,7 @@ import { Contract } from 'web3-eth-contract';
 import Web3 from 'web3';
 import { ApiPromise } from '@polkadot/api';
 import {
+  SetBasicChannelContractPayload,
   SetERC20ContractPayload,
   SetEthAddressPayload,
   SetEthAssetIdPayload,
@@ -29,6 +30,7 @@ import {
   SET_ETH_ADDRESS,
   SET_ETH_ASSET_ID,
   SET_POLKADOT_API,
+  SET_BASIC_CHANNEL_CONTRACT,
 } from '../actionsTypes/net';
 
 export interface NetState {
@@ -43,12 +45,13 @@ export interface NetState {
   ethContract?: Contract,
   erc20Contract?: Contract,
   incentivizedChannelContract?: Contract,
+  basicChannelContract?: Contract,
   polkadotApi?: ApiPromise,
   polkadotAddress?: string,
   ethAddress?: string,
   // polkadot AssetId for the eth asset
   ethAssetId?: any,
-  isNetworkConnected: boolean
+  isNetworkConnected: boolean,
 }
 
 const initialState : NetState = {
@@ -68,6 +71,7 @@ const initialState : NetState = {
   ethAddress: undefined,
   ethAssetId: undefined,
   isNetworkConnected: false,
+  basicChannelContract: undefined,
 };
 
 function netReducer(state = initialState, action: any): NetState {
@@ -115,6 +119,13 @@ function netReducer(state = initialState, action: any): NetState {
         {
           ...state,
           incentivizedChannelContract: action.contract,
+        }))(action);
+    }
+    case SET_BASIC_CHANNEL_CONTRACT: {
+      return ((action: SetBasicChannelContractPayload): NetState => (
+        {
+          ...state,
+          basicChannelContract: action.contract,
         }))(action);
     }
     case SET_ETH_ADDRESS: {

@@ -25,6 +25,7 @@ import {
   SET_ETH_ASSET_ID,
   SET_POLKADOT_API,
   SET_NETWORK_CONNECTED,
+  SET_BASIC_CHANNEL_CONTRACT,
 } from '../actionsTypes/net';
 
 export const setMetamaskFound = (): {type: string} => ({
@@ -84,6 +85,13 @@ export interface SetIncentivizedChannelContractPayload { type: string, contract:
 export const setIncentivizedChannelContract = (contract: any)
   : SetIncentivizedChannelContractPayload => ({
   type: SET_INCENTIVIZED_CHANNEL_CONTRACT,
+  contract,
+});
+
+export interface SetBasicChannelContractPayload { type: string, contract: Contract }
+export const setBasicChannelContract = (contract: any)
+  : SetBasicChannelContractPayload => ({
+  type: SET_BASIC_CHANNEL_CONTRACT,
   contract,
 });
 
