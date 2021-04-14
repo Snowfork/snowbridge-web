@@ -20,6 +20,7 @@ import * as BasicInboundChannel from '../contracts/BasicInboundChannel.json';
 import {
   setBasicChannelContract,
   setERC20Contract,
+  setEthAddress,
   setEthContract,
   setIncentivizedChannelContract,
   setMetamaskFound,
@@ -50,9 +51,11 @@ export default class Eth extends Api {
         .then((network: string) => dispatch(setMetamaskNetwork(network)));
 
       // reload app on account change
-      // locWindow.ethereum.on('accountsChanged', () => {
-      //   window.location.pathname = '/';
-      // });
+      locWindow.ethereum.on('accountsChanged', (accounts: string[]) => {
+        if (accounts[0]) {
+          dispatch(setEthAddress(accounts[0]));
+        }
+      });
 
       if (web3) {
         // Set contracts

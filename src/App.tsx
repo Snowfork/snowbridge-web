@@ -10,6 +10,9 @@ import { useSelector, useDispatch } from 'react-redux';
 
 // local imports and components
 import { ToastContainer } from 'react-toastify';
+import {
+  Typography,
+} from '@material-ui/core';
 import Bridge from './components/Bridge/Bridge';
 import Nav from './components/Nav';
 import Net from './net';
@@ -58,7 +61,7 @@ function BridgeApp(): JSX.Element {
 
   // Check if Network has been started
   if (!isNetworkConnected) {
-    return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
+    return <Typography color="primary">Connecting Network</Typography>;
   }
 
   if (
