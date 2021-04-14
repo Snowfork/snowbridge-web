@@ -20,7 +20,10 @@ export interface TokenData {
         eth: string,
         polkadot: string
     },
-    instance: any
+  instance: any,
+  prices: {
+    [currency: string]: number
+  }
 }
 
 export interface BridgeState {

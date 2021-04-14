@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
+import CoinGecko from 'coingecko-api';
 import { SwapDirection, Token } from '../../types';
 import { RootState } from '../reducers';
 import * as ERC20 from '../../contracts/ERC20.json';
@@ -110,6 +111,8 @@ export const initializeTokens = (tokens: Token[]):
 ): Promise<void> => {
   const state = getState() as RootState;
   const { ethAddress, polkadotApi, polkadotAddress } = state.net;
+  const CoinGeckoClient = new CoinGecko();
+  const priceCurrencies = 'usd';
 
   if (state.net.web3?.currentProvider) {
     const web3 = state!.net.web3!;
@@ -127,6 +130,15 @@ export const initializeTokens = (tokens: Token[]):
         let ethBalance = '0';
         let polkadotBalance = '0';
         let tokenData;
+        let assetKey = 'ethereum';
+        // price request for eth
+        let priceRequestPromise = CoinGeckoClient.simple.price({
+          ids: assetKey,
+          vs_currencies: priceCurrencies,
+        });
+        let prices = {
+          usd: 0,
+        };
         // All valid contract addresses have 42 characters ('0x' + address)
         if (token.address.length === 42) {
           //   create token contract instance
@@ -139,10 +151,17 @@ export const initializeTokens = (tokens: Token[]):
             instance: contractInstance,
             token,
           } as TokenData;
+
+          // price request for token
+          assetKey = token.address;
+          priceRequestPromise = CoinGeckoClient.simple.fetchTokenPrice({
+            contract_addresses: assetKey,
+            vs_currencies: priceCurrencies,
+          });
         }
 
+        // fetch token balances
         try {
-        // return ETH data:
           polkadotBalance = await Polkadot.getEthBalance(
             polkadotApi!,
             polkadotAddress!,
@@ -160,8 +179,16 @@ export const initializeTokens = (tokens: Token[]):
         } catch (e) {
           console.log('failed reading eth balance', e);
         }
+
+        // do pricing request
+        const data = await priceRequestPromise;
+        if (data.success) {
+          prices = { ...prices, ...data.data[assetKey] };
+        }
+
         return {
           token,
+          prices,
           instance: contractInstance,
           balance: {
             eth: ethBalance,

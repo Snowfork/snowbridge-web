@@ -31,6 +31,7 @@ import {
 import { fetchEthAddress } from '../redux/actions/transactions';
 import { TokenData } from '../redux/reducers/bridge';
 import * as ERC20Api from '../utils/ERC20Api';
+import { updateBalances } from '../redux/actions/bridge';
 
 // window wrapper
 type MyWindow = typeof window & {
@@ -54,6 +55,7 @@ export default class Eth extends Api {
       locWindow.ethereum.on('accountsChanged', (accounts: string[]) => {
         if (accounts[0]) {
           dispatch(setEthAddress(accounts[0]));
+          dispatch(updateBalances());
         }
       });
 
@@ -135,30 +137,30 @@ export default class Eth extends Api {
  * Get ETH balance of the specified eth address if the token is null or the
  * address = 0x0 otherwise return the ERC20 balance
  * @param {web3} Web3 web3 instance
- * @param {token} TokenData token metadata and contract instance
  * @param {address} string eth address
+ * @param {token} TokenData token metadata and contract instance
  *
  * @return {Promise<string>} The eth balance of the account
  */
   public static async getTokenBalance(
     conn: Web3,
-    address: string,
+    ethAddress: string,
     token?: TokenData,
   ): Promise<string> {
     try {
       if (conn) {
-        if (address) {
+        if (ethAddress) {
           // fetch eth balance when token is undefined
           // or when address is 0x0
           if (token?.token?.address === '0x0' || !token) {
-            const currentBalance = await conn.eth.getBalance(address);
+            const currentBalance = await conn.eth.getBalance(ethAddress);
 
             if (currentBalance) {
               return currentBalance;
             }
           }
           // fetch erc20 balance
-          const currentBalance = await ERC20Api.fetchERC20Balance(token!.instance, address);
+          const currentBalance = await ERC20Api.fetchERC20Balance(token!.instance, ethAddress);
 
           if (currentBalance) {
             return currentBalance.toString();

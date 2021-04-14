@@ -161,6 +161,8 @@ function Bridge(): React.ReactElement {
     dispatch(setShowConfirmTransactionModal(true));
   };
 
+  const assetPrice = (selectedAsset?.prices?.usd ?? 0) * depositAmount;
+
   return (
 
     <div className={classes.root}>
@@ -195,7 +197,10 @@ function Bridge(): React.ReactElement {
             </Grid>
 
             <Grid item container justify="space-between">
-              <Typography gutterBottom>$0.00</Typography>
+              <Typography gutterBottom>
+                $
+                {assetPrice}
+              </Typography>
               <Grid item>
                 <Typography gutterBottom variant="caption">
                   Available Balance:
