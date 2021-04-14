@@ -4,7 +4,7 @@ import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
 import { web3FromSource } from '@polkadot/extension-dapp';
-import { Token } from '../../types';
+import { Token } from '../../types/types';
 import {
   ADD_TRANSACTION,
   SET_CONFIRMATIONS,

@@ -28,7 +28,7 @@ import { RootState } from '../../redux/reducers';
 import {
   setDepositAmount, setShowConfirmTransactionModal, setSwapDirection, updateBalances,
 } from '../../redux/actions/bridge';
-import { SwapDirection } from '../../types';
+import { SwapDirection } from '../../types/types';
 import ConfirmTransactionModal from '../ConfirmTransactionModal';
 import { getNetworkNames } from '../../utils/common';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';

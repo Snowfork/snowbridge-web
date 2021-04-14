@@ -1,4 +1,4 @@
-import { Token, SwapDirection } from '../../types';
+import { Token, SwapDirection } from '../../types/types';
 import {
   SetDepositAmountPayload,
   SetSelectedAssetPayload,

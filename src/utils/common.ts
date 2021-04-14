@@ -1,6 +1,6 @@
 import { REQUIRED_ETH_CONFIRMATIONS } from '../config';
 import { Transaction } from '../redux/reducers/transactions';
-import { SwapDirection } from '../types';
+import { SwapDirection } from '../types/types';
 
 /**
  * Shortens a wallet address, showing X number of letters, an ellipsis, and

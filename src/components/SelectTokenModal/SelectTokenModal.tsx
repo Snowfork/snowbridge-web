@@ -11,7 +11,7 @@ import * as S from './SelectTokenModal.style';
 import { RootState } from '../../redux/reducers';
 import { updateSelectedAsset } from '../../redux/actions/bridge';
 import { TokenData } from '../../redux/reducers/bridge';
-import { SwapDirection } from '../../types';
+import { SwapDirection } from '../../types/types';
 
 const customStyles = {
   overlay: {},

@@ -2,7 +2,7 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import CoinGecko from 'coingecko-api';
-import { SwapDirection, Token } from '../../types';
+import { SwapDirection, Token } from '../../types/types';
 import { RootState } from '../reducers';
 import * as ERC20 from '../../contracts/ERC20.json';
 import EthApi from '../../net/eth';

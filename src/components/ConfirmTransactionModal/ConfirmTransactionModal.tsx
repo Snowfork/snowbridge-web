@@ -11,7 +11,7 @@ import { getNetworkNames, shortenWalletAddress } from '../../utils/common';
 import AppPolkadot from '../AppPolkadot';
 import AppETH from '../AppEth';
 import { RootState } from '../../redux/reducers';
-import { SwapDirection } from '../../types';
+import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 
 const customStyles = {

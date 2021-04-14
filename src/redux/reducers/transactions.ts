@@ -24,7 +24,7 @@ import {
   SetPolkadotGasBalancePayload,
 } from '../actions/transactions';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
-import { Token } from '../../types';
+import { Token } from '../../types/types';
 
 export enum TransactionStatus {
   // used for error states
