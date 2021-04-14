@@ -9,8 +9,6 @@ import {
   POLKA_ETH_BURNED,
   SET_PENDING_TRANSACTION,
   ETH_MESSAGE_DISPATCHED_EVENT,
-  SET_ETH_BALANCE,
-  SET_POLKAETH_BALANCE,
   SET_POLKADOT_GAS_BALANCE,
 } from '../actionsTypes/transactions';
 import {
@@ -23,8 +21,6 @@ import {
   SetPendingTransactionPayload,
   EthMessageDispatchedPayload,
   SetNoncePayload,
-  SetEthBalancePayload,
-  SetPolkadotEthBalancePayload,
   SetPolkadotGasBalancePayload,
 } from '../actions/transactions';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
@@ -82,9 +78,6 @@ export interface PolkaEthBurnedEvent {
 export interface TransactionsState {
   transactions: Transaction[],
   pendingTransaction?: Transaction,
-  ethBalance?: string,
-  // locked tokens
-  polkadotEthBalance?: string
   // native tokens
   polkadotGasBalance?: string
 }
@@ -92,8 +85,6 @@ export interface TransactionsState {
 const initialState: TransactionsState = {
   transactions: [],
   pendingTransaction: undefined,
-  ethBalance: undefined,
-  polkadotEthBalance: undefined,
   polkadotGasBalance: undefined,
 };
 
@@ -136,7 +127,15 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         {
           ...state,
           transactions: state.transactions.map(
-            (t) => (t.hash === action.hash ? { ...t, status: action.status } : t),
+            (t) => (
+              t.hash === action.hash
+                ? {
+                  ...t,
+                  // ensure we don't downgrade the status
+                  status: action.status > t.status ? action.status : t.status,
+                }
+                : t
+            ),
           ),
         }))(action);
     }
@@ -166,7 +165,7 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
           ? {
             ...t,
             isMinted: true,
-            status: TransactionStatus.RELAYED,
+            status: TransactionStatus.DISPATCHED,
           }
           : t)),
       }))(action);
@@ -206,16 +205,6 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
       })(action);
     }
 
-    case SET_ETH_BALANCE: {
-      return ((action: SetEthBalancePayload) => ({ ...state, ethBalance: action.balance }))(action);
-    }
-    case SET_POLKAETH_BALANCE: {
-      return ((action: SetPolkadotEthBalancePayload) => (
-        {
-          ...state,
-          polkadotEthBalance: action.balance,
-        }))(action);
-    }
     case SET_POLKADOT_GAS_BALANCE: {
       return ((action: SetPolkadotGasBalancePayload) => (
         { ...state, polkadotGasBalance: action.balance }

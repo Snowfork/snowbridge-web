@@ -15,8 +15,6 @@ import {
   PARACHAIN_MESSAGE_DISPATCHED,
   ETH_MESSAGE_DISPATCHED_EVENT,
   UPDATE_TRANSACTION,
-  SET_ETH_BALANCE,
-  SET_POLKAETH_BALANCE,
   SET_POLKADOT_GAS_BALANCE,
 } from '../actionsTypes/transactions';
 import {
@@ -103,12 +101,6 @@ export const setPendingTransaction = (transaction: Transaction): SetPendingTrans
   transaction,
 });
 
-export interface SetEthBalancePayload { type: string, balance: string }
-export const setEthBalance = (balance: string): SetEthBalancePayload => ({
-  type: SET_ETH_BALANCE,
-  balance,
-});
-
 // async thunk actions
 //
 // Eth transactions
@@ -125,24 +117,6 @@ export const fetchEthAddress = ():
   dispatch(setEthAddress(address));
 };
 
-export const fetchEthBalance = ():
-  ThunkAction<Promise<string>, {}, {}, AnyAction> => async (
-  dispatch: ThunkDispatch<{}, {}, AnyAction>,
-  getState,
-): Promise<string> => {
-  const state = getState() as RootState;
-  const web3: Web3 = state.net.web3!;
-  let balance = '0';
-  try {
-    balance = await EthApi.getBalance(web3);
-  } catch (e) {
-    console.log('failed reading balance', e);
-  } finally {
-    dispatch(setEthBalance(balance));
-  }
-  return balance;
-};
-
 export const updateConfirmations = (
   hash: string, confirmations: number,
 ):
@@ -150,23 +124,13 @@ export const updateConfirmations = (
   dispatch: ThunkDispatch<{}, {}, AnyAction>,
   getState,
 ): Promise<void> => {
-  const state = getState() as RootState;
-  const { transactions } = state.transactions;
-  dispatch(setConfirmations(hash, confirmations));
-
-  // ensure we don't downgrade the status
-  const shouldUpdate = transactions
-    .filter(
-      (transaction) => transaction.hash === hash
-            && transaction.status < TransactionStatus.WAITING_FOR_RELAY,
-    ).length > 0;
-
   if (
     confirmations >= REQUIRED_ETH_CONFIRMATIONS
-    && shouldUpdate
   ) {
     dispatch(setTransactionStatus(hash, TransactionStatus.WAITING_FOR_RELAY));
   }
+  console.log('dispatch set confirmations', confirmations);
+  dispatch(setConfirmations(hash, confirmations));
 };
 
 /**
@@ -347,32 +311,11 @@ export const lockToken = (
 // Polkadot transactions
 //
 
-export interface SetPolkadotEthBalancePayload { type: string, balance: string }
-export const setPolkadotEthBalance = (balance: string): SetPolkadotEthBalancePayload => ({
-  type: SET_POLKAETH_BALANCE,
-  balance,
-});
-
 export interface SetPolkadotGasBalancePayload { type: string, balance: string }
 export const setPolkadotGasBalance = (balance: string): SetPolkadotGasBalancePayload => ({
   type: SET_POLKADOT_GAS_BALANCE,
   balance,
 });
-
-export const fetchPolkadotEthBalance = ():
-  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
-  dispatch: ThunkDispatch<{}, {}, AnyAction>,
-  getState,
-): Promise<void> => {
-  const state = getState() as RootState;
-  const { polkadotApi, polkadotAddress, ethAssetId } = state.net;
-  if (polkadotApi) {
-    const balance = await Polkadot.getEthBalance(polkadotApi, polkadotAddress, ethAssetId);
-    dispatch(setPolkadotEthBalance(balance));
-  } else {
-    throw new Error('Unable to fetch polkadot eth balance');
-  }
-};
 
 export const fetchPolkadotGasBalance = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (

@@ -4,7 +4,6 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { SwapDirection, Token } from '../../types';
 import { RootState } from '../reducers';
 import * as ERC20 from '../../contracts/ERC20.json';
-import * as ERC20Api from '../../utils/ERC20Api';
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
 import {
@@ -50,8 +49,7 @@ export const setShowConfirmTransactionModal = (open: boolean)
 });
 
 // async middleware actions
-// dispatches setSelectedAsset and subscribes to
-// logs to keep the balance in sync
+// sets selected asset and updates ERC20 spend allowance
 export const updateSelectedAsset = (asset: TokenData):
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
@@ -61,6 +59,46 @@ export const updateSelectedAsset = (asset: TokenData):
 
   // update erc spending allowance
   dispatch(fetchERC20Allowance());
+};
+
+// update balances for selected asset
+// updates values for selected asset as well as the token list
+export const updateBalances = ():
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
+): Promise<void> => {
+  const state = getState() as RootState;
+  const { tokens, selectedAsset } = state.bridge;
+  const {
+    web3, ethAddress, polkadotApi, polkadotAddress,
+  } = state.net;
+
+  // fetch updated balances
+  const ethBalance = await EthApi.getTokenBalance(web3!, ethAddress!, selectedAsset);
+  const polkadotBalance = await Polkadot.getEthBalance(polkadotApi!, polkadotAddress!, selectedAsset);
+
+  // update balance data in token list
+  const updatedTokens = tokens!.map((tokenData) => {
+    if (tokenData.token.address === selectedAsset?.token.address) {
+      return {
+        ...tokenData,
+        balance: {
+          eth: ethBalance,
+          polkadot: polkadotBalance,
+        },
+      };
+    }
+
+    return tokenData;
+  });
+  dispatch(setTokenList(updatedTokens));
+
+  const updatedAsset = { ...selectedAsset };
+  updatedAsset.balance = {
+    eth: ethBalance,
+    polkadot: polkadotBalance,
+  };
+  dispatch(setSelectedAsset(updatedAsset as TokenData));
 };
 
 // use the token list to instantiate contract instances
@@ -81,59 +119,50 @@ export const initializeTokens = (tokens: Token[]):
               === Number.parseInt((web3.currentProvider as any).chainId, 16),
     );
 
-    const ethAssetId = polkadotApi!.createType('AssetId', 'ETH');
-
     // create a web3 contract instance for each ERC20
     const tokenContractList = tokenList.map(
       async (token: Token) => {
-        // return ERC20 data:
+        // eth 'tokens' don't have any contract instance
+        let contractInstance = null;
+        let ethBalance = '0';
+        let polkadotBalance = '0';
+        let tokenData;
         // All valid contract addresses have 42 characters ('0x' + address)
         if (token.address.length === 42) {
           //   create token contract instance
-          const contractInstance = new web3.eth.Contract(
+          contractInstance = new web3.eth.Contract(
                 ERC20.abi as any,
                 token.address,
           );
-
-          const erc20Balance = await ERC20Api.fetchERC20Balance(contractInstance, ethAddress!);
-
-          const erc20AssetId = polkadotApi!.createType('AssetId', { Token: token.address });
-          const polkadotErc20Balance = await Polkadot.getEthBalance(
-                polkadotApi!,
-                polkadotAddress,
-                erc20AssetId,
-          );
-          return {
-            token,
+          // create TokenData for eth API
+          tokenData = {
             instance: contractInstance,
-            balance: {
-              eth: erc20Balance.toString(),
-              polkadot: polkadotErc20Balance,
-            },
-          };
+            token,
+          } as TokenData;
         }
 
-        let ethBalance = '0';
-        let polkadotBalance = '0';
         try {
         // return ETH data:
           polkadotBalance = await Polkadot.getEthBalance(
             polkadotApi!,
-            polkadotAddress,
-            ethAssetId,
+            polkadotAddress!,
+            tokenData,
           );
         } catch (e) {
           console.log('failed reading polkadot balance', e);
         }
         try {
-          ethBalance = await EthApi.getBalance(web3);
+          ethBalance = await EthApi.getTokenBalance(
+            web3,
+            ethAddress!,
+            tokenData,
+          );
         } catch (e) {
           console.log('failed reading eth balance', e);
         }
         return {
           token,
-          // eth 'tokens' don't have any contract instance
-          instance: null,
+          instance: contractInstance,
           balance: {
             eth: ethBalance,
             polkadot: polkadotBalance,

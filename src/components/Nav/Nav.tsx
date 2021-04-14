@@ -15,7 +15,11 @@ import { RootState } from '../../redux/reducers';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
 import Polkadot from '../../net/polkadot';
-import { fetchPolkadotEthBalance, fetchPolkadotGasBalance } from '../../redux/actions/transactions';
+import {
+  fetchPolkadotGasBalance,
+} from '../../redux/actions/transactions';
+import { TokenData } from '../../redux/reducers/bridge';
+import { updateBalances } from '../../redux/actions/bridge';
 
 type Props = {
   transactions: TransactionsState;
@@ -40,8 +44,9 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     setIsPolkadotAccountSelectorOpen,
   ] = useState<boolean>(false);
 
-  const { ethBalance, polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
+  const { polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
   const { polkadotAddress, ethAddress, polkadotApi } = useSelector((state: RootState) => state.net);
+  const { tokens } = useSelector((state: RootState) => state.bridge);
 
   // fetch polkadot accountsfor the account selector on mount
   useEffect(() => {
@@ -125,7 +130,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
   const onPolkadotAccountSelected = (address: string) => {
     dispatch(setPolkadotAddress(address));
     // fetch balance for updated account
-    dispatch(fetchPolkadotEthBalance());
+    dispatch(updateBalances());
     dispatch(fetchPolkadotGasBalance());
   };
 
@@ -134,6 +139,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     withUnit: polkadotApi?.registry.chainTokens[0],
   });
 
+  const ethBalance = tokens?.filter((token: TokenData) => token.token.address === '0x0')[0]?.balance.eth;
   const ethBalanceFormatted = formatBalance(ethBalance, {
     decimals: 18,
     withUnit: 'ETH',

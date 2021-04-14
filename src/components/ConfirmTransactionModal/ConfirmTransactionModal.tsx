@@ -85,7 +85,7 @@ function ConfirmTransactionModal({
               <Typography variant="h4">
                 {depositAmount}
                 {' '}
-                { selectedAsset?.token.symbol}
+                { selectedAsset?.token?.symbol}
               </Typography>
             </Grid>
 

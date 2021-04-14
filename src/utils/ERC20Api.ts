@@ -1,7 +1,5 @@
-import Web3 from 'web3';
+import { Contract } from 'web3-eth-contract';
 import { ss58ToU8 } from '../net/api';
-
-import { Token } from '../types';
 
 const INCENTIVIZED_CHANNEL_ID = 1;
 
@@ -11,7 +9,7 @@ const INCENTIVIZED_CHANNEL_ID = 1;
  * @param {contractInstance} any The web3 contract instance for the ERC20 token
  * @return {Promise<number>} The number of decimals supported by the token
  */
-export async function fetchERC20Decimals(contractInstance: any)
+export async function fetchERC20Decimals(contractInstance: Contract)
   : Promise<number> {
   return Number(await contractInstance.methods.decimals().call());
 }
@@ -27,7 +25,7 @@ export async function fetchERC20Decimals(contractInstance: any)
  *  given userAddress
  */
 export async function fetchERC20Allowance(
-  tokenContractInstance: any,
+  tokenContractInstance: Contract,
   userAddress: string,
   ERC20BridgeContractAddress: string,
 ): Promise<number> {
@@ -46,13 +44,13 @@ export async function fetchERC20Allowance(
  *  userAddress
  */
 export async function fetchERC20Balance(
-  tokenContractInstance: any,
+  tokenContractInstance: Contract,
   userAddress: string,
 ): Promise<number> {
   const balance: number = await tokenContractInstance.methods
     .balanceOf(userAddress)
     .call();
-  return balance;
+  return balance ?? 0;
 }
 
 /**
@@ -60,7 +58,7 @@ export async function fetchERC20Balance(
  * @param {tokenContractInstance} any The ERC20 token contract instance
  * @return {Promise<string>} The name of the token
  */
-export async function fetchERC20Name(tokenContractInstance: any)
+export async function fetchERC20Name(tokenContractInstance: Contract)
   : Promise<string> {
   const name = await tokenContractInstance.methods.name().call();
   return name;
@@ -76,7 +74,7 @@ export async function fetchERC20Name(tokenContractInstance: any)
  * @return {Promise<void>}
  */
 export async function approveERC20(
-  ERC20ContractInstance: any,
+  ERC20ContractInstance: Contract,
   spenderAddress: string,
   ownerAddress: string,
   approvalAmount: string,
@@ -101,8 +99,8 @@ export async function approveERC20(
 export async function lockERC20(
   senderEthAddress: string,
   polkadotRecipientAddress: string,
-  ERC20ContractInstance: any,
-  bridgeContractInstance: any,
+  ERC20ContractInstance: Contract,
+  bridgeContractInstance: Contract,
   amount: number,
 ): Promise<void> {
   const polkadotRecipientBytes: Uint8Array = ss58ToU8(
@@ -113,7 +111,7 @@ export async function lockERC20(
     .methods
     .lock(
       // eslint-disable-next-line no-underscore-dangle
-      ERC20ContractInstance._address,
+      ERC20ContractInstance.options.address,
       polkadotRecipientBytes,
       `${amount}`,
       INCENTIVIZED_CHANNEL_ID,
@@ -123,32 +121,4 @@ export async function lockERC20(
       gas: 500000,
       value: 0,
     });
-}
-
-// util methods
-
-/**
- * Converts human readable amount into units native to the contract
- * @param contractInstance
- * @param amount
- * @return {Promise<number>}
- */
-export async function addDecimals(token: Token, amount: string)
-  : Promise<string> {
-  const bnAmount = Web3.utils.toBN(amount);
-  const bnDecimals = Web3.utils.toBN(token.decimals);
-  const bnDecimalsMultiplier = Web3.utils.toBN(10).pow(bnDecimals);
-  return bnAmount.mul(bnDecimalsMultiplier).toString();
-}
-
-/**
- * Converts native contract units into a human readable number
- * @param contractInstance
- * @param amount
- * @return {Promise<number>}
- */
-export async function removeDecimals(contractInstance: any, amount: number)
-  : Promise<number> {
-  const decimals = await fetchERC20Decimals(contractInstance);
-  return amount / 10 ** decimals;
 }

@@ -25,10 +25,13 @@ import { formatBalance } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 import SelectTokenModal from '../SelectTokenModal';
 import { RootState } from '../../redux/reducers';
-import { setDepositAmount, setShowConfirmTransactionModal, setSwapDirection } from '../../redux/actions/bridge';
+import {
+  setDepositAmount, setShowConfirmTransactionModal, setSwapDirection, updateBalances,
+} from '../../redux/actions/bridge';
 import { SwapDirection } from '../../types';
 import ConfirmTransactionModal from '../ConfirmTransactionModal';
 import { getNetworkNames } from '../../utils/common';
+import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 
 // ------------------------------------------
 //               Bank component
@@ -78,6 +81,21 @@ function Bridge(): React.ReactElement {
       setErrorText('');
     }
   }, [depositAmount, swapDirection]);
+
+  // poll APIs to keep balances up to date
+  useEffect(() => {
+    function startPolling() {
+      return setInterval(() => {
+        dispatch(updateBalances());
+      }, REFRESH_INTERVAL_MILLISECONDS);
+    }
+
+    const interval = startPolling();
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -188,7 +206,7 @@ function Bridge(): React.ReactElement {
                     && getTokenBalances(swapDirection).sourceNetwork
                   }
                   {' '}
-                  {selectedAsset?.token.symbol}
+                  {selectedAsset?.token?.symbol}
                 </Typography>
               </Grid>
             </Grid>
@@ -220,7 +238,7 @@ function Bridge(): React.ReactElement {
                     && getTokenBalances(swapDirection).destinationNetwork
                   }
                   {' '}
-                  {selectedAsset?.token.symbol}
+                  {selectedAsset?.token?.symbol}
                 </Typography>
               </Grid>
             </Grid>

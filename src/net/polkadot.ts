@@ -11,9 +11,10 @@ import {
 import { POLKADOT_API_PROVIDER } from '../config';
 
 import {
-  fetchPolkadotEthBalance, fetchPolkadotGasBalance,
+  fetchPolkadotGasBalance,
 } from '../redux/actions/transactions';
 import Api from './api';
+import { TokenData } from '../redux/reducers/bridge';
 
 export default class Polkadot extends Api {
   // Get all polkadot addresses
@@ -45,7 +46,6 @@ export default class Polkadot extends Api {
   ): Promise<string> {
     try {
       const account = await polkadotApi.query.system.account(polkadotAddress);
-
       if (account.data.free) {
         return account.data.free.toString();
       }
@@ -58,8 +58,15 @@ export default class Polkadot extends Api {
 
   // Query account balance for bridged assets (ETH and ERC20)
   public static async getEthBalance(
-    polkadotApi: ApiPromise, polkadotAddress: any, ethAssetID: any,
+    polkadotApi: ApiPromise,
+    polkadotAddress: string,
+    tokenData?: TokenData,
   ): Promise<string> {
+    let ethAssetID = polkadotApi.createType('AssetId', 'ETH');
+    // create asset ID for tokens
+    if (tokenData?.token?.address && tokenData?.token?.address !== '0x0') {
+      ethAssetID = polkadotApi.createType('AssetId', { Token: tokenData?.token?.address });
+    }
     try {
       if (polkadotApi) {
         if (polkadotAddress) {
@@ -171,10 +178,8 @@ export default class Polkadot extends Api {
       }
 
       // fetch polkadot account details
-      dispatch(fetchPolkadotEthBalance());
       dispatch(fetchPolkadotGasBalance());
       // Here we subscribe to the parachain events
-      // await polkadot.subscribeEvents();
       dispatch(subscribeEvents());
     } catch (err) {
       console.log(err);

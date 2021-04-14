@@ -5,7 +5,7 @@ import { setIsNetworkConnected } from '../redux/actions/net';
 
 export default class Net {
   // Start net
-  public static async start(dispatch: Dispatch) {
+  public static async start(dispatch: Dispatch): Promise<void> {
     try {
       // connect to ethereum
       await Eth.connect(dispatch);

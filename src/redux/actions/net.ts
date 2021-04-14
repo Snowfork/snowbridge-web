@@ -7,7 +7,9 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { AnyAction } from 'redux';
 import _ from 'lodash';
 import { RootState } from '../reducers';
-import { parachainMessageDispatched } from './transactions';
+import {
+  parachainMessageDispatched,
+} from './transactions';
 import {
   SET_METAMASK_FOUND,
   SET_METAMASK_CONNECTED,
@@ -70,26 +72,26 @@ export const setWeb3 = (web3: Web3): SetWeb3Payload => ({
 });
 
 export interface SetEthContractPayload { type: string, contract: Contract }
-export const setEthContract = (contract: any) : SetEthContractPayload => ({
+export const setEthContract = (contract: Contract) : SetEthContractPayload => ({
   type: SET_ETH_CONTRACT,
   contract,
 });
 
 export interface SetERC20ContractPayload { type: string, contract: Contract }
-export const setERC20Contract = (contract: any): SetEthContractPayload => ({
+export const setERC20Contract = (contract: Contract): SetEthContractPayload => ({
   type: SET_ERC20_CONTRACT,
   contract,
 });
 
 export interface SetIncentivizedChannelContractPayload { type: string, contract: Contract }
-export const setIncentivizedChannelContract = (contract: any)
+export const setIncentivizedChannelContract = (contract: Contract)
   : SetIncentivizedChannelContractPayload => ({
   type: SET_INCENTIVIZED_CHANNEL_CONTRACT,
   contract,
 });
 
 export interface SetBasicChannelContractPayload { type: string, contract: Contract }
-export const setBasicChannelContract = (contract: any)
+export const setBasicChannelContract = (contract: Contract)
   : SetBasicChannelContractPayload => ({
   type: SET_BASIC_CHANNEL_CONTRACT,
   contract,
@@ -138,7 +140,6 @@ export const subscribeEvents = ():
         console.log(`Got new dispatch event with nonce: ${nonce}`);
         dispatch(parachainMessageDispatched(nonce));
       });
-      // TODO: update new Polkadot account balance
     });
   } else {
     throw new Error('Polkadot API not connected');
