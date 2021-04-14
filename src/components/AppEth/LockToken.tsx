@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // General
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 // External
@@ -15,9 +15,10 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/reducers';
 import { lockToken } from '../../redux/actions/transactions';
-import { approveERC20 } from '../../redux/actions/ERC20Transactions';
+import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
 import LoadingSpinner from '../LoadingSpinner';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
+import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 
 // ------------------------------------------
 //           LockToken component
@@ -32,6 +33,23 @@ function LockToken(): React.ReactElement {
 
   const isERC20 = selectedAsset?.token?.address !== '0x0';
   const currentTokenAllowance = allowance;
+
+  // update allowances to prevent failed transactions
+  // e.g the user might spend entire allowance on 1st transaction
+  // so we need to update the allowance before sending the 2nd transaction
+  useEffect(() => {
+    function poll() {
+      return setInterval(() => {
+        dispatch(fetchERC20Allowance());
+      }, REFRESH_INTERVAL_MILLISECONDS);
+    }
+
+    const interval = poll();
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   // lock assets
   const handleDepositToken = async () => {
