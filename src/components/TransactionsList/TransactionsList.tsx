@@ -4,7 +4,7 @@ import { Button } from '@material-ui/core';
 import * as S from './TransactionsList.style';
 import LoadingSpinner from '../LoadingSpinner';
 
-import { TransactionsState } from '../../redux/reducers/transactions';
+import { TransactionsState, TransactionStatus } from '../../redux/reducers/transactions';
 
 import TransactionItem from './TransactionItem';
 
@@ -65,6 +65,11 @@ function TransactionsList({
     );
   }
 
+  const hasPendingTransactions = transactions
+    .some(
+      (transaction) => transaction.status < TransactionStatus.DISPATCHED,
+    );
+
   return (
     <div>
       <Button
@@ -72,7 +77,7 @@ function TransactionsList({
         onClick={openModal}
       >
         Transaction list
-        {!noTransactions && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
+        {hasPendingTransactions && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
       </Button>
       <ReactModal
         isOpen={isOpen}

@@ -106,19 +106,24 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
             if (transaction.isMinted) {
               return TransactionStatus.RELAYED;
             }
-            return TransactionStatus.FINALIZED_ON_CHAIN;
+            return TransactionStatus.WAITING_FOR_RELAY;
           }
           return TransactionStatus.CONFIRMING;
         };
+
         return {
           ...state,
-          transactions: state.transactions.map((t) => (t.hash === action.hash
-            ? {
-              ...t,
-              confirmations: action.confirmations,
-              status: getTransactionStatus(t),
-            }
-            : t)),
+          transactions: state.transactions.map(
+            (t) => (
+              t.hash === action.hash
+                ? {
+                  ...t,
+                  confirmations: action.confirmations,
+                  // ensure we don't downgrade the status
+                  status: getTransactionStatus(t) > t.status ? getTransactionStatus(t) : t.status,
+                }
+                : t),
+          ),
         };
       })(action);
     }

@@ -5,3 +5,4 @@ public/js/bundle.js
 build
 .env*
 !.env-template
+yarn-error.log
