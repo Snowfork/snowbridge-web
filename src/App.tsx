@@ -82,7 +82,10 @@ function BridgeApp(): JSX.Element {
     <main>
       <Nav transactions={transactions} />
       <Bridge />
-      <PendingTransactionsModal isOpen={isPendingModalOpen} closeModal={closeModal} />
+      <PendingTransactionsModal
+        isOpen={isPendingModalOpen}
+        closeModal={closeModal}
+      />
       <ToastContainer autoClose={10000} />
     </main>
   );

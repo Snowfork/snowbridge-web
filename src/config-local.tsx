@@ -21,4 +21,7 @@ export default {
   BLOCK_EXPLORER_URL: 'https://ropsten.etherscan.io',
 
   PERMITTED_METAMASK_NETWORK: 'private',
+
+  PRICE_CURRENCIES: ['usd'],
+
 };

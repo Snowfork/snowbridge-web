@@ -22,4 +22,6 @@ export default {
 
   PERMITTED_METAMASK_NETWORK: 'ropsten',
 
+  PRICE_CURRENCIES: ['usd'],
+
 };

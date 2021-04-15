@@ -42,7 +42,8 @@
         // "@typescript-eslint/no-shadow": ["error"],
         "import/prefer-default-export": "off",
         "no-use-before-define": "off",
-        "@typescript-eslint/no-use-before-define": ["error"]
+        "@typescript-eslint/no-use-before-define": ["error"],
+        "no-underscore-dangle": "off"
     },
     "settings": {
     "import/resolver": {
