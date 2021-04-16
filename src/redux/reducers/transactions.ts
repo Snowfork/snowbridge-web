@@ -1,28 +1,32 @@
+import { EventData } from 'web3-eth-contract';
 import {
   ADD_TRANSACTION,
-  UPDATE_CONFIRMATIONS,
+  SET_CONFIRMATIONS,
   SET_NONCE,
   SET_TRANSACTION_STATUS,
   UPDATE_TRANSACTION,
   PARACHAIN_MESSAGE_DISPATCHED,
   POLKA_ETH_BURNED,
   SET_PENDING_TRANSACTION,
-  ETH_MESSAGE_DISPATCHED_EVENT
+  ETH_MESSAGE_DISPATCHED_EVENT,
+  SET_POLKADOT_GAS_BALANCE,
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
   SetTransactionStatusPayload,
   UpdateTransactionPayload,
-  UpdateConfirmationsPayload,
+  SetConfirmationsPayload,
   ParachainMessageDispatchedPayload,
   PolkaEthBurnedPayload,
   SetPendingTransactionPayload,
   EthMessageDispatchedPayload,
-  SetNoncePayload
-} from '../actions/transactions'
+  SetNoncePayload,
+  SetPolkadotGasBalancePayload,
+} from '../actions/transactions';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
-import { EventData } from 'web3-eth-contract';
-import { Token } from '../../types';
+import { Token } from '../../types/types';
+import { RootState } from '.';
+import { TokenData } from './bridge';
 
 export enum TransactionStatus {
   // used for error states
@@ -34,7 +38,8 @@ export enum TransactionStatus {
   // used when the eth transaction is confirmed
   // and we are waiting to reach the confirmation threshold
   CONFIRMING = 2,
-  // transaction finalized (for eth, when we reach enough confirmations. for parachain, when tx finalized)
+  // transaction finalized (for eth, when we reach enough confirmations.
+  // for parachain, when tx finalized)
   FINALIZED_ON_CHAIN = 3,
   // waiting for 'MessageDispatch' event on polkadot for eth transactions
   // or waiting for 'MessageDispatched' event on Ethereum for polkadot transactions
@@ -57,10 +62,12 @@ export interface Transaction {
   isBurned: boolean;
   chain: 'eth' | 'polkadot';
   token: Token;
-  dispatchTransactionHash?: string
+  dispatchTransactionHash?: string;
+  error?: string;
 }
 
-// Interface for the Ethereum 'MessageDispatched' event, emitted by the Incentivized Channel smart contract
+// Interface for the Ethereum 'MessageDispatched' event,
+// emitted by the Incentivized Channel smart contract
 export interface MessageDispatchedEvent extends EventData {
   returnValues: { nonce: string, result: boolean }
 }
@@ -73,127 +80,159 @@ export interface PolkaEthBurnedEvent {
 
 export interface TransactionsState {
   transactions: Transaction[],
-  pendingTransaction?: Transaction
+  pendingTransaction?: Transaction,
+  // native tokens
+  // TODO: remove from state and replace with a selector
+  polkadotGasBalance: string
 }
 
 const initialState: TransactionsState = {
   transactions: [],
-  pendingTransaction: undefined
+  pendingTransaction: undefined,
+  polkadotGasBalance: '0',
 };
 
-function transactionsReducer(state: TransactionsState = initialState, action: any) {
+function transactionsReducer(state: TransactionsState = initialState, action: any)
+  : TransactionsState {
   switch (action.type) {
     case ADD_TRANSACTION: {
-      return ((action: AddTransactionPayload) => {
-        return Object.assign({}, state, {
-          transactions: [...state.transactions, action.transaction],
-          pendingTransaction: action.transaction
-        });
-      })(action)
+      return ((action: AddTransactionPayload) => ({
+        ...state,
+        transactions: [...state.transactions, action.transaction],
+        pendingTransaction: action.transaction,
+      }))(action);
     }
-    case UPDATE_CONFIRMATIONS: {
-      return ((action: UpdateConfirmationsPayload) => {
+    case SET_CONFIRMATIONS: {
+      return ((action: SetConfirmationsPayload) => {
         const getTransactionStatus = (transaction: Transaction): TransactionStatus => {
           // check if the transaction has already been relayed to polkadot
           if (action.confirmations >= REQUIRED_ETH_CONFIRMATIONS) {
             if (transaction.isMinted) {
-              return TransactionStatus.RELAYED
-            } else {
-              return TransactionStatus.FINALIZED_ON_CHAIN
+              return TransactionStatus.RELAYED;
             }
-          } else {
-            return TransactionStatus.CONFIRMING
+            return TransactionStatus.WAITING_FOR_RELAY;
           }
-        }
-        return Object.assign({}, state, {
-          transactions: state.transactions.map((t) => t.hash === action.hash
-            ? {
-              ...t,
-              confirmations: action.confirmations,
-              status: getTransactionStatus(t)
-            }
-            : t)
-        });
-      })(action)
+          return TransactionStatus.CONFIRMING;
+        };
+
+        return {
+          ...state,
+          transactions: state.transactions.map(
+            (t) => (
+              t.hash === action.hash
+                ? {
+                  ...t,
+                  confirmations: action.confirmations,
+                  // ensure we don't downgrade the status
+                  status: getTransactionStatus(t) > t.status ? getTransactionStatus(t) : t.status,
+                }
+                : t),
+          ),
+        };
+      })(action);
     }
     case SET_TRANSACTION_STATUS: {
-      return ((action: SetTransactionStatusPayload) => {
-        return Object.assign({}, state, {
-          transactions: state.transactions.map((t) => t.hash === action.hash ? { ...t, status: action.status } : t)
-        });
-      })(action)
+      return ((action: SetTransactionStatusPayload) => (
+        {
+          ...state,
+          transactions: state.transactions.map(
+            (t) => (
+              t.hash === action.hash
+                ? {
+                  ...t,
+                  // ensure we don't downgrade the status
+                  status: action.status > t.status ? action.status : t.status,
+                }
+                : t
+            ),
+          ),
+        }))(action);
     }
     case UPDATE_TRANSACTION: {
-      return ((action: UpdateTransactionPayload) => {
-        return Object.assign({}, state, {
-          transactions: state.transactions.map((t) => t.hash === action.hash ? { ...t, ...action.updates } : t)
-        });
-      })(action)
+      return ((action: UpdateTransactionPayload) => (
+        {
+          ...state,
+          transactions: state.transactions.map(
+            (t) => (t.hash === action.hash ? { ...t, ...action.updates } : t),
+          ),
+        }))(action);
     }
     case SET_NONCE: {
-      return ((action: SetNoncePayload) => {
-        return Object.assign({}, state, {
-          transactions: state.transactions.map((t) => t.hash === action.hash ? { ...t, nonce: action.nonce } : t)
-        });
-      })(action)
+      return ((action: SetNoncePayload) => (
+        {
+          ...state,
+          transactions: state.transactions.map(
+            (t) => (t.hash === action.hash ? { ...t, nonce: action.nonce } : t),
+          ),
+        }))(action);
     }
     // Called when an PolkaEth asset has been minted by the parachain
     case PARACHAIN_MESSAGE_DISPATCHED: {
-      return ((action: ParachainMessageDispatchedPayload) => {
-        return Object.assign({}, state, {
-          transactions: state.transactions.map((t) =>
-            (t.nonce === action.nonce)
-              ? {
-                ...t,
-                isMinted: true,
-                status: TransactionStatus.RELAYED
-              }
-              : t
-          )
-        });
-      })(action)
+      return ((action: ParachainMessageDispatchedPayload): TransactionsState => ({
+        ...state,
+        transactions: state.transactions.map((t) => ((t.nonce === action.nonce)
+          ? {
+            ...t,
+            isMinted: true,
+            status: TransactionStatus.DISPATCHED,
+          }
+          : t)),
+      }))(action);
     }
     // TODO: Properly map PolkaEth submitted assets to burned assets
     // Called when an PolkaEth asset has been burned by the parachain
     case POLKA_ETH_BURNED: {
-      return ((action: PolkaEthBurnedPayload) => {
-        return Object.assign({}, state, {
-          transactions: state.transactions.map((t) =>
-            (t.amount === action.event.amount
+      return ((action: PolkaEthBurnedPayload) => ({
+        ...state,
+        transactions: state.transactions.map((t) => ((t.amount === action.event.amount
               && t.receiver === action.event.accountId)
-              ? { ...t, isBurned: true, status: TransactionStatus.WAITING_FOR_RELAY }
-              : t
-          )
-        });
-      })(action)
+          ? { ...t, isBurned: true, status: TransactionStatus.WAITING_FOR_RELAY }
+          : t)),
+      }))(action);
     }
     case SET_PENDING_TRANSACTION: {
-      return ((action: SetPendingTransactionPayload) => {
-        return Object.assign({}, state, {
-          pendingTransaction: action.transaction
-        })
-      })(action)
+      return ((action: SetPendingTransactionPayload) => (
+        {
+          ...state,
+          pendingTransaction: action.transaction,
+        }))(action);
     }
     case ETH_MESSAGE_DISPATCHED_EVENT: {
       return ((action: EthMessageDispatchedPayload) => {
-        const isMatchingTransaction = (transaction: Transaction): boolean => {
-          return action.nonce === transaction.nonce
-        }
-        return Object.assign({}, state, {
-          transactions: state.transactions.map((t) => isMatchingTransaction(t)
+        const isMatchingTransaction = (transaction: Transaction)
+          : boolean => action.nonce === transaction.nonce;
+        return {
+          ...state,
+          transactions: state.transactions.map((t) => (isMatchingTransaction(t)
             ? {
               ...t,
               status: TransactionStatus.DISPATCHED,
-              dispatchTransactionHash: action.dispatchTransactionHash
+              dispatchTransactionHash: action.dispatchTransactionHash,
             }
-            : t)
-        })
-      })(action)
+            : t)),
+        };
+      })(action);
+    }
+
+    case SET_POLKADOT_GAS_BALANCE: {
+      return ((action: SetPolkadotGasBalancePayload) => (
+        { ...state, polkadotGasBalance: action.balance }
+      ))(action);
     }
     default:
-      return state
+      return state;
   }
 }
 
-
 export default transactionsReducer;
+
+// selectors
+export const ethGasBalance = (state: RootState): string => (
+  state
+    .bridge
+    .tokens
+    ?.filter(
+      (tokenData: TokenData) => tokenData.token.address === '0x0',
+    )[0]
+    ?.balance.eth ?? '0'
+);

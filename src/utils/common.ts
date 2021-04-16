@@ -1,8 +1,10 @@
-import { REQUIRED_ETH_CONFIRMATIONS } from "../config";
-import { Transaction } from "../redux/reducers/transactions";
+import { REQUIRED_ETH_CONFIRMATIONS } from '../config';
+import { Transaction } from '../redux/reducers/transactions';
+import { SwapDirection } from '../types/types';
 
 /**
- * Shortens a wallet address, showing X number of letters, an ellipsis, and then Y number of letters
+ * Shortens a wallet address, showing X number of letters, an ellipsis, and
+ *  then Y number of letters
  * @param {string} str The wallet address as a string
  * @param {number} [prefix=6] The letters shown at the start before the ellipsis
  * @param {number} [suffix=4] The letters shown at the end after the ellipsis
@@ -13,7 +15,8 @@ import { Transaction } from "../redux/reducers/transactions";
  * shortenWalletAddress('0xda4F4d0123456789a4D771111b36512345DcB10C')
  * // returns "0xda4F...B10C"
  */
-export function shortenWalletAddress(str: String, prefix = 6, suffix = 4) {
+export function shortenWalletAddress(str: string, prefix = 6, suffix = 4)
+  : string {
   return `${str.slice(0, prefix)}...${str.slice(
     str.length - suffix,
     str.length,
@@ -22,8 +25,8 @@ export function shortenWalletAddress(str: String, prefix = 6, suffix = 4) {
 
 /**
  *
- * Formats a value to decimal with X number of spaces, typically used for displaying
- * currency
+ * Formats a value to decimal with X number of spaces, typically used for
+ * displaying currency
  *
  * @param {number} value The value that is going to be displayed
  * @param {number} [decimalPlaces=2] The number of decimal spaces to use
@@ -37,12 +40,11 @@ export function shortenWalletAddress(str: String, prefix = 6, suffix = 4) {
 export function formatToDecimalString(
   value: number | string,
   decimalPlaces = 2,
-) {
+): string {
   return Number(
-    Math.round(parseFloat(value + 'e' + decimalPlaces)) + 'e-' + decimalPlaces,
+    `${Math.round(parseFloat(`${value}e${decimalPlaces}`))}e-${decimalPlaces}`,
   ).toFixed(decimalPlaces);
 }
-
 
 /**
  *
@@ -52,8 +54,13 @@ export function formatToDecimalString(
  * @returns {number} The number of pending transactions
 
  */
-export const pendingTransactions = (transactions: Transaction[]) => {
-  return transactions.filter(
-    (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
-  ).length;
-}
+export const pendingTransactions = (transactions: Transaction[])
+  : number => transactions.filter(
+  (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
+).length;
+
+export const getNetworkNames = (swapDirection: SwapDirection): {from: string, to: string} => (
+  swapDirection === SwapDirection.EthereumToPolkadot
+    ? { from: 'Ethereum', to: 'Polkadot' }
+    : { from: 'Polkadot', to: 'Ethereum' }
+);

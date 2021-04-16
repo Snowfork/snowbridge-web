@@ -6,163 +6,134 @@
 import React, { useEffect, useState } from 'react';
 import ReactModal from 'react-modal';
 
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 // local imports and components
+import { ToastContainer } from 'react-toastify';
+import {
+  Paper,
+  Typography,
+} from '@material-ui/core';
 import Bridge from './components/Bridge/Bridge';
 import Nav from './components/Nav';
-import Net, { isConnected } from './net';
-import { useDispatch } from 'react-redux';
-import { ToastContainer } from 'react-toastify';
+import Net from './net';
+
 import 'react-toastify/dist/ReactToastify.css';
 
-import { setNet } from './redux/actions';
-import { NetState } from './redux/reducers/net';
-import {
-	TransactionsState,
-	TransactionStatus,
-} from './redux/reducers/transactions';
-import Modal from './components/Modal';
-import LoadingSpinner from './components/LoadingSpinner';
-import { BLOCK_EXPLORER_URL, PERMITTED_METAMASK_NETWORK } from './config';
+import { PERMITTED_METAMASK_NETWORK } from './config';
+import { RootState } from './redux/reducers';
+import { initializeTokens } from './redux/actions/bridge';
+import EthTokenList from './components/AppEth/tokenList.json';
+import PendingTransactionsModal from './components/PendingTransactionsUI/PendingTransactionsModal';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
-type Props = {
-	net: NetState;
-	transactions: TransactionsState;
-};
+function BridgeApp(): JSX.Element {
+  const dispatch = useDispatch();
+  const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
+  const {
+    isNetworkConnected,
+    metamaskNetwork,
+    polkadotJSMissing,
+    metamaskMissing,
+  } = useSelector((state: RootState) => state.net);
+  const transactions = useSelector((state: RootState) => state.transactions);
 
-function BridgeApp(props: Props) {
-	const { net, transactions } = props;
+  // Start Network
+  useEffect(() => {
+    const start = async () => {
+      Net.start(dispatch)
+        .then(() => {
+          dispatch(initializeTokens(EthTokenList.tokens));
+        })
+        .catch((e) => {
+          console.log('error starting network', e);
+        });
+    };
 
-	const dispatch = useDispatch();
-	const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
+    start();
+  }, [dispatch]);
 
-	// Start Network
-	useEffect(() => {
-		const start = async () => {
-			const net = await new Net();
-			await net.start(dispatch);
+  // open modal for pending transation
+  useEffect(() => {
+    if (transactions.pendingTransaction) {
+      setIsPendingModalOpen(true);
+    }
+  }, [transactions.pendingTransaction, dispatch]);
 
-			dispatch(setNet(net));
-		};
+  const closeModal = () => {
+    setIsPendingModalOpen(false);
+  };
 
-		start();
-	}, [dispatch]);
+  // check if required extensions are missing
+  if (polkadotJSMissing) {
+    return (
+      <Paper>
+        <Typography color="primary" variant="h2" align="center">
+          Please install the
+          {' '}
+          <a href="https://github.com/polkadot-js/extension">
+            Polkadot.js extension
+          </a>
+        </Typography>
+      </Paper>
+    );
+  }
 
-	// open modal for pending transation
-	useEffect(() => {
-		if (transactions.pendingTransaction) {
-			setIsPendingModalOpen(true);
-		}
-	}, [transactions.pendingTransaction, dispatch]);
+  if (metamaskMissing) {
+    return (
+      <Paper>
+        <Typography color="primary" variant="h2" align="center">
+          Please install the
+          {' '}
+          <a href="https://metamask.io/">
+            Metamask extension
+          </a>
+        </Typography>
+      </Paper>
+    );
+  }
 
-	const closeModal = () => {
-		setIsPendingModalOpen(false);
-	};
+  // Check if Network has been started
+  if (!isNetworkConnected) {
+    return (
+      <Paper>
+        <Typography color="primary" variant="h2" align="center">
+          Loading network
+        </Typography>
+      </Paper>
+    );
+  }
 
-	// Check if Network has been started
-	if (!isConnected(net.client)) {
-		return <p style={{ textAlign: 'center' }}>Connecting Network</p>;
-	}
+  if (
+    metamaskNetwork.toLowerCase()
+    !== PERMITTED_METAMASK_NETWORK.toLowerCase()
+  ) {
+    return (
+      <Paper>
+        <Typography color="primary" variant="h2" align="center">
+          Please select
+          {' '}
+          {PERMITTED_METAMASK_NETWORK}
+          {' '}
+          network in Metamask extension
+        </Typography>
+      </Paper>
+    );
+  }
 
-	if (
-		net.metamaskNetwork.toLowerCase() !==
-		PERMITTED_METAMASK_NETWORK.toLowerCase()
-	) {
-		return (
-			<p style={{ textAlign: 'center', color: '#fff' }}>
-				Please select ${PERMITTED_METAMASK_NETWORK} network in Metamask extension
-			</p>
-		);
-	}
-
-	const ethToSnow = transactions?.pendingTransaction?.chain === 'eth';
-	const baseTokenSymbol = transactions?.pendingTransaction?.token.symbol;
-	const snowTokenSymbol = `Snow${baseTokenSymbol}`;
-	return (
-		<main>
-			<Nav net={net.client} transactions={props.transactions} />
-			<Bridge
-				net={net.client!}
-				selectedEthAccount={net.client.ethAddress}
-			/>
-			<Modal
-				isOpen={isPendingModalOpen}
-				closeModal={closeModal}
-				buttonText="x"
-			>
-				<div>
-					{/* submitting - waiting for confirmation in metamask */}
-					{transactions.pendingTransaction?.status ===
-						TransactionStatus.SUBMITTING_TO_CHAIN ? (
-						<div>
-							<div style={{ width: '40px', height: '40px' }}>
-								<LoadingSpinner />
-							</div>
-							<h3>Waiting for transaction to be submitted</h3>
-							<h4>
-								Bridging
-								{' '}
-								{transactions.pendingTransaction?.amount}
-								{' '}
-								{ethToSnow ? baseTokenSymbol : snowTokenSymbol}
-								{' '}
-								to
-								{' '}
-								{transactions.pendingTransaction?.amount}
-								{' '}
-								{ethToSnow ? snowTokenSymbol : baseTokenSymbol}
-							</h4>
-							<div>Confirm this transaction in your wallet</div>
-						</div>
-					) : null}
-					{/* submitted to ethereum - waiting to reach transaction confirmation threshold  */}
-					{transactions.pendingTransaction?.status ===
-						TransactionStatus.WAITING_FOR_CONFIRMATION ? (
-						<div>
-							<h3>Transaction Submitted</h3>
-							{/* link to etherscan */}
-							{ transactions.pendingTransaction.chain === 'eth' ? <h4>
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href={`${BLOCK_EXPLORER_URL}/tx/${transactions.pendingTransaction.hash}`}
-								>
-									View on etherscan
-									</a>
-							</h4> : null}
-						</div>
-					) : null}
-					{/* error */}
-					{transactions.pendingTransaction?.status ===
-						TransactionStatus.REJECTED ? (
-						<div>
-							<h3>Error</h3>
-							<h4>Transaction rejected.</h4>
-						</div>
-					) : null}
-				</div>
-			</Modal>
-
-			<ToastContainer autoClose={10000} />
-		</main>
-	);
-
+  return (
+    <main>
+      <Nav transactions={transactions} />
+      <Bridge />
+      <PendingTransactionsModal
+        isOpen={isPendingModalOpen}
+        closeModal={closeModal}
+      />
+      <ToastContainer autoClose={10000} />
+    </main>
+  );
 }
 
-const mapStateToProps = (
-	state: Props,
-): {
-	net: NetState;
-	transactions: TransactionsState;
-} => {
-	return {
-		net: state.net,
-		transactions: state.transactions,
-	};
-};
-
-export default connect(mapStateToProps)(BridgeApp);
+export default BridgeApp;

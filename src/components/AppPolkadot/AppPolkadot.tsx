@@ -1,111 +1,48 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import Net from '../../net';
-import { Token } from '../../types';
-
+import React from 'react';
 import {
-  Typography,
-  TextField,
   Button,
-  Grid,
-  FormControl,
-  FormHelperText,
-  Divider,
 } from '@material-ui/core';
-
-// ------------------------------------------
-//                  Props
-// ------------------------------------------
-type Props = {
-  net: Net;
-  selectedToken: Token;
-  children?: JSX.Element | JSX.Element[];
-};
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+import { RootState } from '../../redux/reducers';
+import { burnToken } from '../../redux/actions/transactions';
+import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 
 // ------------------------------------------
 //               AppPolkadot component
 // ------------------------------------------
-function AppPolkadot({
-  net,
-  selectedToken,
-  children,
-}: Props): React.ReactElement<Props> {
-  // State
-  const [depositAmount, setDepositAmount] = useState(String);
-  const tokenSymbol = `Snow${selectedToken.symbol}`
+function AppPolkadot(): React.ReactElement {
+  const { selectedAsset, depositAmount } = useSelector((state: RootState) => state.bridge);
+  const dispatch = useDispatch();
+  const tokenSymbol = ` Snow${selectedAsset?.token.symbol}`;
 
-  function SendButton() {
-    if (Number(depositAmount) > 0) {
-      return (
-        <Button
-          color="primary"
-          onClick={() => net?.polkadot?.burn_token(depositAmount, selectedToken)}
-          variant="outlined"
-        >
-          <Typography variant="button">Send {tokenSymbol}</Typography>
-        </Button>
-      );
-    } else {
-      return (
-        <Button disabled color="primary" variant="outlined">
-          <Typography variant="button">Send {tokenSymbol}</Typography>
-        </Button>
-      );
+  async function handleDepositClicked() {
+    try {
+      dispatch(burnToken());
+    } catch (e) {
+      console.log('failed burning token', e);
+    } finally {
+      dispatch(setShowConfirmTransactionModal(false));
     }
   }
+
+  function SendButton() {
+    return (
+      <Button
+        color="primary"
+        onClick={handleDepositClicked}
+        variant="contained"
+        disabled={Number(depositAmount) <= 0}
+      >
+        Send
+        {tokenSymbol}
+      </Button>
+    );
+  }
+
   // Render
   return (
-    <Grid container>
-      <Grid
-        container
-        item
-        xs={10}
-        md={8}
-        justify="center"
-        spacing={3}
-        style={{
-          background: 'white',
-          margin: '0 auto',
-          padding: '2em 0',
-          border: 'thin solid #E0E0E0',
-        }}
-      >
-
-        {/* Address Input */}
-        <Grid item xs={10}>
-          <FormControl>{net.ethAddress}</FormControl>
-          <FormHelperText id="ethReceivingAddress">
-            Ethereum Receiving Address
-          </FormHelperText>
-        </Grid>
-
-        {/* Polkadot Asset Deposit Amount Input */}
-        <Grid item xs={10}>
-          <FormControl>
-            <Typography gutterBottom>Amount</Typography>
-            <TextField
-              InputProps={{
-                value: depositAmount,
-              }}
-              id="token-input-amount"
-              type="number"
-              margin="normal"
-              onChange={(e) => setDepositAmount(e.target.value)}
-              placeholder={`0.00 ${tokenSymbol}`}
-              style={{ margin: 5 }}
-              variant="outlined"
-            />
-            <FormHelperText id="tokenAmountDesc">
-              How much {tokenSymbol} would you like to burn and convert to {selectedToken.symbol}?
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-        <Grid item xs={10}>
-          <SendButton />
-        </Grid>
-      </Grid>
-      <Divider />
-    </Grid>
+    <SendButton />
   );
 }
 

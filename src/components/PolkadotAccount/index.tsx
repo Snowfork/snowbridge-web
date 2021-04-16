@@ -13,7 +13,7 @@ export default function PolkadotAccount({ address }: Props) {
   return (
     <div>
       <Identicon value={address} size={size} theme={theme} />
-      <span style={{ marginLeft: 15 }}>{shortenWalletAddress(address)}</span>
+      <span style={{ marginLeft: 15 }}>{shortenWalletAddress(address || '')}</span>
     </div>
   );
 }

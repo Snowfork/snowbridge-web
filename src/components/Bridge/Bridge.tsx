@@ -4,149 +4,316 @@
 
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
-
-import AppPolkadot from '../AppPolkadot';
-import AppETH from '../AppETH';
-import EthTokenList from '../AppETH/tokenList.json'
-import Net from '../../net';
-
-import * as S from './Bridge.style';
 import {
   Typography,
   Grid,
+  Paper,
+  makeStyles,
+  Theme,
+  createStyles,
+  InputBase,
+  Divider,
+  useTheme,
+  Button,
 } from '@material-ui/core';
+import { useDispatch, useSelector } from 'react-redux';
+import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 
-import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
-import IconButton from '../IconButton';
-import Button from '../Button'
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
+import { formatBalance } from '@polkadot/util';
+import BigNumber from 'bignumber.js';
 import SelectTokenModal from '../SelectTokenModal';
-import { Token } from '../../types';
-import { useDispatch } from 'react-redux';
-import { createContractInstance } from '../../redux/actions/ERC20Transactions';
+import { RootState } from '../../redux/reducers';
+import {
+  setDepositAmount, setShowConfirmTransactionModal, setSwapDirection, updateBalances,
+} from '../../redux/actions/bridge';
+import { SwapDirection } from '../../types/types';
+import ConfirmTransactionModal from '../ConfirmTransactionModal';
+import { getNetworkNames } from '../../utils/common';
+import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
+import { ethGasBalance } from '../../redux/reducers/transactions';
 
-// ------------------------------------------
-//                  Props
-// ------------------------------------------
-type Props = {
-  net: Net;
-  selectedEthAccount: string;
-};
-
-enum SwapDirection {
-  EthereumToPolkadot,
-  PolkadotToEthereum
+enum ErrorMessages {
+  INSUFFICIENT_BALANCE = 'Insufficient funds',
+  INSUFFICIENT_GAS = 'Insufficient gas',
 }
 
 // ------------------------------------------
 //               Bank component
 // ------------------------------------------
-function Bridge({
-  net,
-  selectedEthAccount,
-}: Props): React.ReactElement<Props> {
-  const [swapDirection, setSwapDirection] = useState(SwapDirection.EthereumToPolkadot);
-  const [showAssetSelector, setShowAssetSelector] = useState(false)
-  const [tokens, setTokens] = useState<Token[]>([EthTokenList.tokens[0] as Token]);
-  const [selectedAsset, setSelectedAsset] = useState<Token>(tokens[0]);
+function Bridge(): React.ReactElement {
+  // state
+  const [showAssetSelector, setShowAssetSelector] = useState(false);
+  const { showConfirmTransactionModal } = useSelector((state: RootState) => state.bridge);
+  const { polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
+  const ethereumGasBalance = useSelector((state: RootState) => ethGasBalance(state));
+
+  const [errors, setErrors] = useState<{balance?: ErrorMessages, gas?: ErrorMessages}>({
+    balance: undefined,
+    gas: undefined,
+  });
+
+  const {
+    selectedAsset,
+    depositAmount,
+    swapDirection,
+  } = useSelector((state: RootState) => state.bridge);
+
+  const theme = useTheme();
   const dispatch = useDispatch();
 
+  // utils
+  const getTokenBalances = (direction: SwapDirection)
+    : { sourceNetwork: string, destinationNetwork: string } => {
+    let sourceNetworkBalance = selectedAsset?.balance.polkadot;
+    let destinationNetworkBalance = selectedAsset?.balance.eth;
+
+    if (direction === SwapDirection.EthereumToPolkadot) {
+      sourceNetworkBalance = selectedAsset?.balance.eth;
+      destinationNetworkBalance = selectedAsset?.balance.polkadot;
+    }
+
+    return {
+      sourceNetwork: formatBalance(sourceNetworkBalance, { forceUnit: '', withSi: false }),
+      destinationNetwork: formatBalance(destinationNetworkBalance, { forceUnit: '', withSi: false }),
+    };
+  };
+  // side effects
+  // validate deposit amount on update
   useEffect(() => {
-    const currentChainId = Number.parseInt((net.eth?.conn?.currentProvider as any).chainId, 16)
-    let selectedTokenList: Token[];
-    // set eth token list
-    // only include tokens from current network
-    selectedTokenList = (EthTokenList.tokens as Token[])
-      .filter(
-        (token: Token) => token.chainId === currentChainId)
+    if (
+      new BigNumber(depositAmount)
+        .isGreaterThan(
+          new BigNumber(getTokenBalances(swapDirection).sourceNetwork),
+        )
+    ) {
+      setErrors((errors) => ({ ...errors, balance: ErrorMessages.INSUFFICIENT_BALANCE }));
+    } else {
+      setErrors((errors) => ({ ...errors, balance: undefined }));
+    }
+  }, [depositAmount, swapDirection]);
 
-    setTokens(selectedTokenList);
-    setSelectedAsset(selectedTokenList[0]);
+  // poll APIs to keep balances up to date
+  useEffect(() => {
+    function startPolling() {
+      return setInterval(() => {
+        dispatch(updateBalances());
+      }, REFRESH_INTERVAL_MILLISECONDS);
+    }
 
-  }, [net.eth, setTokens])
+    const interval = startPolling();
 
-  // update the contract instance when the selected asset changes
-  const handleAssetSelected = (asset: Token): void => {
-    setSelectedAsset(asset);
-    dispatch(createContractInstance(asset.address, net?.eth?.conn as Web3))
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
-  }
+  // check the user has enough gas for the transaction
+  useEffect(() => {
+    let hasEnoughGas;
+
+    // check eth balance for eth -> polkadot transactions
+    if (swapDirection === SwapDirection.EthereumToPolkadot) {
+      hasEnoughGas = Number.parseFloat(ethereumGasBalance) > 0;
+    } else {
+      // check DOT balance for polkadot -> eth transactions
+      hasEnoughGas = Number.parseFloat(polkadotGasBalance) > 0;
+    }
+
+    if (!hasEnoughGas) {
+      setErrors((errors) => ({ ...errors, gas: ErrorMessages.INSUFFICIENT_GAS }));
+    } else {
+      setErrors(
+        (errors) => ({ ...errors, gas: undefined }),
+      );
+    }
+  }, [swapDirection, selectedAsset, ethereumGasBalance, polkadotGasBalance]);
+
+  const useStyles = makeStyles((theme: Theme) => createStyles({
+    root: {
+      padding: '2px 4px',
+      display: 'flex',
+      alignItems: 'center',
+      margin: '0 auto',
+      maxWidth: 400,
+    },
+    amountInput: {
+      padding: '2px 4px',
+      display: 'flex',
+      alignItems: 'center',
+      margin: '0 auto',
+      marginBottom: theme.spacing(2),
+    },
+    paper: {
+      padding: theme.spacing(2),
+      margin: '0 auto',
+      maxWidth: 500,
+    },
+    input: {
+      marginLeft: theme.spacing(1),
+      flex: 1,
+    },
+    divider: {
+      height: 28,
+      margin: 4,
+    },
+    transfer: {
+      width: '100%',
+    },
+    switch: {
+      margin: 'auto',
+    },
+  }));
+  const classes = useStyles(theme);
+
+  // Event handlers
 
   // update transaction direction between chains
-  const handleSwap = () => {
+  const changeTransactionDirection = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      setSwapDirection(SwapDirection.PolkadotToEthereum);
+      dispatch(setSwapDirection(SwapDirection.PolkadotToEthereum));
     } else {
-      setSwapDirection(SwapDirection.EthereumToPolkadot);
+      dispatch(setSwapDirection(SwapDirection.EthereumToPolkadot));
     }
   };
 
-  const ChainApp = () => {
-    if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      return <AppETH
-        net={net}
-        selectedToken={selectedAsset}
-        bridgeERC20AppContract={net?.eth?.erc20_contract as Contract}
-        selectedEthAccount={selectedEthAccount}
-      />
-    } else {
-      return <AppPolkadot
-        net={net}
-        selectedToken={selectedAsset}
-      />;
-    }
+  // set deposit amount to balance of current asset
+  const handleMaxClicked = () => {
+    const amount = getTokenBalances(swapDirection).sourceNetwork;
+    dispatch(setDepositAmount(Number.parseFloat(amount)));
   };
+
+  // update deposit amount in redux store
+  const handleDepositAmountChanged = (e: any) => {
+    dispatch(setDepositAmount(e.target.value));
+  };
+
+  // show confirm transaction modal
+  const handleTransferClicked = () => {
+    dispatch(setShowConfirmTransactionModal(true));
+  };
+
+  const errorText = Object.values(errors).filter((e) => e)[0];
+
+  const assetPrice = (selectedAsset?.prices?.usd ?? 0) * depositAmount;
+  const isDepositDisabled = !!errorText || depositAmount <= 0;
 
   return (
-    <div style={{ padding: '2em 0', }}>
-      {/* select swap direction */}
-      <Grid
-        container
-        item
-        xs={10}
-        md={8}
-        justify="center"
-        spacing={3}
-        style={{
-          background: 'white',
-          margin: '0 auto',
-          padding: '2em 0',
-          border: 'thin solid #E0E0E0',
-        }}
-      >
-        <Typography gutterBottom variant="h5">
-          <S.HeadingContainer>
-            Eth
-              <IconButton
-              primary={swapDirection === SwapDirection.PolkadotToEthereum}
-              style={{ marginLeft: '10px' }}
-              icon={<FaLongArrowAltLeft size="2.5em" />}
-              onClick={() => handleSwap()}
-            />
-            <IconButton
-              primary={swapDirection === SwapDirection.EthereumToPolkadot}
-              style={{ marginRight: '10px' }}
-              icon={<FaLongArrowAltRight size="2.5em" />}
-              onClick={() => handleSwap()}
-            />
-              Polkadot
-            </S.HeadingContainer>
+
+    <div className={classes.root}>
+      <Paper className={classes.paper}>
+        <Grid container spacing={2}>
+          {/* From section */}
+          <Grid item>
+            <Grid item>
+              <Typography>FROM</Typography>
+              <Typography variant="subtitle1" gutterBottom>
+                {getNetworkNames(swapDirection).from}
+              </Typography>
+            </Grid>
+            {/* amount input */}
+            <Grid item>
+              <Paper className={classes.amountInput}>
+                <InputBase
+                  className={classes.input}
+                  placeholder="0.0"
+                  inputProps={{ 'aria-label': '0.0', min: 0 }}
+                  value={depositAmount}
+                  onChange={handleDepositAmountChanged}
+                  type="number"
+                />
+                <Button size="small" onClick={handleMaxClicked}>MAX</Button>
+                <Divider className={classes.divider} orientation="vertical" />
+                <Button onClick={() => setShowAssetSelector(true)}>
+                  {selectedAsset?.token?.name}
+                  <ExpandMoreIcon />
+                </Button>
+              </Paper>
+            </Grid>
+
+            <Grid item container justify="space-between">
+              <Typography gutterBottom>
+                $
+                {assetPrice}
+              </Typography>
+              <Grid item>
+                <Typography gutterBottom variant="caption">
+                  Available Balance:
+                </Typography>
+                <Typography gutterBottom>
+                  {
+                    selectedAsset
+                    && getTokenBalances(swapDirection).sourceNetwork
+                  }
+                  {' '}
+                  {selectedAsset?.token?.symbol}
+                </Typography>
+              </Grid>
+            </Grid>
+          </Grid>
+
+          <Grid item className={classes.switch}>
+            <Button onClick={changeTransactionDirection}>
+              <SwapVerticalCircleIcon height="40px" color="primary" />
+            </Button>
+            <Typography align="center" variant="caption" display="block">
+              Switch
+            </Typography>
+          </Grid>
+
+          {/* To section */}
+          <Grid item container>
+            <Grid item>
+              <Typography>TO</Typography>
+            </Grid>
+            <Grid item container justify="space-between">
+              <Typography gutterBottom display="block">{getNetworkNames(swapDirection).to}</Typography>
+              <Grid item>
+                <Typography gutterBottom variant="caption">
+                  Available Balance:
+                </Typography>
+                <Typography gutterBottom>
+                  {
+                    selectedAsset
+                    && getTokenBalances(swapDirection).destinationNetwork
+                  }
+                  {' '}
+                  {selectedAsset?.token?.symbol}
+                </Typography>
+              </Grid>
+            </Grid>
+          </Grid>
+
+        </Grid>
+        <Typography color="error">
+          {errorText}
         </Typography>
-        <Typography gutterBottom>Select Asset</Typography>
-        <Button onClick={() => setShowAssetSelector(true)}>
-          <img src={selectedAsset.logoURI} alt={`${selectedAsset.name} icon`} style={{ width: '25px' }} />
-          {selectedAsset.symbol}
+
+        <Button
+          variant="contained"
+          fullWidth
+          color="primary"
+          onClick={handleTransferClicked}
+          disabled={isDepositDisabled}
+        >
+          Transfer
         </Button>
-        <SelectTokenModal tokens={tokens} onTokenSelected={handleAssetSelected} open={showAssetSelector} onClose={() => setShowAssetSelector(false)} />
-      </Grid>
-      <ChainApp />
+
+      </Paper>
+      <SelectTokenModal
+        open={showAssetSelector}
+        onClose={() => setShowAssetSelector(false)}
+      />
+      <ConfirmTransactionModal
+        open={showConfirmTransactionModal}
+      />
 
     </div>
+
   );
 }
 
-// export default React.memo(styled(Bridge)`
 export default styled(Bridge)`
   opacity: 0.5;
   padding: 1rem 1.5rem;

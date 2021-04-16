@@ -1,317 +1,94 @@
+/* eslint-disable no-console */
 import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
-
-import Api, { ss58_to_u8 } from './api';
-import Net from './';
-import { Token } from '../types';
+import Api from './api';
 
 // Import Contracts
 import {
   APP_ETH_CONTRACT_ADDRESS,
   APP_ERC20_CONTRACT_ADDRESS,
   INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-  REQUIRED_ETH_CONFIRMATIONS
+  BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
 } from '../config';
 
 /* tslint:disable */
 import * as ETHApp from '../contracts/ETHApp.json';
 import * as ERC20App from '../contracts/ERC20App.json';
 import * as IncentivizedInboundChannel from '../contracts/IncentivizedInboundChannel.json';
+import * as BasicInboundChannel from '../contracts/BasicInboundChannel.json';
 
 /* tslint:enable */
-
-import { Dispatch } from 'redux';
 import {
-  setMetamaskFound,
+  setBasicChannelContract,
+  setERC20Contract,
+  setEthAddress,
+  setEthContract,
+  setIncentivizedChannelContract,
   setMetamaskMissing,
   setMetamaskNetwork,
-} from '../redux/actions';
-import {
-  addTransaction,
-  setNonce,
-  setPendingTransaction,
-  updateConfirmations,
-} from '../redux/actions/transactions';
-import {
-  Transaction,
-  TransactionStatus,
-} from '../redux/reducers/transactions';
-import { notify } from '../redux/actions/notifications';
-
+  setWeb3,
+} from '../redux/actions/net';
+import { fetchEthAddress } from '../redux/actions/transactions';
+import { TokenData } from '../redux/reducers/bridge';
 import * as ERC20Api from '../utils/ERC20Api';
-
-// Eth API connector
-type Connector = (e: Eth, net: any) => void;
+import { updateBalances } from '../redux/actions/bridge';
 
 // window wrapper
 type MyWindow = typeof window & {
   ethereum: any;
   web3: Web3;
 };
-
-const INCENTIVIZED_CHANNEL_ID = 1;
-
 export default class Eth extends Api {
-  public conn?: Web3;
-  public eth_contract?: Contract;
-  public erc20_contract?: Contract;
-  public incentivizedChannelContract?: Contract;
-  private net: Net;
-  public dispatch: Dispatch;
-
-  constructor(connecter: Connector, net: Net, dispatch: Dispatch) {
-    super();
-    this.net = net;
-    connecter(this, net);
-    this.dispatch = dispatch;
-  }
-
-  // Get default web3 account
-  async get_address() {
-    if (this!.conn) {
-      try {
-        const accs = await this.conn.eth.getAccounts();
-
-        if (accs) {
-          return accs[0];
-        } else {
-          throw new Error('Ethereum Account Not Set');
-        }
-      } catch (err) {
-        //TODO: handle 'No default Account Error'
-        console.log(err);
-      }
-    }
-  }
-
-  // Get ETH balance of default Ethereum Account
-  public async get_balance() {
-    try {
-      if (this.conn) {
-        let default_address = await this.get_address();
-
-        if (default_address) {
-          const currBalance = await this.conn.eth.getBalance(default_address);
-
-          if (currBalance) {
-            return parseFloat(this.conn.utils.fromWei(currBalance)).toFixed(4);
-          }
-
-          throw new Error('Balance not found');
-        }
-
-        throw new Error('Default Address not found');
-      } else {
-        throw new Error('Web3 API not connected');
-      }
-    } catch (err) {
-      //TODO: handle properly
-      console.log(err);
-    }
-  }
-
-  // Lockup Token To Selected Polkadot Account via Incentivized Channel
-  public async lock_token(amount: string, token: Token) {
-    try {
-      const self: Eth = this;
-      let default_address = await self.get_address();
-      let transactionHash: string;
-
-      if (default_address) {
-        if (self.conn && self.eth_contract && self.erc20_contract) {
-          const polkadotAddress: Uint8Array = ss58_to_u8(
-            self.net.polkadotAddress,
-          );
-
-          const pendingTransaction: Transaction = {
-            hash: '',
-            confirmations: 0,
-            sender: self.net.ethAddress,
-            receiver: self.net.polkadotAddress,
-            amount: amount,
-            status: TransactionStatus.SUBMITTING_TO_CHAIN,
-            isMinted: false,
-            isBurned: false,
-            chain: 'eth',
-            token
-          }
-
-          let promiEvent: any;
-          if (token.address === '0x0') {
-            promiEvent = self.eth_contract.methods
-              .lock(polkadotAddress, INCENTIVIZED_CHANNEL_ID)
-              .send({
-                from: default_address,
-                gas: 500000,
-                value: self.conn.utils.toWei(amount, 'ether'),
-              });
-          } else {
-            const tokenAmountWithDecimals = await ERC20Api.addDecimals(token, amount);
-            promiEvent = self.erc20_contract.methods
-              .lock(token.address, polkadotAddress, tokenAmountWithDecimals, INCENTIVIZED_CHANNEL_ID)
-              .send({
-                from: default_address,
-                gas: 500000,
-                value: 0
-              });
-          }
-
-          promiEvent.on('sending', async function (payload: any) {
-            console.log('Sending Transaction', payload);
-            // create transaction with default values to display in the modal
-            self.dispatch(setPendingTransaction(pendingTransaction));
-          })
-            .on('sent', async function (payload: any) {
-              console.log('Transaction sent', payload);
-            })
-            .on('transactionHash', async function (hash: string) {
-              console.log('Transaction hash received', hash);
-              transactionHash = hash;
-
-              self.dispatch(
-                addTransaction({
-                  hash,
-                  confirmations: 0,
-                  sender: self.net.ethAddress,
-                  receiver: self.net.polkadotAddress,
-                  amount: amount,
-                  status: TransactionStatus.WAITING_FOR_CONFIRMATION,
-                  isMinted: false,
-                  isBurned: false,
-                  chain: 'eth',
-                  token
-                }),
-              );
-
-              self.dispatch(notify({ text: `${token.symbol} to Snow${token.symbol} Transaction created` }));
-            })
-            .on('receipt', async function (receipt: any) {
-              console.log('Transaction receipt received', receipt);
-              const outChannelLogFields = [
-                {
-                  type: 'address',
-                  name: 'source'
-                },
-                {
-                  type: 'uint64',
-                  name: 'nonce'
-                },
-                {
-                  type: 'bytes',
-                  name: 'payload',
-                }
-              ];
-              const logIndex = token.address === '0x0' ? 0 : 2;
-              const channelEvent = receipt.events[logIndex];
-              const decodedEvent = self.conn!.eth.abi.decodeLog(outChannelLogFields, channelEvent.raw.data, channelEvent.raw.topics);
-              const nonce = decodedEvent.nonce;
-              self.dispatch(
-                setNonce(transactionHash, nonce),
-              );
-            })
-            .on(
-              'confirmation',
-              function (
-                confirmation: number,
-                receipt: any,
-              ) {
-                console.log(`Got confirmation ${confirmation} for ${receipt.transactionHash}`);
-                // update transaction confirmations
-                self.dispatch(
-                  updateConfirmations(receipt.transactionHash, confirmation),
-                );
-
-                if (confirmation === REQUIRED_ETH_CONFIRMATIONS) {
-                  self.dispatch(notify({
-                    text: `Transactions confirmed after ${confirmation} confirmations`,
-                    color: 'success'
-                  }));
-                  promiEvent.off('confirmation');
-                }
-              },
-            )
-            .on('error', function (error: Error) {
-              // TODO: render error message
-              self.dispatch(setPendingTransaction({
-                ...pendingTransaction,
-                status: TransactionStatus.REJECTED,
-              }));
-
-              self.dispatch(notify({
-                text: `Transaction Error`,
-                color: 'error'
-              }));
-              throw error;
-            });
-        }
-      } else {
-        throw new Error('Default Address not found');
-      }
-    } catch (err) {
-      //Todo: Error Sending Ethereum
-      console.log(err);
-    }
-  }
-
-  // Set Eth contract
-  public set_eth_contract() {
-    try {
-      const contract = new this!.conn!.eth.Contract(
-        ETHApp.abi as any,
-        APP_ETH_CONTRACT_ADDRESS,
-      );
-
-      this.eth_contract = contract;
-    } catch (err) {
-      //Todo: Error fetching ETH contract
-      console.log(err);
-    }
-  }
-
-  // Set ERC20 contract
-  public set_erc20_contract() {
-    try {
-      if (this.conn) {
-        const contract = new this.conn.eth.Contract(
-          ERC20App.abi as any,
-          APP_ERC20_CONTRACT_ADDRESS,
-        );
-
-        this.erc20_contract = contract;
-      }
-    } catch (err) {
-      //Todo: Error fetching ERC20 contract
-      console.log(err);
-    }
-  }
-
-  // Set Incentivized Channel contract
-  public setIncentivizedChannelContract() {
-    try {
-      if (this.conn) {
-        const contract = new this.conn.eth.Contract(
-          IncentivizedInboundChannel.abi as any,
-          INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-        );
-
-        this.incentivizedChannelContract = contract;
-      }
-    } catch (err) {
-      //Todo: Error fetching ERC20 contract
-      console.log(err);
-    }
-  }
-
   // Web3 API connector
-  public static async connect(dispatch: Dispatch): Promise<Connector> {
-    let locWindow = window as MyWindow;
+  public static async connect(dispatch: any): Promise<void> {
+    const locWindow = window as MyWindow;
     let web3: Web3;
 
-    const connectionComplete = (web3: any) => {
-      dispatch(setMetamaskFound());
+    const connectionComplete = async (web3: Web3) => {
+      dispatch(setWeb3(web3));
+      // dispatch(setMetamaskFound());
       web3.eth.net
         .getNetworkType()
         .then((network: string) => dispatch(setMetamaskNetwork(network)));
+
+      // handle metamask account changes
+      locWindow.ethereum.on('accountsChanged', async (accounts: string[]) => {
+        if (accounts[0]) {
+          await dispatch(setEthAddress(accounts[0]));
+          dispatch(updateBalances());
+        }
+      });
+
+      if (web3) {
+        // Set contracts
+        const ethContract = new web3.eth.Contract(
+          ETHApp.abi as any,
+          APP_ETH_CONTRACT_ADDRESS,
+        );
+        dispatch(setEthContract(ethContract));
+
+        const erc20contract = new web3.eth.Contract(
+          ERC20App.abi as any,
+          APP_ERC20_CONTRACT_ADDRESS,
+        );
+        dispatch(setERC20Contract(erc20contract));
+
+        const incentivizedChannelContract = new web3.eth.Contract(
+          IncentivizedInboundChannel.abi as any,
+          INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+        );
+        dispatch(setIncentivizedChannelContract(incentivizedChannelContract));
+
+        const basicChannelContract = new web3.eth.Contract(
+          BasicInboundChannel.abi as any,
+          BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+        );
+        dispatch(setBasicChannelContract(basicChannelContract));
+
+        // fetch addresses
+        await dispatch(fetchEthAddress());
+
+        console.log('- Eth connected');
+      }
     };
 
     if (locWindow.ethereum) {
@@ -324,30 +101,77 @@ export default class Eth extends Api {
       } catch (error) {
         console.error(error);
       }
-    }
-
-    // Legacy dapp browsers...
-    else if (locWindow.web3) {
+    } else if (locWindow.web3) {
+      // Legacy dapp browsers...
       web3 = locWindow.web3;
       connectionComplete(web3);
 
       console.log('- Injected web3 detected');
-    }
-    // Fallback to localhost; use dev console port by default...
-    else {
+    } else {
+      // Fallback to localhost; use dev console port by default...
       dispatch(setMetamaskMissing());
     }
+  }
 
-    return (eth: Eth) => {
-      if (web3) {
-        eth.conn = web3;
-        // Set contracts
-        eth.set_eth_contract();
-        eth.set_erc20_contract();
-        eth.setIncentivizedChannelContract();
+  /**
+   * Get default web3 account
+   * @param {web3} Web3 web3 instance
+   * @return {Promise<string>} The default web3 account
+   */
+  public static async getAddress(web3: Web3): Promise<string> {
+    try {
+      const accs = await web3.eth.getAccounts();
 
-        console.log('- Eth connected');
+      if (accs) {
+        return accs[0];
       }
-    };
+      throw new Error('Ethereum Account Not Set');
+    } catch (err) {
+      console.log(err);
+      throw new Error('Ethereum Account Not Set');
+    }
+  }
+
+  /**
+ * Get ETH balance of the specified eth address if the token is null or the
+ * address = 0x0 otherwise return the ERC20 balance
+ * @param {web3} Web3 web3 instance
+ * @param {address} string eth address
+ * @param {token} TokenData token metadata and contract instance
+ *
+ * @return {Promise<string>} The eth balance of the account
+ */
+  public static async getTokenBalance(
+    conn: Web3,
+    ethAddress: string,
+    token?: TokenData,
+  ): Promise<string> {
+    try {
+      if (conn) {
+        if (ethAddress) {
+          // fetch eth balance when token is undefined
+          // or when address is 0x0
+          if (token?.token?.address === '0x0' || !token) {
+            const currentBalance = await conn.eth.getBalance(ethAddress);
+            return currentBalance;
+          }
+          // fetch erc20 balance
+          const currentBalance = await ERC20Api.fetchERC20Balance(token!.instance, ethAddress);
+
+          if (currentBalance) {
+            return currentBalance.toString();
+          }
+
+          throw new Error('Balance not found');
+        }
+
+        throw new Error('Eth Address not found');
+      } else {
+        throw new Error('Web3 API not connected');
+      }
+    } catch (err) {
+      console.log(err);
+      throw new Error('Error reading balance');
+    }
   }
 }

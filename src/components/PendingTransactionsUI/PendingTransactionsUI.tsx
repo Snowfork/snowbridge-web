@@ -37,7 +37,7 @@ function getEtherscanLink(transaction: Transaction) {
   return `${BLOCK_EXPLORER_URL}/tx/${transaction.hash}`;
 }
 
-function PendingTransactionsUI({ transaction }: Props) {
+function PendingTransactionsUI({ transaction }: Props): JSX.Element {
   return (
     <div>
       <S.Wrapper>

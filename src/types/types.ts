@@ -6,3 +6,8 @@ export interface Token {
   decimals: number;
   logoURI: string;
 }
+
+export enum SwapDirection {
+  EthereumToPolkadot,
+  PolkadotToEthereum
+}

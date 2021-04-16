@@ -3,103 +3,121 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // General
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 // External
 import {
-  Box,
-  Typography,
-  TextField,
   Button,
-  Grid,
-  FormControl,
-  FormHelperText,
 } from '@material-ui/core';
 
 // Local
-import PolkadotAccount from '../PolkadotAccount';
-import Net from '../../net';
-import { Token } from '../../types';
-
-type LockTokenProps = {
-  net: Net;
-  selectedToken: Token;
-  currentTokenAllowance?: Number;
-};
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../redux/reducers';
+import { lockToken } from '../../redux/actions/transactions';
+import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
+import LoadingSpinner from '../LoadingSpinner';
+import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
+import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
-function LockToken({
-  net,
-  selectedToken,
-  currentTokenAllowance
-}: LockTokenProps): React.ReactElement {
-  const [depositAmount, setDepositAmount] = useState<Number | string>('');
+function LockToken(): React.ReactElement {
+  const { allowance } = useSelector((state: RootState) => state.ERC20Transactions);
+  const { polkadotAddress } = useSelector((state: RootState) => state.net);
+  const { selectedAsset, depositAmount } = useSelector((state: RootState) => state.bridge);
+  const [isApprovalPending, setIsApprovalPending] = useState(false);
 
-  const handleLockToken = async () => {
-    await net?.eth?.lock_token(`${depositAmount}`, selectedToken);
+  const dispatch = useDispatch();
+
+  const isERC20 = selectedAsset?.token?.address !== '0x0';
+  const currentTokenAllowance = allowance;
+
+  // update allowances to prevent failed transactions
+  // e.g the user might spend entire allowance on 1st transaction
+  // so we need to update the allowance before sending the 2nd transaction
+  useEffect(() => {
+    function poll() {
+      return setInterval(() => {
+        dispatch(fetchERC20Allowance());
+      }, REFRESH_INTERVAL_MILLISECONDS);
+    }
+
+    const interval = poll();
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  // lock assets
+  const handleDepositToken = async () => {
+    try {
+      await dispatch(lockToken(
+        depositAmount.toString(),
+        selectedAsset!.token,
+        polkadotAddress!,
+      ));
+    } catch (e) {
+      console.log('Failed to lock eth asset', e);
+    } finally {
+      dispatch(setShowConfirmTransactionModal(false));
+    }
   };
 
-  const isERC20 = selectedToken.address !== '0x0';
+  // approve spending of token
+  const handleTokenUnlock = async () => {
+    try {
+      setIsApprovalPending(true);
+      await dispatch(approveERC20(`${depositAmount}`));
+    } catch (e) {
+      console.log('error approving!');
+    } finally {
+      setIsApprovalPending(false);
+    }
+  };
+
+  const DepositButton = () => {
+    if (isERC20) {
+      if (
+        Number.parseFloat(currentTokenAllowance.toString())
+        < Number.parseFloat(depositAmount.toString())
+      ) {
+        return (
+          <Button
+            variant="contained"
+            size="large"
+            color="primary"
+            onClick={handleTokenUnlock}
+            disabled={isApprovalPending}
+          >
+            Unlock Token
+            {
+              isApprovalPending && <LoadingSpinner spinnerWidth="40px" spinnerHeight="40px" />
+            }
+          </Button>
+        );
+      }
+    }
+
+    return (
+      <Button
+        variant="contained"
+        size="large"
+        color="primary"
+        onClick={handleDepositToken}
+      >
+        Deposit
+        {' '}
+        {selectedAsset?.token.symbol }
+      </Button>
+    );
+  };
 
   // Render
   return (
-    <Box display="flex" flexDirection="column">
-      <Grid item xs={10}>
-        <FormControl>
-          <PolkadotAccount address={net.polkadotAddress} />
-        </FormControl>
-        <FormHelperText id="ethAmountDesc">
-          Polkadot Receiving Address
-          </FormHelperText>
-      </Grid>
-      <Box padding={1} />
-      <FormControl>
-        <Typography gutterBottom>Amount</Typography>
-        <TextField
-          InputProps={{
-            value: depositAmount,
-          }}
-          id="token-input-amount"
-          type="number"
-          margin="normal"
-          onChange={(e) => setDepositAmount(e.target.value ? Number(e.target.value) : '')}
-          placeholder={`0.00 ${selectedToken.symbol}`}
-          style={{ margin: 5 }}
-          variant="outlined"
-        />
-        <FormHelperText id="ethAmountDesc">
-          How much {selectedToken.symbol} would you like to deposit?
-            </FormHelperText>
-      </FormControl>
-      <Box alignItems="center" display="flex" justifyContent="space-around">
-        {isERC20 && <Box>
-          <Typography>
-            Current {selectedToken.symbol} allowance for bridge: {Number(currentTokenAllowance).toFixed(18)} {selectedToken.symbol}
-          </Typography>
-        </Box>}
-        <Box
-          alignItems="center"
-          display="flex"
-          height="100px"
-          paddingBottom={1}
-          paddingTop={2}
-          width="300px"
-        >
-          <Button
-            color="primary"
-            disabled={isERC20 && currentTokenAllowance === 0}
-            fullWidth={true}
-            onClick={() => handleLockToken()}
-            variant="outlined"
-          >
-            <Typography variant="button">Send</Typography>
-          </Button>
-        </Box>
-      </Box>
-    </Box>
+    <DepositButton />
   );
 }
 

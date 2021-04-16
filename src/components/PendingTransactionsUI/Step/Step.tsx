@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import LoadingSpinner from '../../LoadingSpinner';
@@ -21,8 +22,7 @@ const Wrapper = styled.div<StyledProps>`
   width: ${CIRCLE_SIZE}px;
   height: ${CIRCLE_SIZE}px;
   box-sizing: border-box;
-  background-color: ${(props) =>
-    props.status === StepStatus.COMPLETE ? 'green' : 'white'};
+  background-color: ${(props) => (props.status === StepStatus.COMPLETE ? 'green' : 'white')};
 `;
 
 const Link = styled.a`
@@ -51,9 +51,10 @@ type Props = {
   children?: object | string | null;
 };
 
-function stepContent(status: StepStatus, children?: object | string | null) {
+function stepContent(status: StepStatus, children?: object | string | null)
+  : JSX.Element | undefined | string | object {
   if (status === StepStatus.PENDING) {
-    return null;
+    return undefined;
   }
   if (status === StepStatus.LOADING && children) {
     return children;
@@ -61,6 +62,7 @@ function stepContent(status: StepStatus, children?: object | string | null) {
   if (status === StepStatus.LOADING) {
     return <LoadingSpinner />;
   }
+  return undefined;
 }
 
 function Step({
@@ -69,7 +71,7 @@ function Step({
   href,
   toolTip,
 }: Props): React.ReactElement<Props> {
-  let [showToolTip, setShowToolTip] = useState(false);
+  const [showToolTip, setShowToolTip] = useState(false);
 
   return (
     <Wrapper status={status}>

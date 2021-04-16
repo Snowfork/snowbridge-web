@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import * as S from './TransactionsList.style';
 import ReactModal from 'react-modal';
-import Button from '../Button';
+import { Button } from '@material-ui/core';
+import * as S from './TransactionsList.style';
 import LoadingSpinner from '../LoadingSpinner';
 
-import { TransactionsState } from '../../redux/reducers/transactions';
+import { TransactionsState, TransactionStatus } from '../../redux/reducers/transactions';
 
 import TransactionItem from './TransactionItem';
 
@@ -33,6 +33,12 @@ function TransactionsList({
     transactions.length,
   );
   const noTransactions = transactions.length === 0 || !transactions;
+  function closeModal() {
+    setIsOpen(false);
+  }
+  function openModal() {
+    setIsOpen(true);
+  }
   // fires when the transaction list is updated
   // check if a new transaction has been added
   // to open the modal
@@ -43,33 +49,35 @@ function TransactionsList({
     setLastTransactionCount(transactions.length);
   }, [lastTransactionCount, transactions]);
 
-  function closeModal() {
-    setIsOpen(false);
-  }
-  function openModal() {
-    setIsOpen(true);
-  }
-
   function getTransactions() {
     if (noTransactions) {
       return <div>No transactions</div>;
     }
     return (
       <S.List>
-        {transactions.map((transaction, index) => (
-          <TransactionItem transaction={transaction} transactionIndex={index} key={transaction.hash} />
+        {transactions.map((transaction) => (
+          <TransactionItem
+            transaction={transaction}
+            key={transaction.hash}
+          />
         ))}
       </S.List>
     );
   }
 
+  const hasPendingTransactions = transactions
+    .some(
+      (transaction) => transaction.status < TransactionStatus.DISPATCHED,
+    );
+
   return (
     <div>
       <Button
+        variant="contained"
         onClick={openModal}
-        icon={!noTransactions && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
       >
         Transaction list
+        {hasPendingTransactions && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />}
       </Button>
       <ReactModal
         isOpen={isOpen}

@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import * as S from './SelectTokenModal.style';
 import ReactModal from 'react-modal';
-import { Token } from '../../types';
+import {
+  Button,
+  Typography,
+} from '@material-ui/core';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { formatBalance } from '@polkadot/util';
+import * as S from './SelectTokenModal.style';
+import { RootState } from '../../redux/reducers';
+import { updateSelectedAsset } from '../../redux/actions/bridge';
+import { TokenData } from '../../redux/reducers/bridge';
+import { SwapDirection } from '../../types/types';
 
 const customStyles = {
   overlay: {},
@@ -18,25 +28,22 @@ const customStyles = {
 };
 
 type Props = {
-  tokens: Token[],
-  onTokenSelected: (token: Token) => any;
   open: boolean;
   onClose: () => any;
 };
 
-
 function SelectTokenModal({
-  tokens,
-  onTokenSelected: setSelectedToken,
   open,
-  onClose
+  onClose,
 }: Props): React.ReactElement<Props> {
   const [isOpen, setIsOpen] = useState(open);
   const [searchInput, setSearchInput] = useState('');
+  const { tokens, swapDirection } = useSelector((state: RootState) => state.bridge);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-      setIsOpen(open)
-  }, [open, setIsOpen])
+    setIsOpen(open);
+  }, [open, setIsOpen]);
 
   function closeModal() {
     setIsOpen(false);
@@ -47,9 +54,16 @@ function SelectTokenModal({
     setSearchInput(e.currentTarget.value.toLowerCase());
   }
 
-  function handleTokenSelection(selectedToken: Token) {
-    setSelectedToken(selectedToken);
+  function handleTokenSelection(selectedAsset: TokenData) {
+    dispatch(updateSelectedAsset(selectedAsset));
     closeModal();
+  }
+
+  function getTokenBalance(tokenData: TokenData): string {
+    if (swapDirection === SwapDirection.EthereumToPolkadot) {
+      return formatBalance(tokenData.balance.eth, { withSi: false });
+    }
+    return formatBalance(tokenData.balance.polkadot, { withSi: false });
   }
 
   return (
@@ -64,20 +78,25 @@ function SelectTokenModal({
           <S.Heading>Select Token</S.Heading>
           <S.Input onChange={handleInputChange} />
           <S.TokenList>
-            {tokens.filter((token) =>
-              token.name.toLowerCase().includes(searchInput) || 
-              token.symbol.toLowerCase().includes(searchInput)
-            ).map((token) => (
-              <S.Token key={`${token.chainId}-${token.address}`}>
-                <button onClick={() => handleTokenSelection(token)}>
-                  <img src={token.logoURI} alt={`${token.name} icon`} />
-                  <div>
-                    <h3>{token.symbol}</h3>
-                    <p>{token.name}</p>
-                  </div>
-                </button>
-              </S.Token>
-            ))}
+            {
+              tokens
+                ?.filter(
+                  (token) => token.token.name.toLowerCase().includes(searchInput)
+                  || token.token.symbol.toLowerCase().includes(searchInput),
+                ).map(
+                  (tokenData) => (
+                    <S.Token key={`${tokenData.token.chainId}-${tokenData.token.address}`}>
+                      <Button onClick={() => handleTokenSelection(tokenData)}>
+                        <img src={tokenData.token.logoURI} alt={`${tokenData.token.name} icon`} />
+                        <div>
+                          <Typography variant="caption">{tokenData.token.symbol}</Typography>
+                          <Typography>{ getTokenBalance(tokenData)}</Typography>
+                        </div>
+                      </Button>
+                    </S.Token>
+                  ),
+                )
+            }
           </S.TokenList>
           <S.Button onClick={closeModal}>Close</S.Button>
         </S.Wrapper>
