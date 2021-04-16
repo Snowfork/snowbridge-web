@@ -50,7 +50,7 @@ export default class Eth extends Api {
         .getNetworkType()
         .then((network: string) => dispatch(setMetamaskNetwork(network)));
 
-      // reload app on account change
+      // handle metamask account changes
       locWindow.ethereum.on('accountsChanged', async (accounts: string[]) => {
         if (accounts[0]) {
           await dispatch(setEthAddress(accounts[0]));

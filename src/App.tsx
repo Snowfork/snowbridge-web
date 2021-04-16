@@ -11,6 +11,7 @@ import { useSelector, useDispatch } from 'react-redux';
 // local imports and components
 import { ToastContainer } from 'react-toastify';
 import {
+  Paper,
   Typography,
 } from '@material-ui/core';
 import Bridge from './components/Bridge/Bridge';
@@ -35,15 +36,20 @@ function BridgeApp(): JSX.Element {
     isNetworkConnected,
     metamaskNetwork,
     polkadotJSMissing,
+    metamaskMissing,
   } = useSelector((state: RootState) => state.net);
   const transactions = useSelector((state: RootState) => state.transactions);
 
   // Start Network
   useEffect(() => {
     const start = async () => {
-      await Net.start(dispatch);
-
-      dispatch(initializeTokens(EthTokenList.tokens));
+      Net.start(dispatch)
+        .then(() => {
+          dispatch(initializeTokens(EthTokenList.tokens));
+        })
+        .catch((e) => {
+          console.log('error starting network', e);
+        });
     };
 
     start();
@@ -63,16 +69,41 @@ function BridgeApp(): JSX.Element {
   // check if required extensions are missing
   if (polkadotJSMissing) {
     return (
-      <Typography color="primary">
-        Please install the Polkadot.js extension
-        <a href="https://github.com/polkadot-js/extension">Github</a>
-      </Typography>
+      <Paper>
+        <Typography color="primary" variant="h2" align="center">
+          Please install the
+          {' '}
+          <a href="https://github.com/polkadot-js/extension">
+            Polkadot.js extension
+          </a>
+        </Typography>
+      </Paper>
+    );
+  }
+
+  if (metamaskMissing) {
+    return (
+      <Paper>
+        <Typography color="primary" variant="h2" align="center">
+          Please install the
+          {' '}
+          <a href="https://metamask.io/">
+            Metamask extension
+          </a>
+        </Typography>
+      </Paper>
     );
   }
 
   // Check if Network has been started
   if (!isNetworkConnected) {
-    return <Typography color="primary">Connecting Network</Typography>;
+    return (
+      <Paper>
+        <Typography color="primary" variant="h2" align="center">
+          Loading network
+        </Typography>
+      </Paper>
+    );
   }
 
   if (
@@ -80,12 +111,15 @@ function BridgeApp(): JSX.Element {
     !== PERMITTED_METAMASK_NETWORK.toLowerCase()
   ) {
     return (
-      <p style={{ textAlign: 'center', color: '#fff' }}>
-        Please select $
-        {PERMITTED_METAMASK_NETWORK}
-        {' '}
-        network in Metamask extension
-      </p>
+      <Paper>
+        <Typography color="primary" variant="h2" align="center">
+          Please select
+          {' '}
+          {PERMITTED_METAMASK_NETWORK}
+          {' '}
+          network in Metamask extension
+        </Typography>
+      </Paper>
     );
   }
 
