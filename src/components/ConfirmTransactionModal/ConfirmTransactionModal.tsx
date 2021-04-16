@@ -85,7 +85,7 @@ function ConfirmTransactionModal({
               <Typography variant="h4">
                 {depositAmount}
                 {' '}
-                { selectedAsset?.token?.symbol}
+                {selectedAsset?.token?.symbol}
               </Typography>
             </Grid>
 
@@ -102,13 +102,13 @@ function ConfirmTransactionModal({
                     shortenWalletAddress(
                       addresses.from ?? '',
                     )
-                    }
+                  }
                 </Typography>
               </Grid>
               <ArrowRightIcon />
               <Grid item>
                 <Typography>
-                  { getNetworkNames(swapDirection).to}
+                  {getNetworkNames(swapDirection).to}
                 </Typography>
                 <Typography variant="caption">
                   Receiving Address
@@ -118,7 +118,7 @@ function ConfirmTransactionModal({
                     shortenWalletAddress(
                       addresses.to ?? '',
                     )
-                    }
+                  }
                 </Typography>
               </Grid>
 

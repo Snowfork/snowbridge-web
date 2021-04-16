@@ -25,6 +25,8 @@ import {
 } from '../actions/transactions';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { Token } from '../../types/types';
+import { RootState } from '.';
+import { TokenData } from './bridge';
 
 export enum TransactionStatus {
   // used for error states
@@ -79,13 +81,14 @@ export interface TransactionsState {
   transactions: Transaction[],
   pendingTransaction?: Transaction,
   // native tokens
-  polkadotGasBalance?: string
+  // TODO: remove from state and replace with a selector
+  polkadotGasBalance: string
 }
 
 const initialState: TransactionsState = {
   transactions: [],
   pendingTransaction: undefined,
-  polkadotGasBalance: undefined,
+  polkadotGasBalance: '0',
 };
 
 function transactionsReducer(state: TransactionsState = initialState, action: any)
@@ -221,3 +224,14 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
 }
 
 export default transactionsReducer;
+
+// selectors
+export const ethGasBalance = (state: RootState): string => (
+  state
+    .bridge
+    .tokens
+    ?.filter(
+      (tokenData: TokenData) => tokenData.token.address === '0x0',
+    )[0]
+    ?.balance.eth ?? '0'
+);

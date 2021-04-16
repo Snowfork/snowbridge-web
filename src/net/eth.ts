@@ -52,9 +52,9 @@ export default class Eth extends Api {
         .then((network: string) => dispatch(setMetamaskNetwork(network)));
 
       // reload app on account change
-      locWindow.ethereum.on('accountsChanged', (accounts: string[]) => {
+      locWindow.ethereum.on('accountsChanged', async (accounts: string[]) => {
         if (accounts[0]) {
-          dispatch(setEthAddress(accounts[0]));
+          await dispatch(setEthAddress(accounts[0]));
           dispatch(updateBalances());
         }
       });
@@ -154,10 +154,7 @@ export default class Eth extends Api {
           // or when address is 0x0
           if (token?.token?.address === '0x0' || !token) {
             const currentBalance = await conn.eth.getBalance(ethAddress);
-
-            if (currentBalance) {
-              return currentBalance;
-            }
+            return currentBalance;
           }
           // fetch erc20 balance
           const currentBalance = await ERC20Api.fetchERC20Balance(token!.instance, ethAddress);

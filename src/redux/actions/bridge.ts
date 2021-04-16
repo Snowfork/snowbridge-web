@@ -113,13 +113,12 @@ export const updateBalances = ():
   );
 
   const updatedTokenData = {
+    ...selectedAsset,
     balance: {
       eth: ethBalance,
       polkadot: polkadotBalance,
     },
-    ...selectedAsset,
   };
-
   dispatch(updateTokenData(updatedTokenData as TokenData));
 };
 

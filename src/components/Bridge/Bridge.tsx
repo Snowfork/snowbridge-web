@@ -32,6 +32,7 @@ import { SwapDirection } from '../../types/types';
 import ConfirmTransactionModal from '../ConfirmTransactionModal';
 import { getNetworkNames } from '../../utils/common';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
+import { ethGasBalance } from '../../redux/reducers/transactions';
 
 // ------------------------------------------
 //               Bank component
@@ -40,6 +41,9 @@ function Bridge(): React.ReactElement {
   // state
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const { showConfirmTransactionModal } = useSelector((state: RootState) => state.bridge);
+  const { polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
+  const ethereumGasBalance = useSelector((state: RootState) => ethGasBalance(state));
+
   const [errorText, setErrorText] = useState('Insufficient funds.');
 
   const {
@@ -96,6 +100,25 @@ function Bridge(): React.ReactElement {
       clearInterval(interval);
     };
   }, []);
+
+  // check the user has enough gas for the transaction
+  useEffect(() => {
+    let hasEnoughGas;
+
+    // check eth balance for eth -> polkadot transactions
+    if (swapDirection === SwapDirection.EthereumToPolkadot) {
+      hasEnoughGas = Number.parseFloat(ethereumGasBalance) > 0;
+    } else {
+      // check DOT balance for polkadot -> eth transactions
+      hasEnoughGas = Number.parseFloat(polkadotGasBalance) > 0;
+    }
+
+    if (!hasEnoughGas) {
+      setErrorText("You don't have enough gas for this transaction.");
+    } else {
+      setErrorText('');
+    }
+  }, [swapDirection, selectedAsset, ethereumGasBalance, polkadotGasBalance]);
 
   const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {

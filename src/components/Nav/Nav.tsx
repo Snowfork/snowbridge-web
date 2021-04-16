@@ -10,7 +10,7 @@ import * as S from './Nav.style';
 import { shortenWalletAddress } from '../../utils/common';
 import Modal from '../Modal';
 import TransactionsList from '../TransactionsList';
-import { TransactionsState } from '../../redux/reducers/transactions';
+import { ethGasBalance, TransactionsState } from '../../redux/reducers/transactions';
 import { RootState } from '../../redux/reducers';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
@@ -18,7 +18,6 @@ import Polkadot from '../../net/polkadot';
 import {
   fetchPolkadotGasBalance,
 } from '../../redux/actions/transactions';
-import { TokenData } from '../../redux/reducers/bridge';
 import { updateBalances } from '../../redux/actions/bridge';
 
 type Props = {
@@ -46,7 +45,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
 
   const { polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
   const { polkadotAddress, ethAddress, polkadotApi } = useSelector((state: RootState) => state.net);
-  const { tokens } = useSelector((state: RootState) => state.bridge);
+  const ethBalance = useSelector((state: RootState) => ethGasBalance(state));
 
   // fetch polkadot accountsfor the account selector on mount
   useEffect(() => {
@@ -139,7 +138,6 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     withUnit: polkadotApi?.registry.chainTokens[0],
   });
 
-  const ethBalance = tokens?.filter((token: TokenData) => token.token.address === '0x0')[0]?.balance.eth;
   const ethBalanceFormatted = formatBalance(ethBalance, {
     decimals: 18,
     withUnit: 'ETH',
