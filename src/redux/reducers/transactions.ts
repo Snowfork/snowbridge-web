@@ -62,7 +62,8 @@ export interface Transaction {
   isBurned: boolean;
   chain: 'eth' | 'polkadot';
   token: Token;
-  dispatchTransactionHash?: string
+  dispatchTransactionHash?: string;
+  error?: string;
 }
 
 // Interface for the Ethereum 'MessageDispatched' event,

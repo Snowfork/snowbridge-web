@@ -77,6 +77,7 @@ const PendingTransactionsModal = ({ isOpen, closeModal }: Props): React.ReactEle
                   <div>
                     <h3>Error</h3>
                     <h4>Transaction rejected.</h4>
+                    <p>{transactions.pendingTransaction.error}</p>
                   </div>
             ) : null}
       </div>

@@ -345,6 +345,7 @@ export const burnToken = ():
     incentivizedChannelContract,
     ethAddress,
     basicChannelContract,
+    web3,
   } = state.net;
   const {
     selectedAsset,
@@ -356,8 +357,7 @@ export const burnToken = ():
     const recipient = ethAddress;
     const token = selectedAsset!.token!;
     const amount = depositAmount.toString();
-    // const polkaWeiValue = web3!.utils.toWei(amount, 'ether');
-    const polkaWeiValue = amount;
+    const polkaWeiValue = web3!.utils.toWei(amount, 'ether');
 
     if (account) {
       const pendingTransaction: Transaction = {
@@ -459,10 +459,27 @@ export const burnToken = ():
           console.log(':( transaction failed', error);
           if (error.toString() === 'Error: Cancelled') {
             dispatch(
-              setPendingTransaction({ ...pendingTransaction, status: TransactionStatus.REJECTED }),
+              setPendingTransaction({
+                ...pendingTransaction,
+                status: TransactionStatus.REJECTED,
+                error: 'The transaction was cancelled',
+              }),
+            );
+          } else if (error.message.includes('1014: Priority is too low')) {
+            dispatch(
+              setPendingTransaction({
+                ...pendingTransaction,
+                status: TransactionStatus.REJECTED,
+                error: 'Please wait for the current pending transaction to complete',
+              }),
             );
           } else {
-            // TODO: display error in modal
+            // display error message in modal
+            setPendingTransaction({
+              ...pendingTransaction,
+              status: TransactionStatus.REJECTED,
+              error: error.message,
+            });
           }
         });
     } else {
