@@ -11,10 +11,6 @@ import {
   parachainMessageDispatched,
 } from './transactions';
 import {
-  SET_METAMASK_FOUND,
-  SET_METAMASK_CONNECTED,
-  SET_POLKADOTJS_FOUND,
-  SET_POLKADOTJS_CONNECTED,
   SET_METAMASK_MISSING,
   SET_POLKADOTJS_MISSING,
   SET_METAMASK_NETWORK,
@@ -24,19 +20,10 @@ import {
   SET_INCENTIVIZED_CHANNEL_CONTRACT,
   SET_POLKADOT_ADDRESS,
   SET_ETH_ADDRESS,
-  SET_ETH_ASSET_ID,
   SET_POLKADOT_API,
   SET_NETWORK_CONNECTED,
   SET_BASIC_CHANNEL_CONTRACT,
 } from '../actionsTypes/net';
-
-export const setMetamaskFound = (): {type: string} => ({
-  type: SET_METAMASK_FOUND,
-});
-
-export const setMetamaskConnected = (): {type: string} => ({
-  type: SET_METAMASK_CONNECTED,
-});
 
 export const setMetamaskMissing = (): {type: string} => ({
   type: SET_METAMASK_MISSING,
@@ -45,14 +32,6 @@ export const setMetamaskMissing = (): {type: string} => ({
 export const setMetamaskNetwork = (network: string): {type: string, metamaskNetwork: string} => ({
   type: SET_METAMASK_NETWORK,
   metamaskNetwork: network,
-});
-
-export const setPolkadotJSFound = (): {type: string} => ({
-  type: SET_POLKADOTJS_FOUND,
-});
-
-export const setPolkadotJSConnected = (): {type: string} => ({
-  type: SET_POLKADOTJS_CONNECTED,
 });
 
 export const setPolkadotJSMissing = (): {type: string} => ({
@@ -109,12 +88,6 @@ export const setPolkadotAddress = (address: string): SetPolkadotAddressPayload =
   address,
 });
 
-export interface SetEthAssetIdPayload { type: string, assetId: any }
-export const setEthAssetId = (assetId: any): SetEthAssetIdPayload => ({
-  type: SET_ETH_ASSET_ID,
-  assetId,
-});
-
 export interface SetPolkadotApiPayload { type: string, polkadotApi: ApiPromise }
 export const setPolkadotApi = (polkadotApi: ApiPromise): SetPolkadotApiPayload => ({
   type: SET_POLKADOT_API,
@@ -137,7 +110,6 @@ export const subscribeEvents = ():
         // const dispatchSuccessNotification = (text: string) => this.dispatch(
         // notify({ text, color: "success" })
         // );
-        console.log(`Got new dispatch event with nonce: ${nonce}`);
         dispatch(parachainMessageDispatched(nonce));
       });
     });

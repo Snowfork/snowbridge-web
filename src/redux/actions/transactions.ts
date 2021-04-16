@@ -129,7 +129,6 @@ export const updateConfirmations = (
   ) {
     dispatch(setTransactionStatus(hash, TransactionStatus.WAITING_FOR_RELAY));
   }
-  console.log('dispatch set confirmations', confirmations);
   dispatch(setConfirmations(hash, confirmations));
 };
 
@@ -268,7 +267,6 @@ export const lockToken = (
               confirmation: number,
               receipt: any,
             ) => {
-              console.log(`Got confirmation ${confirmation} for ${receipt.transactionHash}`);
               // update transaction confirmations
               dispatch(
                 updateConfirmations(receipt.transactionHash, confirmation),

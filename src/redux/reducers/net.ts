@@ -5,7 +5,6 @@ import {
   SetBasicChannelContractPayload,
   SetERC20ContractPayload,
   SetEthAddressPayload,
-  SetEthAssetIdPayload,
   SetEthContractPayload,
   SetIncentivizedChannelContractPayload,
   SetIsNetworkConnectedPayload,
@@ -15,12 +14,8 @@ import {
 } from '../actions/net';
 import {
   SET_NETWORK_CONNECTED,
-  SET_METAMASK_FOUND,
-  // SET_POLKADOTJS_FOUND,
-  SET_METAMASK_CONNECTED,
-  SET_POLKADOTJS_CONNECTED,
   SET_METAMASK_MISSING,
-  // SET_POLKADOTJS_MISSING,
+  SET_POLKADOTJS_MISSING,
   SET_METAMASK_NETWORK,
   SET_ETH_CONTRACT,
   SET_WEB3,
@@ -28,18 +23,16 @@ import {
   SET_INCENTIVIZED_CHANNEL_CONTRACT,
   SET_POLKADOT_ADDRESS,
   SET_ETH_ADDRESS,
-  SET_ETH_ASSET_ID,
   SET_POLKADOT_API,
   SET_BASIC_CHANNEL_CONTRACT,
 } from '../actionsTypes/net';
 
 export interface NetState {
-  metamaskFound: boolean,
-  // polkadotJSFound: boolean,
   metamaskConnected: boolean,
   polkadotJSConnected: boolean,
   metamaskMissing: boolean,
-  // polkadotJSMissing: boolean,
+  polkadotJSMissing: boolean,
+
   metamaskNetwork: string,
   web3?: Web3,
   ethContract?: Contract,
@@ -50,17 +43,15 @@ export interface NetState {
   polkadotAddress?: string,
   ethAddress?: string,
   // polkadot AssetId for the eth asset
-  ethAssetId?: any,
   isNetworkConnected: boolean,
 }
 
 const initialState : NetState = {
-  metamaskFound: false,
-  // polkadotJSFound: false,
   metamaskConnected: false,
   polkadotJSConnected: false,
   metamaskMissing: false,
-  // polkadotJSMissing: false,
+  polkadotJSMissing: false,
+
   metamaskNetwork: '',
   web3: undefined,
   ethContract: undefined,
@@ -69,31 +60,18 @@ const initialState : NetState = {
   polkadotApi: undefined,
   polkadotAddress: undefined,
   ethAddress: undefined,
-  ethAssetId: undefined,
   isNetworkConnected: false,
   basicChannelContract: undefined,
 };
 
 function netReducer(state = initialState, action: any): NetState {
   switch (action.type) {
-    case SET_METAMASK_FOUND: {
-      return { ...state, metamaskFound: true };
-    }
-    // case SET_POLKADOTJS_FOUND: {
-    //   return Object.assign({}, state, { polkadotJSFound: true });
-    // }
-    case SET_METAMASK_CONNECTED: {
-      return { ...state, metamaskConnected: true };
-    }
-    case SET_POLKADOTJS_CONNECTED: {
-      return { ...state, polkadotJSConnected: true };
-    }
     case SET_METAMASK_MISSING: {
       return { ...state, metamaskMissing: true };
     }
-    // case SET_POLKADOTJS_MISSING: {
-    //   return Object.assign({}, state, { polkadotJSMissing: true });
-    // }
+    case SET_POLKADOTJS_MISSING: {
+      return { ...state, polkadotJSMissing: true };
+    }
     case SET_METAMASK_NETWORK: {
       return { ...state, metamaskNetwork: action.metamaskNetwork };
     }
@@ -136,13 +114,6 @@ function netReducer(state = initialState, action: any): NetState {
         {
           ...state,
           polkadotAddress: action.address,
-        }))(action);
-    }
-    case SET_ETH_ASSET_ID: {
-      return ((action: SetEthAssetIdPayload): NetState => (
-        {
-          ...state,
-          ethAssetId: action.assetId,
         }))(action);
     }
     case SET_POLKADOT_API: {

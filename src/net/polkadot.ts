@@ -4,7 +4,7 @@ import {
   web3Enable,
 } from '@polkadot/extension-dapp';
 import {
-  setEthAssetId, setPolkadotAddress, setPolkadotApi, subscribeEvents,
+  setPolkadotAddress, setPolkadotApi, setPolkadotJSMissing, subscribeEvents,
 } from '../redux/actions/net';
 
 // Config
@@ -20,13 +20,6 @@ export default class Polkadot extends Api {
   // Get all polkadot addresses
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public static async getAddresses() {
-    // returns an array of all the injected sources
-    const extensions = await web3Enable('Snowbridge');
-
-    if (extensions.length === 0) {
-      throw new Error('PolkadotJS missing');
-    }
-
     const allAccounts = await web3Accounts();
     return allAccounts;
   }
@@ -62,13 +55,13 @@ export default class Polkadot extends Api {
     polkadotAddress: string,
     tokenData?: TokenData,
   ): Promise<string> {
-    let ethAssetID = polkadotApi.createType('AssetId', 'ETH');
-    // create asset ID for tokens
-    if (tokenData?.token?.address && tokenData?.token?.address !== '0x0') {
-      ethAssetID = polkadotApi.createType('AssetId', { Token: tokenData?.token?.address });
-    }
     try {
       if (polkadotApi) {
+        let ethAssetID = polkadotApi.createType('AssetId', 'ETH');
+        // create asset ID for tokens
+        if (tokenData?.token?.address && tokenData?.token?.address !== '0x0') {
+          ethAssetID = polkadotApi.createType('AssetId', { Token: tokenData?.token?.address });
+        }
         if (polkadotAddress) {
           const balance = await polkadotApi.query.assets.balances(
             ethAssetID,
@@ -92,6 +85,13 @@ export default class Polkadot extends Api {
   // Polkadotjs API connector
   public static async connect(dispatch: any): Promise<void> {
     try {
+      // check that the polkadot.js extension is available
+      const extensions = await web3Enable('Snowbridge');
+
+      if (extensions.length === 0) {
+        throw new Error('PolkadotJS missing');
+      }
+
       const provider = new WsProvider(POLKADOT_API_PROVIDER);
 
       const api = await ApiPromise.create({
@@ -160,11 +160,9 @@ export default class Polkadot extends Api {
           },
         },
       });
-
       // set polkadot api
       dispatch(setPolkadotApi(api));
       console.log('- Polkadot API endpoint connected');
-      dispatch(setEthAssetId(api.createType('AssetId', 'ETH')));
 
       // set default polkadot address to first address
       const polkadotAddresses = await Polkadot.getAddresses();
@@ -182,7 +180,9 @@ export default class Polkadot extends Api {
       // Here we subscribe to the parachain events
       dispatch(subscribeEvents());
     } catch (err) {
-      console.log(err);
+      if (err.message === 'PolkadotJS missing') {
+        dispatch(setPolkadotJSMissing());
+      }
       throw new Error('Poldotjs API endpoint not Connected');
     }
   }

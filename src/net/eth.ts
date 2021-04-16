@@ -23,7 +23,6 @@ import {
   setEthAddress,
   setEthContract,
   setIncentivizedChannelContract,
-  setMetamaskFound,
   setMetamaskMissing,
   setMetamaskNetwork,
   setWeb3,
@@ -46,7 +45,7 @@ export default class Eth extends Api {
 
     const connectionComplete = async (web3: Web3) => {
       dispatch(setWeb3(web3));
-      dispatch(setMetamaskFound());
+      // dispatch(setMetamaskFound());
       web3.eth.net
         .getNetworkType()
         .then((network: string) => dispatch(setMetamaskNetwork(network)));

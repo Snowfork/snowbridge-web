@@ -34,6 +34,7 @@ function BridgeApp(): JSX.Element {
   const {
     isNetworkConnected,
     metamaskNetwork,
+    polkadotJSMissing,
   } = useSelector((state: RootState) => state.net);
   const transactions = useSelector((state: RootState) => state.transactions);
 
@@ -58,6 +59,16 @@ function BridgeApp(): JSX.Element {
   const closeModal = () => {
     setIsPendingModalOpen(false);
   };
+
+  // check if required extensions are missing
+  if (polkadotJSMissing) {
+    return (
+      <Typography color="primary">
+        Please install the Polkadot.js extension
+        <a href="https://github.com/polkadot-js/extension">Github</a>
+      </Typography>
+    );
+  }
 
   // Check if Network has been started
   if (!isNetworkConnected) {
