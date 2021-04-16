@@ -34,6 +34,11 @@ import { getNetworkNames } from '../../utils/common';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 import { ethGasBalance } from '../../redux/reducers/transactions';
 
+enum ErrorMessages {
+  INSUFFICIENT_BALANCE = 'Insufficient funds',
+  INSUFFICIENT_GAS = 'Insufficient gas',
+}
+
 // ------------------------------------------
 //               Bank component
 // ------------------------------------------
@@ -44,7 +49,10 @@ function Bridge(): React.ReactElement {
   const { polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
   const ethereumGasBalance = useSelector((state: RootState) => ethGasBalance(state));
 
-  const [errorText, setErrorText] = useState('Insufficient funds.');
+  const [errors, setErrors] = useState<{balance?: ErrorMessages, gas?: ErrorMessages}>({
+    balance: undefined,
+    gas: undefined,
+  });
 
   const {
     selectedAsset,
@@ -80,9 +88,9 @@ function Bridge(): React.ReactElement {
           new BigNumber(getTokenBalances(swapDirection).sourceNetwork),
         )
     ) {
-      setErrorText('Insufficient funds');
+      setErrors((errors) => ({ ...errors, balance: ErrorMessages.INSUFFICIENT_BALANCE }));
     } else {
-      setErrorText('');
+      setErrors((errors) => ({ ...errors, balance: undefined }));
     }
   }, [depositAmount, swapDirection]);
 
@@ -114,9 +122,11 @@ function Bridge(): React.ReactElement {
     }
 
     if (!hasEnoughGas) {
-      setErrorText("You don't have enough gas for this transaction.");
+      setErrors((errors) => ({ ...errors, gas: ErrorMessages.INSUFFICIENT_GAS }));
     } else {
-      setErrorText('');
+      setErrors(
+        (errors) => ({ ...errors, gas: undefined }),
+      );
     }
   }, [swapDirection, selectedAsset, ethereumGasBalance, polkadotGasBalance]);
 
@@ -184,7 +194,10 @@ function Bridge(): React.ReactElement {
     dispatch(setShowConfirmTransactionModal(true));
   };
 
+  const errorText = Object.values(errors).filter((e) => e)[0];
+
   const assetPrice = (selectedAsset?.prices?.usd ?? 0) * depositAmount;
+  const isDepositDisabled = !!errorText || depositAmount <= 0;
 
   return (
 
@@ -205,7 +218,7 @@ function Bridge(): React.ReactElement {
                 <InputBase
                   className={classes.input}
                   placeholder="0.0"
-                  inputProps={{ 'aria-label': '0.0' }}
+                  inputProps={{ 'aria-label': '0.0', min: 0 }}
                   value={depositAmount}
                   onChange={handleDepositAmountChanged}
                   type="number"
@@ -282,7 +295,7 @@ function Bridge(): React.ReactElement {
           fullWidth
           color="primary"
           onClick={handleTransferClicked}
-          disabled={!!errorText}
+          disabled={isDepositDisabled}
         >
           Transfer
         </Button>
