@@ -7,6 +7,7 @@ import {
 import Modal from '../Modal';
 import LoadingSpinner from '../LoadingSpinner';
 import { RootState } from '../../redux/reducers';
+import FormatAmount from '../FormatAmount';
 
 type Props = {
     isOpen: boolean,
@@ -37,13 +38,13 @@ const PendingTransactionsModal = ({ isOpen, closeModal }: Props): React.ReactEle
                     <h4>
                       Bridging
                       {' '}
-                      {transactions.pendingTransaction?.amount}
+                      <FormatAmount amount={transactions.pendingTransaction?.amount} decimals={transactions.pendingTransaction.token.decimals} />
                       {' '}
                       {ethToSnow ? baseTokenSymbol : snowTokenSymbol}
                       {' '}
                       to
                       {' '}
-                      {transactions.pendingTransaction?.amount}
+                      <FormatAmount amount={transactions.pendingTransaction?.amount} decimals={transactions.pendingTransaction.token.decimals} />
                       {' '}
                       {ethToSnow ? snowTokenSymbol : baseTokenSymbol}
                     </h4>

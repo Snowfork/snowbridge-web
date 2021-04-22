@@ -4,6 +4,7 @@ import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
 import { web3FromSource } from '@polkadot/extension-dapp';
+import { utils } from 'ethers';
 import { Token } from '../../types/types';
 import {
   ADD_TRANSACTION,
@@ -187,16 +188,12 @@ export const lockToken = (
             .send({
               from: defaultAddress,
               gas: 500000,
-              value: web3.utils.toWei(amount, 'ether'),
+              value: amount,
             });
         } else {
-          // const tokenAmountWithDecimals = await ERC20Api.addDecimals(token, amount);
-          const tokenAmountWithDecimals = amount;
-
-          console.log('locking ', tokenAmountWithDecimals);
           promiEvent = erc20Contract.methods
           // TODO: SET incentivized channel ID
-            .lock(token.address, polkadotAddress, tokenAmountWithDecimals, 0)
+            .lock(token.address, polkadotAddress, amount, 0)
             .send({
               from: defaultAddress,
               gas: 500000,
@@ -345,7 +342,6 @@ export const burnToken = ():
     incentivizedChannelContract,
     ethAddress,
     basicChannelContract,
-    web3,
   } = state.net;
   const {
     selectedAsset,
@@ -357,7 +353,7 @@ export const burnToken = ():
     const recipient = ethAddress;
     const token = selectedAsset!.token!;
     const amount = depositAmount.toString();
-    const polkaWeiValue = web3!.utils.toWei(amount, 'ether');
+    const polkaWeiValue = utils.parseUnits(amount, token.decimals).toString();
 
     if (account) {
       const pendingTransaction: Transaction = {
@@ -365,7 +361,7 @@ export const burnToken = ():
         confirmations: 0,
         sender: polkadotAddress!,
         receiver: recipient!,
-        amount,
+        amount: polkaWeiValue,
         status: TransactionStatus.SUBMITTING_TO_CHAIN,
         isMinted: false,
         isBurned: false,

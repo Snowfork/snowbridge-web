@@ -73,7 +73,7 @@ function Bridge(): React.ReactElement {
       new BigNumber(
         // make sure we are comparing the same units
         utils.parseUnits(
-          depositAmount, selectedAsset?.token.decimals,
+          depositAmount || '0', selectedAsset?.token.decimals,
         ).toString(),
       )
         .isGreaterThan(
@@ -181,7 +181,11 @@ function Bridge(): React.ReactElement {
 
   // update deposit amount in redux store
   const handleDepositAmountChanged = (e: any) => {
-    dispatch(setDepositAmount(e.target.value));
+    if (e.target.value) {
+      dispatch(setDepositAmount(e.target.value));
+    } else {
+      dispatch(setDepositAmount(''));
+    }
   };
 
   // show confirm transaction modal
@@ -190,9 +194,10 @@ function Bridge(): React.ReactElement {
   };
 
   const errorText = Object.values(errors).filter((e) => e)[0];
-
-  const assetPrice = transferUsdValue;
-  const isDepositDisabled = !!errorText || Number.parseFloat(depositAmount) <= 0;
+  const assetPrice = Number.isNaN(Number.parseFloat(transferUsdValue)) ? '0' : transferUsdValue;
+  const isDepositDisabled = !!errorText
+  || Number.parseFloat(depositAmount) <= 0
+  || Number.isNaN(Number.parseFloat(transferUsdValue));
 
   return (
 

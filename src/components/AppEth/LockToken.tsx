@@ -13,13 +13,13 @@ import {
 
 // Local
 import { useDispatch, useSelector } from 'react-redux';
+import { utils } from 'ethers';
 import { RootState } from '../../redux/reducers';
 import { lockToken } from '../../redux/actions/transactions';
 import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
 import LoadingSpinner from '../LoadingSpinner';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
-
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
@@ -54,8 +54,10 @@ function LockToken(): React.ReactElement {
   // lock assets
   const handleDepositToken = async () => {
     try {
+      // format deposit amount into unit value
+      const unitValue = utils.parseUnits(depositAmount, selectedAsset?.token.decimals).toString();
       await dispatch(lockToken(
-        depositAmount.toString(),
+        unitValue,
         selectedAsset!.token,
         polkadotAddress!,
       ));
@@ -70,7 +72,9 @@ function LockToken(): React.ReactElement {
   const handleTokenUnlock = async () => {
     try {
       setIsApprovalPending(true);
-      await dispatch(approveERC20(`${depositAmount}`));
+      // format deposit amount into unit value
+      const unitValue = utils.parseUnits(depositAmount, selectedAsset?.token.decimals).toString();
+      await dispatch(approveERC20(unitValue));
     } catch (e) {
       console.log('error approving!');
     } finally {

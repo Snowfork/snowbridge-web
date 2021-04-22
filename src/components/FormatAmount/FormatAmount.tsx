@@ -7,5 +7,13 @@ interface Props {
 }
 
 export default function FormatAmount({ amount, decimals }: Props): React.ReactElement {
-  return <>{utils.formatUnits(amount, decimals)}</>;
+  let formattedAmount = amount;
+
+  try {
+    formattedAmount = utils.formatUnits(amount, decimals);
+  } catch (e) {
+    console.log('error formatting amount', amount, decimals);
+  }
+
+  return <>{formattedAmount}</>;
 }

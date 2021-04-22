@@ -6,7 +6,7 @@ import {
 } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { formatBalance } from '@polkadot/util';
+import { utils } from 'ethers';
 import * as S from './SelectTokenModal.style';
 import { RootState } from '../../redux/reducers';
 import { updateSelectedAsset } from '../../redux/actions/bridge';
@@ -59,11 +59,12 @@ function SelectTokenModal({
     closeModal();
   }
 
+  // returns display formatted balance for source chain
   function getTokenBalance(tokenData: TokenData): string {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      return formatBalance(tokenData.balance.eth, { withSi: false });
+      return utils.formatUnits(tokenData.balance.eth, tokenData.token.decimals);
     }
-    return formatBalance(tokenData.balance.polkadot, { withSi: false });
+    return utils.formatUnits(tokenData.balance.polkadot, tokenData.token.decimals);
   }
 
   return (
