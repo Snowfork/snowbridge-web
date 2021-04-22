@@ -101,7 +101,10 @@ export const updateBalances = ():
   const state = getState() as RootState;
   const { selectedAsset } = state.bridge;
   const {
-    web3, ethAddress, polkadotApi, polkadotAddress,
+    web3,
+    ethAddress,
+    polkadotApi,
+    polkadotAddress,
   } = state.net;
 
   // fetch updated balances

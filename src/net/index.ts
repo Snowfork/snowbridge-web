@@ -17,6 +17,7 @@ export default class Net {
       dispatch(setIsNetworkConnected(false));
       console.log('failed starting the network!');
       console.log(e);
+      throw new Error('failed starting the network!');
     }
   }
 }
