@@ -7,7 +7,6 @@ import Select from '@material-ui/core/Select';
 import { useDispatch, useSelector } from 'react-redux';
 import { formatBalance } from '@polkadot/util';
 import * as S from './Nav.style';
-import { shortenWalletAddress } from '../../utils/common';
 import Modal from '../Modal';
 import TransactionsList from '../TransactionsList';
 import { ethGasBalance, TransactionsState } from '../../redux/reducers/transactions';
@@ -19,6 +18,8 @@ import {
   fetchPolkadotGasBalance,
 } from '../../redux/actions/transactions';
 import { updateBalances } from '../../redux/actions/bridge';
+import FormatAmount from '../FormatAmount';
+import { shortenWalletAddress } from '../../utils/common';
 
 type Props = {
   transactions: TransactionsState;
@@ -133,14 +134,10 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     dispatch(fetchPolkadotGasBalance());
   };
 
+  // use polkadot utils to format amount
   const polkadotGasBalanceFormatted = formatBalance(polkadotGasBalance, {
     decimals: polkadotApi?.registry.chainDecimals[0],
     withUnit: polkadotApi?.registry.chainTokens[0],
-  });
-
-  const ethBalanceFormatted = formatBalance(ethBalance, {
-    decimals: 18,
-    withUnit: 'ETH',
   });
 
   return (
@@ -151,7 +148,9 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
           <S.DisplayTitle>Ethereum Wallet</S.DisplayTitle>
           <S.DisplayContainer>
             <S.Amount>
-              {ethBalanceFormatted}
+              <FormatAmount amount={ethBalance} decimals={18} />
+              {' '}
+              ETH
             </S.Amount>
             <S.Address
               as="a"
