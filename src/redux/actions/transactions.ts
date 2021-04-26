@@ -140,7 +140,7 @@ export const updateConfirmations = (
  * @param {_polkadotAddress} string The ss58 formatted address of the polkadot recipient
  * @return {Promise<void>}
  */
-export const lockToken = (
+export const lockEthAsset = (
   amount: string,
   token: Token,
   _polkadotAddress: string,
@@ -302,6 +302,52 @@ export const lockToken = (
   }
 };
 
+/**
+ * Burns tokens on Ethereum and unlocks tokens on Polkadot
+ * @param {amount} string The amount of tokens (in base units) to lock
+ * @param {token} Token The contract data for the token to lock
+ * @param {_polkadotAddress} string The ss58 formatted address of the polkadot recipient
+ * @return {Promise<void>}
+ */
+export const burnEthAsset = (
+  amount: string,
+  token: Token,
+  _polkadotAddress: string,
+):
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  dispatch: ThunkDispatch<{}, {}, AnyAction>,
+  getState,
+): Promise<void> => {
+  const state = getState() as RootState;
+  const {
+    appDotContract, ethAddress, polkadotAddress,
+  } = state.net;
+
+  try {
+    console.log('trying to burn DOT', amount);
+    const recipientBytes = Buffer.from(polkadotAddress!.replace(/^0x/, ''), 'hex');
+    // const depositAmount = web3?.utils.toBN(amount);
+    console.log('BN amount: ');
+    const res = await appDotContract?.methods.burn(
+      recipientBytes,
+      // depositAmount,
+      amount,
+      //  TODO: set channel ID?
+      0,
+    )
+      .send({
+        from: ethAddress,
+        gas: 50000,
+        value: 0,
+      });
+
+    console.log('done burning', res);
+  } catch (err) {
+    // Todo: Error Sending Ethereum
+    console.log(err);
+  }
+};
+
 //
 // Polkadot transactions
 //
@@ -330,7 +376,7 @@ export const fetchPolkadotGasBalance = ():
 
 // burns token on polkadot and unlocks on ethereum
 
-export const burnToken = ():
+export const burnPolkadotAsset = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>,
   getState,
@@ -349,6 +395,7 @@ export const burnToken = ():
   } = state.bridge;
 
   if (polkadotApi) {
+    // TODO: ensure account is the selected account
     const account = await Polkadot.getDefaultAddress();
     const recipient = ethAddress;
     const token = selectedAsset!.token!;
@@ -373,7 +420,8 @@ export const burnToken = ():
       let burnExtrinsic;
       if (token.address === '0x0') {
         burnExtrinsic = polkadotApi.tx.eth.burn(
-          INCENTIVIZED_CHANNEL_ID,
+          // INCENTIVIZED_CHANNEL_ID,
+          0,
           recipient,
           polkaWeiValue,
         );
@@ -483,5 +531,109 @@ export const burnToken = ():
     }
   } else {
     throw new Error('Polkadot API not connected');
+  }
+};
+
+/**
+ * Locks tokens on Polkadot and mints tokens on Ethereum
+ * @param {amount} string The amount of tokens (in base units) to lock
+ * @return {Promise<void>}
+ */
+export const lockPolkadotAsset = (
+  amount: string,
+):
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  dispatch: ThunkDispatch<{}, {}, AnyAction>,
+  getState,
+): Promise<void> => {
+  const state = getState() as RootState;
+  const {
+    ethAddress,
+    polkadotApi,
+    polkadotAddress,
+    basicChannelContract,
+  } = state.net;
+  const {
+    selectedAsset,
+  } = state.bridge;
+
+  try {
+    // TODO: use incentivized channel?
+    const channelId = 0;
+    const account = await (await Polkadot.getAddresses()).filter(({ address }) => address === polkadotAddress)[0];
+    // to be able to retrieve the signer interface from this account
+    // we can use web3FromSource which will return an InjectedExtension type
+    const injector = await web3FromSource(account.meta.source);
+    const pendingTransaction: Transaction = {
+      hash: '',
+      confirmations: 0,
+      sender: polkadotAddress!,
+      receiver: ethAddress!,
+      amount,
+      status: TransactionStatus.SUBMITTING_TO_CHAIN,
+      isMinted: false,
+      isBurned: false,
+      chain: 'polkadot',
+      token: selectedAsset!.token,
+    };
+    dispatch(setPendingTransaction(pendingTransaction));
+
+    const unsub = await polkadotApi?.tx.dot.lock(channelId, ethAddress, amount)
+      .signAndSend(account.address, { signer: injector.signer }, (result) => {
+        if (result.status.isReady) {
+          pendingTransaction.hash = result.status.hash.toString();
+          dispatch(
+            addTransaction(
+              { ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION },
+            ),
+          );
+          return;
+        }
+        if (result.status.isInBlock) {
+          const nonce = result.events[1].event.data[0].toString();
+          dispatch(
+            updateTransaction(
+              pendingTransaction.hash, { nonce, status: TransactionStatus.WAITING_FOR_RELAY },
+            ),
+          );
+
+          // TODO: replace with incentivized channel?
+          // eslint-disable-next-line no-unused-expressions
+          basicChannelContract?.events.MessageDispatched({})
+            .on('data', (
+              event: MessageDispatchedEvent,
+            ) => {
+              if (
+                event.returnValues.nonce === nonce
+              ) {
+                dispatch(
+                  ethMessageDispatched(event.returnValues.nonce, pendingTransaction.nonce!),
+                );
+              }
+            });
+
+          return;
+        }
+
+        if (result.status.isFinalized) {
+          console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
+          dispatch(
+            setTransactionStatus(pendingTransaction.hash, TransactionStatus.WAITING_FOR_RELAY),
+          );
+          if (unsub) {
+            // unsub();
+          }
+        }
+      }).catch((err) => {
+        // display error message in modal
+        setPendingTransaction({
+          ...pendingTransaction,
+          status: TransactionStatus.REJECTED,
+          error: err.message,
+        });
+      });
+  } catch (err) {
+    // Todo: Error Sending DOT
+    console.log(err);
   }
 };

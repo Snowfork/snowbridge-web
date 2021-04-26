@@ -4,9 +4,11 @@ import {
 } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { utils } from 'ethers';
 import { RootState } from '../../redux/reducers';
-import { burnToken } from '../../redux/actions/transactions';
+import { burnPolkadotAsset, lockPolkadotAsset } from '../../redux/actions/transactions';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
+import { SNOW_DOT_ADDRESS } from '../../config';
 
 // ------------------------------------------
 //               AppPolkadot component
@@ -18,7 +20,14 @@ function AppPolkadot(): React.ReactElement {
 
   async function handleDepositClicked() {
     try {
-      dispatch(burnToken());
+      if (selectedAsset?.token.address === SNOW_DOT_ADDRESS) {
+      // format deposit amount into unit value
+        const unitValue = utils.parseUnits(depositAmount, selectedAsset?.token.decimals).toString();
+        dispatch(lockPolkadotAsset(unitValue));
+        return;
+      }
+
+      dispatch(burnPolkadotAsset());
     } catch (e) {
       console.log('failed burning token', e);
     } finally {

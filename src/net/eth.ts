@@ -9,6 +9,7 @@ import {
   APP_ERC20_CONTRACT_ADDRESS,
   INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
   BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+  APP_DOT_CONTRACT_ADDRESS,
 } from '../config';
 
 /* tslint:disable */
@@ -16,9 +17,11 @@ import * as ETHApp from '../contracts/ETHApp.json';
 import * as ERC20App from '../contracts/ERC20App.json';
 import * as IncentivizedInboundChannel from '../contracts/IncentivizedInboundChannel.json';
 import * as BasicInboundChannel from '../contracts/BasicInboundChannel.json';
+import * as DotApp from '../contracts/DOTApp.json';
 
 /* tslint:enable */
 import {
+  setAppDotContract,
   setBasicChannelContract,
   setERC20Contract,
   setEthAddress,
@@ -70,6 +73,12 @@ export default class Eth extends Api {
           BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
       );
       dispatch(setBasicChannelContract(basicChannelContract));
+
+      const appDotContract = new web3.eth.Contract(
+        DotApp.abi as any,
+        APP_DOT_CONTRACT_ADDRESS,
+      );
+      dispatch(setAppDotContract(appDotContract));
 
       // fetch addresses
       await dispatch(fetchEthAddress());

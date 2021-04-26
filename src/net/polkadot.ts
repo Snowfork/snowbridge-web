@@ -8,7 +8,7 @@ import {
 } from '../redux/actions/net';
 
 // Config
-import { POLKADOT_API_PROVIDER } from '../config';
+import { POLKADOT_API_PROVIDER, SNOW_DOT_ADDRESS } from '../config';
 
 import {
   fetchPolkadotGasBalance,
@@ -57,6 +57,13 @@ export default class Polkadot extends Api {
   ): Promise<string> {
     try {
       if (polkadotApi) {
+        // check if the tokenData is the native DOT asset and return DOT balance
+        if (tokenData?.token.address === SNOW_DOT_ADDRESS) {
+          const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
+          console.log('fetch polkadot DOT balance for token', balance);
+          return balance;
+        }
+
         let ethAssetID = polkadotApi.createType('AssetId', 'ETH');
         // create asset ID for tokens
         if (tokenData?.token?.address && tokenData?.token?.address !== '0x0') {

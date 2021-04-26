@@ -5,6 +5,8 @@ import CoinGecko from 'coingecko-api';
 import { SwapDirection, Token } from '../../types/types';
 import { RootState } from '../reducers';
 import * as ERC20 from '../../contracts/ERC20.json';
+import * as WrappedToken from '../../contracts/WrappedToken.json';
+
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
 import {
@@ -16,7 +18,7 @@ import {
 } from '../actionsTypes/bridge';
 import { TokenData } from '../reducers/bridge';
 import { fetchERC20Allowance } from './ERC20Transactions';
-import { PRICE_CURRENCIES } from '../../config';
+import { PRICE_CURRENCIES, SNOW_DOT_ADDRESS } from '../../config';
 
 export interface SetTokenListPayload { type: string, list: TokenData[] }
 export const _setTokenList = (list: TokenData[]): SetTokenListPayload => ({
@@ -174,6 +176,28 @@ export const initializeTokens = (tokens: Token[]):
         };
       },
     );
+
+    // append snowDOT token data
+    const dotApp = {
+      balance: {
+        eth: '0',
+        polkadot: '0',
+      },
+      instance: new web3.eth.Contract(WrappedToken.abi as any, SNOW_DOT_ADDRESS),
+      prices: {
+        usd: 0,
+      },
+      token: {
+        address: SNOW_DOT_ADDRESS,
+        chainId: (web3?.currentProvider as any).chainId,
+        decimals: 12,
+        logoURI: '/images/snow_logo.jpg',
+        name: 'SnowDOT',
+        symbol: 'snowDOT',
+      },
+    };
+
+    tokenDataList.push(dotApp);
 
     // store the token list
     dispatch(_setTokenList(tokenDataList));
