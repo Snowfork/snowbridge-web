@@ -60,7 +60,6 @@ export default class Polkadot extends Api {
         // check if the tokenData is the native DOT asset and return DOT balance
         if (tokenData?.token.address === SNOW_DOT_ADDRESS) {
           const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
-          console.log('fetch polkadot DOT balance for token', balance);
           return balance;
         }
 
