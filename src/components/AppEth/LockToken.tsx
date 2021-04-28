@@ -15,24 +15,20 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { utils } from 'ethers';
 import { RootState } from '../../redux/reducers';
-import { burnEthAsset, lockEthAsset } from '../../redux/actions/transactions';
 import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
 import LoadingSpinner from '../LoadingSpinner';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
-import { REFRESH_INTERVAL_MILLISECONDS, SNOW_DOT_ADDRESS } from '../../config';
+import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
+import { isErc20 } from '../../types/Asset';
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
 function LockToken(): React.ReactElement {
   const { allowance } = useSelector((state: RootState) => state.ERC20Transactions);
-  const { polkadotAddress } = useSelector((state: RootState) => state.net);
   const { selectedAsset, depositAmount } = useSelector((state: RootState) => state.bridge);
   const [isApprovalPending, setIsApprovalPending] = useState(false);
 
   const dispatch = useDispatch();
-
-  const isERC20 = selectedAsset?.token?.address !== '0x0';
-  const isDOT = selectedAsset?.token.address === SNOW_DOT_ADDRESS;
   const currentTokenAllowance = allowance;
 
   // update allowances to prevent failed transactions
@@ -55,21 +51,8 @@ function LockToken(): React.ReactElement {
   // lock assets
   const handleDepositToken = async () => {
     try {
-      // format deposit amount into unit value
-      const unitValue = utils.parseUnits(depositAmount, 18).toString();
-
-      // burn polkadot assets
-      if (isDOT) {
-        await dispatch(burnEthAsset(unitValue));
-        return;
-      }
-
-      // lock eth assets
-      await dispatch(lockEthAsset(
-        unitValue,
-        selectedAsset!.token,
-        polkadotAddress!,
-      ));
+      // TODO:
+      console.log('this does nothing...');
     } catch (e) {
       console.log('Failed to lock eth asset', e);
     } finally {
@@ -82,7 +65,7 @@ function LockToken(): React.ReactElement {
     try {
       setIsApprovalPending(true);
       // format deposit amount into unit value
-      const decimals = selectedAsset?.token.decimals;
+      const decimals = selectedAsset?.decimals;
       const unitValue = utils.parseUnits(depositAmount, decimals).toString();
       await dispatch(approveERC20(unitValue));
     } catch (e) {
@@ -94,7 +77,9 @@ function LockToken(): React.ReactElement {
 
   const DepositButton = () => {
     // we don't need approval to burn snowDot
-    if (isERC20 && !isDOT) {
+    // if (selectedAsset?.isErc20 && !selectedAsset?.isDot) {
+    // TODO: test - this should work because isErc20 checks the chain... so DOT would be false
+    if (isErc20(selectedAsset!)) {
       if (
         Number.parseFloat(currentTokenAllowance.toString())
         < Number.parseFloat(depositAmount.toString())
@@ -125,7 +110,7 @@ function LockToken(): React.ReactElement {
       >
         Deposit
         {' '}
-        {selectedAsset?.token.symbol }
+        {selectedAsset?.symbol }
       </Button>
     );
   };

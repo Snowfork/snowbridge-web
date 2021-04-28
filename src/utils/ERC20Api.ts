@@ -1,6 +1,7 @@
 import { Contract } from 'web3-eth-contract';
 import { ss58ToU8 } from '../net/api';
 
+// TODO: convert to enum and move?
 const INCENTIVIZED_CHANNEL_ID = 1;
 
 /**
@@ -44,10 +45,10 @@ export async function fetchERC20Allowance(
  *  userAddress
  */
 export async function fetchERC20Balance(
-  tokenContractInstance: Contract,
+  tokenContractInstance: Contract | undefined,
   userAddress: string,
 ): Promise<number> {
-  const balance: number = await tokenContractInstance.methods
+  const balance: number = await tokenContractInstance?.methods
     .balanceOf(userAddress)
     .call();
   return balance ?? 0;

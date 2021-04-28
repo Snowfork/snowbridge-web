@@ -10,7 +10,7 @@ import { utils } from 'ethers';
 import * as S from './SelectTokenModal.style';
 import { RootState } from '../../redux/reducers';
 import { updateSelectedAsset } from '../../redux/actions/bridge';
-import { TokenData } from '../../redux/reducers/bridge';
+import { Asset } from '../../types/Asset';
 import { SwapDirection } from '../../types/types';
 
 const customStyles = {
@@ -38,7 +38,7 @@ function SelectTokenModal({
 }: Props): React.ReactElement<Props> {
   const [isOpen, setIsOpen] = useState(open);
   const [searchInput, setSearchInput] = useState('');
-  const { tokens, swapDirection } = useSelector((state: RootState) => state.bridge);
+  const { assets, swapDirection } = useSelector((state: RootState) => state.bridge);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -54,17 +54,17 @@ function SelectTokenModal({
     setSearchInput(e.currentTarget.value.toLowerCase());
   }
 
-  function handleTokenSelection(selectedAsset: TokenData) {
+  function handleTokenSelection(selectedAsset: Asset) {
     dispatch(updateSelectedAsset(selectedAsset));
     closeModal();
   }
 
   // returns display formatted balance for source chain
-  function getTokenBalance(tokenData: TokenData): string {
+  function getTokenBalance(asset: Asset): string {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      return utils.formatUnits(tokenData.balance.eth, tokenData.token.decimals);
+      return utils.formatUnits(asset.balance.eth, asset.decimals);
     }
-    return utils.formatUnits(tokenData.balance.polkadot, tokenData.token.decimals);
+    return utils.formatUnits(asset.balance.polkadot, asset.decimals);
   }
 
   return (
@@ -80,18 +80,20 @@ function SelectTokenModal({
           <S.Input onChange={handleInputChange} />
           <S.TokenList>
             {
-              tokens
+              assets
+              // filter assets by search term
                 ?.filter(
-                  (token) => token.token.name.toLowerCase().includes(searchInput)
-                  || token.token.symbol.toLowerCase().includes(searchInput),
+                  (asset: Asset) => asset.name.toLowerCase().includes(searchInput)
+                  || asset.symbol.toLowerCase().includes(searchInput),
                 ).map(
-                  (tokenData) => (
-                    <S.Token key={`${tokenData.token.chainId}-${tokenData.token.address}`}>
-                      <Button onClick={() => handleTokenSelection(tokenData)}>
-                        <img src={tokenData.token.logoURI} alt={`${tokenData.token.name} icon`} />
+                  // render each asset
+                  (asset: Asset) => (
+                    <S.Token key={`${asset.chainId}-${asset.address}`}>
+                      <Button onClick={() => handleTokenSelection(asset)}>
+                        <img src={asset.logoUri} alt={`${asset.name} icon`} />
                         <div>
-                          <Typography variant="caption">{tokenData.token.symbol}</Typography>
-                          <Typography>{ getTokenBalance(tokenData)}</Typography>
+                          <Typography variant="caption">{asset.symbol}</Typography>
+                          <Typography>{ getTokenBalance(asset)}</Typography>
                         </div>
                       </Button>
                     </S.Token>

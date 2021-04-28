@@ -21,12 +21,12 @@ import {
   SetPendingTransactionPayload,
   EthMessageDispatchedPayload,
   SetNoncePayload,
-  SetPolkadotGasBalancePayload,
 } from '../actions/transactions';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
-import { Token } from '../../types/types';
 import { RootState } from '.';
-import { TokenData } from './bridge';
+import { Asset, isEther } from '../../types/Asset';
+import { SetPolkadotGasBalancePayload } from '../actions/PolkadotTransactions';
+import { Chain } from '../../types/types';
 
 export enum TransactionStatus {
   // used for error states
@@ -60,10 +60,10 @@ export interface Transaction {
   status: TransactionStatus;
   isMinted: boolean;
   isBurned: boolean;
-  chain: 'eth' | 'polkadot';
-  token: Token;
+  chain: Chain;
   dispatchTransactionHash?: string;
   error?: string;
+  asset: Asset
 }
 
 // Interface for the Ethereum 'MessageDispatched' event,
@@ -227,12 +227,12 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
 export default transactionsReducer;
 
 // selectors
-export const ethGasBalance = (state: RootState): string => (
+export const ethGasBalanceSelector = (state: RootState): string => (
   state
     .bridge
-    .tokens
+    .assets
     ?.filter(
-      (tokenData: TokenData) => tokenData.token.address === '0x0',
+      (asset: Asset) => isEther(asset),
     )[0]
     ?.balance.eth ?? '0'
 );

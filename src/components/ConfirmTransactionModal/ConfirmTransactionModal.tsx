@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactModal from 'react-modal';
 import {
+  Button,
   Grid,
   Paper,
   Typography,
@@ -8,11 +9,10 @@ import {
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { useDispatch, useSelector } from 'react-redux';
 import { getNetworkNames, shortenWalletAddress } from '../../utils/common';
-import AppPolkadot from '../AppPolkadot';
-import AppETH from '../AppEth';
 import { RootState } from '../../redux/reducers';
 import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
+import { doTransfer } from '../../redux/actions/transactions';
 
 const customStyles = {
   overlay: {},
@@ -65,6 +65,16 @@ function ConfirmTransactionModal({
       : polkadotAddress,
   };
 
+  const handleTransferClicked = async () => {
+    try {
+      dispatch(doTransfer());
+    } catch (e) {
+      console.log('handle transfer got error', e);
+    } finally {
+      closeModal();
+    }
+  };
+
   return (
     <div>
       <ReactModal
@@ -85,7 +95,7 @@ function ConfirmTransactionModal({
               <Typography variant="h4">
                 {depositAmount}
                 {' '}
-                {selectedAsset?.token?.symbol}
+                {selectedAsset?.symbol}
               </Typography>
             </Grid>
 
@@ -124,13 +134,15 @@ function ConfirmTransactionModal({
 
             </Grid>
 
-            {/* deposit buttons */}
-            {/* each button has the required logic for the corresponding network */}
-            {
-              swapDirection === SwapDirection.EthereumToPolkadot
-                ? <AppETH />
-                : <AppPolkadot />
-            }
+            <Button
+              variant="contained"
+              size="large"
+              color="primary"
+              onClick={handleTransferClicked}
+            >
+              Transfer
+
+            </Button>
           </Grid>
 
         </Paper>

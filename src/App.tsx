@@ -23,7 +23,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { PERMITTED_METAMASK_NETWORK } from './config';
 import { RootState } from './redux/reducers';
 import { initializeTokens } from './redux/actions/bridge';
-import EthTokenList from './components/AppEth/tokenList.json';
 import PendingTransactionsModal from './components/PendingTransactionsUI/PendingTransactionsModal';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
@@ -45,7 +44,7 @@ function BridgeApp(): JSX.Element {
     const start = async () => {
       Net.start(dispatch)
         .then(() => {
-          dispatch(initializeTokens(EthTokenList.tokens));
+          dispatch(initializeTokens());
         })
         .catch((e) => {
           console.log('error starting network', e);

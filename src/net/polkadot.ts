@@ -3,18 +3,16 @@ import {
   web3Accounts,
   web3Enable,
 } from '@polkadot/extension-dapp';
+import { Dispatch } from 'redux';
 import {
   setPolkadotAddress, setPolkadotApi, setPolkadotJSMissing, subscribeEvents,
 } from '../redux/actions/net';
 
 // Config
-import { POLKADOT_API_PROVIDER, SNOW_DOT_ADDRESS } from '../config';
-
-import {
-  fetchPolkadotGasBalance,
-} from '../redux/actions/transactions';
+import { POLKADOT_API_PROVIDER } from '../config';
 import Api from './api';
-import { TokenData } from '../redux/reducers/bridge';
+import { Asset, isDot, isErc20 } from '../types/Asset';
+import { fetchPolkadotGasBalance } from '../redux/actions/PolkadotTransactions';
 
 export default class Polkadot extends Api {
   // Get all polkadot addresses
@@ -53,20 +51,20 @@ export default class Polkadot extends Api {
   public static async getEthBalance(
     polkadotApi: ApiPromise,
     polkadotAddress: string,
-    tokenData?: TokenData,
+    asset: Asset,
   ): Promise<string> {
     try {
       if (polkadotApi) {
-        // check if the tokenData is the native DOT asset and return DOT balance
-        if (tokenData?.token.address === SNOW_DOT_ADDRESS) {
+        // check if the asset is the native DOT asset and return DOT balance
+        if (isDot(asset)) {
           const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
           return balance;
         }
 
         let ethAssetID = polkadotApi.createType('AssetId', 'ETH');
         // create asset ID for tokens
-        if (tokenData?.token?.address && tokenData?.token?.address !== '0x0') {
-          ethAssetID = polkadotApi.createType('AssetId', { Token: tokenData?.token?.address });
+        if (isErc20(asset)) {
+          ethAssetID = polkadotApi.createType('AssetId', { Token: asset.address });
         }
         if (polkadotAddress) {
           const balance = await polkadotApi.query.assets.balances(
@@ -87,7 +85,7 @@ export default class Polkadot extends Api {
   }
 
   // Polkadotjs API connector
-  public static async connect(dispatch: any): Promise<void> {
+  public static async connect(dispatch: Dispatch<any>): Promise<void> {
     try {
       // check that the polkadot.js extension is available
       const extensions = await web3Enable('Snowbridge');

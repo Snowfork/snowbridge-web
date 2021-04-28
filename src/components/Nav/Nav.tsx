@@ -9,17 +9,15 @@ import { formatBalance } from '@polkadot/util';
 import * as S from './Nav.style';
 import Modal from '../Modal';
 import TransactionsList from '../TransactionsList';
-import { ethGasBalance, TransactionsState } from '../../redux/reducers/transactions';
+import { ethGasBalanceSelector, TransactionsState } from '../../redux/reducers/transactions';
 import { RootState } from '../../redux/reducers';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
 import Polkadot from '../../net/polkadot';
-import {
-  fetchPolkadotGasBalance,
-} from '../../redux/actions/transactions';
 import { updateBalances } from '../../redux/actions/bridge';
 import FormatAmount from '../FormatAmount';
 import { shortenWalletAddress } from '../../utils/common';
+import { fetchPolkadotGasBalance } from '../../redux/actions/PolkadotTransactions';
 
 type Props = {
   transactions: TransactionsState;
@@ -46,7 +44,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
 
   const { polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
   const { polkadotAddress, ethAddress, polkadotApi } = useSelector((state: RootState) => state.net);
-  const ethBalance = useSelector((state: RootState) => ethGasBalance(state));
+  const ethBalance = useSelector((state: RootState) => ethGasBalanceSelector(state));
 
   // fetch polkadot accountsfor the account selector on mount
   useEffect(() => {

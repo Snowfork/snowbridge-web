@@ -6,6 +6,7 @@ import {
 } from '../actionsTypes/ERC20Transactions';
 import * as ERC20Api from '../../utils/ERC20Api';
 import { RootState } from '../reducers';
+import { isErc20 } from '../../types/Asset';
 
 // action creators
 export interface SetERC20AllowancePayload { type: string, allowance: number }
@@ -22,8 +23,8 @@ export const fetchERC20Allowance = ():
   const state = getState() as RootState;
   const userAddress = state.net.ethAddress!;
   const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
-  const contractInstance = state.bridge.selectedAsset?.instance;
-  if (state.bridge.selectedAsset?.token.address !== '0x0') {
+  const contractInstance = state.bridge.selectedAsset!.contract!;
+  if (isErc20(state.bridge.selectedAsset!)) {
     const allowance: number = await ERC20Api.fetchERC20Allowance(
       contractInstance,
       userAddress,
@@ -45,7 +46,7 @@ export const approveERC20 = (amount: string):
 
   try {
     await ERC20Api.approveERC20(
-      selectedAsset?.instance,
+      selectedAsset!.contract!,
       erc20BridgeContractAddress,
       userAddress,
       amount,
