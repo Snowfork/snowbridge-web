@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { web3FromSource } from '@polkadot/extension-dapp';
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
@@ -41,14 +40,6 @@ export const lockPolkadotAsset = (
   } = state.bridge;
 
   try {
-    // TODO: use incentivized channel?
-    const channelId = 0;
-    const account = await (await Polkadot.getAddresses()).filter(({ address }) => address === polkadotAddress)[0];
-    // TODO: move to API
-    // to be able to retrieve the signer interface from this account
-    // we can use web3FromSource which will return an InjectedExtension type
-    const injector = await web3FromSource(account.meta.source);
-
     const pendingTransaction = createTransaction(
       polkadotAddress!,
       ethAddress!,
@@ -58,18 +49,23 @@ export const lockPolkadotAsset = (
     );
     dispatch(setPendingTransaction(pendingTransaction));
 
-    // TODO: move this to the API
-    const unsub = await polkadotApi?.tx.dot.lock(channelId, ethAddress, amount)
-      .signAndSend(account.address, { signer: injector.signer }, (res: any) => {
+    const unsub = Polkadot.lockDot(
+      polkadotApi!,
+      ethAddress!,
+      polkadotAddress!,
+      amount,
+      (res: any) => {
         handlePolkadotTransactionEvents(
           res,
-          unsub!,
-          pendingTransaction,
-          dispatch,
-          incentivizedChannelContract!,
-          basicChannelContract!,
+            unsub!,
+            pendingTransaction,
+            dispatch,
+            incentivizedChannelContract!,
+            basicChannelContract!,
         );
-      }).catch((err) => {
+      },
+    )
+      .catch((err) => {
         // display error message in modal
         setPendingTransaction({
           ...pendingTransaction,
@@ -103,6 +99,7 @@ export const unlockPolkadotAsset = (
     const amountWrapped = Web3.utils.toBN(amount);
     console.log('burn DOT', amountWrapped.toString());
 
+    // TODO: move to API
     const recipientBytes = ss58ToU8(polkadotAddress!);
     await appDotContract?.methods.burn(
       recipientBytes,

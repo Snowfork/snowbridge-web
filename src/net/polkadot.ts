@@ -2,6 +2,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import {
   web3Accounts,
   web3Enable,
+  web3FromSource,
 } from '@polkadot/extension-dapp';
 import { Dispatch } from 'redux';
 import {
@@ -187,5 +188,43 @@ export default class Polkadot extends Api {
       }
       throw new Error('Poldotjs API endpoint not Connected');
     }
+  }
+
+  public static async getAccount(polkadotAddress: string): Promise<any> {
+    const addresses = await Polkadot.getAddresses();
+    const account = addresses
+      .filter(
+        ({ address }) => address === polkadotAddress,
+      );
+
+    if (account[0]) {
+      return account[0];
+    }
+
+    return null;
+  }
+
+  public static async lockDot(
+    polkadotApi: ApiPromise,
+    ethAddress: string,
+    polkadotAddress: string,
+    amount: string,
+    callback: (result: any) => void,
+  ): Promise<any> {
+    // TODO: move to config?
+    const channelId = 0;
+
+    const account = await this.getAccount(polkadotAddress);
+
+    if (account) {
+      // to be able to retrieve the signer interface from this account
+      // we can use web3FromSource which will return an InjectedExtension type
+      const injector = await web3FromSource(account.meta.source);
+
+      return polkadotApi?.tx.dot.lock(channelId, ethAddress, amount)
+        .signAndSend(account.address, { signer: injector.signer }, callback);
+    }
+
+    throw new Error('Failed locking dot');
   }
 }
