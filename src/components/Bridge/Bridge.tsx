@@ -200,7 +200,7 @@ function Bridge(): React.ReactElement {
   || Number.parseFloat(depositAmount) <= 0
   || Number.isNaN(Number.parseFloat(transferUsdValue));
 
-  const decimalMap = decimals(selectedAsset!, swapDirection);
+  const decimalMap = selectedAsset ? decimals(selectedAsset, swapDirection) : { to: 0, from: 0 };
 
   return (
 
