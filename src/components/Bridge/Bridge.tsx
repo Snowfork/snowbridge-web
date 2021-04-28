@@ -34,6 +34,7 @@ import { ethGasBalanceSelector } from '../../redux/reducers/transactions';
 import { tokenBalancesByNetwork, tokenSwapUsdValueSelector } from '../../redux/reducers/bridge';
 import FormatAmount from '../FormatAmount';
 import { getNetworkNames } from '../../utils/common';
+import { symbols } from '../../types/Asset';
 
 enum ErrorMessages {
   INSUFFICIENT_BALANCE = 'Insufficient funds',
@@ -252,7 +253,9 @@ function Bridge(): React.ReactElement {
                     )
                   }
                   {' '}
-                  {selectedAsset?.symbol}
+                  {
+                    symbols(selectedAsset!, swapDirection).from
+                  }
                 </Typography>
               </Grid>
             </Grid>
@@ -288,7 +291,10 @@ function Bridge(): React.ReactElement {
                   />
                   )
                   }
-                  {selectedAsset?.symbol}
+                  {' '}
+                  {
+                    symbols(selectedAsset!, swapDirection).to
+                  }
                 </Typography>
               </Grid>
             </Grid>
