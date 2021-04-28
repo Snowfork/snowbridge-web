@@ -5,13 +5,11 @@ import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
 import { RootState } from '../reducers';
-import { TransactionStatus, MessageDispatchedEvent, Transaction } from '../reducers/transactions';
+import { TransactionStatus } from '../reducers/transactions';
 import {
   setPendingTransaction,
-  addTransaction,
-  updateTransaction,
-  ethMessageDispatched,
-  setTransactionStatus,
+  createTransaction,
+  handlePolkadotTransactionEvents,
 } from './transactions';
 import Polkadot from '../../net/polkadot';
 import { ss58ToU8 } from '../../net/api';
@@ -36,6 +34,7 @@ export const lockPolkadotAsset = (
     polkadotApi,
     polkadotAddress,
     basicChannelContract,
+    incentivizedChannelContract,
   } = state.net;
   const {
     selectedAsset,
@@ -45,72 +44,31 @@ export const lockPolkadotAsset = (
     // TODO: use incentivized channel?
     const channelId = 0;
     const account = await (await Polkadot.getAddresses()).filter(({ address }) => address === polkadotAddress)[0];
+    // TODO: move to API
     // to be able to retrieve the signer interface from this account
     // we can use web3FromSource which will return an InjectedExtension type
     const injector = await web3FromSource(account.meta.source);
-    const pendingTransaction: Transaction = {
-      hash: '',
-      confirmations: 0,
-      sender: polkadotAddress!,
-      receiver: ethAddress!,
-      amount,
-      status: TransactionStatus.SUBMITTING_TO_CHAIN,
-      isMinted: false,
-      isBurned: false,
-      chain: Chain.POLKADOT,
-      asset: selectedAsset!,
-    };
-    console.log('lock DOT', pendingTransaction);
 
+    const pendingTransaction = createTransaction(
+      polkadotAddress!,
+      ethAddress!,
+      amount,
+      Chain.POLKADOT,
+      selectedAsset!,
+    );
     dispatch(setPendingTransaction(pendingTransaction));
 
     // TODO: move this to the API
     const unsub = await polkadotApi?.tx.dot.lock(channelId, ethAddress, amount)
-      .signAndSend(account.address, { signer: injector.signer }, (result) => {
-        if (result.status.isReady) {
-          pendingTransaction.hash = result.status.hash.toString();
-          dispatch(
-            addTransaction(
-              { ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION },
-            ),
-          );
-          return;
-        }
-        if (result.status.isInBlock) {
-          const nonce = result.events[1].event.data[0].toString();
-          dispatch(
-            updateTransaction(
-              pendingTransaction.hash, { nonce, status: TransactionStatus.WAITING_FOR_RELAY },
-            ),
-          );
-
-          // TODO: replace with incentivized channel?
-          // eslint-disable-next-line no-unused-expressions
-          basicChannelContract?.events.MessageDispatched({})
-            .on('data', (
-              event: MessageDispatchedEvent,
-            ) => {
-              if (
-                event.returnValues.nonce === nonce
-              ) {
-                dispatch(
-                  ethMessageDispatched(event.returnValues.nonce, pendingTransaction.nonce!),
-                );
-              }
-            });
-
-          return;
-        }
-
-        if (result.status.isFinalized) {
-          console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
-          dispatch(
-            setTransactionStatus(pendingTransaction.hash, TransactionStatus.WAITING_FOR_RELAY),
-          );
-          if (unsub) {
-            // unsub();
-          }
-        }
+      .signAndSend(account.address, { signer: injector.signer }, (res: any) => {
+        handlePolkadotTransactionEvents(
+          res,
+          unsub!,
+          pendingTransaction,
+          dispatch,
+          incentivizedChannelContract!,
+          basicChannelContract!,
+        );
       }).catch((err) => {
         // display error message in modal
         setPendingTransaction({

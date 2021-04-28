@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable no-console */
 import { utils } from 'ethers';
+import { Dispatch } from 'react';
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
+import { Contract } from 'web3-eth-contract';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
-import { decimals, isDot } from '../../types/Asset';
+import {
+  Asset, decimals, isDot, isEther,
+} from '../../types/Asset';
+import { Chain } from '../../types/types';
 import {
   ADD_TRANSACTION,
   SET_CONFIRMATIONS,
@@ -18,6 +23,7 @@ import {
 } from '../actionsTypes/transactions';
 import { RootState } from '../reducers';
 import {
+  MessageDispatchedEvent,
   PolkaEthBurnedEvent, Transaction, TransactionStatus,
 } from '../reducers/transactions';
 import { doEthTransfer } from './EthTransactions';
@@ -131,3 +137,104 @@ export const doTransfer = ():
     dispatch(doPolkadotTransfer(amount));
   }
 };
+
+// Transaction factory function
+export function createTransaction(
+  sender: string,
+  receiver: string,
+  amount: string,
+  chain: Chain,
+  asset: Asset,
+): Transaction {
+  const pendingTransaction: Transaction = {
+    hash: '',
+    confirmations: 0,
+    sender,
+    receiver,
+    amount,
+    status: TransactionStatus.SUBMITTING_TO_CHAIN,
+    isMinted: false,
+    isBurned: false,
+    chain,
+    asset,
+  };
+
+  return pendingTransaction;
+}
+
+// This will be use in EthTransactions.burn and PolkadotTransactions.lock
+// This is shared logic that will:
+//  be used as a callback for polkadot transaction events
+//  update the transaction state
+//  wait for the transaction to be finalized and then unsubscribe
+//
+//  This also subscribes to basicChannelContract events to watch
+//  the transaction status on the eth side
+export function handlePolkadotTransactionEvents(
+  result: any, // event data from polkadot transaction subscription
+  unsub: any, // function to unsubscribe from polkadot transaction events
+  transaction: Transaction, // the transaction we are updating for each event
+  dispatch: Dispatch<any>,
+  incentivizedChannelContract: Contract,
+  basicChannelContract: Contract,
+): void {
+  const pendingTransaction = transaction;
+
+  if (result.status.isReady) {
+    pendingTransaction.hash = result.status.hash.toString();
+    dispatch(
+      addTransaction(
+        { ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION },
+      ),
+    );
+    return;
+  }
+
+  if (result.status.isInBlock) {
+    let nonce = result.events[1].event.data[0].toString();
+    if (isEther(transaction.asset)) {
+      nonce = result.events[0].event.data[0].toString();
+    }
+
+    dispatch(
+      updateTransaction(
+        pendingTransaction.hash, { nonce, status: TransactionStatus.WAITING_FOR_RELAY },
+      ),
+    );
+
+    const handleChannelMessageDispatched = (event: MessageDispatchedEvent) => {
+      if (
+        event.returnValues.nonce === nonce
+      ) {
+        dispatch(
+          ethMessageDispatched(event.returnValues.nonce, pendingTransaction.nonce!),
+        );
+      }
+    };
+
+    // subscribe to ETH dispatch event
+    // eslint-disable-next-line no-unused-expressions
+    incentivizedChannelContract
+      .events
+      .MessageDispatched({})
+      .on('data', handleChannelMessageDispatched);
+
+    // TODO: replace with incentivized channel?
+    // eslint-disable-next-line no-unused-expressions
+    basicChannelContract
+      .events
+      .MessageDispatched({})
+      .on('data', handleChannelMessageDispatched);
+
+    return;
+  }
+
+  if (result.status.isFinalized) {
+    console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
+    dispatch(
+      setTransactionStatus(pendingTransaction.hash, TransactionStatus.WAITING_FOR_RELAY),
+    );
+    // unsubscribe from transaction events
+    // unsub();
+  }
+}

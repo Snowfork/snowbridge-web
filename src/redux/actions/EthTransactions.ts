@@ -5,16 +5,15 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { RootState } from '../reducers';
-import { MessageDispatchedEvent, Transaction, TransactionStatus } from '../reducers/transactions';
+import { Transaction, TransactionStatus } from '../reducers/transactions';
 import { notify } from './notifications';
 import {
   setPendingTransaction,
   addTransaction,
   setNonce,
-  updateTransaction,
-  ethMessageDispatched,
-  setTransactionStatus,
   updateConfirmations,
+  createTransaction,
+  handlePolkadotTransactionEvents,
 } from './transactions';
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
@@ -205,82 +204,32 @@ export const unlockEthAsset = (amount: string):
   if (polkadotApi) {
     // TODO: ensure account is the selected account
     const account = await Polkadot.getDefaultAddress();
-    const recipient = ethAddress;
-    const polkaWeiValue = amount;
-    console.log('burning', polkaWeiValue);
 
     if (account) {
-      const pendingTransaction: Transaction = {
-        hash: '',
-        confirmations: 0,
-        sender: polkadotAddress!,
-        receiver: recipient!,
-        amount: polkaWeiValue,
-        status: TransactionStatus.SUBMITTING_TO_CHAIN,
-        isMinted: false,
-        isBurned: false,
-        chain: Chain.POLKADOT,
-        asset: selectedAsset!,
-      };
+      const pendingTransaction = createTransaction(
+        polkadotAddress!,
+        ethAddress!,
+        amount,
+        Chain.POLKADOT,
+        selectedAsset!,
+      );
       dispatch(setPendingTransaction(pendingTransaction));
 
-      EthApi.unlock(
-        polkaWeiValue,
+      const unsub = EthApi.unlock(
+        amount,
         selectedAsset!,
         account,
         ethAddress!,
         polkadotApi,
-        (result: any) => {
-          if (result.status.isReady) {
-            pendingTransaction.hash = result.status.hash.toString();
-            dispatch(
-              addTransaction(
-                { ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION },
-              ),
-            );
-          }
-          if (result.status.isInBlock) {
-            const nonce = result.events[0].event.data[0].toString();
-            dispatch(
-              updateTransaction(
-                pendingTransaction.hash, { nonce, status: TransactionStatus.WAITING_FOR_RELAY },
-              ),
-            );
-              // subscribe to ETH dispatch event
-              // eslint-disable-next-line no-unused-expressions
-              incentivizedChannelContract?.events.MessageDispatched({})
-                .on('data', (
-                  event: MessageDispatchedEvent,
-                ) => {
-                  if (
-                    event.returnValues.nonce === nonce
-                  ) {
-                    dispatch(
-                      ethMessageDispatched(event.returnValues.nonce, pendingTransaction.nonce!),
-                    );
-                  }
-                });
-
-              // TODO: replace with incentivized channel?
-              // use basic channel for ERC20
-              // eslint-disable-next-line no-unused-expressions
-              basicChannelContract?.events.MessageDispatched({})
-                .on('data', (
-                  event: MessageDispatchedEvent,
-                ) => {
-                  if (
-                    event.returnValues.nonce === nonce
-                  ) {
-                    dispatch(
-                      ethMessageDispatched(event.returnValues.nonce, pendingTransaction.nonce!),
-                    );
-                  }
-                });
-          } else if (result.status.isFinalized) {
-            dispatch(
-              setTransactionStatus(pendingTransaction.hash, TransactionStatus.WAITING_FOR_RELAY),
-            );
-          }
+        (res: any) => {
+          handlePolkadotTransactionEvents(
+            res,
+            unsub,
+            pendingTransaction,
+            dispatch,
+            incentivizedChannelContract!,
+            basicChannelContract!,
+          );
         },
       )
         .catch((error: any) => {
