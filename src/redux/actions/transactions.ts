@@ -4,7 +4,7 @@ import { utils } from 'ethers';
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
-import { isDot } from '../../types/Asset';
+import { decimals, isDot } from '../../types/Asset';
 import {
   ADD_TRANSACTION,
   SET_CONFIRMATIONS,
@@ -117,9 +117,12 @@ export const doTransfer = ():
   const {
     selectedAsset,
     depositAmount,
+    swapDirection,
   } = state.bridge;
 
-  const amount = utils.parseUnits(depositAmount, selectedAsset?.decimals).toString();
+  const { from } = decimals(selectedAsset!, swapDirection);
+  const fromDecimals = utils.parseUnits(depositAmount, from).toString();
+  const amount = fromDecimals;
 
   // transaction direction logic
   if (!isDot(selectedAsset!)) {

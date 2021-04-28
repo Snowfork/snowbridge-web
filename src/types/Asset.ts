@@ -86,12 +86,46 @@ function polkadotSymbols(
   };
 }
 
+// returns the symbol for each corresponding chain based on the swap direction
 export function symbols(asset: Asset, swapDirection: SwapDirection):
  {to: string, from: string} {
   let result = polkadotSymbols(asset, swapDirection);
 
   if (!isDot(asset)) {
     result = ethSymbols(asset, swapDirection);
+  }
+
+  return result;
+}
+
+function polkadotDecimals(
+  asset: Asset,
+  swapDirection: SwapDirection,
+): {to: number, from: number} {
+  let result = { to: asset.decimals, from: asset.wrappedDecimals };
+  if (swapDirection === SwapDirection.PolkadotToEthereum) {
+    result = { to: asset.wrappedDecimals, from: asset.decimals };
+  }
+  return result;
+}
+
+function ethDecimals(
+  asset: Asset,
+  swapDirection: SwapDirection,
+): {to: number, from: number} {
+  let result = { to: asset.decimals, from: asset.wrappedDecimals };
+  if (swapDirection === SwapDirection.EthereumToPolkadot) {
+    result = { to: asset.wrappedDecimals, from: asset.decimals };
+  }
+  return result;
+}
+
+// returns the decimals for each corresponding chain based on the swap direction
+export function decimals(asset: Asset, swapDirection: SwapDirection):
+{to: number, from: number} {
+  let result = ethDecimals(asset, swapDirection);
+  if (isDot(asset)) {
+    result = polkadotDecimals(asset, swapDirection);
   }
 
   return result;

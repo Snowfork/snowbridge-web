@@ -34,7 +34,7 @@ import { ethGasBalanceSelector } from '../../redux/reducers/transactions';
 import { tokenBalancesByNetwork, tokenSwapUsdValueSelector } from '../../redux/reducers/bridge';
 import FormatAmount from '../FormatAmount';
 import { getNetworkNames } from '../../utils/common';
-import { symbols } from '../../types/Asset';
+import { decimals, symbols } from '../../types/Asset';
 
 enum ErrorMessages {
   INSUFFICIENT_BALANCE = 'Insufficient funds',
@@ -200,6 +200,8 @@ function Bridge(): React.ReactElement {
   || Number.parseFloat(depositAmount) <= 0
   || Number.isNaN(Number.parseFloat(transferUsdValue));
 
+  const decimalMap = decimals(selectedAsset!, swapDirection);
+
   return (
 
     <div className={classes.root}>
@@ -248,7 +250,7 @@ function Bridge(): React.ReactElement {
                     && (
                     <FormatAmount
                       amount={tokenBalances.sourceNetwork}
-                      decimals={selectedAsset.decimals}
+                      decimals={decimalMap.from}
                     />
                     )
                   }
@@ -287,7 +289,7 @@ function Bridge(): React.ReactElement {
                   && (
                   <FormatAmount
                     amount={tokenBalances.destinationNetwork}
-                    decimals={selectedAsset.decimals}
+                    decimals={decimalMap.to}
                   />
                   )
                   }
