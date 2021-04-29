@@ -12,7 +12,6 @@ import {
   handlePolkadotTransactionErrors,
 } from './transactions';
 import EthApi from '../../net/eth';
-import Polkadot from '../../net/polkadot';
 import { setEthAddress } from './net';
 import { Chain, SwapDirection } from '../../types/types';
 
@@ -97,24 +96,20 @@ export const unlockEthAsset = (amount: string):
   } = state.bridge;
 
   if (polkadotApi) {
-    // TODO: ensure account is the selected account
-    const account = await Polkadot.getDefaultAddress();
-
-    if (account) {
-      const pendingTransaction = createTransaction(
+    const pendingTransaction = createTransaction(
         polkadotAddress!,
         ethAddress!,
         amount,
         Chain.POLKADOT,
         selectedAsset!,
         SwapDirection.PolkadotToEthereum,
-      );
-      dispatch(setPendingTransaction(pendingTransaction));
+    );
+    dispatch(setPendingTransaction(pendingTransaction));
 
-      const unsub = EthApi.unlock(
-        amount,
+    const unsub = EthApi.unlock(
+      amount,
         selectedAsset!,
-        account,
+        polkadotAddress!,
         ethAddress!,
         polkadotApi,
         (res: any) => {
@@ -127,17 +122,14 @@ export const unlockEthAsset = (amount: string):
             basicChannelContract!,
           );
         },
-      )
-        .catch((error: any) => {
-          handlePolkadotTransactionErrors(
-            error,
-            pendingTransaction,
-            dispatch,
-          );
-        });
-    } else {
-      throw new Error('Default Polkadot account not found');
-    }
+    )
+      .catch((error: any) => {
+        handlePolkadotTransactionErrors(
+          error,
+          pendingTransaction,
+          dispatch,
+        );
+      });
   } else {
     throw new Error('Polkadot API not connected');
   }

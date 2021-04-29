@@ -7,6 +7,7 @@ import { ApiPromise } from '@polkadot/api';
 import { web3FromSource } from '@polkadot/extension-dapp';
 import { PromiEvent } from 'web3-core';
 import Api, { ss58ToU8 } from './api';
+import Polkadot from './polkadot';
 
 // Import Contracts
 import {
@@ -233,7 +234,7 @@ export default class Eth extends Api {
  * Burns tokens on Polkadot and unlocks tokens on Ethereum
  * @param {amount} string The amount of tokens (in base units) to lock
  * @param {asset} EthAsset The asset to lock
- * @param {sender} any The polkadot account of the sender (InjectedAccountWithMeta)
+ * @param {sender} string The ss58 encoded polkadot address of the sender
  * @param {recipient} string The eth recipient address
  * @param {polkadotApi} ApiPromise Polkadot ApiPromise instance
  * @param {extrinsicEventCallback} function callback function for polkadot events
@@ -242,7 +243,7 @@ export default class Eth extends Api {
   public static async unlock(
     amount: string,
     asset: Asset,
-    sender: any, // TODO: change to polkadot address ss58 string
+    sender: string,
     recipient: string,
     polkadotApi: ApiPromise,
     extrinsicEventCallback: (result: any) => void,
@@ -264,17 +265,17 @@ export default class Eth extends Api {
         amount,
       );
     }
-
+    const account = await Polkadot.getAccount(sender);
     // to be able to retrieve the signer interface from this account
     // we can use web3FromSource which will return an InjectedExtension type
-    const injector = await web3FromSource(sender.meta.source);
+    const injector = await web3FromSource(account.meta.source);
 
     // passing the injected account address as the first argument of signAndSend
     // will allow the api to retrieve the signer and the user will see the extension
     // popup asking to sign the balance transfer transaction
     return burnExtrinsic
       .signAndSend(
-        sender.address,
+        account.address,
         { signer: injector.signer },
         extrinsicEventCallback,
       );
