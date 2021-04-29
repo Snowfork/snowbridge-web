@@ -37,7 +37,7 @@ import {
   setMetamaskNetwork,
   setWeb3,
 } from '../redux/actions/net';
-import * as ERC20Api from '../utils/ERC20Api';
+import * as ERC20Api from './ERC20';
 import { updateBalances } from '../redux/actions/bridge';
 import { Asset, isEther } from '../types/Asset';
 import { fetchEthAddress } from '../redux/actions/EthTransactions';

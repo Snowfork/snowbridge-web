@@ -5,7 +5,7 @@ import { utils } from 'ethers';
 import {
   SET_TOKEN_ALLOWANCE,
 } from '../actionsTypes/ERC20Transactions';
-import * as ERC20Api from '../../utils/ERC20Api';
+import * as ERC20Api from '../../net/ERC20';
 import { RootState } from '../reducers';
 import { isErc20 } from '../../types/Asset';
 

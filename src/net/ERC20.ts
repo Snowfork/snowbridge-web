@@ -1,5 +1,5 @@
 import { Contract } from 'web3-eth-contract';
-import { ss58ToU8 } from '../net/api';
+import { ss58ToU8 } from './api';
 
 // TODO: convert to enum and move?
 const INCENTIVIZED_CHANNEL_ID = 1;
