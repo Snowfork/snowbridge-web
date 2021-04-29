@@ -2,16 +2,15 @@
 
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import Web3 from 'web3';
 import { RootState } from '../reducers';
 import { TransactionStatus } from '../reducers/transactions';
 import {
   setPendingTransaction,
   createTransaction,
   handlePolkadotTransactionEvents,
+  handleEthereumTransactionEvents,
 } from './transactions';
 import Polkadot from '../../net/polkadot';
-import { ss58ToU8 } from '../../net/api';
 import { SET_POLKADOT_GAS_BALANCE } from '../actionsTypes/transactions';
 import { Chain, SwapDirection } from '../../types/types';
 
@@ -94,25 +93,34 @@ export const unlockPolkadotAsset = (
 ): Promise<void> => {
   const state = getState() as RootState;
   const {
-    appDotContract, ethAddress, polkadotAddress,
+    appDotContract,
+    ethAddress,
+    polkadotAddress,
+    web3,
   } = state.net;
   try {
-    const amountWrapped = Web3.utils.toBN(amount);
-    console.log('burn DOT', amountWrapped.toString());
+    const pendingTransaction = createTransaction(
+      ethAddress!,
+      polkadotAddress!,
+      amount,
+      Chain.POLKADOT,
+      state.bridge.selectedAsset!,
+      state.bridge.swapDirection!,
+    );
 
-    // TODO: move to API
-    const recipientBytes = ss58ToU8(polkadotAddress!);
-    await appDotContract?.methods.burn(
-      recipientBytes,
-      amountWrapped,
-      //  TODO: set channel ID?
-      0,
-    )
-      .send({
-        from: ethAddress,
-        gas: 500000,
-        value: 0,
-      });
+    const transactionEvent = Polkadot.unlockDot(
+      appDotContract!,
+      ethAddress!,
+      polkadotAddress!,
+      amount,
+    );
+
+    handleEthereumTransactionEvents(
+      transactionEvent,
+      pendingTransaction,
+      dispatch,
+      web3!,
+    );
   } catch (err) {
     // Todo: Error Sending Ethereum
     console.log(err);

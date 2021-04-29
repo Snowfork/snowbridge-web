@@ -5,13 +5,16 @@ import {
   web3FromSource,
 } from '@polkadot/extension-dapp';
 import { Dispatch } from 'redux';
+import Web3 from 'web3';
+import { Contract } from 'web3-eth-contract';
+import { PromiEvent } from 'web3-core';
 import {
   setPolkadotAddress, setPolkadotApi, setPolkadotJSMissing, subscribeEvents,
 } from '../redux/actions/net';
 
 // Config
 import { POLKADOT_API_PROVIDER } from '../config';
-import Api from './api';
+import Api, { ss58ToU8 } from './api';
 import { Asset, isDot, isErc20 } from '../types/Asset';
 import { fetchPolkadotGasBalance } from '../redux/actions/PolkadotTransactions';
 
@@ -226,5 +229,34 @@ export default class Polkadot extends Api {
     }
 
     throw new Error('Failed locking dot');
+  }
+
+  public static unlockDot(
+    appDotContract: Contract,
+    ethAddress: string,
+    polkadotAddress: string,
+    amount: string,
+  ): PromiEvent<Contract> {
+    try {
+      const amountWrapped = Web3.utils.toBN(amount);
+      console.log('burn DOT', amountWrapped.toString());
+      const recipientBytes = ss58ToU8(polkadotAddress!);
+
+      return appDotContract?.methods.burn(
+        recipientBytes,
+        amountWrapped,
+        //  TODO: set channel ID?
+        0,
+      )
+        .send({
+          from: ethAddress,
+          gas: 500000,
+          value: 0,
+        });
+    } catch (err) {
+      // Todo: Error Sending Ethereum
+      console.log(err);
+      throw new Error('failed unlocking DOT');
+    }
   }
 }
