@@ -50,6 +50,7 @@ export const lockEthAsset = (
           selectedAsset!,
           SwapDirection.EthereumToPolkadot,
         );
+        dispatch(setPendingTransaction(pendingTransaction));
 
         const transactionEvent: any = EthApi.lock(
           amount,

@@ -333,6 +333,7 @@ export function handleEthereumTransactionEvents(
             color: 'success',
           }));
           console.log('call transactionEvent.off()');
+          // TODO: call this
           // transactionEvent.off('confirmation');
         }
       },
