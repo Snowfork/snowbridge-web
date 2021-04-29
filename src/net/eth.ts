@@ -196,7 +196,7 @@ export default class Eth extends Api {
     polkadotRecipient: string,
     ethContract: Contract,
     erc20Contract: Contract,
-  ): PromiEvent<any> {
+  ): PromiEvent<Contract> {
     try {
       const polkadotRecipientBytes: Uint8Array = ss58ToU8(
         polkadotRecipient!,
@@ -242,7 +242,7 @@ export default class Eth extends Api {
   public static async unlock(
     amount: string,
     asset: Asset,
-    sender: any,
+    sender: any, // TODO: change to polkadot address ss58 string
     recipient: string,
     polkadotApi: ApiPromise,
     extrinsicEventCallback: (result: any) => void,

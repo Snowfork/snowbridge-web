@@ -26,7 +26,7 @@ import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { RootState } from '.';
 import { Asset, isEther } from '../../types/Asset';
 import { SetPolkadotGasBalancePayload } from '../actions/PolkadotTransactions';
-import { Chain } from '../../types/types';
+import { Chain, SwapDirection } from '../../types/types';
 
 export enum TransactionStatus {
   // used for error states
@@ -63,7 +63,8 @@ export interface Transaction {
   chain: Chain;
   dispatchTransactionHash?: string;
   error?: string;
-  asset: Asset
+  asset: Asset;
+  direction: SwapDirection
 }
 
 // Interface for the Ethereum 'MessageDispatched' event,

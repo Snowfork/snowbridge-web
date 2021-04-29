@@ -46,6 +46,7 @@ export const lockPolkadotAsset = (
       amount,
       Chain.POLKADOT,
       selectedAsset!,
+      SwapDirection.PolkadotToEthereum,
     );
     dispatch(setPendingTransaction(pendingTransaction));
 

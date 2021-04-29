@@ -5,11 +5,13 @@ import { Dispatch } from 'react';
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { Contract } from 'web3-eth-contract';
+import { PromiEvent } from 'web3-core';
+import Web3 from 'web3';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import {
-  Asset, decimals, isDot, isEther,
+  Asset, decimals, isDot, isEther, symbols,
 } from '../../types/Asset';
-import { Chain } from '../../types/types';
+import { Chain, SwapDirection } from '../../types/types';
 import {
   ADD_TRANSACTION,
   SET_CONFIRMATIONS,
@@ -28,6 +30,7 @@ import {
 } from '../reducers/transactions';
 import { doEthTransfer } from './EthTransactions';
 import { doPolkadotTransfer } from './PolkadotTransactions';
+import { notify } from './notifications';
 
 export interface AddTransactionPayload { type: string, transaction: Transaction }
 export const addTransaction = (transaction: Transaction): AddTransactionPayload => ({
@@ -145,6 +148,7 @@ export function createTransaction(
   amount: string,
   chain: Chain,
   asset: Asset,
+  direction: SwapDirection,
 ): Transaction {
   const pendingTransaction: Transaction = {
     hash: '',
@@ -157,12 +161,13 @@ export function createTransaction(
     isBurned: false,
     chain,
     asset,
+    direction,
   };
 
   return pendingTransaction;
 }
 
-// This will be use in EthTransactions.burn and PolkadotTransactions.lock
+// This will be used in EthTransactions.unlock and PolkadotTransactions.lock
 // This is shared logic that will:
 //  be used as a callback for polkadot transaction events
 //  update the transaction state
@@ -237,4 +242,113 @@ export function handlePolkadotTransactionEvents(
     // unsubscribe from transaction events
     // unsub();
   }
+}
+
+// This will be used in EthTransactions.lock and PolkadotTransactions.unlock
+// This contains shared logic to update transaction status given a PromiEvent
+export function handleEthereumTransactionEvents(
+  transactionEvent: PromiEvent<Contract>,
+  pendingTransaction: Transaction,
+  dispatch: Dispatch<any>,
+  web3: Web3,
+): void {
+  let transactionHash: string;
+
+  transactionEvent
+    .once('sending', async (payload: any) => {
+      console.log('Sending Transaction', payload);
+      // create transaction with default values to display in the modal
+      dispatch(setPendingTransaction(pendingTransaction));
+    })
+    .once('sent', async (payload: any) => {
+      console.log('Transaction sent', payload);
+    })
+    .on('transactionHash', async (hash: string) => {
+      console.log('Transaction hash received', hash);
+      transactionHash = hash;
+
+      dispatch(
+        addTransaction({
+          ...pendingTransaction,
+          hash,
+          confirmations: 0,
+          status: TransactionStatus.WAITING_FOR_CONFIRMATION,
+        }),
+      );
+
+      dispatch(
+        notify(
+          {
+            text: `${
+              symbols(pendingTransaction.asset, pendingTransaction.direction).from
+            } to ${
+              symbols(pendingTransaction.asset, pendingTransaction.direction).to
+            } Transaction created`,
+          },
+        ),
+      );
+    })
+    .on('receipt', async (receipt: any) => {
+      console.log('Transaction receipt received', receipt);
+      const outChannelLogFields = [
+        {
+          type: 'address',
+          name: 'source',
+        },
+        {
+          type: 'uint64',
+          name: 'nonce',
+        },
+        {
+          type: 'bytes',
+          name: 'payload',
+        },
+      ];
+      const logIndex = isEther(pendingTransaction.asset) ? 0 : 2;
+      const channelEvent = receipt.events[logIndex];
+      const decodedEvent = web3.eth.abi.decodeLog(
+        outChannelLogFields,
+        channelEvent.raw.data,
+        channelEvent.raw.topics,
+      );
+      const { nonce } = decodedEvent;
+      dispatch(
+        setNonce(transactionHash, nonce),
+      );
+    })
+    .on(
+      'confirmation',
+      (
+        confirmation: number,
+        receipt: any,
+      ) => {
+        // update transaction confirmations
+        dispatch(
+          updateConfirmations(receipt.transactionHash, confirmation),
+        );
+
+        if (confirmation === REQUIRED_ETH_CONFIRMATIONS) {
+          dispatch(notify({
+            text: `Transactions confirmed after ${confirmation} confirmations`,
+            color: 'success',
+          }));
+          console.log('call transactionEvent.off()');
+          // transactionEvent.off('confirmation');
+        }
+      },
+    )
+    .on('error', (error: Error) => {
+      console.log('error locking tokens', error);
+      // TODO: render error message
+      dispatch(setPendingTransaction({
+        ...pendingTransaction,
+        status: TransactionStatus.REJECTED,
+      }));
+
+      dispatch(notify({
+        text: 'Transaction Error',
+        color: 'error',
+      }));
+      throw error;
+    });
 }

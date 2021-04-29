@@ -3,23 +3,18 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
-import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { RootState } from '../reducers';
-import { Transaction, TransactionStatus } from '../reducers/transactions';
-import { notify } from './notifications';
+import { TransactionStatus } from '../reducers/transactions';
 import {
   setPendingTransaction,
-  addTransaction,
-  setNonce,
-  updateConfirmations,
   createTransaction,
   handlePolkadotTransactionEvents,
+  handleEthereumTransactionEvents,
 } from './transactions';
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
 import { setEthAddress } from './net';
 import { Chain, SwapDirection } from '../../types/types';
-import { isEther, symbols } from '../../types/Asset';
 
 /**
  * Locks tokens on Ethereum and mints tokens on Polkadot
@@ -42,137 +37,37 @@ export const lockEthAsset = (
     polkadotAddress,
   } = state.net;
   const {
-    swapDirection,
     selectedAsset,
   } = state.bridge;
-  const asset = selectedAsset!;
 
   try {
-    const defaultAddress = ethAddress;
-    let transactionHash: string;
-
-    if (defaultAddress) {
+    if (ethAddress) {
       if (web3 && ethContract && erc20Contract) {
-        const pendingTransaction: Transaction = {
-          hash: '',
-          confirmations: 0,
-          sender: ethAddress!,
-          receiver: polkadotAddress!,
+        const pendingTransaction = createTransaction(
+          ethAddress!,
+          polkadotAddress!,
           amount,
-          status: TransactionStatus.SUBMITTING_TO_CHAIN,
-          isMinted: false,
-          isBurned: false,
-          chain: Chain.ETHEREUM,
-          asset,
-        };
+          Chain.ETHEREUM,
+          selectedAsset!,
+          SwapDirection.EthereumToPolkadot,
+        );
 
         const transactionEvent: any = EthApi.lock(
           amount,
-          asset,
-            ethAddress!,
-            polkadotAddress!,
-            ethContract,
-            erc20Contract,
+          selectedAsset!,
+          ethAddress!,
+          polkadotAddress!,
+          ethContract,
+          erc20Contract,
         );
         console.log('got transaction event', transactionEvent);
 
-        transactionEvent.on('sending', async (payload: any) => {
-          console.log('Sending Transaction', payload);
-          // create transaction with default values to display in the modal
-          dispatch(setPendingTransaction(pendingTransaction));
-        })
-          .on('sent', async (payload: any) => {
-            console.log('Transaction sent', payload);
-          })
-          .on('transactionHash', async (hash: string) => {
-            console.log('Transaction hash received', hash);
-            transactionHash = hash;
-
-            dispatch(
-              addTransaction({
-                hash,
-                confirmations: 0,
-                sender: ethAddress!,
-                receiver: polkadotAddress!,
-                amount,
-                status: TransactionStatus.WAITING_FOR_CONFIRMATION,
-                isMinted: false,
-                isBurned: false,
-                chain: Chain.ETHEREUM,
-                asset,
-              }),
-            );
-
-            dispatch(
-              notify(
-                {
-                  text: `${symbols(asset, swapDirection).from} to ${symbols(asset, swapDirection).to} Transaction created`,
-                },
-              ),
-            );
-          })
-          .on('receipt', async (receipt: any) => {
-            console.log('Transaction receipt received', receipt);
-            const outChannelLogFields = [
-              {
-                type: 'address',
-                name: 'source',
-              },
-              {
-                type: 'uint64',
-                name: 'nonce',
-              },
-              {
-                type: 'bytes',
-                name: 'payload',
-              },
-            ];
-            const logIndex = isEther(asset) ? 0 : 2;
-            const channelEvent = receipt.events[logIndex];
-            const decodedEvent = web3.eth.abi.decodeLog(
-              outChannelLogFields,
-              channelEvent.raw.data,
-              channelEvent.raw.topics,
-            );
-            const { nonce } = decodedEvent;
-            dispatch(
-              setNonce(transactionHash, nonce),
-            );
-          })
-          .on(
-            'confirmation',
-            (
-              confirmation: number,
-              receipt: any,
-            ) => {
-              // update transaction confirmations
-              dispatch(
-                updateConfirmations(receipt.transactionHash, confirmation),
-              );
-
-              if (confirmation === REQUIRED_ETH_CONFIRMATIONS) {
-                dispatch(notify({
-                  text: `Transactions confirmed after ${confirmation} confirmations`,
-                  color: 'success',
-                }));
-                transactionEvent.off('confirmation');
-              }
-            },
-          )
-          .on('error', (error: Error) => {
-            console.log('error locking tokens', error);
-            // TODO: render error message
-            dispatch(setPendingTransaction({
-              ...pendingTransaction,
-              status: TransactionStatus.REJECTED,
-            }));
-
-            dispatch(notify({
-              text: 'Transaction Error',
-              color: 'error',
-            }));
-            throw error;
-          });
+        handleEthereumTransactionEvents(
+          transactionEvent,
+          pendingTransaction,
+          dispatch,
+          web3,
+        );
       }
     } else {
       throw new Error('Default Address not found');
@@ -212,6 +107,7 @@ export const unlockEthAsset = (amount: string):
         amount,
         Chain.POLKADOT,
         selectedAsset!,
+        SwapDirection.PolkadotToEthereum,
       );
       dispatch(setPendingTransaction(pendingTransaction));
 
