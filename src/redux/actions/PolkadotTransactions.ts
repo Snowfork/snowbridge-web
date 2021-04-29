@@ -11,7 +11,6 @@ import {
   handlePolkadotTransactionErrors,
 } from './transactions';
 import Polkadot from '../../net/polkadot';
-import { SET_POLKADOT_GAS_BALANCE } from '../actionsTypes/transactions';
 import { Chain, SwapDirection } from '../../types/types';
 
 /**
@@ -141,27 +140,5 @@ export const doPolkadotTransfer = (amount: string):
     dispatch(lockPolkadotAsset(amount));
   } else {
     dispatch(unlockPolkadotAsset(amount));
-  }
-};
-
-export interface SetPolkadotGasBalancePayload { type: string, balance: string }
-export const setPolkadotGasBalance = (balance: string): SetPolkadotGasBalancePayload => ({
-  type: SET_POLKADOT_GAS_BALANCE,
-  balance,
-});
-
-export const fetchPolkadotGasBalance = ():
-  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
-  dispatch: ThunkDispatch<{}, {}, AnyAction>,
-  getState,
-): Promise<void> => {
-  const state = getState() as RootState;
-  const { polkadotApi, polkadotAddress } = state.net;
-
-  if (polkadotApi && polkadotAddress) {
-    const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
-    dispatch(setPolkadotGasBalance(balance));
-  } else {
-    throw new Error('Unable to fetch polkadot balance');
   }
 };

@@ -30,8 +30,9 @@ import {
 import { SwapDirection } from '../../types/types';
 import ConfirmTransactionModal from '../ConfirmTransactionModal';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
-import { ethGasBalanceSelector } from '../../redux/reducers/transactions';
-import { tokenBalancesByNetwork, tokenSwapUsdValueSelector } from '../../redux/reducers/bridge';
+import {
+  dotSelector, etherSelector, tokenBalancesByNetwork, tokenSwapUsdValueSelector,
+} from '../../redux/reducers/bridge';
 import FormatAmount from '../FormatAmount';
 import { getNetworkNames } from '../../utils/common';
 import { decimals, symbols } from '../../types/Asset';
@@ -48,10 +49,13 @@ function Bridge(): React.ReactElement {
   // state
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const { showConfirmTransactionModal } = useSelector((state: RootState) => state.bridge);
-  const { polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
-  const ethereumGasBalance = useSelector((state: RootState) => ethGasBalanceSelector(state));
   const tokenBalances = useSelector((state: RootState) => tokenBalancesByNetwork(state));
   const transferUsdValue = useSelector((state: RootState) => tokenSwapUsdValueSelector(state));
+  const dot = useSelector((state: RootState) => dotSelector(state));
+  const ether = useSelector((state: RootState) => etherSelector(state));
+
+  const polkadotGasBalance = dot?.balance?.polkadot;
+  const ethereumGasBalance = ether?.balance?.eth;
 
   const [errors, setErrors] = useState<{balance?: ErrorMessages, gas?: ErrorMessages}>({
     balance: undefined,

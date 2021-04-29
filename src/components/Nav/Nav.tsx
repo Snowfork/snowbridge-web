@@ -9,7 +9,7 @@ import { formatBalance } from '@polkadot/util';
 import * as S from './Nav.style';
 import Modal from '../Modal';
 import TransactionsList from '../TransactionsList';
-import { ethGasBalanceSelector, TransactionsState } from '../../redux/reducers/transactions';
+import { TransactionsState } from '../../redux/reducers/transactions';
 import { RootState } from '../../redux/reducers';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
@@ -17,7 +17,7 @@ import Polkadot from '../../net/polkadot';
 import { updateBalances } from '../../redux/actions/bridge';
 import FormatAmount from '../FormatAmount';
 import { shortenWalletAddress } from '../../utils/common';
-import { fetchPolkadotGasBalance } from '../../redux/actions/PolkadotTransactions';
+import { dotSelector, etherSelector } from '../../redux/reducers/bridge';
 
 type Props = {
   transactions: TransactionsState;
@@ -42,9 +42,12 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     setIsPolkadotAccountSelectorOpen,
   ] = useState<boolean>(false);
 
-  const { polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
   const { polkadotAddress, ethAddress, polkadotApi } = useSelector((state: RootState) => state.net);
-  const ethBalance = useSelector((state: RootState) => ethGasBalanceSelector(state));
+  const dot = useSelector((state: RootState) => dotSelector(state));
+  const ether = useSelector((state: RootState) => etherSelector(state));
+
+  const polkadotGasBalance = dot?.balance?.polkadot;
+  const ethGasBalance = ether?.balance?.eth;
 
   // fetch polkadot accountsfor the account selector on mount
   useEffect(() => {
@@ -129,7 +132,6 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     dispatch(setPolkadotAddress(address));
     // fetch balance for updated account
     dispatch(updateBalances());
-    dispatch(fetchPolkadotGasBalance());
   };
 
   // use polkadot utils to format amount
@@ -146,7 +148,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
           <S.DisplayTitle>Ethereum Wallet</S.DisplayTitle>
           <S.DisplayContainer>
             <S.Amount>
-              <FormatAmount amount={ethBalance} decimals={18} />
+              <FormatAmount amount={ethGasBalance} decimals={18} />
               {' '}
               ETH
             </S.Amount>

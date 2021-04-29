@@ -21,6 +21,7 @@ import { Asset, createAsset, isErc20 } from '../../types/Asset';
 import Erc20TokenList from '../../assets/tokens/Erc20Tokens.json';
 import DotTokenList from '../../assets/tokens/DotTokens';
 import EthTokenList from '../../assets/tokens/EthTokens.json';
+import { dotSelector, etherSelector } from '../reducers/bridge';
 
 export interface SetTokenListPayload { type: string, list: Asset[] }
 export const _setTokenList = (list: Asset[]): SetTokenListPayload => ({
@@ -99,8 +100,49 @@ export const updateTokenData = (asset: Asset):
   }
 };
 
+// update gas balances
+export const updateGasBalances = ():
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
+): Promise<void> => {
+  const state = getState() as RootState;
+
+  // update polkadot gas balance
+  const dot = dotSelector(state);
+  const { polkadotApi, polkadotAddress } = state.net;
+
+  if (dot && polkadotApi && polkadotAddress) {
+    const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
+    const newDotData = {
+      ...dot,
+      balance: {
+        ...dot.balance,
+        polkadot: balance,
+      },
+    };
+    dispatch(updateTokenData(newDotData as Asset));
+  }
+
+  // update ethereum gas balance
+  const ether = etherSelector(state);
+  const { web3, ethAddress } = state.net;
+  if (ether && web3 && ethAddress) {
+    const etherBalance = await EthApi.getTokenBalance(web3, ethAddress, ether);
+    const newEtherData = {
+      ...ether,
+      balance: {
+        ...ether.balance,
+        eth: etherBalance,
+      },
+    };
+    dispatch(updateTokenData(newEtherData as Asset));
+  }
+};
+
 // update balances for selected asset
-// updates values for selected asset as well as the token list
+// updates values for selected asset as well as
+// the matching asset in the asset list
+// this will also update the gas balances
 export const updateBalances = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
@@ -114,22 +156,26 @@ export const updateBalances = ():
     polkadotAddress,
   } = state.net;
 
-  // fetch updated balances
-  const ethBalance = await EthApi.getTokenBalance(web3!, ethAddress!, selectedAsset!);
-  const polkadotBalance = await Polkadot.getEthBalance(
+  if (selectedAsset) {
+    // fetch updated balances
+    const ethBalance = await EthApi.getTokenBalance(web3!, ethAddress!, selectedAsset);
+    const polkadotBalance = await Polkadot.getAssetBalance(
       polkadotApi!,
       polkadotAddress!,
-      selectedAsset!,
-  );
+      selectedAsset,
+    );
 
-  const updatedTokenData = {
-    ...selectedAsset,
-    balance: {
-      eth: ethBalance,
-      polkadot: polkadotBalance,
-    },
-  };
-  dispatch(updateTokenData(updatedTokenData as Asset));
+    const updatedTokenData = {
+      ...selectedAsset,
+      balance: {
+        eth: ethBalance,
+        polkadot: polkadotBalance,
+      },
+    };
+    dispatch(updateTokenData(updatedTokenData as Asset));
+  }
+
+  dispatch(updateGasBalances());
 };
 
 // use the token list to instantiate contract instances
@@ -216,7 +262,7 @@ export const initializeTokens = ():
 
       // fetch token balances on substrate
       try {
-        const polkadotBalance = await Polkadot.getEthBalance(
+        const polkadotBalance = await Polkadot.getAssetBalance(
             polkadotApi!,
             polkadotAddress!,
             asset,

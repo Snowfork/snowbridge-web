@@ -4,6 +4,9 @@ import {
   web3Enable,
   web3FromSource,
 } from '@polkadot/extension-dapp';
+import {
+  InjectedAccountWithMeta,
+} from '@polkadot/extension-inject/types';
 import { Dispatch } from 'redux';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
@@ -16,24 +19,39 @@ import {
 import { POLKADOT_API_PROVIDER } from '../config';
 import Api, { ss58ToU8 } from './api';
 import { Asset, isDot, isErc20 } from '../types/Asset';
-import { fetchPolkadotGasBalance } from '../redux/actions/PolkadotTransactions';
+import { updateBalances } from '../redux/actions/bridge';
 
 export default class Polkadot extends Api {
   // Get all polkadot addresses
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  public static async getAddresses() {
+  public static async getAddresses(): Promise<InjectedAccountWithMeta[]> {
     const allAccounts = await web3Accounts();
     return allAccounts;
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  public static async getDefaultAddress() {
+  public static async getDefaultAddress(): Promise<InjectedAccountWithMeta> {
     const allAccounts = await web3Accounts();
 
     if (allAccounts[0]) {
       return allAccounts[0];
     }
-    return null;
+
+    throw new Error('No default polkadot account');
+  }
+
+  public static async getAccount(polkadotAddress: string): Promise<InjectedAccountWithMeta> {
+    const addresses = await Polkadot.getAddresses();
+    const account = addresses
+      .filter(
+        ({ address }) => address === polkadotAddress,
+      );
+
+    if (account[0]) {
+      return account[0];
+    }
+
+    throw new Error('No valid account for that address');
   }
 
   public static async getGasCurrencyBalance(
@@ -51,8 +69,8 @@ export default class Polkadot extends Api {
     }
   }
 
-  // Query account balance for bridged assets (ETH and ERC20)
-  public static async getEthBalance(
+  // Query account balance for specified asset
+  public static async getAssetBalance(
     polkadotApi: ApiPromise,
     polkadotAddress: string,
     asset: Asset,
@@ -182,7 +200,8 @@ export default class Polkadot extends Api {
       }
 
       // fetch polkadot account details
-      dispatch(fetchPolkadotGasBalance());
+      dispatch(updateBalances());
+
       // Here we subscribe to the parachain events
       dispatch(subscribeEvents());
     } catch (err) {
@@ -191,20 +210,6 @@ export default class Polkadot extends Api {
       }
       throw new Error('Poldotjs API endpoint not Connected');
     }
-  }
-
-  public static async getAccount(polkadotAddress: string): Promise<any> {
-    const addresses = await Polkadot.getAddresses();
-    const account = addresses
-      .filter(
-        ({ address }) => address === polkadotAddress,
-      );
-
-    if (account[0]) {
-      return account[0];
-    }
-
-    return null;
   }
 
   public static async lockDot(

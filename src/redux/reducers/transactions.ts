@@ -9,7 +9,6 @@ import {
   POLKA_ETH_BURNED,
   SET_PENDING_TRANSACTION,
   ETH_MESSAGE_DISPATCHED_EVENT,
-  SET_POLKADOT_GAS_BALANCE,
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
@@ -23,9 +22,7 @@ import {
   SetNoncePayload,
 } from '../actions/transactions';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
-import { RootState } from '.';
-import { Asset, isEther } from '../../types/Asset';
-import { SetPolkadotGasBalancePayload } from '../actions/PolkadotTransactions';
+import { Asset } from '../../types/Asset';
 import { Chain, SwapDirection } from '../../types/types';
 
 export enum TransactionStatus {
@@ -82,15 +79,11 @@ export interface PolkaEthBurnedEvent {
 export interface TransactionsState {
   transactions: Transaction[],
   pendingTransaction?: Transaction,
-  // native tokens
-  // TODO: remove from state and replace with a selector
-  polkadotGasBalance: string
 }
 
 const initialState: TransactionsState = {
   transactions: [],
   pendingTransaction: undefined,
-  polkadotGasBalance: '0',
 };
 
 function transactionsReducer(state: TransactionsState = initialState, action: any)
@@ -214,26 +207,9 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         };
       })(action);
     }
-
-    case SET_POLKADOT_GAS_BALANCE: {
-      return ((action: SetPolkadotGasBalancePayload) => (
-        { ...state, polkadotGasBalance: action.balance }
-      ))(action);
-    }
     default:
       return state;
   }
 }
 
 export default transactionsReducer;
-
-// selectors
-export const ethGasBalanceSelector = (state: RootState): string => (
-  state
-    .bridge
-    .assets
-    ?.filter(
-      (asset: Asset) => isEther(asset),
-    )[0]
-    ?.balance.eth ?? '0'
-);

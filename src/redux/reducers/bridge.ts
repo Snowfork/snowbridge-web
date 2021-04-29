@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { RootState } from '.';
-import { Asset } from '../../types/Asset';
+import { Asset, isDot, isEther } from '../../types/Asset';
 import { SwapDirection } from '../../types/types';
 import {
   SetDepositAmountPayload,
@@ -92,6 +92,17 @@ export const tokenBalancesByNetwork = (state: RootState):
   return result;
 };
 
-export const tokenSwapUsdValueSelector = (state: RootState): string => new BigNumber(state.bridge.selectedAsset?.prices.usd ?? 0)
+// seletors
+// asset value in usd
+export const tokenSwapUsdValueSelector = (state: RootState)
+: string => new BigNumber(state.bridge.selectedAsset?.prices.usd ?? 0)
   .multipliedBy(state.bridge.depositAmount)
   .toString();
+
+// return DOT asset from asset list
+export const dotSelector = (state: RootState)
+: Asset => state.bridge.assets.filter((asset) => isDot(asset))[0];
+
+// return Ether asset from asset list
+export const etherSelector = (state: RootState)
+: Asset => state.bridge.assets.filter((asset) => isEther(asset))[0];
