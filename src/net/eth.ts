@@ -163,11 +163,7 @@ export default class Eth extends Api {
               ethAddress,
             );
 
-          if (currentBalance) {
-            return currentBalance.toString();
-          }
-
-          throw new Error('Balance not found');
+          return currentBalance.toString() ?? '0';
         }
 
         throw new Error('Eth Address not found');
@@ -176,7 +172,7 @@ export default class Eth extends Api {
       }
     } catch (err) {
       console.log(err);
-      throw new Error('Error reading balance');
+      throw err;
     }
   }
 
