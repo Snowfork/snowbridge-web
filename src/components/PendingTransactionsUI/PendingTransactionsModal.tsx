@@ -7,8 +7,7 @@ import {
 import Modal from '../Modal';
 import LoadingSpinner from '../LoadingSpinner';
 import { RootState } from '../../redux/reducers';
-import FormatAmount from '../FormatAmount';
-import { symbols } from '../../types/Asset';
+import { decimals, symbols } from '../../types/Asset';
 
 type Props = {
     isOpen: boolean,
@@ -37,10 +36,7 @@ const PendingTransactionsModal = ({ isOpen, closeModal }: Props): React.ReactEle
                     <h4>
                       Bridging
                       {' '}
-                      <FormatAmount
-                        amount={transactions.pendingTransaction?.amount}
-                        decimals={transactions.pendingTransaction.asset.decimals}
-                      />
+                      {bridge.depositAmount}
                       {' '}
                       {
                       symbols(
@@ -48,14 +44,10 @@ const PendingTransactionsModal = ({ isOpen, closeModal }: Props): React.ReactEle
                         bridge.swapDirection,
                       ).from
                       }
-
                       {' '}
                       to
                       {' '}
-                      <FormatAmount
-                        amount={transactions.pendingTransaction?.amount}
-                        decimals={transactions.pendingTransaction.asset.decimals}
-                      />
+                      {bridge.depositAmount}
                       {' '}
                       {
                       symbols(
