@@ -74,6 +74,10 @@ function polkadotSymbols(
   asset: Asset,
   swapDirection: SwapDirection,
 ):{to: string, from: string} {
+  if (!asset) {
+    return { to: '', from: '' };
+  }
+
   if (swapDirection === SwapDirection.PolkadotToEthereum) {
     return {
       to: asset.wrappedSymbol,

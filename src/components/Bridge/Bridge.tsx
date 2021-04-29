@@ -256,7 +256,7 @@ function Bridge(): React.ReactElement {
                   }
                   {' '}
                   {
-                    symbols(selectedAsset!, swapDirection).from
+                    selectedAsset && symbols(selectedAsset, swapDirection).from
                   }
                 </Typography>
               </Grid>
@@ -295,7 +295,7 @@ function Bridge(): React.ReactElement {
                   }
                   {' '}
                   {
-                    symbols(selectedAsset!, swapDirection).to
+                    selectedAsset && symbols(selectedAsset, swapDirection).to
                   }
                 </Typography>
               </Grid>
