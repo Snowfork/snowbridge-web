@@ -1,11 +1,9 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import * as S from './TransactionItem.style';
 import { Transaction } from '../../../redux/reducers/transactions';
 import PendingTransactionsUI from '../../PendingTransactionsUI';
 import FormatAmount from '../../FormatAmount';
-import { RootState } from '../../../redux/reducers';
-import { symbols } from '../../../types/Asset';
+import { decimals, symbols } from '../../../types/Asset';
 
 type Props = {
   transaction: Transaction;
@@ -14,8 +12,7 @@ type Props = {
 function TransactionItem({
   transaction,
 }: Props): React.ReactElement<Props> {
-  const { swapDirection } = useSelector((state: RootState) => state.bridge);
-
+  const { from } = decimals(transaction.asset, transaction.direction);
   return (
     <S.Wrapper>
       <S.Details>
@@ -23,19 +20,19 @@ function TransactionItem({
         {' '}
         <FormatAmount
           amount={transaction.amount}
-          decimals={transaction.asset.decimals}
+          decimals={from}
         />
         {' '}
-        {symbols(transaction.asset, swapDirection).from}
+        {symbols(transaction.asset, transaction.direction).from}
         {' '}
         to
         {' '}
         <FormatAmount
           amount={transaction.amount}
-          decimals={transaction.asset.decimals}
+          decimals={from}
         />
         {' '}
-        {symbols(transaction.asset, swapDirection).to}
+        {symbols(transaction.asset, transaction.direction).to}
       </S.Details>
       {transaction.status}
       <PendingTransactionsUI transaction={transaction} />
