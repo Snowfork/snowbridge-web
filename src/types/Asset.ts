@@ -123,6 +123,9 @@ function ethDecimals(
 // returns the decimals for each corresponding chain based on the swap direction
 export function decimals(asset: Asset, swapDirection: SwapDirection):
 {to: number, from: number} {
+  if (!asset) {
+    return { to: 0, from: 0 };
+  }
   let result = ethDecimals(asset, swapDirection);
   if (isDot(asset)) {
     result = polkadotDecimals(asset, swapDirection);
