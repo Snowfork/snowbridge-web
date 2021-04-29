@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import CoinGecko from 'coingecko-api';
 import { Chain, SwapDirection, Token } from '../../types/types';
 import { RootState } from '../reducers';
 import * as ERC20 from '../../contracts/ERC20.json';
 import * as WrappedToken from '../../contracts/WrappedToken.json';
+import { getAssetPrice } from '../../net/api';
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
 import {
@@ -16,7 +16,6 @@ import {
   SET_SHOW_CONFIRM_TRANSACTION_MODAL,
 } from '../actionsTypes/bridge';
 import { fetchERC20Allowance } from './ERC20Transactions';
-import { PRICE_CURRENCIES } from '../../config';
 import { Asset, createAsset, isErc20 } from '../../types/Asset';
 import Erc20TokenList from '../../assets/tokens/Erc20Tokens.json';
 import DotTokenList from '../../assets/tokens/DotTokens';
@@ -186,9 +185,6 @@ export const initializeTokens = ():
 ): Promise<void> => {
   const state = getState() as RootState;
   const { ethAddress, polkadotApi, polkadotAddress } = state.net;
-  const CoinGeckoClient = new CoinGecko();
-  // the currencies used to query the coin gecko api
-  const priceCurrencies = PRICE_CURRENCIES;
 
   const { tokens } = Erc20TokenList;
 
@@ -287,35 +283,16 @@ export const initializeTokens = ():
         console.log('failed reading eth balance', e);
       }
 
-      // TODO: move to the API
-      // fetch token price from coin gecko
       try {
-        // store the asset key name to read the result later
-        let assetKey = 'ethereum';
-        // price request for eth
-        let priceRequestPromise = CoinGeckoClient.simple.price({
-          ids: assetKey,
-          vs_currencies: priceCurrencies,
-        });
-          // change price request for erc20
-        if (isErc20(asset)) {
-          assetKey = asset.address;
-          priceRequestPromise = CoinGeckoClient.simple.fetchTokenPrice({
-            contract_addresses: assetKey,
-            vs_currencies: priceCurrencies,
-          });
-        }
+      // fetch token price from coin gecko
+        const priceResult = await getAssetPrice(asset);
 
-        // do pricing request
-        const data = await priceRequestPromise;
-        if (data.success) {
-          // append to prices
-          let prices = { ...newTokenData.prices };
-          prices = { ...prices, ...data.data[assetKey] };
-          newTokenData.prices = prices;
-          // update price in state
-          dispatch(updateTokenData(newTokenData));
-        }
+        let prices = { ...newTokenData.prices };
+        prices = { ...prices, ...priceResult };
+
+        // update price in state
+        newTokenData.prices = prices;
+        dispatch(updateTokenData(newTokenData));
       } catch (e) {
         console.log('error fetching price', e);
       }
