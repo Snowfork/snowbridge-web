@@ -66,6 +66,7 @@ function Bridge(): React.ReactElement {
 
   const theme = useTheme();
   const dispatch = useDispatch();
+  const decimalMap = decimals(selectedAsset!, swapDirection);
 
   // side effects
   // validate deposit amount on update
@@ -175,7 +176,7 @@ function Bridge(): React.ReactElement {
   const handleMaxClicked = () => {
     // format ammount for display
     const amount = tokenBalances.sourceNetwork;
-    const depositAmountFormatted = utils.formatUnits(amount, selectedAsset?.decimals);
+    const depositAmountFormatted = utils.formatUnits(amount, decimalMap.from);
 
     dispatch(setDepositAmount(depositAmountFormatted));
   };
@@ -199,8 +200,6 @@ function Bridge(): React.ReactElement {
   const isDepositDisabled = !!errorText
   || Number.parseFloat(depositAmount) <= 0
   || Number.isNaN(Number.parseFloat(transferUsdValue));
-
-  const decimalMap = decimals(selectedAsset!, swapDirection);
 
   return (
 
