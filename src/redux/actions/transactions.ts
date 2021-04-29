@@ -352,3 +352,36 @@ export function handleEthereumTransactionEvents(
       throw error;
     });
 }
+
+// shared error handling logic for EthTransactions.unlock and PolkadotTransactions.lock
+export function handlePolkadotTransactionErrors(
+  error: any,
+  pendingTransaction: Transaction,
+  dispatch: Dispatch<any>,
+): void {
+  console.log(':( transaction failed', error);
+  if (error.toString() === 'Error: Cancelled') {
+    dispatch(
+      setPendingTransaction({
+        ...pendingTransaction,
+        status: TransactionStatus.REJECTED,
+        error: 'The transaction was cancelled',
+      }),
+    );
+  } else if (error.message.includes('1014: Priority is too low')) {
+    dispatch(
+      setPendingTransaction({
+        ...pendingTransaction,
+        status: TransactionStatus.REJECTED,
+        error: 'Please wait for the current pending transaction to complete',
+      }),
+    );
+  } else {
+    // display error message in modal
+    setPendingTransaction({
+      ...pendingTransaction,
+      status: TransactionStatus.REJECTED,
+      error: error.message,
+    });
+  }
+}

@@ -4,12 +4,12 @@ import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
 import { RootState } from '../reducers';
-import { TransactionStatus } from '../reducers/transactions';
 import {
   setPendingTransaction,
   createTransaction,
   handlePolkadotTransactionEvents,
   handleEthereumTransactionEvents,
+  handlePolkadotTransactionErrors,
 } from './transactions';
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
@@ -129,31 +129,11 @@ export const unlockEthAsset = (amount: string):
         },
       )
         .catch((error: any) => {
-          console.log(':( transaction failed', error);
-          if (error.toString() === 'Error: Cancelled') {
-            dispatch(
-              setPendingTransaction({
-                ...pendingTransaction,
-                status: TransactionStatus.REJECTED,
-                error: 'The transaction was cancelled',
-              }),
-            );
-          } else if (error.message.includes('1014: Priority is too low')) {
-            dispatch(
-              setPendingTransaction({
-                ...pendingTransaction,
-                status: TransactionStatus.REJECTED,
-                error: 'Please wait for the current pending transaction to complete',
-              }),
-            );
-          } else {
-            // display error message in modal
-            setPendingTransaction({
-              ...pendingTransaction,
-              status: TransactionStatus.REJECTED,
-              error: error.message,
-            });
-          }
+          handlePolkadotTransactionErrors(
+            error,
+            pendingTransaction,
+            dispatch,
+          );
         });
     } else {
       throw new Error('Default Polkadot account not found');

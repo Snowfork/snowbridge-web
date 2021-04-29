@@ -3,12 +3,12 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { RootState } from '../reducers';
-import { TransactionStatus } from '../reducers/transactions';
 import {
   setPendingTransaction,
   createTransaction,
   handlePolkadotTransactionEvents,
   handleEthereumTransactionEvents,
+  handlePolkadotTransactionErrors,
 } from './transactions';
 import Polkadot from '../../net/polkadot';
 import { SET_POLKADOT_GAS_BALANCE } from '../actionsTypes/transactions';
@@ -65,13 +65,12 @@ export const lockPolkadotAsset = (
         );
       },
     )
-      .catch((err) => {
-        // display error message in modal
-        setPendingTransaction({
-          ...pendingTransaction,
-          status: TransactionStatus.REJECTED,
-          error: err.message,
-        });
+      .catch((error: any) => {
+        handlePolkadotTransactionErrors(
+          error,
+          pendingTransaction,
+          dispatch,
+        );
       });
   } catch (err) {
     // Todo: Error Sending DOT
@@ -107,6 +106,7 @@ export const unlockPolkadotAsset = (
       state.bridge.selectedAsset!,
       state.bridge.swapDirection!,
     );
+    dispatch(setPendingTransaction(pendingTransaction));
 
     const transactionEvent = Polkadot.unlockDot(
       appDotContract!,
