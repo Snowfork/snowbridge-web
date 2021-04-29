@@ -14,18 +14,22 @@ import {
 // Local
 import { useDispatch, useSelector } from 'react-redux';
 import { utils } from 'ethers';
+import { BigNumber } from 'bignumber.js';
 import { RootState } from '../../redux/reducers';
 import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
 import LoadingSpinner from '../LoadingSpinner';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
-import { isErc20 } from '../../types/Asset';
+import { decimals, isErc20 } from '../../types/Asset';
+import { doTransfer } from '../../redux/actions/transactions';
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
 function LockToken(): React.ReactElement {
   const { allowance } = useSelector((state: RootState) => state.ERC20Transactions);
-  const { selectedAsset, depositAmount } = useSelector((state: RootState) => state.bridge);
+  const { selectedAsset, depositAmount, swapDirection } = useSelector(
+    (state: RootState) => state.bridge,
+  );
   const [isApprovalPending, setIsApprovalPending] = useState(false);
 
   const dispatch = useDispatch();
@@ -51,10 +55,9 @@ function LockToken(): React.ReactElement {
   // lock assets
   const handleDepositToken = async () => {
     try {
-      // TODO:
-      console.log('this does nothing...');
+      dispatch(doTransfer());
     } catch (e) {
-      console.log('Failed to lock eth asset', e);
+      console.log('Failed to transfer asset', e);
     } finally {
       dispatch(setShowConfirmTransactionModal(false));
     }
@@ -64,10 +67,7 @@ function LockToken(): React.ReactElement {
   const handleTokenUnlock = async () => {
     try {
       setIsApprovalPending(true);
-      // format deposit amount into unit value
-      const decimals = selectedAsset?.decimals;
-      const unitValue = utils.parseUnits(depositAmount, decimals).toString();
-      await dispatch(approveERC20(unitValue));
+      await dispatch(approveERC20());
     } catch (e) {
       console.log('error approving!');
     } finally {
@@ -75,30 +75,35 @@ function LockToken(): React.ReactElement {
     }
   };
 
+  const currentAllowanceFormatted = new BigNumber(currentTokenAllowance.toString());
+  const depositAmountFormatted = new BigNumber(
+    utils.parseUnits(
+      depositAmount.toString(),
+      decimals(selectedAsset!, swapDirection).from,
+    ).toString(),
+  );
+
+  // we don't need approval to burn snowDot
+  // we only need approval for erc20
+  const requiresApproval = isErc20(selectedAsset!)
+  && depositAmountFormatted.isGreaterThan(currentAllowanceFormatted);
+
   const DepositButton = () => {
-    // we don't need approval to burn snowDot
-    // if (selectedAsset?.isErc20 && !selectedAsset?.isDot) {
-    // TODO: test - this should work because isErc20 checks the chain... so DOT would be false
-    if (isErc20(selectedAsset!)) {
-      if (
-        Number.parseFloat(currentTokenAllowance.toString())
-        < Number.parseFloat(depositAmount.toString())
-      ) {
-        return (
-          <Button
-            variant="contained"
-            size="large"
-            color="primary"
-            onClick={handleTokenUnlock}
-            disabled={isApprovalPending}
-          >
-            Unlock Token
-            {
+    if (requiresApproval) {
+      return (
+        <Button
+          variant="contained"
+          size="large"
+          color="primary"
+          onClick={handleTokenUnlock}
+          disabled={isApprovalPending}
+        >
+          Unlock Token
+          {
               isApprovalPending && <LoadingSpinner spinnerWidth="40px" spinnerHeight="40px" />
             }
-          </Button>
-        );
-      }
+        </Button>
+      );
     }
 
     return (

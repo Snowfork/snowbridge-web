@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
+import { utils } from 'ethers';
 import {
   SET_TOKEN_ALLOWANCE,
 } from '../actionsTypes/ERC20Transactions';
@@ -35,21 +36,25 @@ export const fetchERC20Allowance = ():
 };
 
 // grant spender permission to spend owner ERC20 tokens
-export const approveERC20 = (amount: string):
+export const approveERC20 = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
 ): Promise<void> => {
   const state = getState() as RootState;
   const userAddress = state.net.ethAddress!;
   const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
-  const { selectedAsset } = state.bridge;
+  const { selectedAsset, depositAmount } = state.bridge;
+
+  // format deposit amount into unit value
+  const decimals = selectedAsset?.decimals;
+  const unitValue = utils.parseUnits(depositAmount, decimals).toString();
 
   try {
     await ERC20Api.approveERC20(
       selectedAsset!.contract!,
       erc20BridgeContractAddress,
       userAddress,
-      amount,
+      unitValue,
     );
 
     dispatch(fetchERC20Allowance());

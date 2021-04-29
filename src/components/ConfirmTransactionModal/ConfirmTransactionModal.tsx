@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ReactModal from 'react-modal';
 import {
-  Button,
   Grid,
   Paper,
   Typography,
@@ -12,7 +11,7 @@ import { getNetworkNames, shortenWalletAddress } from '../../utils/common';
 import { RootState } from '../../redux/reducers';
 import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
-import { doTransfer } from '../../redux/actions/transactions';
+import LockToken from './LockToken';
 
 const customStyles = {
   overlay: {},
@@ -63,16 +62,6 @@ function ConfirmTransactionModal({
     from: swapDirection === SwapDirection.EthereumToPolkadot
       ? ethAddress
       : polkadotAddress,
-  };
-
-  const handleTransferClicked = async () => {
-    try {
-      dispatch(doTransfer());
-    } catch (e) {
-      console.log('handle transfer got error', e);
-    } finally {
-      closeModal();
-    }
   };
 
   return (
@@ -134,15 +123,7 @@ function ConfirmTransactionModal({
 
             </Grid>
 
-            <Button
-              variant="contained"
-              size="large"
-              color="primary"
-              onClick={handleTransferClicked}
-            >
-              Transfer
-
-            </Button>
+            <LockToken />
           </Grid>
 
         </Paper>

@@ -146,7 +146,6 @@ export default class Eth extends Api {
     ethAddress: string,
     asset: Asset,
   ): Promise<string> {
-    // TODO: move these checks to the API
     try {
       if (conn) {
         if (ethAddress) {
