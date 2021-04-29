@@ -10,7 +10,7 @@ import { utils } from 'ethers';
 import * as S from './SelectTokenModal.style';
 import { RootState } from '../../redux/reducers';
 import { updateSelectedAsset } from '../../redux/actions/bridge';
-import { Asset } from '../../types/Asset';
+import { Asset, decimals, symbols } from '../../types/Asset';
 import { SwapDirection } from '../../types/types';
 
 const customStyles = {
@@ -61,10 +61,12 @@ function SelectTokenModal({
 
   // returns display formatted balance for source chain
   function getTokenBalance(asset: Asset): string {
+    const { from } = decimals(asset, swapDirection);
+
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      return utils.formatUnits(asset.balance.eth, asset.decimals);
+      return utils.formatUnits(asset.balance.eth, from);
     }
-    return utils.formatUnits(asset.balance.polkadot, asset.decimals);
+    return utils.formatUnits(asset.balance.polkadot, from);
   }
 
   return (
@@ -92,7 +94,7 @@ function SelectTokenModal({
                       <Button onClick={() => handleTokenSelection(asset)}>
                         <img src={asset.logoUri} alt={`${asset.name} icon`} />
                         <div>
-                          <Typography variant="caption">{asset.symbol}</Typography>
+                          <Typography variant="caption">{symbols(asset, swapDirection).from}</Typography>
                           <Typography>{ getTokenBalance(asset)}</Typography>
                         </div>
                       </Button>
