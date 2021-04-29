@@ -31,8 +31,8 @@ export const _setSelectedAsset = (asset: TokenData)
   asset,
 });
 
-export interface SetDepositAmountPayload { type: string, amount: number }
-export const setDepositAmount = (amount: number): SetDepositAmountPayload => ({
+export interface SetDepositAmountPayload { type: string, amount: string }
+export const setDepositAmount = (amount: string): SetDepositAmountPayload => ({
   type: SET_DEPOSIT_AMOUNT,
   amount,
 });
@@ -101,7 +101,10 @@ export const updateBalances = ():
   const state = getState() as RootState;
   const { selectedAsset } = state.bridge;
   const {
-    web3, ethAddress, polkadotApi, polkadotAddress,
+    web3,
+    ethAddress,
+    polkadotApi,
+    polkadotAddress,
   } = state.net;
 
   // fetch updated balances

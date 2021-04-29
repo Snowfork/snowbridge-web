@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import Web3 from 'web3';
+import detectEthereumProvider from '@metamask/detect-provider';
 import Api from './api';
 
 // Import Contracts
@@ -32,84 +33,64 @@ import { TokenData } from '../redux/reducers/bridge';
 import * as ERC20Api from '../utils/ERC20Api';
 import { updateBalances } from '../redux/actions/bridge';
 
-// window wrapper
-type MyWindow = typeof window & {
-  ethereum: any;
-  web3: Web3;
-};
 export default class Eth extends Api {
   // Web3 API connector
   public static async connect(dispatch: any): Promise<void> {
-    const locWindow = window as MyWindow;
-    let web3: Web3;
-
-    const connectionComplete = async (web3: Web3) => {
+    const connectionComplete = async (provider: any) => {
+      const web3 = new Web3(provider);
       dispatch(setWeb3(web3));
-      // dispatch(setMetamaskFound());
+
+      await provider.request({ method: 'eth_requestAccounts' });
+
       web3.eth.net
         .getNetworkType()
         .then((network: string) => dispatch(setMetamaskNetwork(network)));
 
-      // handle metamask account changes
-      locWindow.ethereum.on('accountsChanged', async (accounts: string[]) => {
+      // Set contracts
+      const ethContract = new web3.eth.Contract(
+          ETHApp.abi as any,
+          APP_ETH_CONTRACT_ADDRESS,
+      );
+      dispatch(setEthContract(ethContract));
+
+      const erc20contract = new web3.eth.Contract(
+          ERC20App.abi as any,
+          APP_ERC20_CONTRACT_ADDRESS,
+      );
+      dispatch(setERC20Contract(erc20contract));
+
+      const incentivizedChannelContract = new web3.eth.Contract(
+          IncentivizedInboundChannel.abi as any,
+          INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+      );
+      dispatch(setIncentivizedChannelContract(incentivizedChannelContract));
+
+      const basicChannelContract = new web3.eth.Contract(
+          BasicInboundChannel.abi as any,
+          BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+      );
+      dispatch(setBasicChannelContract(basicChannelContract));
+
+      // fetch addresses
+      await dispatch(fetchEthAddress());
+
+      console.log('- Eth connected');
+    };
+
+    const provider = await detectEthereumProvider() as any;
+
+    if (provider) {
+      await connectionComplete(provider);
+
+      provider.on('accountsChanged', async (accounts: string[]) => {
         if (accounts[0]) {
           await dispatch(setEthAddress(accounts[0]));
           dispatch(updateBalances());
         }
       });
-
-      if (web3) {
-        // Set contracts
-        const ethContract = new web3.eth.Contract(
-          ETHApp.abi as any,
-          APP_ETH_CONTRACT_ADDRESS,
-        );
-        dispatch(setEthContract(ethContract));
-
-        const erc20contract = new web3.eth.Contract(
-          ERC20App.abi as any,
-          APP_ERC20_CONTRACT_ADDRESS,
-        );
-        dispatch(setERC20Contract(erc20contract));
-
-        const incentivizedChannelContract = new web3.eth.Contract(
-          IncentivizedInboundChannel.abi as any,
-          INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-        );
-        dispatch(setIncentivizedChannelContract(incentivizedChannelContract));
-
-        const basicChannelContract = new web3.eth.Contract(
-          BasicInboundChannel.abi as any,
-          BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-        );
-        dispatch(setBasicChannelContract(basicChannelContract));
-
-        // fetch addresses
-        await dispatch(fetchEthAddress());
-
-        console.log('- Eth connected');
-      }
-    };
-
-    if (locWindow.ethereum) {
-      web3 = new Web3(locWindow.ethereum);
-      connectionComplete(web3);
-
-      try {
-        // Request account access if needed
-        await locWindow.ethereum.enable();
-      } catch (error) {
-        console.error(error);
-      }
-    } else if (locWindow.web3) {
-      // Legacy dapp browsers...
-      web3 = locWindow.web3;
-      connectionComplete(web3);
-
-      console.log('- Injected web3 detected');
     } else {
-      // Fallback to localhost; use dev console port by default...
       dispatch(setMetamaskMissing());
+      throw new Error('Metamask not found');
     }
   }
 

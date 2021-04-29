@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js';
+import { RootState } from '.';
 import { Token, SwapDirection } from '../../types/types';
 import {
   SetDepositAmountPayload,
@@ -29,7 +31,7 @@ export interface TokenData {
 export interface BridgeState {
   tokens?: TokenData[],
   selectedAsset?: TokenData,
-  depositAmount: number,
+  depositAmount: string,
   swapDirection: SwapDirection,
   showConfirmTransactionModal: boolean
 }
@@ -37,7 +39,7 @@ export interface BridgeState {
 const initialState: BridgeState = {
   tokens: [],
   selectedAsset: undefined,
-  depositAmount: 0.0,
+  depositAmount: '0.0',
   swapDirection: SwapDirection.EthereumToPolkadot,
   showConfirmTransactionModal: false,
 };
@@ -81,3 +83,26 @@ function bridgeReducer(state: BridgeState = initialState, action: any)
 }
 
 export default bridgeReducer;
+
+// selectors
+
+export const tokenBalancesByNetwork = (state: RootState):
+ {sourceNetwork: string, destinationNetwork: string} => {
+  let result = {
+    sourceNetwork: state.bridge.selectedAsset?.balance.eth ?? '0',
+    destinationNetwork: state.bridge.selectedAsset?.balance.polkadot ?? '0',
+  };
+
+  if (state.bridge.swapDirection === SwapDirection.PolkadotToEthereum) {
+    result = {
+      sourceNetwork: state.bridge.selectedAsset?.balance.polkadot ?? '0',
+      destinationNetwork: state.bridge.selectedAsset?.balance.eth ?? '0',
+    };
+  }
+
+  return result;
+};
+
+export const tokenSwapUsdValue = (state: RootState): string => new BigNumber(state.bridge.selectedAsset?.prices.usd ?? 0)
+  .multipliedBy(state.bridge.depositAmount)
+  .toString();

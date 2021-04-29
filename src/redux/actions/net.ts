@@ -110,6 +110,7 @@ export const subscribeEvents = ():
         // const dispatchSuccessNotification = (text: string) => this.dispatch(
         // notify({ text, color: "success" })
         // );
+        console.log('parachain message dispatched', nonce);
         dispatch(parachainMessageDispatched(nonce));
       });
     });

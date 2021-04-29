@@ -74,10 +74,8 @@ export default class Polkadot extends Api {
         throw new Error('Default account not found');
       }
       throw new Error('PolkadotApi not found');
-
-      // return null;
     } catch (err) {
-      console.log(err);
+      console.log('caught get eth balance', err);
       throw err;
     }
   }

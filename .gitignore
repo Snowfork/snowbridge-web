@@ -6,3 +6,4 @@ build
 .env*
 !.env-template
 yarn-error.log
+.vscode

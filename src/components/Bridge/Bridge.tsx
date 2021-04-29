@@ -20,9 +20,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-
-import { formatBalance } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
+import { utils } from 'ethers';
 import SelectTokenModal from '../SelectTokenModal';
 import { RootState } from '../../redux/reducers';
 import {
@@ -30,9 +29,11 @@ import {
 } from '../../redux/actions/bridge';
 import { SwapDirection } from '../../types/types';
 import ConfirmTransactionModal from '../ConfirmTransactionModal';
-import { getNetworkNames } from '../../utils/common';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 import { ethGasBalance } from '../../redux/reducers/transactions';
+import { tokenBalancesByNetwork, tokenSwapUsdValue } from '../../redux/reducers/bridge';
+import FormatAmount from '../FormatAmount';
+import { getNetworkNames } from '../../utils/common';
 
 enum ErrorMessages {
   INSUFFICIENT_BALANCE = 'Insufficient funds',
@@ -48,6 +49,8 @@ function Bridge(): React.ReactElement {
   const { showConfirmTransactionModal } = useSelector((state: RootState) => state.bridge);
   const { polkadotGasBalance } = useSelector((state: RootState) => state.transactions);
   const ethereumGasBalance = useSelector((state: RootState) => ethGasBalance(state));
+  const tokenBalances = useSelector((state: RootState) => tokenBalancesByNetwork(state));
+  const transferUsdValue = useSelector((state: RootState) => tokenSwapUsdValue(state));
 
   const [errors, setErrors] = useState<{balance?: ErrorMessages, gas?: ErrorMessages}>({
     balance: undefined,
@@ -63,29 +66,18 @@ function Bridge(): React.ReactElement {
   const theme = useTheme();
   const dispatch = useDispatch();
 
-  // utils
-  const getTokenBalances = (direction: SwapDirection)
-    : { sourceNetwork: string, destinationNetwork: string } => {
-    let sourceNetworkBalance = selectedAsset?.balance.polkadot;
-    let destinationNetworkBalance = selectedAsset?.balance.eth;
-
-    if (direction === SwapDirection.EthereumToPolkadot) {
-      sourceNetworkBalance = selectedAsset?.balance.eth;
-      destinationNetworkBalance = selectedAsset?.balance.polkadot;
-    }
-
-    return {
-      sourceNetwork: formatBalance(sourceNetworkBalance, { forceUnit: '', withSi: false }),
-      destinationNetwork: formatBalance(destinationNetworkBalance, { forceUnit: '', withSi: false }),
-    };
-  };
   // side effects
   // validate deposit amount on update
   useEffect(() => {
     if (
-      new BigNumber(depositAmount)
+      new BigNumber(
+        // make sure we are comparing the same units
+        utils.parseUnits(
+          depositAmount, selectedAsset?.token.decimals,
+        ).toString(),
+      )
         .isGreaterThan(
-          new BigNumber(getTokenBalances(swapDirection).sourceNetwork),
+          new BigNumber(tokenBalances.sourceNetwork),
         )
     ) {
       setErrors((errors) => ({ ...errors, balance: ErrorMessages.INSUFFICIENT_BALANCE }));
@@ -180,8 +172,11 @@ function Bridge(): React.ReactElement {
 
   // set deposit amount to balance of current asset
   const handleMaxClicked = () => {
-    const amount = getTokenBalances(swapDirection).sourceNetwork;
-    dispatch(setDepositAmount(Number.parseFloat(amount)));
+    // format ammount for display
+    const amount = tokenBalances.sourceNetwork;
+    const depositAmountFormatted = utils.formatUnits(amount, selectedAsset?.token.decimals);
+
+    dispatch(setDepositAmount(depositAmountFormatted));
   };
 
   // update deposit amount in redux store
@@ -196,8 +191,8 @@ function Bridge(): React.ReactElement {
 
   const errorText = Object.values(errors).filter((e) => e)[0];
 
-  const assetPrice = (selectedAsset?.prices?.usd ?? 0) * depositAmount;
-  const isDepositDisabled = !!errorText || depositAmount <= 0;
+  const assetPrice = transferUsdValue;
+  const isDepositDisabled = !!errorText || Number.parseFloat(depositAmount) <= 0;
 
   return (
 
@@ -244,7 +239,12 @@ function Bridge(): React.ReactElement {
                 <Typography gutterBottom>
                   {
                     selectedAsset
-                    && getTokenBalances(swapDirection).sourceNetwork
+                    && (
+                    <FormatAmount
+                      amount={tokenBalances.sourceNetwork}
+                      decimals={selectedAsset.token.decimals}
+                    />
+                    )
                   }
                   {' '}
                   {selectedAsset?.token?.symbol}
@@ -276,9 +276,13 @@ function Bridge(): React.ReactElement {
                 <Typography gutterBottom>
                   {
                     selectedAsset
-                    && getTokenBalances(swapDirection).destinationNetwork
+                  && (
+                  <FormatAmount
+                    amount={tokenBalances.destinationNetwork}
+                    decimals={selectedAsset.token.decimals}
+                  />
+                  )
                   }
-                  {' '}
                   {selectedAsset?.token?.symbol}
                 </Typography>
               </Grid>
