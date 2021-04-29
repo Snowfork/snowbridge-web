@@ -1,8 +1,6 @@
 import { Contract } from 'web3-eth-contract';
+import { INCENTIVIZED_CHANNEL_ID } from '../config';
 import { ss58ToU8 } from './api';
-
-// TODO: convert to enum and move?
-const INCENTIVIZED_CHANNEL_ID = 1;
 
 /**
  * Queries a token contract to find the number of decimals supported by the
@@ -111,7 +109,6 @@ export async function lockERC20(
   return bridgeContractInstance
     .methods
     .lock(
-      // eslint-disable-next-line no-underscore-dangle
       ERC20ContractInstance.options.address,
       polkadotRecipientBytes,
       `${amount}`,

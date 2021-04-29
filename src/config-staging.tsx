@@ -26,4 +26,7 @@ export default {
 
   PRICE_CURRENCIES: ['usd'],
 
+  BASIC_CHANNEL_ID: 0,
+  INCENTIVIZED_CHANNEL_ID: 1,
+
 };

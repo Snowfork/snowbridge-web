@@ -16,6 +16,7 @@ import {
   INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
   BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
   APP_DOT_CONTRACT_ADDRESS,
+  BASIC_CHANNEL_ID,
 } from '../config';
 
 /* tslint:disable */
@@ -206,7 +207,7 @@ export default class Eth extends Api {
       if (isEther(asset)) {
         return ethContract.methods
         // TODO: SET incentivized channel ID
-          .lock(polkadotRecipientBytes, 0)
+          .lock(polkadotRecipientBytes, BASIC_CHANNEL_ID)
           .send({
             from: sender,
             gas: 500000,
@@ -217,7 +218,12 @@ export default class Eth extends Api {
       // call the token contract for ERC20
       return erc20Contract.methods
         // TODO: SET incentivized channel ID
-        .lock(asset.address, polkadotRecipientBytes, amount, 0)
+        .lock(
+          asset.address,
+          polkadotRecipientBytes,
+          amount,
+          BASIC_CHANNEL_ID,
+        )
         .send({
           from: sender,
           gas: 500000,
@@ -251,14 +257,14 @@ export default class Eth extends Api {
     if (isEther(asset)) {
       burnExtrinsic = polkadotApi.tx.eth.burn(
         // TODO: set incentivized channel ID
-        0,
+        BASIC_CHANNEL_ID,
         recipient,
         amount,
       );
     } else {
       burnExtrinsic = polkadotApi.tx.erc20.burn(
         // TODO: set incentivized channel ID
-        0,
+        BASIC_CHANNEL_ID,
         asset.address,
         recipient,
         amount,

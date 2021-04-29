@@ -16,7 +16,7 @@ import {
 } from '../redux/actions/net';
 
 // Config
-import { POLKADOT_API_PROVIDER } from '../config';
+import { BASIC_CHANNEL_ID, POLKADOT_API_PROVIDER } from '../config';
 import Api, { ss58ToU8 } from './api';
 import { Asset, isDot, isErc20 } from '../types/Asset';
 import { updateBalances } from '../redux/actions/bridge';
@@ -219,9 +219,6 @@ export default class Polkadot extends Api {
     amount: string,
     callback: (result: any) => void,
   ): Promise<any> {
-    // TODO: move to config?
-    const channelId = 0;
-
     const account = await this.getAccount(polkadotAddress);
 
     if (account) {
@@ -229,7 +226,11 @@ export default class Polkadot extends Api {
       // we can use web3FromSource which will return an InjectedExtension type
       const injector = await web3FromSource(account.meta.source);
 
-      return polkadotApi?.tx.dot.lock(channelId, ethAddress, amount)
+      return polkadotApi?.tx.dot.lock(
+        BASIC_CHANNEL_ID,
+        ethAddress,
+        amount,
+      )
         .signAndSend(account.address, { signer: injector.signer }, callback);
     }
 
@@ -244,14 +245,13 @@ export default class Polkadot extends Api {
   ): PromiEvent<Contract> {
     try {
       const amountWrapped = Web3.utils.toBN(amount);
-      console.log('burn DOT', amountWrapped.toString());
       const recipientBytes = ss58ToU8(polkadotAddress!);
 
       return appDotContract?.methods.burn(
         recipientBytes,
         amountWrapped,
-        //  TODO: set channel ID?
-        0,
+        //  TODO: use incentivized channel ID?
+        BASIC_CHANNEL_ID,
       )
         .send({
           from: ethAddress,
