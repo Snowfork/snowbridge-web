@@ -22,6 +22,7 @@ import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 import { decimals, isErc20 } from '../../types/Asset';
 import { doTransfer } from '../../redux/actions/transactions';
+import { SwapDirection } from '../../types/types';
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
@@ -84,8 +85,9 @@ function LockToken(): React.ReactElement {
   );
 
   // we don't need approval to burn snowDot
-  // we only need approval for erc20
-  const requiresApproval = isErc20(selectedAsset!)
+  // we only need approval for erc20 transfers in eth -> polkadot direction
+  const requiresApproval = swapDirection === SwapDirection.EthereumToPolkadot
+  && isErc20(selectedAsset!)
   && depositAmountFormatted.isGreaterThan(currentAllowanceFormatted);
 
   const DepositButton = () => {
