@@ -196,7 +196,11 @@ export function handlePolkadotTransactionEvents(
   }
 
   if (result.status.isInBlock) {
-    const nonce = result.events[0].event.data[0].toString();
+    let nonce = result.events[0].event.data[0].toString();
+
+    if (isDot(transaction.asset)) {
+      nonce = result.events[1].event.data[0].toString();
+    }
 
     dispatch(
       updateTransaction(

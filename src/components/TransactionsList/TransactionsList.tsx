@@ -65,6 +65,8 @@ function TransactionsList({
     );
   }
 
+  console.log('transactions', transactions);
+
   const hasPendingTransactions = transactions
     .some(
       (transaction) => transaction.status < TransactionStatus.DISPATCHED,
