@@ -196,10 +196,7 @@ export function handlePolkadotTransactionEvents(
   }
 
   if (result.status.isInBlock) {
-    let nonce = result.events[1].event.data[0].toString();
-    if (isEther(transaction.asset)) {
-      nonce = result.events[0].event.data[0].toString();
-    }
+    const nonce = result.events[0].event.data[0].toString();
 
     dispatch(
       updateTransaction(
