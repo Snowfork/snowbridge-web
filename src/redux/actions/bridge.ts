@@ -80,9 +80,6 @@ export const updateTokenData = (asset: Asset):
   const updatedTokens = assets?.map((_asset: Asset) => {
     if (asset.address === _asset.address) {
       return {
-        // TODO: test this?
-        // ...asset,
-        // ..._asset,
         ..._asset,
         ...asset,
       };
