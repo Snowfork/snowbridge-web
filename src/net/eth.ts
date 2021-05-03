@@ -108,6 +108,10 @@ export default class Eth extends Api {
           dispatch(updateBalances());
         }
       });
+
+      provider.on('chainChanged', () => {
+        window.location.reload();
+      });
     } else {
       dispatch(setMetamaskMissing());
       throw new Error('Metamask not found');
