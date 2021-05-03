@@ -12,6 +12,7 @@ import { RootState } from '../../redux/reducers';
 import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import LockToken from './LockToken';
+import { symbols } from '../../types/Asset';
 
 const customStyles = {
   overlay: {},
@@ -84,7 +85,7 @@ function ConfirmTransactionModal({
               <Typography variant="h4">
                 {depositAmount}
                 {' '}
-                {selectedAsset?.symbol}
+                {symbols(selectedAsset!, swapDirection).from}
               </Typography>
             </Grid>
 
