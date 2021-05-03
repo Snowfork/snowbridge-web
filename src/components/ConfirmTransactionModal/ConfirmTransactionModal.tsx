@@ -85,7 +85,10 @@ function ConfirmTransactionModal({
               <Typography variant="h4">
                 {depositAmount}
                 {' '}
-                {symbols(selectedAsset!, swapDirection).from}
+                {
+                  selectedAsset
+                  && symbols(selectedAsset, swapDirection).from
+                }
               </Typography>
             </Grid>
 
