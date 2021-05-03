@@ -46,9 +46,9 @@ const ToolTip = styled.div<{ show: boolean }>`
 
 type Props = {
   status: StepStatus;
-  href: string;
-  toolTip: object | string | null;
-  children: object | string | null;
+  href?: string;
+  toolTip?: object | string | null;
+  children?: object | string | null;
 };
 
 function stepContent(status: StepStatus, children?: object | string | null)
@@ -87,5 +87,11 @@ function Step({
     </Wrapper>
   );
 }
+
+Step.defaultProps = {
+  href: '',
+  toolTip: '',
+  children: '',
+};
 
 export default Step;
