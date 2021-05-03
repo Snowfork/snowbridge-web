@@ -79,7 +79,7 @@ function Bridge(): React.ReactElement {
       new BigNumber(
         // make sure we are comparing the same units
         utils.parseUnits(
-          depositAmount || '0', selectedAsset?.decimals,
+          depositAmount || '0', decimalMap.from,
         ).toString(),
       )
         .isGreaterThan(
@@ -90,7 +90,7 @@ function Bridge(): React.ReactElement {
     } else {
       setErrors((errors) => ({ ...errors, balance: undefined }));
     }
-  }, [depositAmount, swapDirection]);
+  }, [depositAmount, selectedAsset, tokenBalances.sourceNetwork, decimalMap.from]);
 
   // poll APIs to keep balances up to date
   useEffect(() => {
