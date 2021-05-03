@@ -17,9 +17,9 @@ import {
 } from '../actionsTypes/bridge';
 import { fetchERC20Allowance } from './ERC20Transactions';
 import { Asset, createAsset } from '../../types/Asset';
-import Erc20TokenList from '../../assets/tokens/Erc20Tokens.json';
+import Erc20TokenList from '../../assets/tokens/Erc20Tokens';
 import DotTokenList from '../../assets/tokens/DotTokens';
-import EthTokenList from '../../assets/tokens/EthTokens.json';
+import EthTokenList from '../../assets/tokens/EthTokens';
 import { dotSelector, etherSelector } from '../reducers/bridge';
 
 export interface SetTokenListPayload { type: string, list: Asset[] }
@@ -183,7 +183,7 @@ export const initializeTokens = ():
   const state = getState() as RootState;
   const { ethAddress, polkadotApi, polkadotAddress } = state.net;
 
-  const { tokens } = Erc20TokenList;
+  const tokens = Erc20TokenList;
 
   if (state.net.web3?.currentProvider) {
     const web3 = state!.net.web3!;
@@ -195,7 +195,7 @@ export const initializeTokens = ():
       networkFilter,
     );
     const dotTokenListFiltered = DotTokenList.filter(networkFilter);
-    const ethTokenListFiltered = EthTokenList.tokens.filter(networkFilter);
+    const ethTokenListFiltered = EthTokenList.filter(networkFilter);
 
     let assetList: Asset[] = [];
 
