@@ -76,6 +76,7 @@ function Bridge(): React.ReactElement {
   // validate deposit amount on update
   useEffect(() => {
     if (depositAmount
+      && decimalMap
       && new BigNumber(
         // make sure we are comparing the same units
         utils.parseUnits(
