@@ -30,7 +30,6 @@ ReactModal.setAppElement('#root');
 
 function BridgeApp(): JSX.Element {
   const dispatch = useDispatch();
-  const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
   const {
     isNetworkConnected,
     metamaskNetwork,
@@ -53,17 +52,6 @@ function BridgeApp(): JSX.Element {
 
     start();
   }, [dispatch]);
-
-  // open modal for pending transation
-  useEffect(() => {
-    if (transactions.pendingTransaction) {
-      setIsPendingModalOpen(true);
-    }
-  }, [transactions.pendingTransaction, dispatch]);
-
-  const closeModal = () => {
-    setIsPendingModalOpen(false);
-  };
 
   // check if required extensions are missing
   if (polkadotJSMissing) {
@@ -126,10 +114,6 @@ function BridgeApp(): JSX.Element {
     <main>
       <Nav transactions={transactions} />
       <Bridge />
-      <PendingTransactionsModal
-        isOpen={isPendingModalOpen}
-        closeModal={closeModal}
-      />
       <ToastContainer autoClose={10000} />
     </main>
   );

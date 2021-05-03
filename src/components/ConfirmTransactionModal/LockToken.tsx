@@ -18,7 +18,6 @@ import { BigNumber } from 'bignumber.js';
 import { RootState } from '../../redux/reducers';
 import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
 import LoadingSpinner from '../LoadingSpinner';
-import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 import { decimals, isErc20 } from '../../types/Asset';
 import { doTransfer } from '../../redux/actions/transactions';
@@ -26,7 +25,10 @@ import { SwapDirection } from '../../types/types';
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
-function LockToken(): React.ReactElement {
+type Props = {
+  onTokenLocked: () => void
+}
+function LockToken({ onTokenLocked }: Props): React.ReactElement {
   const { allowance } = useSelector((state: RootState) => state.ERC20Transactions);
   const { selectedAsset, depositAmount, swapDirection } = useSelector(
     (state: RootState) => state.bridge,
@@ -57,10 +59,9 @@ function LockToken(): React.ReactElement {
   const handleDepositToken = async () => {
     try {
       dispatch(doTransfer());
+      onTokenLocked();
     } catch (e) {
       console.log('Failed to transfer asset', e);
-    } finally {
-      dispatch(setShowConfirmTransactionModal(false));
     }
   };
 
@@ -77,17 +78,18 @@ function LockToken(): React.ReactElement {
   };
 
   const currentAllowanceFormatted = new BigNumber(currentTokenAllowance.toString());
-  const depositAmountFormatted = new BigNumber(
-    utils.parseUnits(
+  const depositAmountFormatted = new BigNumber(selectedAsset
+    ? utils.parseUnits(
       depositAmount.toString(),
-      decimals(selectedAsset!, swapDirection).from,
-    ).toString(),
-  );
+      decimals(selectedAsset, swapDirection).from,
+    ).toString()
+    : '0');
 
   // we don't need approval to burn snowDot
   // we only need approval for erc20 transfers in eth -> polkadot direction
   const requiresApproval = swapDirection === SwapDirection.EthereumToPolkadot
-  && isErc20(selectedAsset!)
+  && selectedAsset
+  && isErc20(selectedAsset)
   && depositAmountFormatted.isGreaterThan(currentAllowanceFormatted);
 
   const DepositButton = () => {
@@ -103,7 +105,7 @@ function LockToken(): React.ReactElement {
           Unlock Token
           {
               isApprovalPending && <LoadingSpinner spinnerWidth="40px" spinnerHeight="40px" />
-            }
+          }
         </Button>
       );
     }

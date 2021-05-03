@@ -6,10 +6,11 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { useDispatch, useSelector } from 'react-redux';
 import { formatBalance } from '@polkadot/util';
+import { Button } from '@material-ui/core';
 import * as S from './Nav.style';
 import Modal from '../Modal';
 import TransactionsList from '../TransactionsList';
-import { TransactionsState } from '../../redux/reducers/transactions';
+import { transactionsInProgressSelector, TransactionsState } from '../../redux/reducers/transactions';
 import { RootState } from '../../redux/reducers';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
@@ -18,6 +19,7 @@ import { updateBalances } from '../../redux/actions/bridge';
 import FormatAmount from '../FormatAmount';
 import { shortenWalletAddress } from '../../utils/common';
 import { dotSelector, etherSelector } from '../../redux/reducers/bridge';
+import LoadingSpinner from '../LoadingSpinner';
 
 type Props = {
   transactions: TransactionsState;
@@ -41,10 +43,15 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     isPolkadotAccountSelectorOpen,
     setIsPolkadotAccountSelectorOpen,
   ] = useState<boolean>(false);
+  const [
+    isTransactionListOpen,
+    setIsTransactionListOpen,
+  ] = useState<boolean>(false);
 
   const { polkadotAddress, ethAddress, polkadotApi } = useSelector((state: RootState) => state.net);
   const dot = useSelector((state: RootState) => dotSelector(state));
   const ether = useSelector((state: RootState) => etherSelector(state));
+  const transactionsInProgress = useSelector(transactionsInProgressSelector);
 
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethGasBalance = ether?.balance?.eth;
@@ -92,8 +99,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     return (
       <Modal
         isOpen={isOpen}
-        closeModal={onClose}
-        buttonText="Close"
+        onClose={onClose}
       >
         <S.ModalContainer>
           <S.ModalHeader>
@@ -140,6 +146,10 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     withUnit: polkadotApi?.registry.chainTokens[0],
   });
 
+  const openTransactionsList = () => {
+    setIsTransactionListOpen(true);
+  };
+
   return (
     <S.Wrapper>
       <S.Heading>Snowbridge</S.Heading>
@@ -165,7 +175,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
           {/* No account selector for eth since metamask only
             exposes a single address at a time. We instead detect address changes
             and reload the app
-        */}
+          */}
 
         </S.DisplayWrapper>
         <S.DisplayWrapper>
@@ -189,7 +199,22 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
           />
 
         </S.DisplayWrapper>
-        <TransactionsList transactions={transactions} />
+        <Button
+          variant="contained"
+          onClick={openTransactionsList}
+        >
+          Transaction list
+          {
+            transactionsInProgress.length > 0
+             && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />
+          }
+        </Button>
+        <Modal
+          isOpen={isTransactionListOpen}
+          onClose={() => setIsTransactionListOpen(false)}
+        >
+          <TransactionsList transactions={transactions} />
+        </Modal>
       </S.CurrencyList>
     </S.Wrapper>
   );
