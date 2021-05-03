@@ -7,7 +7,7 @@ import {
 import Modal from '../Modal';
 import LoadingSpinner from '../LoadingSpinner';
 import { RootState } from '../../redux/reducers';
-import { decimals, symbols } from '../../types/Asset';
+import { symbols } from '../../types/Asset';
 
 type Props = {
     isOpen: boolean,

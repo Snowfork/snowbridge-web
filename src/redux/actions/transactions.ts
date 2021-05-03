@@ -177,7 +177,7 @@ export function createTransaction(
 //  the transaction status on the eth side
 export function handlePolkadotTransactionEvents(
   result: any, // event data from polkadot transaction subscription
-  unsub: any, // function to unsubscribe from polkadot transaction events
+  unsub: () => void, // function to unsubscribe from polkadot transaction events
   transaction: Transaction, // the transaction we are updating for each event
   dispatch: Dispatch<any>,
   incentivizedChannelContract: Contract,
@@ -186,7 +186,13 @@ export function handlePolkadotTransactionEvents(
   const pendingTransaction = transaction;
 
   if (result.status.isReady) {
-    pendingTransaction.hash = result.status.hash.toString();
+    // result.status.hash - this is the call hash not the tx hash
+    // this is not unique and leads to duplicate keys in our transactions list.
+    // rather than waiting for the tx to be included in the block to read the tx hash
+    // we just generate a random number and treat that as the tx hash instead
+    // so we can track and display the 'submitting to chain' status
+    pendingTransaction.hash = (Math.random() * 100).toString();
+
     dispatch(
       addTransaction(
         { ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION },
@@ -241,7 +247,9 @@ export function handlePolkadotTransactionEvents(
       setTransactionStatus(pendingTransaction.hash, TransactionStatus.WAITING_FOR_RELAY),
     );
     // unsubscribe from transaction events
-    // unsub();
+    if (unsub) {
+      (unsub as any)();
+    }
   }
 }
 

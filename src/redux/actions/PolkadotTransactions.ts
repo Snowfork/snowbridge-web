@@ -48,7 +48,7 @@ export const lockPolkadotAsset = (
     );
     dispatch(setPendingTransaction(pendingTransaction));
 
-    const unsub = Polkadot.lockDot(
+    const unsub = await Polkadot.lockDot(
       polkadotApi!,
       ethAddress!,
       polkadotAddress!,

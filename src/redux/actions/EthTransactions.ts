@@ -107,7 +107,7 @@ export const unlockEthAsset = (amount: string):
     );
     dispatch(setPendingTransaction(pendingTransaction));
 
-    const unsub = EthApi.unlock(
+    const unsub = await EthApi.unlock(
       amount,
         selectedAsset!,
         polkadotAddress!,

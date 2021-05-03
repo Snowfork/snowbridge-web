@@ -16,7 +16,7 @@ import {
   SET_SHOW_CONFIRM_TRANSACTION_MODAL,
 } from '../actionsTypes/bridge';
 import { fetchERC20Allowance } from './ERC20Transactions';
-import { Asset, createAsset, isErc20 } from '../../types/Asset';
+import { Asset, createAsset } from '../../types/Asset';
 import Erc20TokenList from '../../assets/tokens/Erc20Tokens.json';
 import DotTokenList from '../../assets/tokens/DotTokens';
 import EthTokenList from '../../assets/tokens/EthTokens.json';
