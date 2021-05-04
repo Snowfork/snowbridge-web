@@ -4,14 +4,14 @@ import {
   Button,
   Typography,
 } from '@material-ui/core';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { utils } from 'ethers';
 import * as S from './SelectTokenModal.style';
-import { RootState } from '../../redux/store';
 import { updateSelectedAsset } from '../../redux/actions/bridge';
 import { Asset, decimals, symbols } from '../../types/Asset';
 import { SwapDirection } from '../../types/types';
+import { useAppSelector } from '../../utils/hooks';
 
 const customStyles = {
   overlay: {},
@@ -29,7 +29,7 @@ const customStyles = {
 
 type Props = {
   open: boolean;
-  onClose: () => any;
+  onClose: () => void;
 };
 
 function SelectTokenModal({
@@ -38,7 +38,7 @@ function SelectTokenModal({
 }: Props): React.ReactElement<Props> {
   const [isOpen, setIsOpen] = useState(open);
   const [searchInput, setSearchInput] = useState('');
-  const { assets, swapDirection } = useSelector((state: RootState) => state.bridge);
+  const { assets, swapDirection } = useAppSelector((state) => state.bridge);
   const dispatch = useDispatch();
 
   useEffect(() => {

@@ -6,7 +6,7 @@
 import React, { useEffect } from 'react';
 import ReactModal from 'react-modal';
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 // local imports and components
 import { ToastContainer } from 'react-toastify';
@@ -21,8 +21,8 @@ import Net from './net';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { PERMITTED_METAMASK_NETWORK } from './config';
-import { RootState } from './redux/store';
 import { initializeTokens } from './redux/actions/bridge';
+import { useAppSelector } from './utils/hooks';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
@@ -34,8 +34,8 @@ function BridgeApp(): JSX.Element {
     metamaskNetwork,
     polkadotJSMissing,
     metamaskMissing,
-  } = useSelector((state: RootState) => state.net);
-  const transactions = useSelector((state: RootState) => state.transactions);
+  } = useAppSelector((state) => state.net);
+  const transactions = useAppSelector((state) => state.transactions);
 
   // Start Network
   useEffect(() => {

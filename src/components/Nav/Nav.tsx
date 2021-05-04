@@ -4,14 +4,13 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { formatBalance } from '@polkadot/util';
 import { Button } from '@material-ui/core';
 import * as S from './Nav.style';
 import Modal from '../Modal';
 import TransactionsList from '../TransactionsList';
 import { transactionsInProgressSelector, TransactionsState } from '../../redux/reducers/transactions';
-import { RootState } from '../../redux/store';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
 import Polkadot from '../../net/polkadot';
@@ -20,6 +19,7 @@ import FormatAmount from '../FormatAmount';
 import { shortenWalletAddress } from '../../utils/common';
 import { dotSelector, etherSelector } from '../../redux/reducers/bridge';
 import LoadingSpinner from '../LoadingSpinner';
+import { useAppSelector } from '../../utils/hooks';
 
 type Props = {
   transactions: TransactionsState;
@@ -44,12 +44,12 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     setIsPolkadotAccountSelectorOpen,
   ] = useState<boolean>(false);
 
-  const { polkadotAddress, ethAddress, polkadotApi } = useSelector((state: RootState) => state.net);
-  const { showTransactionsList } = useSelector((state: RootState) => state.bridge);
+  const { polkadotAddress, ethAddress, polkadotApi } = useAppSelector((state) => state.net);
+  const { showTransactionsList } = useAppSelector((state) => state.bridge);
 
-  const dot = useSelector(dotSelector);
-  const ether = useSelector(etherSelector);
-  const transactionsInProgress = useSelector(transactionsInProgressSelector);
+  const dot = useAppSelector(dotSelector);
+  const ether = useAppSelector(etherSelector);
+  const transactionsInProgress = useAppSelector(transactionsInProgressSelector);
 
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethGasBalance = ether?.balance?.eth;

@@ -16,14 +16,13 @@ import {
   useTheme,
   Button,
 } from '@material-ui/core';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
 import SelectTokenModal from '../SelectTokenModal';
-import { RootState } from '../../redux/store';
 import {
   setDepositAmount, setShowConfirmTransactionModal, setSwapDirection, updateBalances,
 } from '../../redux/actions/bridge';
@@ -36,6 +35,7 @@ import {
 import FormatAmount from '../FormatAmount';
 import { getNetworkNames } from '../../utils/common';
 import { decimals, symbols } from '../../types/Asset';
+import { useAppSelector } from '../../utils/hooks';
 
 enum ErrorMessages {
   INSUFFICIENT_BALANCE = 'Insufficient funds',
@@ -48,11 +48,11 @@ enum ErrorMessages {
 function Bridge(): React.ReactElement {
   // state
   const [showAssetSelector, setShowAssetSelector] = useState(false);
-  const { showConfirmTransactionModal } = useSelector((state: RootState) => state.bridge);
-  const tokenBalances = useSelector(tokenBalancesByNetwork);
-  const transferUsdValue = useSelector(tokenSwapUsdValueSelector);
-  const dot = useSelector(dotSelector);
-  const ether = useSelector(etherSelector);
+  const { showConfirmTransactionModal } = useAppSelector((state) => state.bridge);
+  const tokenBalances = useAppSelector(tokenBalancesByNetwork);
+  const transferUsdValue = useAppSelector(tokenSwapUsdValueSelector);
+  const dot = useAppSelector(dotSelector);
+  const ether = useAppSelector(etherSelector);
 
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethereumGasBalance = ether?.balance?.eth;
@@ -66,7 +66,7 @@ function Bridge(): React.ReactElement {
     selectedAsset,
     depositAmount,
     swapDirection,
-  } = useSelector((state: RootState) => state.bridge);
+  } = useAppSelector((state) => state.bridge);
 
   const theme = useTheme();
   const dispatch = useDispatch();

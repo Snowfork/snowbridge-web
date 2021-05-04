@@ -12,16 +12,16 @@ import {
 } from '@material-ui/core';
 
 // Local
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { utils } from 'ethers';
 import { BigNumber } from 'bignumber.js';
-import { RootState } from '../../redux/store';
 import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
 import LoadingSpinner from '../LoadingSpinner';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 import { decimals, isErc20 } from '../../types/Asset';
 import { doTransfer } from '../../redux/actions/transactions';
 import { SwapDirection } from '../../types/types';
+import { useAppSelector } from '../../utils/hooks';
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
@@ -29,9 +29,9 @@ type Props = {
   onTokenLocked: () => void
 }
 function LockToken({ onTokenLocked }: Props): React.ReactElement {
-  const { allowance } = useSelector((state: RootState) => state.ERC20Transactions);
-  const { selectedAsset, depositAmount, swapDirection } = useSelector(
-    (state: RootState) => state.bridge,
+  const { allowance } = useAppSelector((state) => state.ERC20Transactions);
+  const { selectedAsset, depositAmount, swapDirection } = useAppSelector(
+    (state) => state.bridge,
   );
   const [isApprovalPending, setIsApprovalPending] = useState(false);
 
@@ -88,9 +88,9 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
   // we don't need approval to burn snowDot
   // we only need approval for erc20 transfers in eth -> polkadot direction
   const requiresApproval = swapDirection === SwapDirection.EthereumToPolkadot
-  && selectedAsset
-  && isErc20(selectedAsset)
-  && depositAmountFormatted.isGreaterThan(currentAllowanceFormatted);
+    && selectedAsset
+    && isErc20(selectedAsset)
+    && depositAmountFormatted.isGreaterThan(currentAllowanceFormatted);
 
   const DepositButton = () => {
     if (requiresApproval) {
@@ -104,7 +104,7 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
         >
           Unlock Token
           {
-              isApprovalPending && <LoadingSpinner spinnerWidth="40px" spinnerHeight="40px" />
+            isApprovalPending && <LoadingSpinner spinnerWidth="40px" spinnerHeight="40px" />
           }
         </Button>
       );
@@ -119,7 +119,7 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
       >
         Deposit
         {' '}
-        {selectedAsset?.symbol }
+        {selectedAsset?.symbol}
       </Button>
     );
   };
