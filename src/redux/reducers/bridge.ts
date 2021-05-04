@@ -49,8 +49,8 @@ export const bridgeSlice = createSlice({
 });
 
 export default bridgeSlice.reducer;
-// selectors
 
+// selectors
 export const tokenBalancesByNetwork = (state: RootState):
  {sourceNetwork: string, destinationNetwork: string} => {
   let result = {

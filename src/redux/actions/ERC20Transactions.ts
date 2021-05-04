@@ -2,16 +2,15 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { utils } from 'ethers';
-import { createAction } from '@reduxjs/toolkit';
-import {
-  SET_TOKEN_ALLOWANCE,
-} from '../actionsTypes/ERC20Transactions';
 import * as ERC20Api from '../../net/ERC20';
 import { RootState } from '../store';
 import { isErc20 } from '../../types/Asset';
+import { erc20TransactionsSlice } from '../reducers/ERC20Transactions';
 
 // action creators
-export const setERC20Allowance = createAction<number>(SET_TOKEN_ALLOWANCE);
+export const {
+  setERC20Allowance,
+} = erc20TransactionsSlice.actions;
 
 // async middleware actions
 export const fetchERC20Allowance = ():
@@ -28,7 +27,7 @@ export const fetchERC20Allowance = ():
       userAddress,
       erc20BridgeContractAddress,
     );
-    dispatch(setERC20Allowance(allowance));
+    dispatch(erc20TransactionsSlice.actions.setERC20Allowance(allowance));
   }
 };
 
