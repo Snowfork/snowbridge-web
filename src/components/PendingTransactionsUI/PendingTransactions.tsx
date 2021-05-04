@@ -6,7 +6,6 @@ import {
 import LoadingSpinner from '../LoadingSpinner';
 import { RootState } from '../../redux/reducers';
 import { symbols } from '../../types/Asset';
-import TransactionsList from '../TransactionsList';
 
 const PendingTransaction = (): React.ReactElement => {
   const transactions = useSelector((state: RootState) => state.transactions);
@@ -59,10 +58,7 @@ const PendingTransaction = (): React.ReactElement => {
     );
   }
 
-  // transactions list
-  return (
-    <TransactionsList transactions={transactions} />
-  );
+  return <>Pending...</>;
 };
 
 export default PendingTransaction;

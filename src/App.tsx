@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 // external imports
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import ReactModal from 'react-modal';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -23,7 +23,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { PERMITTED_METAMASK_NETWORK } from './config';
 import { RootState } from './redux/reducers';
 import { initializeTokens } from './redux/actions/bridge';
-import PendingTransactionsModal from './components/PendingTransactionsUI/PendingTransactionsModal';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');

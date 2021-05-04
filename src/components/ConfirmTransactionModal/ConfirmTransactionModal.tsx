@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactModal from 'react-modal';
 import {
   Grid,
@@ -13,7 +13,7 @@ import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import LockToken from './LockToken';
 import { symbols } from '../../types/Asset';
-import PendingTransactionsModal from '../PendingTransactionsUI/PendingTransactionsModal';
+import PendingTransactionsModal from '../PendingTransactionsUI/PendingTransactions';
 
 const customStyles = {
   overlay: {},
@@ -49,15 +49,19 @@ function ConfirmTransactionModal({
     swapDirection,
   } = useSelector((state: RootState) => state.bridge);
 
-  useEffect(() => {
-    setIsOpen(open);
-  }, [open, setIsOpen]);
-
-  function closeModal() {
+  const closeModal = useCallback(() => {
     setIsOpen(false);
     dispatch(setShowConfirmTransactionModal(false));
     setIsPending(false);
-  }
+  }, [setIsOpen, setIsPending, dispatch]);
+
+  useEffect(() => {
+    if (open) {
+      setIsOpen(true);
+    } else {
+      closeModal();
+    }
+  }, [open, setIsOpen, closeModal]);
 
   function onTokenLocked() {
     setIsPending(true);
@@ -80,10 +84,11 @@ function ConfirmTransactionModal({
         style={customStyles}
         contentLabel="Confirm Transaction"
       >
-        {
-          isPending ? <PendingTransactionsModal /> : (
-            <Paper>
+        <Paper>
+          {
+            isPending ? <PendingTransactionsModal /> : (
               <Grid container justify="center">
+
                 <Grid item>
                   <Typography>
                     Confirm transfer
@@ -95,9 +100,9 @@ function ConfirmTransactionModal({
                     {depositAmount}
                     {' '}
                     {
-                    selectedAsset
-                    && symbols(selectedAsset, swapDirection).from
-                  }
+                      selectedAsset
+                      && symbols(selectedAsset, swapDirection).from
+                    }
                   </Typography>
                 </Grid>
 
@@ -111,10 +116,10 @@ function ConfirmTransactionModal({
                     </Typography>
                     <Typography>
                       {
-                      shortenWalletAddress(
-                        addresses.from ?? '',
-                      )
-                    }
+                        shortenWalletAddress(
+                          addresses.from ?? '',
+                        )
+                      }
                     </Typography>
                   </Grid>
                   <ArrowRightIcon />
@@ -127,10 +132,10 @@ function ConfirmTransactionModal({
                     </Typography>
                     <Typography>
                       {
-                      shortenWalletAddress(
-                        addresses.to ?? '',
-                      )
-                    }
+                        shortenWalletAddress(
+                          addresses.to ?? '',
+                        )
+                      }
                     </Typography>
                   </Grid>
 
@@ -138,10 +143,10 @@ function ConfirmTransactionModal({
 
                 <LockToken onTokenLocked={onTokenLocked} />
               </Grid>
+            )
+          }
 
-            </Paper>
-          )
-        }
+        </Paper>
       </ReactModal>
     </div>
   );

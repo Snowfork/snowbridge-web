@@ -15,7 +15,7 @@ import { RootState } from '../../redux/reducers';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
 import Polkadot from '../../net/polkadot';
-import { updateBalances } from '../../redux/actions/bridge';
+import { setShowTransactionList, updateBalances } from '../../redux/actions/bridge';
 import FormatAmount from '../FormatAmount';
 import { shortenWalletAddress } from '../../utils/common';
 import { dotSelector, etherSelector } from '../../redux/reducers/bridge';
@@ -43,14 +43,12 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
     isPolkadotAccountSelectorOpen,
     setIsPolkadotAccountSelectorOpen,
   ] = useState<boolean>(false);
-  const [
-    isTransactionListOpen,
-    setIsTransactionListOpen,
-  ] = useState<boolean>(false);
 
   const { polkadotAddress, ethAddress, polkadotApi } = useSelector((state: RootState) => state.net);
-  const dot = useSelector((state: RootState) => dotSelector(state));
-  const ether = useSelector((state: RootState) => etherSelector(state));
+  const { showTransactionsList } = useSelector((state: RootState) => state.bridge);
+
+  const dot = useSelector(dotSelector);
+  const ether = useSelector(etherSelector);
   const transactionsInProgress = useSelector(transactionsInProgressSelector);
 
   const polkadotGasBalance = dot?.balance?.polkadot;
@@ -147,7 +145,11 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
   });
 
   const openTransactionsList = () => {
-    setIsTransactionListOpen(true);
+    dispatch(setShowTransactionList(true));
+  };
+
+  const onTransactionsListClosed = () => {
+    dispatch(setShowTransactionList(false));
   };
 
   return (
@@ -203,15 +205,15 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
           variant="contained"
           onClick={openTransactionsList}
         >
-          Transaction list
+          Transactions
           {
             transactionsInProgress.length > 0
              && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />
           }
         </Button>
         <Modal
-          isOpen={isTransactionListOpen}
-          onClose={() => setIsTransactionListOpen(false)}
+          isOpen={showTransactionsList}
+          onClose={onTransactionsListClosed}
         >
           <TransactionsList transactions={transactions} />
         </Modal>

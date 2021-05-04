@@ -6,6 +6,7 @@ import {
   SetDepositAmountPayload,
   SetSelectedAssetPayload,
   SetShowConfirmTransactionModalPayload,
+  SetShowTransactionListPayload,
   SetSwapDirectionPayload,
   SetTokenListPayload,
 } from '../actions/bridge';
@@ -13,6 +14,7 @@ import {
   SET_DEPOSIT_AMOUNT,
   SET_SELECTED_ASSET,
   SET_SHOW_CONFIRM_TRANSACTION_MODAL,
+  SET_SHOW_TRANSACTIONS_LIST,
   SET_SWAP_DIRECTION,
   SET_TOKEN_LIST,
 } from '../actionsTypes/bridge';
@@ -22,7 +24,8 @@ export interface BridgeState {
   selectedAsset?: Asset
   depositAmount: string,
   swapDirection: SwapDirection,
-  showConfirmTransactionModal: boolean
+  showConfirmTransactionModal: boolean,
+  showTransactionsList: boolean
 }
 
 const initialState: BridgeState = {
@@ -31,6 +34,7 @@ const initialState: BridgeState = {
   depositAmount: '0.0',
   swapDirection: SwapDirection.EthereumToPolkadot,
   showConfirmTransactionModal: false,
+  showTransactionsList: false,
 };
 
 function bridgeReducer(state: BridgeState = initialState, action: any)
@@ -64,6 +68,12 @@ function bridgeReducer(state: BridgeState = initialState, action: any)
       return ((action: SetShowConfirmTransactionModalPayload): BridgeState => ({
         ...state,
         showConfirmTransactionModal: action.open,
+      }))(action);
+    }
+    case SET_SHOW_TRANSACTIONS_LIST: {
+      return ((action: SetShowTransactionListPayload): BridgeState => ({
+        ...state,
+        showTransactionsList: action.open,
       }))(action);
     }
     default:
