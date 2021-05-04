@@ -2,6 +2,7 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { utils } from 'ethers';
+import { createAction } from '@reduxjs/toolkit';
 import {
   SET_TOKEN_ALLOWANCE,
 } from '../actionsTypes/ERC20Transactions';
@@ -10,11 +11,7 @@ import { RootState } from '../store';
 import { isErc20 } from '../../types/Asset';
 
 // action creators
-export interface SetERC20AllowancePayload { type: string, allowance: number }
-export const setERC20Allowance = (allowance: number): SetERC20AllowancePayload => ({
-  type: SET_TOKEN_ALLOWANCE,
-  allowance,
-});
+export const setERC20Allowance = createAction<number>(SET_TOKEN_ALLOWANCE);
 
 // async middleware actions
 export const fetchERC20Allowance = ():
