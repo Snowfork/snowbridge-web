@@ -102,7 +102,6 @@ export const tokenBalancesByNetwork = (state: RootState):
   return result;
 };
 
-// seletors
 // asset value in usd
 export const tokenSwapUsdValueSelector = (state: RootState)
 : string => new BigNumber(state.bridge.selectedAsset?.prices.usd ?? 0)

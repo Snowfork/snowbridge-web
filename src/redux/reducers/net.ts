@@ -29,8 +29,6 @@ import {
 } from '../actionsTypes/net';
 
 export interface NetState {
-  metamaskConnected: boolean,
-  polkadotJSConnected: boolean,
   metamaskMissing: boolean,
   polkadotJSMissing: boolean,
   metamaskNetwork: string,
@@ -47,8 +45,6 @@ export interface NetState {
 }
 
 const initialState : NetState = {
-  metamaskConnected: false,
-  polkadotJSConnected: false,
   metamaskMissing: false,
   polkadotJSMissing: false,
   metamaskNetwork: '',
