@@ -8,7 +8,7 @@ import {
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { useDispatch, useSelector } from 'react-redux';
 import { getNetworkNames, shortenWalletAddress } from '../../utils/common';
-import { RootState } from '../../redux/reducers';
+import { RootState } from '../../redux/store';
 import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import LockToken from './LockToken';

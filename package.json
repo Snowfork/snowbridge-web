@@ -17,6 +17,7 @@
     "@polkadot/keyring": "^6.0.5",
     "@polkadot/react-identicon": "^0.68.1",
     "@polkadot/util": "^5.7.1",
+    "@reduxjs/toolkit": "^1.5.1",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",

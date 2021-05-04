@@ -3,7 +3,7 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
-import { RootState } from '../reducers';
+import { RootState } from '../store';
 import {
   setPendingTransaction,
   createTransaction,

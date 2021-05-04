@@ -2,7 +2,7 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { Chain, SwapDirection, Token } from '../../types/types';
-import { RootState } from '../reducers';
+import { RootState } from '../store';
 import * as ERC20 from '../../contracts/ERC20.json';
 import * as WrappedToken from '../../contracts/WrappedToken.json';
 import { getAssetPrice } from '../../net/api';

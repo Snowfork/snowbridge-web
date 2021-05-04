@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { utils } from 'ethers';
 import * as S from './SelectTokenModal.style';
-import { RootState } from '../../redux/reducers';
+import { RootState } from '../../redux/store';
 import { updateSelectedAsset } from '../../redux/actions/bridge';
 import { Asset, decimals, symbols } from '../../types/Asset';
 import { SwapDirection } from '../../types/types';

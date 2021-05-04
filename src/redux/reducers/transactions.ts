@@ -24,7 +24,7 @@ import {
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { Asset } from '../../types/Asset';
 import { Chain, SwapDirection } from '../../types/types';
-import { RootState } from '.';
+import { RootState } from '../store';
 
 export enum TransactionStatus {
   // used for error states

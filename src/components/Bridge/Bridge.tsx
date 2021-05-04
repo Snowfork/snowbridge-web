@@ -23,7 +23,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
 import SelectTokenModal from '../SelectTokenModal';
-import { RootState } from '../../redux/reducers';
+import { RootState } from '../../redux/store';
 import {
   setDepositAmount, setShowConfirmTransactionModal, setSwapDirection, updateBalances,
 } from '../../redux/actions/bridge';

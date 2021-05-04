@@ -4,7 +4,7 @@ import {
   TransactionStatus,
 } from '../../redux/reducers/transactions';
 import LoadingSpinner from '../LoadingSpinner';
-import { RootState } from '../../redux/reducers';
+import { RootState } from '../../redux/store';
 import { symbols } from '../../types/Asset';
 
 const PendingTransaction = (): React.ReactElement => {

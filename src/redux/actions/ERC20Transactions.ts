@@ -6,7 +6,7 @@ import {
   SET_TOKEN_ALLOWANCE,
 } from '../actionsTypes/ERC20Transactions';
 import * as ERC20Api from '../../net/ERC20';
-import { RootState } from '../reducers';
+import { RootState } from '../store';
 import { isErc20 } from '../../types/Asset';
 
 // action creators

@@ -11,7 +11,7 @@ import * as S from './Nav.style';
 import Modal from '../Modal';
 import TransactionsList from '../TransactionsList';
 import { transactionsInProgressSelector, TransactionsState } from '../../redux/reducers/transactions';
-import { RootState } from '../../redux/reducers';
+import { RootState } from '../../redux/store';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
 import Polkadot from '../../net/polkadot';

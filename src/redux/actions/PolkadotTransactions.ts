@@ -2,7 +2,7 @@
 
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import { RootState } from '../reducers';
+import { RootState } from '../store';
 import {
   setPendingTransaction,
   createTransaction,

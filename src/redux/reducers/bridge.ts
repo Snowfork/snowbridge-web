@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { RootState } from '.';
+import { RootState } from '../store';
 import { Asset, isDot, isEther } from '../../types/Asset';
 import { SwapDirection } from '../../types/types';
 import {

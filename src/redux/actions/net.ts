@@ -6,7 +6,7 @@ import { ApiPromise } from '@polkadot/api';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { AnyAction } from 'redux';
 import _ from 'lodash';
-import { RootState } from '../reducers';
+import { RootState } from '../store';
 import {
   parachainMessageDispatched,
 } from './transactions';

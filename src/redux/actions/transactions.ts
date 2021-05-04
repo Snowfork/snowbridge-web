@@ -23,7 +23,7 @@ import {
   ETH_MESSAGE_DISPATCHED_EVENT,
   UPDATE_TRANSACTION,
 } from '../actionsTypes/transactions';
-import { RootState } from '../reducers';
+import { RootState } from '../store';
 import {
   MessageDispatchedEvent,
   PolkaEthBurnedEvent, Transaction, TransactionStatus,

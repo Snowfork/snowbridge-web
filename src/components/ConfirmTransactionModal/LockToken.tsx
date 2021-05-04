@@ -15,7 +15,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { utils } from 'ethers';
 import { BigNumber } from 'bignumber.js';
-import { RootState } from '../../redux/reducers';
+import { RootState } from '../../redux/store';
 import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
 import LoadingSpinner from '../LoadingSpinner';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';

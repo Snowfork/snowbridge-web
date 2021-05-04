@@ -21,7 +21,7 @@ import Net from './net';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { PERMITTED_METAMASK_NETWORK } from './config';
-import { RootState } from './redux/reducers';
+import { RootState } from './redux/store';
 import { initializeTokens } from './redux/actions/bridge';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
