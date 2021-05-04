@@ -53,7 +53,7 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [dispatch]);
 
   // lock assets
   const handleDepositToken = async () => {

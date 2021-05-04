@@ -60,7 +60,6 @@ export const lockEthAsset = (
           ethContract,
           erc20Contract,
         );
-        console.log('got transaction event', transactionEvent);
 
         handleEthereumTransactionEvents(
           transactionEvent,
@@ -145,11 +144,9 @@ export const doEthTransfer = (amount: string):
   const {
     swapDirection,
   } = state.bridge;
-  console.log('doing eth transfer');
   if (swapDirection === SwapDirection.EthereumToPolkadot) {
     dispatch(lockEthAsset(amount));
   } else {
-    console.log('unlocking eth');
     dispatch(unlockEthAsset(amount));
   }
 };

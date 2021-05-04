@@ -49,10 +49,10 @@ function Bridge(): React.ReactElement {
   // state
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const { showConfirmTransactionModal } = useSelector((state: RootState) => state.bridge);
-  const tokenBalances = useSelector((state: RootState) => tokenBalancesByNetwork(state));
-  const transferUsdValue = useSelector((state: RootState) => tokenSwapUsdValueSelector(state));
-  const dot = useSelector((state: RootState) => dotSelector(state));
-  const ether = useSelector((state: RootState) => etherSelector(state));
+  const tokenBalances = useSelector(tokenBalancesByNetwork);
+  const transferUsdValue = useSelector(tokenSwapUsdValueSelector);
+  const dot = useSelector(dotSelector);
+  const ether = useSelector(etherSelector);
 
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethereumGasBalance = ether?.balance?.eth;
@@ -70,7 +70,7 @@ function Bridge(): React.ReactElement {
 
   const theme = useTheme();
   const dispatch = useDispatch();
-  const decimalMap = decimals(selectedAsset!, swapDirection);
+  const decimalMap = decimals(selectedAsset, swapDirection);
 
   // side effects
   // validate deposit amount on update
@@ -106,7 +106,7 @@ function Bridge(): React.ReactElement {
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [dispatch]);
 
   // check the user has enough gas for the transaction
   useEffect(() => {
