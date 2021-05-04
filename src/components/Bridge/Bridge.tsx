@@ -30,7 +30,10 @@ import { SwapDirection } from '../../types/types';
 import ConfirmTransactionModal from '../ConfirmTransactionModal';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 import {
-  dotSelector, etherSelector, tokenBalancesByNetwork, tokenSwapUsdValueSelector,
+  dotSelector,
+  etherSelector,
+  tokenBalancesByNetwork,
+  tokenSwapUsdValueSelector,
 } from '../../redux/reducers/bridge';
 import FormatAmount from '../FormatAmount';
 import { getNetworkNames } from '../../utils/common';
