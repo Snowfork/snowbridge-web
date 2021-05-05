@@ -1,32 +1,8 @@
+/* eslint-disable no-param-reassign */
 import { Contract } from 'web3-eth-contract';
 import Web3 from 'web3';
 import { ApiPromise } from '@polkadot/api';
-import {
-  SetBasicChannelContractPayload,
-  SetERC20ContractPayload,
-  SetEthAddressPayload,
-  SetEthContractPayload,
-  SetIncentivizedChannelContractPayload,
-  SetIsNetworkConnectedPayload,
-  SetPolkadotAddressPayload,
-  SetPolkadotApiPayload,
-  SetWeb3Payload,
-} from '../actions/net';
-import {
-  SET_NETWORK_CONNECTED,
-  SET_METAMASK_MISSING,
-  SET_POLKADOTJS_MISSING,
-  SET_METAMASK_NETWORK,
-  SET_ETH_CONTRACT,
-  SET_WEB3,
-  SET_ERC20_CONTRACT,
-  SET_INCENTIVIZED_CHANNEL_CONTRACT,
-  SET_POLKADOT_ADDRESS,
-  SET_ETH_ADDRESS,
-  SET_POLKADOT_API,
-  SET_BASIC_CHANNEL_CONTRACT,
-  SET_APP_DOT_CONTRACT,
-} from '../actionsTypes/net';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface NetState {
   metamaskMissing: boolean,
@@ -60,82 +36,46 @@ const initialState : NetState = {
   basicChannelContract: undefined,
 };
 
-function netReducer(state = initialState, action: any): NetState {
-  switch (action.type) {
-    case SET_METAMASK_MISSING: {
-      return { ...state, metamaskMissing: true };
-    }
-    case SET_POLKADOTJS_MISSING: {
-      return { ...state, polkadotJSMissing: true };
-    }
-    case SET_METAMASK_NETWORK: {
-      return { ...state, metamaskNetwork: action.metamaskNetwork };
-    }
-    case SET_WEB3: {
-      return ((action: SetWeb3Payload) => ({ ...state, web3: action.web3 }))(action);
-    }
-    case SET_ETH_CONTRACT: {
-      return ((action: SetEthContractPayload) => (
-        {
-          ...state,
-          ethContract: action.contract,
-        }))(action);
-    }
-    case SET_ERC20_CONTRACT: {
-      return ((action: SetERC20ContractPayload) => (
-        {
-          ...state,
-          erc20Contract: action.contract,
-        }))(action);
-    }
-    case SET_INCENTIVIZED_CHANNEL_CONTRACT: {
-      return ((action: SetIncentivizedChannelContractPayload): NetState => (
-        {
-          ...state,
-          incentivizedChannelContract: action.contract,
-        }))(action);
-    }
-    case SET_BASIC_CHANNEL_CONTRACT: {
-      return ((action: SetBasicChannelContractPayload): NetState => (
-        {
-          ...state,
-          basicChannelContract: action.contract,
-        }))(action);
-    }
-    case SET_APP_DOT_CONTRACT: {
-      return ((action: SetBasicChannelContractPayload): NetState => (
-        {
-          ...state,
-          appDotContract: action.contract,
-        }))(action);
-    }
-    case SET_ETH_ADDRESS: {
-      return ((action: SetEthAddressPayload) => ({ ...state, ethAddress: action.address }))(action);
-    }
-    case SET_POLKADOT_ADDRESS: {
-      return ((action: SetPolkadotAddressPayload): NetState => (
-        {
-          ...state,
-          polkadotAddress: action.address,
-        }))(action);
-    }
-    case SET_POLKADOT_API: {
-      return ((action: SetPolkadotApiPayload): NetState => (
-        {
-          ...state,
-          polkadotApi: action.polkadotApi,
-        }))(action);
-    }
-    case SET_NETWORK_CONNECTED: {
-      return ((action: SetIsNetworkConnectedPayload): NetState => (
-        {
-          ...state,
-          isNetworkConnected: action.isConnected,
-        }))(action);
-    }
-    default:
-      return state;
-  }
-}
+export const netSlice = createSlice({
+  name: 'net',
+  initialState,
+  reducers: {
+    setMetamaskMissing: (state) => { state.metamaskMissing = true; },
+    setPolkadotjsMissing: (state) => { state.metamaskMissing = true; },
+    setMetamaskNetwork: (state, action: PayloadAction<string>) => {
+      state.metamaskNetwork = action.payload;
+    },
+    setWeb3: (state, action: PayloadAction<Web3>) => {
+      state.web3 = action.payload;
+    },
+    setEthContract: (state, action: PayloadAction<Contract>) => {
+      state.ethContract = action.payload;
+    },
+    setERC20Contract: (state, action: PayloadAction<Contract>) => {
+      state.erc20Contract = action.payload;
+    },
+    setIncentivizedChannelContract: (state, action: PayloadAction<Contract>) => {
+      state.incentivizedChannelContract = action.payload;
+    },
+    setBasicChannelContract: (state, action: PayloadAction<Contract>) => {
+      state.basicChannelContract = action.payload;
+    },
+    setAppDotContract: (state, action: PayloadAction<Contract>) => {
+      state.appDotContract = action.payload;
+    },
+    setEthAddress: (state, action: PayloadAction<string>) => {
+      state.ethAddress = action.payload;
+    },
+    setPolkadotAddress: (state, action: PayloadAction<string>) => {
+      state.polkadotAddress = action.payload;
+    },
+    setPolkadotApi: (state, action: PayloadAction<ApiPromise>) => {
+      state.polkadotApi = action.payload;
+    },
+    setNetworkConnected: (state, action: PayloadAction<boolean>) => {
+      state.isNetworkConnected = action.payload;
+    },
+  },
+});
 
-export default netReducer;
+export default netSlice.reducer;
