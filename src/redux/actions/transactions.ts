@@ -12,96 +12,28 @@ import {
   Asset, decimals, isDot, isEther, symbols,
 } from '../../types/Asset';
 import { Chain, SwapDirection } from '../../types/types';
-import {
-  ADD_TRANSACTION,
-  SET_CONFIRMATIONS,
-  SET_NONCE,
-  SET_TRANSACTION_STATUS,
-  POLKA_ETH_BURNED,
-  SET_PENDING_TRANSACTION,
-  PARACHAIN_MESSAGE_DISPATCHED,
-  ETH_MESSAGE_DISPATCHED_EVENT,
-  UPDATE_TRANSACTION,
-} from '../actionsTypes/transactions';
 import { RootState } from '../store';
 import {
   MessageDispatchedEvent,
-  PolkaEthBurnedEvent, Transaction, TransactionStatus,
+  Transaction,
+  TransactionStatus,
+  transactionsSlice,
 } from '../reducers/transactions';
 import { doEthTransfer } from './EthTransactions';
 import { doPolkadotTransfer } from './PolkadotTransactions';
 import { notify } from './notifications';
 import { setShowConfirmTransactionModal, setShowTransactionList } from './bridge';
 
-export interface AddTransactionPayload { type: string, transaction: Transaction }
-export const addTransaction = (transaction: Transaction): AddTransactionPayload => ({
-  type: ADD_TRANSACTION,
-  transaction,
-});
-
-export interface SetConfirmationsPayload { type: string, hash: string, confirmations: number }
-export const setConfirmations = (hash: string, confirmations: number)
-  : SetConfirmationsPayload => ({
-  type: SET_CONFIRMATIONS,
-  hash,
-  confirmations,
-});
-
-export interface SetNoncePayload { type: string, hash: string, nonce: string }
-export const setNonce = (hash: string, nonce: string): SetNoncePayload => ({
-  type: SET_NONCE,
-  hash,
-  nonce,
-});
-
-export interface SetTransactionStatusPayload {
-  type: string,
-  hash: string,
-  status: TransactionStatus
-}
-export const setTransactionStatus = (hash: string, status: TransactionStatus)
-  : SetTransactionStatusPayload => ({
-  type: SET_TRANSACTION_STATUS,
-  hash,
-  status,
-});
-
-export interface UpdateTransactionPayload { type: string, hash: string, updates: any }
-export const updateTransaction = (hash: string, updates: any): UpdateTransactionPayload => ({
-  type: UPDATE_TRANSACTION,
-  hash,
-  updates,
-});
-
-export interface ParachainMessageDispatchedPayload { type: string, nonce: string }
-export const parachainMessageDispatched = (nonce: string): ParachainMessageDispatchedPayload => ({
-  type: PARACHAIN_MESSAGE_DISPATCHED,
-  nonce,
-});
-
-export interface EthMessageDispatchedPayload {
-  type: string,
-  nonce: string,
-  dispatchTransactionHash: string
-}
-export const ethMessageDispatched = (nonce: string, dispatchTransactionHash: string)
-  : EthMessageDispatchedPayload => ({
-  type: ETH_MESSAGE_DISPATCHED_EVENT,
-  nonce,
-  dispatchTransactionHash,
-});
-
-export interface PolkaEthBurnedPayload { type: string, event: PolkaEthBurnedEvent }
-export const polkaEthBurned = (event: PolkaEthBurnedEvent): PolkaEthBurnedPayload => ({
-  type: POLKA_ETH_BURNED,
-  event,
-});
-
-export interface SetPendingTransactionPayload { type: string, transaction: Transaction }
-export const setPendingTransaction = (transaction: Transaction): SetPendingTransactionPayload => ({
-  type: SET_PENDING_TRANSACTION,
-  transaction,
-});
+export const {
+  addTransaction,
+  ethMessageDispatched,
+  parachainMessageDispatched,
+  setConfirmations,
+  setNonce,
+  setPendingTransaction,
+  setTransactionStatus,
+  updateTransaction,
+} = transactionsSlice.actions;
 
 export const updateConfirmations = (
   hash: string, confirmations: number,
@@ -113,9 +45,9 @@ export const updateConfirmations = (
   if (
     confirmations >= REQUIRED_ETH_CONFIRMATIONS
   ) {
-    dispatch(setTransactionStatus(hash, TransactionStatus.WAITING_FOR_RELAY));
+    dispatch(setTransactionStatus({ hash, status: TransactionStatus.WAITING_FOR_RELAY }));
   }
-  dispatch(setConfirmations(hash, confirmations));
+  dispatch(setConfirmations({ hash, confirmations }));
 };
 
 export const doTransfer = ():
@@ -183,8 +115,16 @@ export function handlePolkadotTransactionEvents(
   dispatch: Dispatch<any>,
   incentivizedChannelContract: Contract,
   basicChannelContract: Contract,
-): void {
-  const pendingTransaction = transaction;
+): Transaction {
+  console.log('running handlePolkadotTransactionEvents with tx', transaction);
+  // TODO:
+  // this is a problem ...
+  // this function fires everytime there is a new event
+  // that means pendingTransaction will get reset each iteration
+  // which means we cant set the hash from with in this function...
+  // ideally we should be able to pull out a uid from the result
+  const pendingTransaction = { ...transaction };
+  // const pendingTransaction = JSON.parse(JSON.stringify(transaction));
 
   if (result.status.isReady) {
     // result.status.hash - this is the call hash not the tx hash
@@ -192,7 +132,13 @@ export function handlePolkadotTransactionEvents(
     // rather than waiting for the tx to be included in the block to read the tx hash
     // we just generate a random number and treat that as the tx hash instead
     // so we can track and display the 'submitting to chain' status
-    pendingTransaction.hash = (Math.random() * 100).toString();
+    console.log('isReady');
+    console.log('pending tx is currently', pendingTransaction);
+    // pendingTransaction.hash = (Math.random() * 100).toString();
+    const hash = (Math.random() * 100).toString();
+    // pendingTransaction = Object.assign(pendingTransaction, { hash });
+    pendingTransaction.hash = hash;
+    console.log('pending tx is now', pendingTransaction);
 
     dispatch(
       addTransaction(
@@ -201,7 +147,7 @@ export function handlePolkadotTransactionEvents(
     );
     dispatch(setShowConfirmTransactionModal(false));
     dispatch(setShowTransactionList(true));
-    return;
+    return pendingTransaction;
   }
 
   if (result.status.isInBlock) {
@@ -210,10 +156,15 @@ export function handlePolkadotTransactionEvents(
     if (isDot(transaction.asset)) {
       nonce = result.events[1].event.data[0].toString();
     }
+    console.log('dispatching update pending tx with', pendingTransaction);
+    console.log('transaction', transaction);
 
     dispatch(
       updateTransaction(
-        pendingTransaction.hash, { nonce, status: TransactionStatus.WAITING_FOR_RELAY },
+        {
+          hash: pendingTransaction.hash,
+          update: { nonce, status: TransactionStatus.WAITING_FOR_RELAY },
+        },
       ),
     );
 
@@ -222,7 +173,10 @@ export function handlePolkadotTransactionEvents(
         event.returnValues.nonce === nonce
       ) {
         dispatch(
-          ethMessageDispatched(event.returnValues.nonce, pendingTransaction.nonce!),
+          ethMessageDispatched({
+            nonce: event.returnValues.nonce,
+            dispatchTransactionNonce: pendingTransaction.nonce!,
+          }),
         );
       }
     };
@@ -241,19 +195,23 @@ export function handlePolkadotTransactionEvents(
       .MessageDispatched({})
       .on('data', handleChannelMessageDispatched);
 
-    return;
+    return pendingTransaction;
   }
 
   if (result.status.isFinalized) {
     console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
     dispatch(
-      setTransactionStatus(pendingTransaction.hash, TransactionStatus.WAITING_FOR_RELAY),
+      setTransactionStatus({
+        hash: pendingTransaction.hash,
+        status: TransactionStatus.WAITING_FOR_RELAY,
+      }),
     );
     // unsubscribe from transaction events
     if (unsub) {
       unsub();
     }
   }
+  return pendingTransaction;
 }
 
 // This will be used in EthTransactions.lock and PolkadotTransactions.unlock
@@ -328,7 +286,10 @@ export function handleEthereumTransactionEvents(
       );
       const { nonce } = decodedEvent;
       dispatch(
-        setNonce(transactionHash, nonce),
+        setNonce({
+          hash: transactionHash,
+          nonce,
+        }),
       );
     })
     .on(

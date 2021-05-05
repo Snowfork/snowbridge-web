@@ -1,15 +1,15 @@
 import React from 'react';
 import { Typography } from '@material-ui/core';
 import * as S from './TransactionsList.style';
-import { TransactionsState } from '../../redux/reducers/transactions';
 import TransactionItem from './TransactionItem';
+import { Transaction } from '../../redux/reducers/transactions';
 
 type Props = {
-  transactions: TransactionsState;
+  transactions: Transaction[];
 };
 
 function TransactionsList({
-  transactions: { transactions },
+  transactions,
 }: Props): React.ReactElement<Props> {
   const noTransactions = transactions.length === 0 || !transactions;
 

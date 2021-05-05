@@ -45,7 +45,7 @@ export const subscribeEvents = ():
         // notify({ text, color: "success" })
         // );
         console.log('parachain message dispatched', nonce);
-        dispatch(parachainMessageDispatched(nonce));
+        dispatch(parachainMessageDispatched({ nonce }));
       });
     });
   } else {

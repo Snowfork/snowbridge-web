@@ -10,7 +10,7 @@ import { Button } from '@material-ui/core';
 import * as S from './Nav.style';
 import Modal from '../Modal';
 import TransactionsList from '../TransactionsList';
-import { transactionsInProgressSelector, TransactionsState } from '../../redux/reducers/transactions';
+import { transactionsInProgressSelector } from '../../redux/reducers/transactions';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
 import Polkadot from '../../net/polkadot';
@@ -20,10 +20,6 @@ import { shortenWalletAddress } from '../../utils/common';
 import { dotSelector, etherSelector } from '../../redux/reducers/bridge';
 import LoadingSpinner from '../LoadingSpinner';
 import { useAppSelector } from '../../utils/hooks';
-
-type Props = {
-  transactions: TransactionsState;
-};
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   formControl: {
@@ -35,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-function Nav({ transactions }: Props): React.ReactElement<Props> {
+function Nav(): React.ReactElement {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [polkadotAccounts, setPolkadotAccounts] = useState<string[]>([]);
@@ -46,7 +42,7 @@ function Nav({ transactions }: Props): React.ReactElement<Props> {
 
   const { polkadotAddress, ethAddress, polkadotApi } = useAppSelector((state) => state.net);
   const { showTransactionsList } = useAppSelector((state) => state.bridge);
-
+  const { transactions } = useAppSelector((state) => state.transactions);
   const dot = useAppSelector(dotSelector);
   const ether = useAppSelector(etherSelector);
   const transactionsInProgress = useAppSelector(transactionsInProgressSelector);

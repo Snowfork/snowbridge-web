@@ -96,7 +96,7 @@ export const unlockEthAsset = (amount: string):
   } = state.bridge;
 
   if (polkadotApi) {
-    const pendingTransaction = createTransaction(
+    let pendingTransaction = createTransaction(
         polkadotAddress!,
         ethAddress!,
         amount,
@@ -113,7 +113,8 @@ export const unlockEthAsset = (amount: string):
         ethAddress!,
         polkadotApi,
         (res: any) => {
-          handlePolkadotTransactionEvents(
+          console.log('calling handle pk tx');
+          const tx = handlePolkadotTransactionEvents(
             res,
             unsub,
             pendingTransaction,
@@ -121,6 +122,8 @@ export const unlockEthAsset = (amount: string):
             incentivizedChannelContract!,
             basicChannelContract!,
           );
+          pendingTransaction = tx;
+          console.log('after pk event handled', tx);
         },
     )
       .catch((error: any) => {

@@ -35,7 +35,6 @@ function BridgeApp(): JSX.Element {
     polkadotJSMissing,
     metamaskMissing,
   } = useAppSelector((state) => state.net);
-  const transactions = useAppSelector((state) => state.transactions);
 
   // Start Network
   useEffect(() => {
@@ -111,7 +110,7 @@ function BridgeApp(): JSX.Element {
 
   return (
     <main>
-      <Nav transactions={transactions} />
+      <Nav />
       <Bridge />
       <ToastContainer autoClose={10000} />
     </main>
