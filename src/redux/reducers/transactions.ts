@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { EventData } from 'web3-eth-contract';
-import { createSlice, PayloadAction, current } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { Asset } from '../../types/Asset';
 import { Chain, SwapDirection } from '../../types/types';
@@ -72,7 +72,6 @@ export const transactionsSlice = createSlice({
   initialState,
   reducers: {
     addTransaction: (state, action: PayloadAction<Transaction>) => {
-      console.log('add tx', action);
       // append to tx list
       state.transactions.push(action.payload);
       // update pending tx
@@ -110,18 +109,7 @@ export const transactionsSlice = createSlice({
       }
     },
     updateTransaction: (state, action: PayloadAction<{hash: string, update: Partial<Transaction>}>) => {
-      console.log('update tx', current(state.transactions));
-      let transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
-      console.log('update tx', action);
-      if (transaction) {
-        console.log('update tx', action.payload.update);
-        transaction = {
-          ...transaction,
-          ...action.payload.update,
-        };
-      } else {
-        console.log('no tx matches');
-      }
+      state.transactions = state.transactions.map((tx) => (tx.hash === action.payload.hash ? { ...tx, ...action.payload.update } : tx));
     },
     setNonce: (state, action: PayloadAction<{hash: string, nonce: string}>) => {
       const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
@@ -146,7 +134,6 @@ export const transactionsSlice = createSlice({
     },
     ethMessageDispatched: (state, action: PayloadAction<{nonce: string, dispatchTransactionNonce: string}>) => {
       const transaction = state.transactions.filter((tx) => tx.nonce === action.payload.nonce)[0];
-
       if (transaction) {
         transaction.status = TransactionStatus.DISPATCHED;
         transaction.dispatchTransactionHash = action.payload.dispatchTransactionNonce;

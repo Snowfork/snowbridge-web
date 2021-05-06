@@ -95,6 +95,9 @@ export function createTransaction(
     chain,
     asset,
     direction,
+    dispatchTransactionHash: '',
+    error: '',
+    nonce: '',
   };
 
   return pendingTransaction;
@@ -116,15 +119,7 @@ export function handlePolkadotTransactionEvents(
   incentivizedChannelContract: Contract,
   basicChannelContract: Contract,
 ): Transaction {
-  console.log('running handlePolkadotTransactionEvents with tx', transaction);
-  // TODO:
-  // this is a problem ...
-  // this function fires everytime there is a new event
-  // that means pendingTransaction will get reset each iteration
-  // which means we cant set the hash from with in this function...
-  // ideally we should be able to pull out a uid from the result
   const pendingTransaction = { ...transaction };
-  // const pendingTransaction = JSON.parse(JSON.stringify(transaction));
 
   if (result.status.isReady) {
     // result.status.hash - this is the call hash not the tx hash
@@ -132,13 +127,8 @@ export function handlePolkadotTransactionEvents(
     // rather than waiting for the tx to be included in the block to read the tx hash
     // we just generate a random number and treat that as the tx hash instead
     // so we can track and display the 'submitting to chain' status
-    console.log('isReady');
-    console.log('pending tx is currently', pendingTransaction);
-    // pendingTransaction.hash = (Math.random() * 100).toString();
     const hash = (Math.random() * 100).toString();
-    // pendingTransaction = Object.assign(pendingTransaction, { hash });
     pendingTransaction.hash = hash;
-    console.log('pending tx is now', pendingTransaction);
 
     dispatch(
       addTransaction(
@@ -156,14 +146,15 @@ export function handlePolkadotTransactionEvents(
     if (isDot(transaction.asset)) {
       nonce = result.events[1].event.data[0].toString();
     }
-    console.log('dispatching update pending tx with', pendingTransaction);
-    console.log('transaction', transaction);
+
+    pendingTransaction.nonce = nonce;
+    pendingTransaction.status = TransactionStatus.WAITING_FOR_RELAY;
 
     dispatch(
       updateTransaction(
         {
           hash: pendingTransaction.hash,
-          update: { nonce, status: TransactionStatus.WAITING_FOR_RELAY },
+          update: pendingTransaction,
         },
       ),
     );
