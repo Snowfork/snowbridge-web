@@ -88,4 +88,10 @@ function Step({
   );
 }
 
+Step.defaultProps = {
+  href: '',
+  toolTip: '',
+  children: '',
+};
+
 export default Step;

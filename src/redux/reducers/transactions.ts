@@ -9,7 +9,6 @@ import {
   POLKA_ETH_BURNED,
   SET_PENDING_TRANSACTION,
   ETH_MESSAGE_DISPATCHED_EVENT,
-  SET_POLKADOT_GAS_BALANCE,
 } from '../actionsTypes/transactions';
 import {
   AddTransactionPayload,
@@ -21,12 +20,10 @@ import {
   SetPendingTransactionPayload,
   EthMessageDispatchedPayload,
   SetNoncePayload,
-  SetPolkadotGasBalancePayload,
 } from '../actions/transactions';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
-import { Token } from '../../types/types';
-import { RootState } from '.';
-import { TokenData } from './bridge';
+import { Asset } from '../../types/Asset';
+import { Chain, SwapDirection } from '../../types/types';
 
 export enum TransactionStatus {
   // used for error states
@@ -60,10 +57,11 @@ export interface Transaction {
   status: TransactionStatus;
   isMinted: boolean;
   isBurned: boolean;
-  chain: 'eth' | 'polkadot';
-  token: Token;
+  chain: Chain;
   dispatchTransactionHash?: string;
   error?: string;
+  asset: Asset;
+  direction: SwapDirection
 }
 
 // Interface for the Ethereum 'MessageDispatched' event,
@@ -81,15 +79,11 @@ export interface PolkaEthBurnedEvent {
 export interface TransactionsState {
   transactions: Transaction[],
   pendingTransaction?: Transaction,
-  // native tokens
-  // TODO: remove from state and replace with a selector
-  polkadotGasBalance: string
 }
 
 const initialState: TransactionsState = {
   transactions: [],
   pendingTransaction: undefined,
-  polkadotGasBalance: '0',
 };
 
 function transactionsReducer(state: TransactionsState = initialState, action: any)
@@ -213,26 +207,9 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
         };
       })(action);
     }
-
-    case SET_POLKADOT_GAS_BALANCE: {
-      return ((action: SetPolkadotGasBalancePayload) => (
-        { ...state, polkadotGasBalance: action.balance }
-      ))(action);
-    }
     default:
       return state;
   }
 }
 
 export default transactionsReducer;
-
-// selectors
-export const ethGasBalance = (state: RootState): string => (
-  state
-    .bridge
-    .tokens
-    ?.filter(
-      (tokenData: TokenData) => tokenData.token.address === '0x0',
-    )[0]
-    ?.balance.eth ?? '0'
-);

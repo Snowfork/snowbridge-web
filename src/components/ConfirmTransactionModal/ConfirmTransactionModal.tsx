@@ -8,11 +8,10 @@ import {
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { useDispatch, useSelector } from 'react-redux';
 import { getNetworkNames, shortenWalletAddress } from '../../utils/common';
-import AppPolkadot from '../AppPolkadot';
-import AppETH from '../AppEth';
 import { RootState } from '../../redux/reducers';
 import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
+import LockToken from './LockToken';
 
 const customStyles = {
   overlay: {},
@@ -85,7 +84,7 @@ function ConfirmTransactionModal({
               <Typography variant="h4">
                 {depositAmount}
                 {' '}
-                {selectedAsset?.token?.symbol}
+                {selectedAsset?.symbol}
               </Typography>
             </Grid>
 
@@ -124,13 +123,7 @@ function ConfirmTransactionModal({
 
             </Grid>
 
-            {/* deposit buttons */}
-            {/* each button has the required logic for the corresponding network */}
-            {
-              swapDirection === SwapDirection.EthereumToPolkadot
-                ? <AppETH />
-                : <AppPolkadot />
-            }
+            <LockToken />
           </Grid>
 
         </Paper>

@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
+import { utils } from 'ethers';
 import {
   SET_TOKEN_ALLOWANCE,
 } from '../actionsTypes/ERC20Transactions';
-import * as ERC20Api from '../../utils/ERC20Api';
+import * as ERC20Api from '../../net/ERC20';
 import { RootState } from '../reducers';
+import { isErc20 } from '../../types/Asset';
 
 // action creators
 export interface SetERC20AllowancePayload { type: string, allowance: number }
@@ -22,8 +24,8 @@ export const fetchERC20Allowance = ():
   const state = getState() as RootState;
   const userAddress = state.net.ethAddress!;
   const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
-  const contractInstance = state.bridge.selectedAsset?.instance;
-  if (state.bridge.selectedAsset?.token.address !== '0x0') {
+  const contractInstance = state.bridge.selectedAsset!.contract!;
+  if (isErc20(state.bridge.selectedAsset!)) {
     const allowance: number = await ERC20Api.fetchERC20Allowance(
       contractInstance,
       userAddress,
@@ -34,21 +36,25 @@ export const fetchERC20Allowance = ():
 };
 
 // grant spender permission to spend owner ERC20 tokens
-export const approveERC20 = (amount: string):
+export const approveERC20 = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
 ): Promise<void> => {
   const state = getState() as RootState;
   const userAddress = state.net.ethAddress!;
   const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
-  const { selectedAsset } = state.bridge;
+  const { selectedAsset, depositAmount } = state.bridge;
+
+  // format deposit amount into unit value
+  const decimals = selectedAsset?.decimals;
+  const unitValue = utils.parseUnits(depositAmount, decimals).toString();
 
   try {
     await ERC20Api.approveERC20(
-      selectedAsset?.instance,
+      selectedAsset!.contract!,
       erc20BridgeContractAddress,
       userAddress,
-      amount,
+      unitValue,
     );
 
     dispatch(fetchERC20Allowance());

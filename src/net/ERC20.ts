@@ -1,7 +1,6 @@
 import { Contract } from 'web3-eth-contract';
-import { ss58ToU8 } from '../net/api';
-
-const INCENTIVIZED_CHANNEL_ID = 1;
+import { INCENTIVIZED_CHANNEL_ID } from '../config';
+import { ss58ToU8 } from './api';
 
 /**
  * Queries a token contract to find the number of decimals supported by the
@@ -44,10 +43,10 @@ export async function fetchERC20Allowance(
  *  userAddress
  */
 export async function fetchERC20Balance(
-  tokenContractInstance: Contract,
+  tokenContractInstance: Contract | undefined,
   userAddress: string,
 ): Promise<number> {
-  const balance: number = await tokenContractInstance.methods
+  const balance: number = await tokenContractInstance?.methods
     .balanceOf(userAddress)
     .call();
   return balance ?? 0;
@@ -110,7 +109,6 @@ export async function lockERC20(
   return bridgeContractInstance
     .methods
     .lock(
-      // eslint-disable-next-line no-underscore-dangle
       ERC20ContractInstance.options.address,
       polkadotRecipientBytes,
       `${amount}`,

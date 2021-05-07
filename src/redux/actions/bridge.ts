@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import CoinGecko from 'coingecko-api';
-import { SwapDirection, Token } from '../../types/types';
+import { Chain, SwapDirection, Token } from '../../types/types';
 import { RootState } from '../reducers';
 import * as ERC20 from '../../contracts/ERC20.json';
+import * as WrappedToken from '../../contracts/WrappedToken.json';
+import { getAssetPrice } from '../../net/api';
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
 import {
@@ -14,18 +15,21 @@ import {
   SET_SWAP_DIRECTION,
   SET_SHOW_CONFIRM_TRANSACTION_MODAL,
 } from '../actionsTypes/bridge';
-import { TokenData } from '../reducers/bridge';
 import { fetchERC20Allowance } from './ERC20Transactions';
-import { PRICE_CURRENCIES } from '../../config';
+import { Asset, createAsset } from '../../types/Asset';
+import Erc20TokenList from '../../assets/tokens/Erc20Tokens';
+import DotTokenList from '../../assets/tokens/DotTokens';
+import EthTokenList from '../../assets/tokens/EthTokens';
+import { dotSelector, etherSelector } from '../reducers/bridge';
 
-export interface SetTokenListPayload { type: string, list: TokenData[] }
-export const _setTokenList = (list: TokenData[]): SetTokenListPayload => ({
+export interface SetTokenListPayload { type: string, list: Asset[] }
+export const _setTokenList = (list: Asset[]): SetTokenListPayload => ({
   type: SET_TOKEN_LIST,
   list,
 });
 
-export interface SetSelectedAssetPayload {type: string, asset: TokenData}
-export const _setSelectedAsset = (asset: TokenData)
+export interface SetSelectedAssetPayload {type: string, asset: Asset}
+export const _setSelectedAsset = (asset: Asset)
     : SetSelectedAssetPayload => ({
   type: SET_SELECTED_ASSET,
   asset,
@@ -52,7 +56,7 @@ export const setShowConfirmTransactionModal = (open: boolean)
 
 // async middleware actions
 // sets selected asset and updates ERC20 spend allowance
-export const updateSelectedAsset = (asset: TokenData):
+export const updateSelectedAsset = (asset: Asset):
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
 ): Promise<void> => {
@@ -65,35 +69,76 @@ export const updateSelectedAsset = (asset: TokenData):
 
 // this takes the token data input and writes it to the token list
 // this will also update the selected asset if needed
-export const updateTokenData = (tokenData: TokenData):
+export const updateTokenData = (asset: Asset):
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
 ): Promise<void> => {
   const state = getState() as RootState;
-  const { tokens, selectedAsset } = state.bridge;
+  const { assets, selectedAsset } = state.bridge;
 
   // update token data in token list
-  const updatedTokens = tokens?.map((token: TokenData) => {
-    if (token.token.address === tokenData?.token.address) {
+  const updatedTokens = assets?.map((_asset: Asset) => {
+    if (asset.address === _asset.address) {
       return {
-        ...token,
-        ...tokenData,
+        ..._asset,
+        ...asset,
       };
     }
 
-    return token;
+    return _asset;
   });
-  dispatch(_setTokenList(updatedTokens!));
+  dispatch(_setTokenList(updatedTokens as Asset[]));
 
   // update token data in selected asset
-  if (selectedAsset?.token.address === tokenData.token.address) {
-    const updatedAsset = { ...selectedAsset, ...tokenData };
-    dispatch(updateSelectedAsset(updatedAsset as TokenData));
+  if (selectedAsset?.address === asset.address) {
+    const updatedAsset = { ...selectedAsset, ...asset };
+    dispatch(updateSelectedAsset(updatedAsset as Asset));
+  }
+};
+
+// update gas balances
+export const updateGasBalances = ():
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
+): Promise<void> => {
+  const state = getState() as RootState;
+
+  // update polkadot gas balance
+  const dot = dotSelector(state);
+  const { polkadotApi, polkadotAddress } = state.net;
+
+  if (dot && polkadotApi && polkadotAddress) {
+    const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
+    const newDotData = {
+      ...dot,
+      balance: {
+        ...dot.balance,
+        polkadot: balance,
+      },
+    };
+    dispatch(updateTokenData(newDotData as Asset));
+  }
+
+  // update ethereum gas balance
+  const ether = etherSelector(state);
+  const { web3, ethAddress } = state.net;
+  if (ether && web3 && ethAddress) {
+    const etherBalance = await EthApi.getTokenBalance(web3, ethAddress, ether);
+    const newEtherData = {
+      ...ether,
+      balance: {
+        ...ether.balance,
+        eth: etherBalance,
+      },
+    };
+    dispatch(updateTokenData(newEtherData as Asset));
   }
 };
 
 // update balances for selected asset
-// updates values for selected asset as well as the token list
+// updates values for selected asset as well as
+// the matching asset in the asset list
+// this will also update the gas balances
 export const updateBalances = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
@@ -107,93 +152,113 @@ export const updateBalances = ():
     polkadotAddress,
   } = state.net;
 
-  // fetch updated balances
-  const ethBalance = await EthApi.getTokenBalance(web3!, ethAddress!, selectedAsset);
-  const polkadotBalance = await Polkadot.getEthBalance(
+  if (selectedAsset) {
+    // fetch updated balances
+    const ethBalance = await EthApi.getTokenBalance(web3!, ethAddress!, selectedAsset);
+    const polkadotBalance = await Polkadot.getAssetBalance(
       polkadotApi!,
       polkadotAddress!,
       selectedAsset,
-  );
+    );
 
-  const updatedTokenData = {
-    ...selectedAsset,
-    balance: {
-      eth: ethBalance,
-      polkadot: polkadotBalance,
-    },
-  };
-  dispatch(updateTokenData(updatedTokenData as TokenData));
+    const updatedTokenData = {
+      ...selectedAsset,
+      balance: {
+        eth: ethBalance,
+        polkadot: polkadotBalance,
+      },
+    };
+    dispatch(updateTokenData(updatedTokenData as Asset));
+  }
+
+  dispatch(updateGasBalances());
 };
 
 // use the token list to instantiate contract instances
 // and store them in redux. We also query the balance to use later
-export const initializeTokens = (tokens: Token[]):
+export const initializeTokens = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
 ): Promise<void> => {
   const state = getState() as RootState;
   const { ethAddress, polkadotApi, polkadotAddress } = state.net;
-  const CoinGeckoClient = new CoinGecko();
-  // the currencies used to query the coin gecko api
-  const priceCurrencies = PRICE_CURRENCIES;
+
+  const tokens = Erc20TokenList;
 
   if (state.net.web3?.currentProvider) {
     const web3 = state!.net.web3!;
     // only include tokens from  current network
-    const tokenList = tokens.filter(
-      (token: Token) => token.chainId
-              === Number.parseInt((web3.currentProvider as any).chainId, 16),
-    );
+    const networkFilter = (token: Token) => token.chainId
+    === Number.parseInt((web3.currentProvider as any).chainId, 16);
 
-    // create a web3 contract instance for each ERC20
-    // and build a list of TokenData
-    const tokenDataList = tokenList.map(
+    const erc20TokenListFiltered = tokens.filter(
+      networkFilter,
+    );
+    const dotTokenListFiltered = DotTokenList.filter(networkFilter);
+    const ethTokenListFiltered = EthTokenList.filter(networkFilter);
+
+    let assetList: Asset[] = [];
+
+    // append Ether
+    const ethAssets: Asset[] = ethTokenListFiltered.map((token: Token) => createAsset(
+      token,
+      Chain.ETHEREUM,
+      18,
+      undefined,
+    ));
+    assetList = assetList.concat(ethAssets);
+
+    // append erc20 tokens
+    const erc20Assets: Asset[] = erc20TokenListFiltered.map(
       (token: Token) => {
         // eth 'tokens' don't have any contract instance
-        let contractInstance = null;
+        let contractInstance;
 
         // All valid contract addresses have 42 characters ('0x' + address)
         if (token.address.length === 42) {
           //   create token contract instance
           contractInstance = new web3.eth.Contract(
-                ERC20.abi as any,
-                token.address,
+           ERC20.abi as any,
+           token.address,
           );
         }
 
-        return {
-          token,
-          prices: {
-            usd: 0,
-          },
-          instance: contractInstance,
-          balance: {
-            eth: '0',
-            polkadot: '0',
-          },
-        };
+        return createAsset(token, Chain.ETHEREUM, token.decimals, contractInstance);
       },
     );
+    assetList = assetList.concat(erc20Assets);
+
+    // append DOT
+    const dotAssets = dotTokenListFiltered
+      .map(
+        (dotToken: Token) => createAsset(
+          dotToken,
+          Chain.POLKADOT,
+          18,
+          new web3.eth.Contract(WrappedToken.abi as any, dotToken.address),
+        ),
+      );
+    assetList = assetList.concat(dotAssets);
 
     // store the token list
-    dispatch(_setTokenList(tokenDataList));
+    dispatch(_setTokenList(assetList));
     // set default selected token to first token from list
-    dispatch(updateSelectedAsset(tokenDataList[0]));
+    dispatch(updateSelectedAsset(assetList[0]));
 
     // now that the token list has loaded we can
     // loop through the list and for each fetch the
     // price, balance on eth and balance on substrate
     // and asynchronously update the token list as we get each result
 
-    tokenDataList.map(async (tokenData: TokenData) => {
-      const newTokenData = tokenData;
+    assetList.map(async (asset: Asset) => {
+      const newTokenData = asset;
 
       // fetch token balances on substrate
       try {
-        const polkadotBalance = await Polkadot.getEthBalance(
+        const polkadotBalance = await Polkadot.getAssetBalance(
             polkadotApi!,
             polkadotAddress!,
-            tokenData,
+            asset,
         );
 
         newTokenData.balance.polkadot = polkadotBalance;
@@ -206,7 +271,7 @@ export const initializeTokens = (tokens: Token[]):
         const ethBalance = await EthApi.getTokenBalance(
           web3,
             ethAddress!,
-            tokenData,
+            asset,
         );
 
         newTokenData.balance.eth = ethBalance;
@@ -215,36 +280,16 @@ export const initializeTokens = (tokens: Token[]):
         console.log('failed reading eth balance', e);
       }
 
-      // fetch token price from coin gecko
       try {
-        // store the asset key name to read the result later
-        let assetKey = 'ethereum';
-        // price request for eth
-        let priceRequestPromise = CoinGeckoClient.simple.price({
-          ids: assetKey,
-          vs_currencies: priceCurrencies,
-        });
-          // change price request for erc20
-        if (tokenData.token.address !== '0x0'
-          && tokenData.token.address.length === 42
-        ) {
-          assetKey = tokenData.token.address;
-          priceRequestPromise = CoinGeckoClient.simple.fetchTokenPrice({
-            contract_addresses: assetKey,
-            vs_currencies: priceCurrencies,
-          });
-        }
+      // fetch token price from coin gecko
+        const priceResult = await getAssetPrice(asset);
 
-        // do pricing request
-        const data = await priceRequestPromise;
-        if (data.success) {
-          // append to prices
-          let prices = { ...newTokenData.prices };
-          prices = { ...prices, ...data.data[assetKey] };
-          newTokenData.prices = prices;
-          // update price in state
-          dispatch(updateTokenData(newTokenData));
-        }
+        let prices = { ...newTokenData.prices };
+        prices = { ...prices, ...priceResult };
+
+        // update price in state
+        newTokenData.prices = prices;
+        dispatch(updateTokenData(newTokenData));
       } catch (e) {
         console.log('error fetching price', e);
       }

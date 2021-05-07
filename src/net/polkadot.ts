@@ -2,36 +2,56 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import {
   web3Accounts,
   web3Enable,
+  web3FromSource,
 } from '@polkadot/extension-dapp';
+import {
+  InjectedAccountWithMeta,
+} from '@polkadot/extension-inject/types';
+import { Dispatch } from 'redux';
+import Web3 from 'web3';
+import { Contract } from 'web3-eth-contract';
+import { PromiEvent } from 'web3-core';
 import {
   setPolkadotAddress, setPolkadotApi, setPolkadotJSMissing, subscribeEvents,
 } from '../redux/actions/net';
 
 // Config
-import { POLKADOT_API_PROVIDER } from '../config';
-
-import {
-  fetchPolkadotGasBalance,
-} from '../redux/actions/transactions';
-import Api from './api';
-import { TokenData } from '../redux/reducers/bridge';
+import { BASIC_CHANNEL_ID, POLKADOT_API_PROVIDER } from '../config';
+import Api, { ss58ToU8 } from './api';
+import { Asset, isDot, isErc20 } from '../types/Asset';
+import { updateBalances } from '../redux/actions/bridge';
 
 export default class Polkadot extends Api {
   // Get all polkadot addresses
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  public static async getAddresses() {
+  public static async getAddresses(): Promise<InjectedAccountWithMeta[]> {
     const allAccounts = await web3Accounts();
     return allAccounts;
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  public static async getDefaultAddress() {
+  public static async getDefaultAddress(): Promise<InjectedAccountWithMeta> {
     const allAccounts = await web3Accounts();
 
     if (allAccounts[0]) {
       return allAccounts[0];
     }
-    return null;
+
+    throw new Error('No default polkadot account');
+  }
+
+  public static async getAccount(polkadotAddress: string): Promise<InjectedAccountWithMeta> {
+    const addresses = await Polkadot.getAddresses();
+    const account = addresses
+      .filter(
+        ({ address }) => address === polkadotAddress,
+      );
+
+    if (account[0]) {
+      return account[0];
+    }
+
+    throw new Error('No valid account for that address');
   }
 
   public static async getGasCurrencyBalance(
@@ -49,18 +69,24 @@ export default class Polkadot extends Api {
     }
   }
 
-  // Query account balance for bridged assets (ETH and ERC20)
-  public static async getEthBalance(
+  // Query account balance for specified asset
+  public static async getAssetBalance(
     polkadotApi: ApiPromise,
     polkadotAddress: string,
-    tokenData?: TokenData,
+    asset: Asset,
   ): Promise<string> {
     try {
       if (polkadotApi) {
+        // check if the asset is the native DOT asset and return DOT balance
+        if (isDot(asset)) {
+          const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
+          return balance;
+        }
+
         let ethAssetID = polkadotApi.createType('AssetId', 'ETH');
         // create asset ID for tokens
-        if (tokenData?.token?.address && tokenData?.token?.address !== '0x0') {
-          ethAssetID = polkadotApi.createType('AssetId', { Token: tokenData?.token?.address });
+        if (isErc20(asset)) {
+          ethAssetID = polkadotApi.createType('AssetId', { Token: asset.address });
         }
         if (polkadotAddress) {
           const balance = await polkadotApi.query.assets.balances(
@@ -81,7 +107,7 @@ export default class Polkadot extends Api {
   }
 
   // Polkadotjs API connector
-  public static async connect(dispatch: any): Promise<void> {
+  public static async connect(dispatch: Dispatch<any>): Promise<void> {
     try {
       // check that the polkadot.js extension is available
       const extensions = await web3Enable('Snowbridge');
@@ -174,7 +200,8 @@ export default class Polkadot extends Api {
       }
 
       // fetch polkadot account details
-      dispatch(fetchPolkadotGasBalance());
+      dispatch(updateBalances());
+
       // Here we subscribe to the parachain events
       dispatch(subscribeEvents());
     } catch (err) {
@@ -182,6 +209,59 @@ export default class Polkadot extends Api {
         dispatch(setPolkadotJSMissing());
       }
       throw new Error('Poldotjs API endpoint not Connected');
+    }
+  }
+
+  public static async lockDot(
+    polkadotApi: ApiPromise,
+    ethAddress: string,
+    polkadotAddress: string,
+    amount: string,
+    callback: (result: any) => void,
+  ): Promise<any> {
+    const account = await this.getAccount(polkadotAddress);
+
+    if (account) {
+      // to be able to retrieve the signer interface from this account
+      // we can use web3FromSource which will return an InjectedExtension type
+      const injector = await web3FromSource(account.meta.source);
+
+      return polkadotApi?.tx.dot.lock(
+        BASIC_CHANNEL_ID,
+        ethAddress,
+        amount,
+      )
+        .signAndSend(account.address, { signer: injector.signer }, callback);
+    }
+
+    throw new Error('Failed locking dot');
+  }
+
+  public static unlockDot(
+    appDotContract: Contract,
+    ethAddress: string,
+    polkadotAddress: string,
+    amount: string,
+  ): PromiEvent<Contract> {
+    try {
+      const amountWrapped = Web3.utils.toBN(amount);
+      const recipientBytes = ss58ToU8(polkadotAddress!);
+
+      return appDotContract?.methods.burn(
+        recipientBytes,
+        amountWrapped,
+        //  TODO: use incentivized channel ID?
+        BASIC_CHANNEL_ID,
+      )
+        .send({
+          from: ethAddress,
+          gas: 500000,
+          value: 0,
+        });
+    } catch (err) {
+      // Todo: Error Sending Ethereum
+      console.log(err);
+      throw new Error('failed unlocking DOT');
     }
   }
 }

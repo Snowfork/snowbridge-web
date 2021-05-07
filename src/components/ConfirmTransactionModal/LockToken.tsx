@@ -13,25 +13,27 @@ import {
 
 // Local
 import { useDispatch, useSelector } from 'react-redux';
+import { utils } from 'ethers';
+import { BigNumber } from 'bignumber.js';
 import { RootState } from '../../redux/reducers';
-import { lockToken } from '../../redux/actions/transactions';
 import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
 import LoadingSpinner from '../LoadingSpinner';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
-
+import { decimals, isErc20 } from '../../types/Asset';
+import { doTransfer } from '../../redux/actions/transactions';
+import { SwapDirection } from '../../types/types';
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
 function LockToken(): React.ReactElement {
   const { allowance } = useSelector((state: RootState) => state.ERC20Transactions);
-  const { polkadotAddress } = useSelector((state: RootState) => state.net);
-  const { selectedAsset, depositAmount } = useSelector((state: RootState) => state.bridge);
+  const { selectedAsset, depositAmount, swapDirection } = useSelector(
+    (state: RootState) => state.bridge,
+  );
   const [isApprovalPending, setIsApprovalPending] = useState(false);
 
   const dispatch = useDispatch();
-
-  const isERC20 = selectedAsset?.token?.address !== '0x0';
   const currentTokenAllowance = allowance;
 
   // update allowances to prevent failed transactions
@@ -54,13 +56,9 @@ function LockToken(): React.ReactElement {
   // lock assets
   const handleDepositToken = async () => {
     try {
-      await dispatch(lockToken(
-        depositAmount.toString(),
-        selectedAsset!.token,
-        polkadotAddress!,
-      ));
+      dispatch(doTransfer());
     } catch (e) {
-      console.log('Failed to lock eth asset', e);
+      console.log('Failed to transfer asset', e);
     } finally {
       dispatch(setShowConfirmTransactionModal(false));
     }
@@ -70,7 +68,7 @@ function LockToken(): React.ReactElement {
   const handleTokenUnlock = async () => {
     try {
       setIsApprovalPending(true);
-      await dispatch(approveERC20(`${depositAmount}`));
+      await dispatch(approveERC20());
     } catch (e) {
       console.log('error approving!');
     } finally {
@@ -78,27 +76,36 @@ function LockToken(): React.ReactElement {
     }
   };
 
+  const currentAllowanceFormatted = new BigNumber(currentTokenAllowance.toString());
+  const depositAmountFormatted = new BigNumber(
+    utils.parseUnits(
+      depositAmount.toString(),
+      decimals(selectedAsset!, swapDirection).from,
+    ).toString(),
+  );
+
+  // we don't need approval to burn snowDot
+  // we only need approval for erc20 transfers in eth -> polkadot direction
+  const requiresApproval = swapDirection === SwapDirection.EthereumToPolkadot
+  && isErc20(selectedAsset!)
+  && depositAmountFormatted.isGreaterThan(currentAllowanceFormatted);
+
   const DepositButton = () => {
-    if (isERC20) {
-      if (
-        Number.parseFloat(currentTokenAllowance.toString())
-        < Number.parseFloat(depositAmount.toString())
-      ) {
-        return (
-          <Button
-            variant="contained"
-            size="large"
-            color="primary"
-            onClick={handleTokenUnlock}
-            disabled={isApprovalPending}
-          >
-            Unlock Token
-            {
+    if (requiresApproval) {
+      return (
+        <Button
+          variant="contained"
+          size="large"
+          color="primary"
+          onClick={handleTokenUnlock}
+          disabled={isApprovalPending}
+        >
+          Unlock Token
+          {
               isApprovalPending && <LoadingSpinner spinnerWidth="40px" spinnerHeight="40px" />
             }
-          </Button>
-        );
-      }
+        </Button>
+      );
     }
 
     return (
@@ -110,7 +117,7 @@ function LockToken(): React.ReactElement {
       >
         Deposit
         {' '}
-        {selectedAsset?.token.symbol }
+        {selectedAsset?.symbol }
       </Button>
     );
   };

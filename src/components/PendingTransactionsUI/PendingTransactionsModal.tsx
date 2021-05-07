@@ -7,6 +7,7 @@ import {
 import Modal from '../Modal';
 import LoadingSpinner from '../LoadingSpinner';
 import { RootState } from '../../redux/reducers';
+import { symbols } from '../../types/Asset';
 
 type Props = {
     isOpen: boolean,
@@ -15,9 +16,7 @@ type Props = {
 
 const PendingTransactionsModal = ({ isOpen, closeModal }: Props): React.ReactElement<Props> => {
   const transactions = useSelector((state: RootState) => state.transactions);
-  const ethToSnow = transactions?.pendingTransaction?.chain === 'eth';
-  const baseTokenSymbol = transactions?.pendingTransaction?.token.symbol;
-  const snowTokenSymbol = `Snow${baseTokenSymbol}`;
+  const bridge = useSelector((state: RootState) => state.bridge);
 
   return (
     <Modal
@@ -37,15 +36,25 @@ const PendingTransactionsModal = ({ isOpen, closeModal }: Props): React.ReactEle
                     <h4>
                       Bridging
                       {' '}
-                      {transactions.pendingTransaction?.amount}
+                      {bridge.depositAmount}
                       {' '}
-                      {ethToSnow ? baseTokenSymbol : snowTokenSymbol}
+                      {
+                      symbols(
+                        transactions.pendingTransaction.asset,
+                        bridge.swapDirection,
+                      ).from
+                      }
                       {' '}
                       to
                       {' '}
-                      {transactions.pendingTransaction?.amount}
+                      {bridge.depositAmount}
                       {' '}
-                      {ethToSnow ? snowTokenSymbol : baseTokenSymbol}
+                      {
+                      symbols(
+                        transactions.pendingTransaction.asset,
+                        bridge.swapDirection,
+                      ).to
+                      }
                     </h4>
                     <div>Confirm this transaction in your wallet</div>
                   </div>

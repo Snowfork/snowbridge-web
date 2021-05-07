@@ -23,6 +23,7 @@ import {
   SET_POLKADOT_API,
   SET_NETWORK_CONNECTED,
   SET_BASIC_CHANNEL_CONTRACT,
+  SET_APP_DOT_CONTRACT,
 } from '../actionsTypes/net';
 
 export const setMetamaskMissing = (): {type: string} => ({
@@ -73,6 +74,12 @@ export interface SetBasicChannelContractPayload { type: string, contract: Contra
 export const setBasicChannelContract = (contract: Contract)
   : SetBasicChannelContractPayload => ({
   type: SET_BASIC_CHANNEL_CONTRACT,
+  contract,
+});
+
+export interface SetAppDotContractPayload {type: string, contract: Contract}
+export const setAppDotContract = (contract: Contract) : SetAppDotContractPayload => ({
+  type: SET_APP_DOT_CONTRACT,
   contract,
 });
 

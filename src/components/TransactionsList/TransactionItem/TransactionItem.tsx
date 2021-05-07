@@ -2,6 +2,8 @@ import React from 'react';
 import * as S from './TransactionItem.style';
 import { Transaction } from '../../../redux/reducers/transactions';
 import PendingTransactionsUI from '../../PendingTransactionsUI';
+import FormatAmount from '../../FormatAmount';
+import { decimals, symbols } from '../../../types/Asset';
 
 type Props = {
   transaction: Transaction;
@@ -10,24 +12,27 @@ type Props = {
 function TransactionItem({
   transaction,
 }: Props): React.ReactElement<Props> {
-  const ethToSnow = transaction.chain === 'eth';
-  const baseTokenSymbol = transaction.token.symbol;
-  const snowTokenSymbol = `Snow${baseTokenSymbol}`;
-
+  const { from } = decimals(transaction.asset, transaction.direction);
   return (
     <S.Wrapper>
       <S.Details>
         Bridge
         {' '}
-        {transaction.amount}
+        <FormatAmount
+          amount={transaction.amount}
+          decimals={from}
+        />
         {' '}
-        {ethToSnow ? baseTokenSymbol : snowTokenSymbol}
+        {symbols(transaction.asset, transaction.direction).from}
         {' '}
         to
         {' '}
-        {transaction.amount}
+        <FormatAmount
+          amount={transaction.amount}
+          decimals={from}
+        />
         {' '}
-        {ethToSnow ? snowTokenSymbol : baseTokenSymbol}
+        {symbols(transaction.asset, transaction.direction).to}
       </S.Details>
       {transaction.status}
       <PendingTransactionsUI transaction={transaction} />
