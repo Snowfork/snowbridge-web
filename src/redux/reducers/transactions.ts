@@ -24,6 +24,7 @@ import {
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { Asset } from '../../types/Asset';
 import { Chain, SwapDirection } from '../../types/types';
+import { RootState } from '.';
 
 export enum TransactionStatus {
   // used for error states
@@ -211,5 +212,10 @@ function transactionsReducer(state: TransactionsState = initialState, action: an
       return state;
   }
 }
+
+export const transactionsInProgressSelector = (state: RootState): Transaction[] => state
+  .transactions
+  .transactions
+  .filter((tx) => tx.status < TransactionStatus.DISPATCHED);
 
 export default transactionsReducer;

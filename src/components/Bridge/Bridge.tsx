@@ -49,10 +49,10 @@ function Bridge(): React.ReactElement {
   // state
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const { showConfirmTransactionModal } = useSelector((state: RootState) => state.bridge);
-  const tokenBalances = useSelector((state: RootState) => tokenBalancesByNetwork(state));
-  const transferUsdValue = useSelector((state: RootState) => tokenSwapUsdValueSelector(state));
-  const dot = useSelector((state: RootState) => dotSelector(state));
-  const ether = useSelector((state: RootState) => etherSelector(state));
+  const tokenBalances = useSelector(tokenBalancesByNetwork);
+  const transferUsdValue = useSelector(tokenSwapUsdValueSelector);
+  const dot = useSelector(dotSelector);
+  const ether = useSelector(etherSelector);
 
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethereumGasBalance = ether?.balance?.eth;
@@ -70,16 +70,17 @@ function Bridge(): React.ReactElement {
 
   const theme = useTheme();
   const dispatch = useDispatch();
-  const decimalMap = decimals(selectedAsset!, swapDirection);
+  const decimalMap = decimals(selectedAsset, swapDirection);
 
   // side effects
   // validate deposit amount on update
   useEffect(() => {
-    if (
-      new BigNumber(
+    if (depositAmount
+      && decimalMap.from
+      && new BigNumber(
         // make sure we are comparing the same units
         utils.parseUnits(
-          depositAmount || '0', selectedAsset?.decimals,
+          depositAmount || '0', decimalMap.from,
         ).toString(),
       )
         .isGreaterThan(
@@ -90,7 +91,7 @@ function Bridge(): React.ReactElement {
     } else {
       setErrors((errors) => ({ ...errors, balance: undefined }));
     }
-  }, [depositAmount, swapDirection]);
+  }, [depositAmount, selectedAsset, tokenBalances.sourceNetwork, decimalMap.from]);
 
   // poll APIs to keep balances up to date
   useEffect(() => {
@@ -105,7 +106,7 @@ function Bridge(): React.ReactElement {
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [dispatch]);
 
   // check the user has enough gas for the transaction
   useEffect(() => {

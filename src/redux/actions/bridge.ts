@@ -14,6 +14,7 @@ import {
   SET_DEPOSIT_AMOUNT,
   SET_SWAP_DIRECTION,
   SET_SHOW_CONFIRM_TRANSACTION_MODAL,
+  SET_SHOW_TRANSACTIONS_LIST,
 } from '../actionsTypes/bridge';
 import { fetchERC20Allowance } from './ERC20Transactions';
 import { Asset, createAsset } from '../../types/Asset';
@@ -51,6 +52,12 @@ export interface SetShowConfirmTransactionModalPayload {type: string, open: bool
 export const setShowConfirmTransactionModal = (open: boolean)
   : SetShowConfirmTransactionModalPayload => ({
   type: SET_SHOW_CONFIRM_TRANSACTION_MODAL,
+  open,
+});
+
+export interface SetShowTransactionListPayload {type: string, open: boolean}
+export const setShowTransactionList = (open: boolean) : SetShowTransactionListPayload => ({
+  type: SET_SHOW_TRANSACTIONS_LIST,
   open,
 });
 

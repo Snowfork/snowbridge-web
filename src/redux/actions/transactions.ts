@@ -31,6 +31,7 @@ import {
 import { doEthTransfer } from './EthTransactions';
 import { doPolkadotTransfer } from './PolkadotTransactions';
 import { notify } from './notifications';
+import { setShowConfirmTransactionModal, setShowTransactionList } from './bridge';
 
 export interface AddTransactionPayload { type: string, transaction: Transaction }
 export const addTransaction = (transaction: Transaction): AddTransactionPayload => ({
@@ -198,6 +199,8 @@ export function handlePolkadotTransactionEvents(
         { ...pendingTransaction, status: TransactionStatus.WAITING_FOR_CONFIRMATION },
       ),
     );
+    dispatch(setShowConfirmTransactionModal(false));
+    dispatch(setShowTransactionList(true));
     return;
   }
 
@@ -248,7 +251,7 @@ export function handlePolkadotTransactionEvents(
     );
     // unsubscribe from transaction events
     if (unsub) {
-      (unsub as any)();
+      unsub();
     }
   }
 }
@@ -274,6 +277,9 @@ export function handleEthereumTransactionEvents(
     })
     .on('transactionHash', async (hash: string) => {
       console.log('Transaction hash received', hash);
+      dispatch(setShowConfirmTransactionModal(false));
+      dispatch(setShowTransactionList(true));
+
       transactionHash = hash;
 
       dispatch(
@@ -353,6 +359,7 @@ export function handleEthereumTransactionEvents(
       dispatch(setPendingTransaction({
         ...pendingTransaction,
         status: TransactionStatus.REJECTED,
+        error: error.message,
       }));
 
       dispatch(notify({

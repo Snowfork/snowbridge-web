@@ -6,7 +6,7 @@ interface Props {
     decimals: number
 }
 
-export default function FormatAmount({ amount, decimals }: Props): React.ReactElement {
+export default function FormatAmount({ amount = '0', decimals = 0 }: Props): React.ReactElement {
   let formattedAmount = amount;
 
   try {

@@ -1,4 +1,3 @@
-import { Button } from '@material-ui/core';
 import React, { ReactNode } from 'react';
 import ReactModal from 'react-modal';
 
@@ -10,29 +9,30 @@ const customStyles = {
     bottom: 'auto',
     marginRight: '-50%',
     transform: 'translate(-50%, -50%)',
+    overflow: 'hidden',
   },
 };
 
 type Props = {
   children: ReactNode;
   isOpen: boolean;
-  closeModal: () => void;
-  buttonText: string;
+  onClose: () => void;
 };
 
 function Modal({
-  children, isOpen, closeModal, buttonText,
+  children,
+  isOpen,
+  onClose,
 }: Props): JSX.Element {
   return (
     <div>
       <ReactModal
         isOpen={isOpen}
-        onRequestClose={closeModal}
+        onRequestClose={onClose}
         style={customStyles}
-        contentLabel="Example Modal"
+
       >
         {children}
-        <Button onClick={closeModal}>{buttonText}</Button>
       </ReactModal>
     </div>
   );

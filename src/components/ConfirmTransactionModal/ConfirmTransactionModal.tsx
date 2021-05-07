@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactModal from 'react-modal';
 import {
   Grid,
@@ -12,6 +12,8 @@ import { RootState } from '../../redux/reducers';
 import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import LockToken from './LockToken';
+import { symbols } from '../../types/Asset';
+import PendingTransactionsModal from '../PendingTransactionsUI/PendingTransactions';
 
 const customStyles = {
   overlay: {},
@@ -36,6 +38,7 @@ function ConfirmTransactionModal({
 }: Props): React.ReactElement<Props> {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(open);
+  const [isPending, setIsPending] = useState(false);
   const {
     ethAddress,
     polkadotAddress,
@@ -46,13 +49,22 @@ function ConfirmTransactionModal({
     swapDirection,
   } = useSelector((state: RootState) => state.bridge);
 
-  useEffect(() => {
-    setIsOpen(open);
-  }, [open, setIsOpen]);
-
-  function closeModal() {
+  const closeModal = useCallback(() => {
     setIsOpen(false);
     dispatch(setShowConfirmTransactionModal(false));
+    setIsPending(false);
+  }, [setIsOpen, setIsPending, dispatch]);
+
+  useEffect(() => {
+    if (open) {
+      setIsOpen(true);
+    } else {
+      closeModal();
+    }
+  }, [open, setIsOpen, closeModal]);
+
+  function onTokenLocked() {
+    setIsPending(true);
   }
 
   const addresses = {
@@ -73,58 +85,66 @@ function ConfirmTransactionModal({
         contentLabel="Confirm Transaction"
       >
         <Paper>
-          <Grid container justify="center">
-            <Grid item>
-              <Typography>
-                Confirm transfer
-              </Typography>
-            </Grid>
+          {
+            isPending ? <PendingTransactionsModal /> : (
+              <Grid container justify="center">
 
-            <Grid item container justify="center">
-              <Typography variant="h4">
-                {depositAmount}
-                {' '}
-                {selectedAsset?.symbol}
-              </Typography>
-            </Grid>
+                <Grid item>
+                  <Typography>
+                    Confirm transfer
+                  </Typography>
+                </Grid>
 
-            <Grid item container justify="space-between">
-              <Grid item>
-                <Typography>
-                  {getNetworkNames(swapDirection).from}
-                </Typography>
-                <Typography variant="caption">
-                  Sending Address
-                </Typography>
-                <Typography>
-                  {
-                    shortenWalletAddress(
-                      addresses.from ?? '',
-                    )
-                  }
-                </Typography>
+                <Grid item container justify="center">
+                  <Typography variant="h4">
+                    {depositAmount}
+                    {' '}
+                    {
+                      selectedAsset
+                      && symbols(selectedAsset, swapDirection).from
+                    }
+                  </Typography>
+                </Grid>
+
+                <Grid item container justify="space-between">
+                  <Grid item>
+                    <Typography>
+                      {getNetworkNames(swapDirection).from}
+                    </Typography>
+                    <Typography variant="caption">
+                      Sending Address
+                    </Typography>
+                    <Typography>
+                      {
+                        shortenWalletAddress(
+                          addresses.from ?? '',
+                        )
+                      }
+                    </Typography>
+                  </Grid>
+                  <ArrowRightIcon />
+                  <Grid item>
+                    <Typography>
+                      {getNetworkNames(swapDirection).to}
+                    </Typography>
+                    <Typography variant="caption">
+                      Receiving Address
+                    </Typography>
+                    <Typography>
+                      {
+                        shortenWalletAddress(
+                          addresses.to ?? '',
+                        )
+                      }
+                    </Typography>
+                  </Grid>
+
+                </Grid>
+
+                <LockToken onTokenLocked={onTokenLocked} />
               </Grid>
-              <ArrowRightIcon />
-              <Grid item>
-                <Typography>
-                  {getNetworkNames(swapDirection).to}
-                </Typography>
-                <Typography variant="caption">
-                  Receiving Address
-                </Typography>
-                <Typography>
-                  {
-                    shortenWalletAddress(
-                      addresses.to ?? '',
-                    )
-                  }
-                </Typography>
-              </Grid>
-
-            </Grid>
-
-            <LockToken />
-          </Grid>
+            )
+          }
 
         </Paper>
       </ReactModal>
