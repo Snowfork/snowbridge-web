@@ -12,7 +12,10 @@ import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
 import {
-  setPolkadotAddress, setPolkadotApi, setPolkadotJSMissing, subscribeEvents,
+  setPolkadotAddress,
+  setPolkadotApi,
+  setPolkadotjsMissing,
+  subscribeEvents,
 } from '../redux/actions/net';
 
 // Config
@@ -207,7 +210,7 @@ export default class Polkadot extends Api {
     } catch (err) {
       console.log('error starting polkadot network', err);
       if (err.message === 'PolkadotJS missing') {
-        dispatch(setPolkadotJSMissing());
+        dispatch(setPolkadotjsMissing());
       }
       throw new Error('Poldotjs API endpoint not Connected');
     }

@@ -1,9 +1,5 @@
-import {
-  SetERC20AllowancePayload,
-} from '../actions/ERC20Transactions';
-import {
-  SET_TOKEN_ALLOWANCE,
-} from '../actionsTypes/ERC20Transactions';
+/* eslint-disable no-param-reassign */
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface ERC20TransactionsState {
   allowance: number;
@@ -13,17 +9,14 @@ const initialState: ERC20TransactionsState = {
   allowance: 0,
 };
 
-function transactionsReducer(state: ERC20TransactionsState = initialState, action: any)
-  : ERC20TransactionsState {
-  switch (action.type) {
-    case SET_TOKEN_ALLOWANCE: {
-      return ((action: SetERC20AllowancePayload) => (
-        { ...state, allowance: action.allowance }
-      ))(action);
-    }
-    default:
-      return state;
-  }
-}
+export const erc20TransactionsSlice = createSlice({
+  name: 'erc20Transactions',
+  initialState,
+  reducers: {
+    setERC20Allowance: (state, action: PayloadAction<number>) => {
+      state.allowance = action.payload;
+    },
+  },
+});
 
-export default transactionsReducer;
+export default erc20TransactionsSlice.reducer;

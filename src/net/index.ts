@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux';
 import Eth from './eth';
 import Polkadot from './polkadot';
-import { setIsNetworkConnected } from '../redux/actions/net';
+import { setNetworkConnected } from '../redux/actions/net';
 
 export default class Net {
   // Start net
@@ -12,9 +12,9 @@ export default class Net {
       // connect to polkadot
       await Polkadot.connect(dispatch);
 
-      dispatch(setIsNetworkConnected(true));
+      dispatch(setNetworkConnected(true));
     } catch (e) {
-      dispatch(setIsNetworkConnected(false));
+      dispatch(setNetworkConnected(false));
       console.log('failed starting the network!');
       console.log(e);
       throw new Error('failed starting the network!');

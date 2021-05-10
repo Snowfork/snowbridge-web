@@ -1,23 +1,9 @@
+/* eslint-disable no-param-reassign */
 import BigNumber from 'bignumber.js';
-import { RootState } from '.';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '../store';
 import { Asset, isDot, isEther } from '../../types/Asset';
 import { SwapDirection } from '../../types/types';
-import {
-  SetDepositAmountPayload,
-  SetSelectedAssetPayload,
-  SetShowConfirmTransactionModalPayload,
-  SetShowTransactionListPayload,
-  SetSwapDirectionPayload,
-  SetTokenListPayload,
-} from '../actions/bridge';
-import {
-  SET_DEPOSIT_AMOUNT,
-  SET_SELECTED_ASSET,
-  SET_SHOW_CONFIRM_TRANSACTION_MODAL,
-  SET_SHOW_TRANSACTIONS_LIST,
-  SET_SWAP_DIRECTION,
-  SET_TOKEN_LIST,
-} from '../actionsTypes/bridge';
 
 export interface BridgeState {
   assets: Asset[],
@@ -37,54 +23,34 @@ const initialState: BridgeState = {
   showTransactionsList: false,
 };
 
-function bridgeReducer(state: BridgeState = initialState, action: any)
-  : BridgeState {
-  switch (action.type) {
-    case SET_TOKEN_LIST: {
-      return ((action: SetTokenListPayload): BridgeState => ({
-        ...state,
-        assets: action.list,
-      }))(action);
-    }
-    case SET_SELECTED_ASSET: {
-      return ((action: SetSelectedAssetPayload): BridgeState => ({
-        ...state,
-        selectedAsset: action.asset,
-      }))(action);
-    }
-    case SET_DEPOSIT_AMOUNT: {
-      return ((action: SetDepositAmountPayload): BridgeState => ({
-        ...state,
-        depositAmount: action.amount,
-      }))(action);
-    }
-    case SET_SWAP_DIRECTION: {
-      return ((action: SetSwapDirectionPayload): BridgeState => ({
-        ...state,
-        swapDirection: action.direction,
-      }))(action);
-    }
-    case SET_SHOW_CONFIRM_TRANSACTION_MODAL: {
-      return ((action: SetShowConfirmTransactionModalPayload): BridgeState => ({
-        ...state,
-        showConfirmTransactionModal: action.open,
-      }))(action);
-    }
-    case SET_SHOW_TRANSACTIONS_LIST: {
-      return ((action: SetShowTransactionListPayload): BridgeState => ({
-        ...state,
-        showTransactionsList: action.open,
-      }))(action);
-    }
-    default:
-      return state;
-  }
-}
+// export default bridgeReducer;
+export const bridgeSlice = createSlice({
+  name: 'bridge',
+  initialState,
+  reducers: {
+    _setTokenList:
+      (state, action: PayloadAction<Asset[]>) => { state.assets = action.payload; },
+    _setSelectedAsset:
+      (state, action: PayloadAction<Asset>) => { state.selectedAsset = action.payload; },
+    setDepositAmount:
+     (state, action: PayloadAction<string>) => { state.depositAmount = action.payload; },
+    setSwapDirection:
+     (state, action: PayloadAction<SwapDirection>) => {
+       state.swapDirection = action.payload;
+     },
+    setShowConfirmTransactionModal:
+     (state, action: PayloadAction<boolean>) => {
+       state.showConfirmTransactionModal = action.payload;
+     },
+    setShowTransactionList:
+     (state, action: PayloadAction<boolean>) => { state.showTransactionsList = action.payload; },
 
-export default bridgeReducer;
+  },
+});
+
+export default bridgeSlice.reducer;
 
 // selectors
-
 export const tokenBalancesByNetwork = (state: RootState):
  {sourceNetwork: string, destinationNetwork: string} => {
   let result = {

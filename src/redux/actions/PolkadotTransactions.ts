@@ -2,7 +2,7 @@
 
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import { RootState } from '../reducers';
+import { RootState } from '../store';
 import {
   setPendingTransaction,
   createTransaction,
@@ -38,7 +38,7 @@ export const lockPolkadotAsset = (
   } = state.bridge;
 
   try {
-    const pendingTransaction = createTransaction(
+    let pendingTransaction = createTransaction(
       polkadotAddress!,
       ethAddress!,
       amount,
@@ -54,7 +54,7 @@ export const lockPolkadotAsset = (
       polkadotAddress!,
       amount,
       (res: any) => {
-        handlePolkadotTransactionEvents(
+        const tx = handlePolkadotTransactionEvents(
           res,
             unsub!,
             pendingTransaction,
@@ -62,6 +62,11 @@ export const lockPolkadotAsset = (
             incentivizedChannelContract!,
             basicChannelContract!,
         );
+
+        // tx will be updated in handlePolkadotTransactionEvents
+        // write this to pendingTransaction so it can
+        // have the latest values for the next iteration
+        pendingTransaction = tx;
       },
     )
       .catch((error: any) => {

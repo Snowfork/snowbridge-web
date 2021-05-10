@@ -1,30 +1,10 @@
+/* eslint-disable no-param-reassign */
 import { EventData } from 'web3-eth-contract';
-import {
-  ADD_TRANSACTION,
-  SET_CONFIRMATIONS,
-  SET_NONCE,
-  SET_TRANSACTION_STATUS,
-  UPDATE_TRANSACTION,
-  PARACHAIN_MESSAGE_DISPATCHED,
-  POLKA_ETH_BURNED,
-  SET_PENDING_TRANSACTION,
-  ETH_MESSAGE_DISPATCHED_EVENT,
-} from '../actionsTypes/transactions';
-import {
-  AddTransactionPayload,
-  SetTransactionStatusPayload,
-  UpdateTransactionPayload,
-  SetConfirmationsPayload,
-  ParachainMessageDispatchedPayload,
-  PolkaEthBurnedPayload,
-  SetPendingTransactionPayload,
-  EthMessageDispatchedPayload,
-  SetNoncePayload,
-} from '../actions/transactions';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { Asset } from '../../types/Asset';
 import { Chain, SwapDirection } from '../../types/types';
-import { RootState } from '.';
+import { RootState } from '../store';
 
 export enum TransactionStatus {
   // used for error states
@@ -87,135 +67,84 @@ const initialState: TransactionsState = {
   pendingTransaction: undefined,
 };
 
-function transactionsReducer(state: TransactionsState = initialState, action: any)
-  : TransactionsState {
-  switch (action.type) {
-    case ADD_TRANSACTION: {
-      return ((action: AddTransactionPayload) => ({
-        ...state,
-        transactions: [...state.transactions, action.transaction],
-        pendingTransaction: action.transaction,
-      }))(action);
-    }
-    case SET_CONFIRMATIONS: {
-      return ((action: SetConfirmationsPayload) => {
-        const getTransactionStatus = (transaction: Transaction): TransactionStatus => {
-          // check if the transaction has already been relayed to polkadot
-          if (action.confirmations >= REQUIRED_ETH_CONFIRMATIONS) {
-            if (transaction.isMinted) {
-              return TransactionStatus.RELAYED;
-            }
-            return TransactionStatus.WAITING_FOR_RELAY;
+export const transactionsSlice = createSlice({
+  name: 'transactions',
+  initialState,
+  reducers: {
+    addTransaction: (state, action: PayloadAction<Transaction>) => {
+      // append to tx list
+      state.transactions.push(action.payload);
+      // update pending tx
+      state.pendingTransaction = action.payload;
+    },
+    setConfirmations: (state, action: PayloadAction<{confirmations: number, hash: string}>) => {
+      const getTransactionStatus = (transaction: Transaction): TransactionStatus => {
+        // check if the transaction has already been relayed to polkadot
+        if (action.payload.confirmations >= REQUIRED_ETH_CONFIRMATIONS) {
+          if (transaction.isMinted) {
+            return TransactionStatus.RELAYED;
           }
-          return TransactionStatus.CONFIRMING;
-        };
+          return TransactionStatus.WAITING_FOR_RELAY;
+        }
+        return TransactionStatus.CONFIRMING;
+      };
 
-        return {
-          ...state,
-          transactions: state.transactions.map(
-            (t) => (
-              t.hash === action.hash
-                ? {
-                  ...t,
-                  confirmations: action.confirmations,
-                  // ensure we don't downgrade the status
-                  status: getTransactionStatus(t) > t.status ? getTransactionStatus(t) : t.status,
-                }
-                : t),
-          ),
-        };
-      })(action);
-    }
-    case SET_TRANSACTION_STATUS: {
-      return ((action: SetTransactionStatusPayload) => (
-        {
-          ...state,
-          transactions: state.transactions.map(
-            (t) => (
-              t.hash === action.hash
-                ? {
-                  ...t,
-                  // ensure we don't downgrade the status
-                  status: action.status > t.status ? action.status : t.status,
-                }
-                : t
-            ),
-          ),
-        }))(action);
-    }
-    case UPDATE_TRANSACTION: {
-      return ((action: UpdateTransactionPayload) => (
-        {
-          ...state,
-          transactions: state.transactions.map(
-            (t) => (t.hash === action.hash ? { ...t, ...action.updates } : t),
-          ),
-        }))(action);
-    }
-    case SET_NONCE: {
-      return ((action: SetNoncePayload) => (
-        {
-          ...state,
-          transactions: state.transactions.map(
-            (t) => (t.hash === action.hash ? { ...t, nonce: action.nonce } : t),
-          ),
-        }))(action);
-    }
-    // Called when an PolkaEth asset has been minted by the parachain
-    case PARACHAIN_MESSAGE_DISPATCHED: {
-      return ((action: ParachainMessageDispatchedPayload): TransactionsState => ({
-        ...state,
-        transactions: state.transactions.map((t) => ((t.nonce === action.nonce)
-          ? {
-            ...t,
-            isMinted: true,
-            status: TransactionStatus.DISPATCHED,
-          }
-          : t)),
-      }))(action);
-    }
-    // TODO: Properly map PolkaEth submitted assets to burned assets
-    // Called when an PolkaEth asset has been burned by the parachain
-    case POLKA_ETH_BURNED: {
-      return ((action: PolkaEthBurnedPayload) => ({
-        ...state,
-        transactions: state.transactions.map((t) => ((t.amount === action.event.amount
-              && t.receiver === action.event.accountId)
-          ? { ...t, isBurned: true, status: TransactionStatus.WAITING_FOR_RELAY }
-          : t)),
-      }))(action);
-    }
-    case SET_PENDING_TRANSACTION: {
-      return ((action: SetPendingTransactionPayload) => (
-        {
-          ...state,
-          pendingTransaction: action.transaction,
-        }))(action);
-    }
-    case ETH_MESSAGE_DISPATCHED_EVENT: {
-      return ((action: EthMessageDispatchedPayload) => {
-        const isMatchingTransaction = (transaction: Transaction)
-          : boolean => action.nonce === transaction.nonce;
-        return {
-          ...state,
-          transactions: state.transactions.map((t) => (isMatchingTransaction(t)
-            ? {
-              ...t,
-              status: TransactionStatus.DISPATCHED,
-              dispatchTransactionHash: action.dispatchTransactionHash,
-            }
-            : t)),
-        };
-      })(action);
-    }
-    default:
-      return state;
-  }
-}
+      const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
+
+      if (transaction) {
+        transaction.confirmations = action.payload.confirmations;
+        const status = getTransactionStatus(transaction as Transaction);
+        if (status > transaction.status) {
+          transaction.status = status;
+        }
+      }
+    },
+    setTransactionStatus: (state, action: PayloadAction<{hash: string, status: TransactionStatus}>) => {
+      const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
+
+      if (transaction) {
+        if (transaction.status < action.payload.status) {
+          transaction.status = action.payload.status;
+        }
+      }
+    },
+    updateTransaction: (state, action: PayloadAction<{hash: string, update: Partial<Transaction>}>) => {
+      state.transactions = state.transactions.map((tx) => (tx.hash === action.payload.hash ? { ...tx, ...action.payload.update } : tx));
+    },
+    setNonce: (state, action: PayloadAction<{hash: string, nonce: string}>) => {
+      const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
+
+      if (transaction) {
+        transaction.nonce = action.payload.nonce;
+      }
+    },
+    parachainMessageDispatched: (state, action: PayloadAction<{nonce: string}>) => {
+      const transaction = state.transactions.filter((tx) => tx.nonce === action.payload.nonce)[0];
+      if (transaction) {
+        transaction.isMinted = true;
+        transaction.status = TransactionStatus.DISPATCHED;
+      }
+    },
+    // polkaEthBurned: (state, action: PayloadAction<PolkaEthBurnedEvent>) => {
+    //   console.log('reducer got polkaeth burned!', action);
+    //   // const transaction = state.transactions.filter((tx) => tx.nonce === action.payload.nonce)[0];
+    // },
+    setPendingTransaction: (state, action: PayloadAction<Transaction>) => {
+      state.pendingTransaction = action.payload;
+    },
+    ethMessageDispatched: (state, action: PayloadAction<{nonce: string, dispatchTransactionNonce: string}>) => {
+      const transaction = state.transactions.filter((tx) => tx.nonce === action.payload.nonce)[0];
+      if (transaction) {
+        transaction.status = TransactionStatus.DISPATCHED;
+        transaction.dispatchTransactionHash = action.payload.dispatchTransactionNonce;
+      }
+    },
+  },
+});
+
+export default transactionsSlice.reducer;
 
 export const transactionsInProgressSelector = (state: RootState): Transaction[] => state
   .transactions
   .transactions
   .filter((tx) => tx.status < TransactionStatus.DISPATCHED);
-
-export default transactionsReducer;

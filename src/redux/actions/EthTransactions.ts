@@ -3,7 +3,7 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
-import { RootState } from '../reducers';
+import { RootState } from '../store';
 import {
   setPendingTransaction,
   createTransaction,
@@ -23,7 +23,7 @@ import { Chain, SwapDirection } from '../../types/types';
 export const lockEthAsset = (
   amount: string,
 ):
-    ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>,
   getState,
 ): Promise<void> => {
@@ -43,22 +43,22 @@ export const lockEthAsset = (
     if (ethAddress) {
       if (web3 && ethContract && erc20Contract) {
         const pendingTransaction = createTransaction(
-          ethAddress!,
-          polkadotAddress!,
-          amount,
-          Chain.ETHEREUM,
-          selectedAsset!,
-          SwapDirection.EthereumToPolkadot,
+            ethAddress!,
+            polkadotAddress!,
+            amount,
+            Chain.ETHEREUM,
+            selectedAsset!,
+            SwapDirection.EthereumToPolkadot,
         );
         dispatch(setPendingTransaction(pendingTransaction));
 
         const transactionEvent: any = EthApi.lock(
           amount,
-          selectedAsset!,
-          ethAddress!,
-          polkadotAddress!,
-          ethContract,
-          erc20Contract,
+            selectedAsset!,
+            ethAddress!,
+            polkadotAddress!,
+            ethContract,
+            erc20Contract,
         );
 
         handleEthereumTransactionEvents(
@@ -96,7 +96,7 @@ export const unlockEthAsset = (amount: string):
   } = state.bridge;
 
   if (polkadotApi) {
-    const pendingTransaction = createTransaction(
+    let pendingTransaction = createTransaction(
         polkadotAddress!,
         ethAddress!,
         amount,
@@ -104,24 +104,30 @@ export const unlockEthAsset = (amount: string):
         selectedAsset!,
         SwapDirection.PolkadotToEthereum,
     );
-    dispatch(setPendingTransaction(pendingTransaction));
+      // set pending to open pending tx status modal
+    await dispatch(setPendingTransaction(pendingTransaction));
 
     const unsub = await EthApi.unlock(
       amount,
-        selectedAsset!,
-        polkadotAddress!,
-        ethAddress!,
-        polkadotApi,
-        (res: any) => {
-          handlePolkadotTransactionEvents(
-            res,
-            unsub,
-            pendingTransaction,
-            dispatch,
-            incentivizedChannelContract!,
-            basicChannelContract!,
-          );
-        },
+      selectedAsset!,
+      polkadotAddress!,
+      ethAddress!,
+      polkadotApi,
+      (result: any) => {
+        const tx = handlePolkadotTransactionEvents(
+          result,
+          unsub,
+          pendingTransaction,
+          dispatch,
+          incentivizedChannelContract!,
+          basicChannelContract!,
+        );
+
+        // tx will be updated in handlePolkadotTransactionEvents
+        // write this to pendingTransaction so it can
+        // have the latest values for the next iteration
+        pendingTransaction = tx;
+      },
     )
       .catch((error: any) => {
         handlePolkadotTransactionErrors(

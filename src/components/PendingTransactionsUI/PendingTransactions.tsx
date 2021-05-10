@@ -1,15 +1,14 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import {
   TransactionStatus,
 } from '../../redux/reducers/transactions';
 import LoadingSpinner from '../LoadingSpinner';
-import { RootState } from '../../redux/reducers';
 import { symbols } from '../../types/Asset';
+import { useAppSelector } from '../../utils/hooks';
 
 const PendingTransaction = (): React.ReactElement => {
-  const transactions = useSelector((state: RootState) => state.transactions);
-  const bridge = useSelector((state: RootState) => state.bridge);
+  const transactions = useAppSelector((state) => state.transactions);
+  const bridge = useAppSelector((state) => state.bridge);
 
   /* tx rejected / error */
   if (transactions.pendingTransaction?.status === TransactionStatus.REJECTED) {

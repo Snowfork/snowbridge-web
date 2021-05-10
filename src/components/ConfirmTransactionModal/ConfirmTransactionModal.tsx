@@ -6,14 +6,14 @@ import {
   Typography,
 } from '@material-ui/core';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { getNetworkNames, shortenWalletAddress } from '../../utils/common';
-import { RootState } from '../../redux/reducers';
 import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import LockToken from './LockToken';
 import { symbols } from '../../types/Asset';
 import PendingTransactionsModal from '../PendingTransactionsUI/PendingTransactions';
+import { useAppSelector } from '../../utils/hooks';
 
 const customStyles = {
   overlay: {},
@@ -42,12 +42,12 @@ function ConfirmTransactionModal({
   const {
     ethAddress,
     polkadotAddress,
-  } = useSelector((state: RootState) => state.net);
+  } = useAppSelector((state) => state.net);
   const {
     selectedAsset,
     depositAmount,
     swapDirection,
-  } = useSelector((state: RootState) => state.bridge);
+  } = useAppSelector((state) => state.bridge);
 
   const closeModal = useCallback(() => {
     setIsOpen(false);

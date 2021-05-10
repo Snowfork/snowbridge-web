@@ -1,65 +1,28 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import { Chain, SwapDirection, Token } from '../../types/types';
-import { RootState } from '../reducers';
+import { Chain, Token } from '../../types/types';
+import { RootState } from '../store';
 import * as ERC20 from '../../contracts/ERC20.json';
 import * as WrappedToken from '../../contracts/WrappedToken.json';
 import { getAssetPrice } from '../../net/api';
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
-import {
-  SET_TOKEN_LIST,
-  SET_SELECTED_ASSET,
-  SET_DEPOSIT_AMOUNT,
-  SET_SWAP_DIRECTION,
-  SET_SHOW_CONFIRM_TRANSACTION_MODAL,
-  SET_SHOW_TRANSACTIONS_LIST,
-} from '../actionsTypes/bridge';
 import { fetchERC20Allowance } from './ERC20Transactions';
 import { Asset, createAsset } from '../../types/Asset';
 import Erc20TokenList from '../../assets/tokens/Erc20Tokens';
 import DotTokenList from '../../assets/tokens/DotTokens';
 import EthTokenList from '../../assets/tokens/EthTokens';
-import { dotSelector, etherSelector } from '../reducers/bridge';
+import { dotSelector, etherSelector, bridgeSlice } from '../reducers/bridge';
 
-export interface SetTokenListPayload { type: string, list: Asset[] }
-export const _setTokenList = (list: Asset[]): SetTokenListPayload => ({
-  type: SET_TOKEN_LIST,
-  list,
-});
-
-export interface SetSelectedAssetPayload {type: string, asset: Asset}
-export const _setSelectedAsset = (asset: Asset)
-    : SetSelectedAssetPayload => ({
-  type: SET_SELECTED_ASSET,
-  asset,
-});
-
-export interface SetDepositAmountPayload { type: string, amount: string }
-export const setDepositAmount = (amount: string): SetDepositAmountPayload => ({
-  type: SET_DEPOSIT_AMOUNT,
-  amount,
-});
-
-export interface SetSwapDirectionPayload { type: string, direction: SwapDirection }
-export const setSwapDirection = (direction: SwapDirection): SetSwapDirectionPayload => ({
-  type: SET_SWAP_DIRECTION,
-  direction,
-});
-
-export interface SetShowConfirmTransactionModalPayload {type: string, open: boolean}
-export const setShowConfirmTransactionModal = (open: boolean)
-  : SetShowConfirmTransactionModalPayload => ({
-  type: SET_SHOW_CONFIRM_TRANSACTION_MODAL,
-  open,
-});
-
-export interface SetShowTransactionListPayload {type: string, open: boolean}
-export const setShowTransactionList = (open: boolean) : SetShowTransactionListPayload => ({
-  type: SET_SHOW_TRANSACTIONS_LIST,
-  open,
-});
+export const {
+  _setTokenList,
+  _setSelectedAsset,
+  setDepositAmount,
+  setShowConfirmTransactionModal,
+  setShowTransactionList,
+  setSwapDirection,
+} = bridgeSlice.actions;
 
 // async middleware actions
 // sets selected asset and updates ERC20 spend allowance
@@ -68,7 +31,8 @@ export const updateSelectedAsset = (asset: Asset):
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
 ): Promise<void> => {
   // upate selected asset
-  dispatch(_setSelectedAsset(asset));
+
+  dispatch(bridgeSlice.actions._setSelectedAsset(asset));
 
   // update erc spending allowance
   dispatch(fetchERC20Allowance());
@@ -94,7 +58,7 @@ export const updateTokenData = (asset: Asset):
 
     return _asset;
   });
-  dispatch(_setTokenList(updatedTokens as Asset[]));
+  dispatch(bridgeSlice.actions._setTokenList(updatedTokens as Asset[]));
 
   // update token data in selected asset
   if (selectedAsset?.address === asset.address) {
@@ -163,9 +127,9 @@ export const updateBalances = ():
     // fetch updated balances
     const ethBalance = await EthApi.getTokenBalance(web3!, ethAddress!, selectedAsset);
     const polkadotBalance = await Polkadot.getAssetBalance(
-      polkadotApi!,
-      polkadotAddress!,
-      selectedAsset,
+        polkadotApi!,
+        polkadotAddress!,
+        selectedAsset,
     );
 
     const updatedTokenData = {
@@ -196,7 +160,7 @@ export const initializeTokens = ():
     const web3 = state!.net.web3!;
     // only include tokens from  current network
     const networkFilter = (token: Token) => token.chainId
-    === Number.parseInt((web3.currentProvider as any).chainId, 16);
+        === Number.parseInt((web3.currentProvider as any).chainId, 16);
 
     const erc20TokenListFiltered = tokens.filter(
       networkFilter,
@@ -225,8 +189,8 @@ export const initializeTokens = ():
         if (token.address.length === 42) {
           //   create token contract instance
           contractInstance = new web3.eth.Contract(
-           ERC20.abi as any,
-           token.address,
+              ERC20.abi as any,
+              token.address,
           );
         }
 
@@ -258,7 +222,7 @@ export const initializeTokens = ():
     // and asynchronously update the token list as we get each result
 
     assetList.map(async (asset: Asset) => {
-      const newTokenData = asset;
+      let newTokenData = asset;
 
       // fetch token balances on substrate
       try {
@@ -268,7 +232,13 @@ export const initializeTokens = ():
             asset,
         );
 
-        newTokenData.balance.polkadot = polkadotBalance;
+        newTokenData = {
+          ...newTokenData,
+          balance: {
+            ...newTokenData.balance,
+            polkadot: polkadotBalance,
+          },
+        };
         dispatch(updateTokenData(newTokenData));
       } catch (e) {
         console.log('failed reading polkadot balance', e);
@@ -281,14 +251,20 @@ export const initializeTokens = ():
             asset,
         );
 
-        newTokenData.balance.eth = ethBalance;
+        newTokenData = {
+          ...newTokenData,
+          balance: {
+            ...newTokenData.balance,
+            eth: ethBalance,
+          },
+        };
         dispatch(updateTokenData(newTokenData));
       } catch (e) {
         console.log('failed reading eth balance', e);
       }
 
       try {
-      // fetch token price from coin gecko
+        // fetch token price from coin gecko
         const priceResult = await getAssetPrice(asset);
 
         let prices = { ...newTokenData.prices };
