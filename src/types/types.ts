@@ -1,3 +1,5 @@
+import { Contract } from 'web3-eth-contract';
+
 // ERC20 interface for tokens in the token list
 export interface Token {
   chainId: number;
@@ -6,6 +8,15 @@ export interface Token {
   symbol: string;
   decimals: number
   logoURI: string;
+}
+
+// ERC721 token interface
+export interface NonFungibleToken {
+  chainId: number;
+  address: string;
+  name: string;
+  symbol: string;
+  contract: Contract;
 }
 
 export enum Chain {

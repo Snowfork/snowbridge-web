@@ -1,18 +1,21 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import { Chain, Token } from '../../types/types';
+import { Chain, NonFungibleToken, Token } from '../../types/types';
 import { RootState } from '../store';
 import * as ERC20 from '../../contracts/ERC20.json';
 import * as WrappedToken from '../../contracts/WrappedToken.json';
 import { getAssetPrice } from '../../net/api';
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
+import * as Erc721Api from '../../net/ERC721';
 import { fetchERC20Allowance } from './ERC20Transactions';
 import { Asset, createAsset } from '../../types/Asset';
 import Erc20TokenList from '../../assets/tokens/Erc20Tokens';
 import DotTokenList from '../../assets/tokens/DotTokens';
 import EthTokenList from '../../assets/tokens/EthTokens';
+import Erc721TokenList from '../../assets/tokens/Erc721Tokens';
+import ERC721Contract from '../../contracts/TestToken721.json';
 import { dotSelector, etherSelector, bridgeSlice } from '../reducers/bridge';
 
 export const {
@@ -22,6 +25,8 @@ export const {
   setShowConfirmTransactionModal,
   setShowTransactionList,
   setSwapDirection,
+  setNonFungibleAssets,
+  addOwnedNonFungibleAsset,
 } = bridgeSlice.actions;
 
 // async middleware actions
@@ -211,6 +216,21 @@ export const initializeTokens = ():
       );
     assetList = assetList.concat(dotAssets);
 
+    // ERC721 tokens
+    const nftAssets = Erc721TokenList
+      .filter(
+        (nft) => nft.chainId === Number.parseInt((web3.currentProvider as any).chainId, 16),
+      )
+      .map((token): NonFungibleToken => ({
+        name: token.name,
+        symbol: token.symbol,
+        chainId: token.chainId,
+        address: token.address,
+        contract: new web3.eth.Contract(ERC721Contract.abi as any, token.address),
+      }));
+
+    dispatch(setNonFungibleAssets(nftAssets));
+
     // store the token list
     dispatch(_setTokenList(assetList));
     // set default selected token to first token from list
@@ -278,4 +298,32 @@ export const initializeTokens = ():
       }
     });
   }
+};
+
+export const fetchOwnedNonFungibleAssets = ():
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
+): Promise<void> => {
+  const state = getState() as RootState;
+
+  const {
+    bridge: {
+      nonFungibleAssets,
+    },
+    net: {
+      ethAddress,
+    },
+  } = state;
+
+  nonFungibleAssets.map(
+    async (nft: NonFungibleToken) => {
+      const tokenIds = await Erc721Api.fetchTokensForAddress(nft.contract, ethAddress!);
+      dispatch(addOwnedNonFungibleAsset({ contractAddress: nft.address, tokenIds }));
+
+      return {
+        contract: nft.address,
+        tokens: tokenIds,
+      };
+    },
+  );
 };

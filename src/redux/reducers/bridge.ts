@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { Asset, isDot, isEther } from '../../types/Asset';
-import { SwapDirection } from '../../types/types';
+import { NonFungibleToken, SwapDirection } from '../../types/types';
 
 export interface BridgeState {
   assets: Asset[],
@@ -11,7 +11,9 @@ export interface BridgeState {
   depositAmount: string,
   swapDirection: SwapDirection,
   showConfirmTransactionModal: boolean,
-  showTransactionsList: boolean
+  showTransactionsList: boolean,
+  nonFungibleAssets: NonFungibleToken[],
+  ownedNonFungibleAssets: { [contractAddress: string]: string[] }
 }
 
 const initialState: BridgeState = {
@@ -21,6 +23,8 @@ const initialState: BridgeState = {
   swapDirection: SwapDirection.EthereumToPolkadot,
   showConfirmTransactionModal: false,
   showTransactionsList: false,
+  nonFungibleAssets: [],
+  ownedNonFungibleAssets: {},
 };
 
 // export default bridgeReducer;
@@ -44,7 +48,12 @@ export const bridgeSlice = createSlice({
      },
     setShowTransactionList:
      (state, action: PayloadAction<boolean>) => { state.showTransactionsList = action.payload; },
-
+    setNonFungibleAssets: (state, action: PayloadAction<NonFungibleToken[]>) => {
+      state.nonFungibleAssets = action.payload;
+    },
+    addOwnedNonFungibleAsset: (state, action: PayloadAction<{ contractAddress: string, tokenIds: string[] }>) => {
+      state.ownedNonFungibleAssets[action.payload.contractAddress] = action.payload.tokenIds;
+    },
   },
 });
 

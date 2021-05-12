@@ -18,6 +18,7 @@ import ConfirmTransactionModal from '../ConfirmTransactionModal';
 import SelectTokenModal from '../SelectTokenModal';
 import TabPanel from '../TabPanel';
 import { FungibleTokens } from './FungibleTokens';
+import { NonFungibleTokens } from './NonFungibleTokens';
 
 // ------------------------------------------
 //               Bank component
@@ -25,7 +26,7 @@ import { FungibleTokens } from './FungibleTokens';
 function Bridge(): React.ReactElement {
   // state
   const [showAssetSelector, setShowAssetSelector] = useState(false);
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState(1);
   const { showConfirmTransactionModal } = useAppSelector((state) => state.bridge);
 
   const theme = useTheme();
@@ -78,7 +79,7 @@ function Bridge(): React.ReactElement {
           <FungibleTokens setShowAssetSelector={setShowAssetSelector} />
         </TabPanel>
         <TabPanel value={selectedTab} index={1}>
-          Non-Fungible tokens
+          <NonFungibleTokens />
         </TabPanel>
 
       </Paper>
