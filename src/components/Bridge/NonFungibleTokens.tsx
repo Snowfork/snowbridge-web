@@ -8,12 +8,15 @@ export const NonFungibleTokens = () => {
     bridge: {
       ownedNonFungibleAssets,
     },
+    net: {
+      ethAddress,
+    },
   } = useSelector((state: RootState) => state);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(fetchOwnedNonFungibleAssets());
-  }, [dispatch]);
+  }, [dispatch, ethAddress]);
 
   return (
     <div>

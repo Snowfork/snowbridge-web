@@ -27,6 +27,7 @@ export const {
   setSwapDirection,
   setNonFungibleTokenList,
   addOwnedNonFungibleAsset,
+  resetOwnedNonFungibleAssets,
 } = bridgeSlice.actions;
 
 // async middleware actions
@@ -305,6 +306,9 @@ export const fetchOwnedNonFungibleAssets = ():
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
 ): Promise<void> => {
   const state = getState() as RootState;
+
+  // clear out old data
+  dispatch(resetOwnedNonFungibleAssets());
 
   const {
     bridge: {

@@ -57,6 +57,9 @@ export const bridgeSlice = createSlice({
           .ownedNonFungibleAssets[ownedNft.address as any] = action.payload;
       });
     },
+    resetOwnedNonFungibleAssets: (state) => {
+      state.ownedNonFungibleAssets = {};
+    },
   },
 });
 
