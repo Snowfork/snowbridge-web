@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import { Chain, NonFungibleToken, Token } from '../../types/types';
+import { Chain, NonFungibleTokenContract, Token } from '../../types/types';
 import { RootState } from '../store';
 import * as ERC20 from '../../contracts/ERC20.json';
 import * as WrappedToken from '../../contracts/WrappedToken.json';
@@ -25,7 +25,7 @@ export const {
   setShowConfirmTransactionModal,
   setShowTransactionList,
   setSwapDirection,
-  setNonFungibleAssets,
+  setNonFungibleTokenList,
   addOwnedNonFungibleAsset,
 } = bridgeSlice.actions;
 
@@ -221,7 +221,7 @@ export const initializeTokens = ():
       .filter(
         (nft) => nft.chainId === Number.parseInt((web3.currentProvider as any).chainId, 16),
       )
-      .map((token): NonFungibleToken => ({
+      .map((token): NonFungibleTokenContract => ({
         name: token.name,
         symbol: token.symbol,
         chainId: token.chainId,
@@ -229,7 +229,7 @@ export const initializeTokens = ():
         contract: new web3.eth.Contract(ERC721Contract.abi as any, token.address),
       }));
 
-    dispatch(setNonFungibleAssets(nftAssets));
+    dispatch(setNonFungibleTokenList(nftAssets));
 
     // store the token list
     dispatch(_setTokenList(assetList));
@@ -316,13 +316,11 @@ export const fetchOwnedNonFungibleAssets = ():
   } = state;
 
   nonFungibleAssets.map(
-    async (nft: NonFungibleToken) => {
-      const tokenIds = await Erc721Api.fetchTokensForAddress(nft.contract, ethAddress!);
-      dispatch(addOwnedNonFungibleAsset({ contractAddress: nft.address, tokenIds }));
+    async (nft: NonFungibleTokenContract) => {
+      const ownedNfts = await Erc721Api.fetchTokensForAddress(nft.contract, ethAddress!);
+      dispatch(addOwnedNonFungibleAsset(ownedNfts));
 
       return {
-        contract: nft.address,
-        tokens: tokenIds,
       };
     },
   );

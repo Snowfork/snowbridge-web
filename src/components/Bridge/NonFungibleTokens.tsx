@@ -18,13 +18,21 @@ export const NonFungibleTokens = () => {
   return (
     <div>
       {
+
           Object.keys(ownedNonFungibleAssets).map((contract, index) => (
             <div key={index}>
-              <h3>{contract}</h3>
+              <h3>{Object.values(ownedNonFungibleAssets[contract as any])[0]?.name}</h3>
+              <h5>{contract}</h5>
               <ul>
                 {
-                    Object.values(ownedNonFungibleAssets[contract as any]).map((id, index) => (
-                      <li key={index}>{id}</li>
+                    Object.values(ownedNonFungibleAssets[contract as any]).map((ownedNft, index) => (
+                      <li key={index}>
+                        <img src={ownedNft.tokenURI} alt="token preview" />
+                        <p>
+                          id:
+                          {ownedNft.id}
+                        </p>
+                      </li>
                     ))
                 }
               </ul>

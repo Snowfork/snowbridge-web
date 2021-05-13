@@ -10,13 +10,21 @@ export interface Token {
   logoURI: string;
 }
 
-// ERC721 token interface
-export interface NonFungibleToken {
+// ERC721 token interface for contract list
+export interface NonFungibleTokenContract {
   chainId: number;
   address: string;
   name: string;
   symbol: string;
   contract: Contract;
+}
+
+// ERC721 token instance interface
+export interface OwnedNft {
+  address: string,
+  id: string,
+  name: string,
+  tokenURI: string
 }
 
 export enum Chain {

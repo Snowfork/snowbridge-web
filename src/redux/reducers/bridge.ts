@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { Asset, isDot, isEther } from '../../types/Asset';
-import { NonFungibleToken, SwapDirection } from '../../types/types';
+import { NonFungibleTokenContract, OwnedNft, SwapDirection } from '../../types/types';
 
 export interface BridgeState {
   assets: Asset[],
@@ -12,8 +12,8 @@ export interface BridgeState {
   swapDirection: SwapDirection,
   showConfirmTransactionModal: boolean,
   showTransactionsList: boolean,
-  nonFungibleAssets: NonFungibleToken[],
-  ownedNonFungibleAssets: { [contractAddress: string]: string[] }
+  nonFungibleAssets: NonFungibleTokenContract[],
+  ownedNonFungibleAssets: { [contractAddress: string]: OwnedNft[]}
 }
 
 const initialState: BridgeState = {
@@ -48,11 +48,14 @@ export const bridgeSlice = createSlice({
      },
     setShowTransactionList:
      (state, action: PayloadAction<boolean>) => { state.showTransactionsList = action.payload; },
-    setNonFungibleAssets: (state, action: PayloadAction<NonFungibleToken[]>) => {
+    setNonFungibleTokenList: (state, action: PayloadAction<NonFungibleTokenContract[]>) => {
       state.nonFungibleAssets = action.payload;
     },
-    addOwnedNonFungibleAsset: (state, action: PayloadAction<{ contractAddress: string, tokenIds: string[] }>) => {
-      state.ownedNonFungibleAssets[action.payload.contractAddress] = action.payload.tokenIds;
+    addOwnedNonFungibleAsset: (state, action: PayloadAction<OwnedNft[]>) => {
+      action.payload.forEach((ownedNft) => {
+        state
+          .ownedNonFungibleAssets[ownedNft.address as any] = action.payload;
+      });
     },
   },
 });
