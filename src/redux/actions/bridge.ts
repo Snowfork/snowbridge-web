@@ -156,7 +156,10 @@ function initCollectibles(web3: Web3) {
   return Erc721TokenList
     .tokens
     .filter(
-      (nft) => nft.chainId === Number.parseInt((web3.currentProvider as any).chainId, 16),
+      (nft) => nft.chainId === Number.parseInt(
+        (web3.currentProvider as any
+        ).chainId, 16,
+      ) && nft.standard === 'erc721',
     )
     .map((token): NonFungibleTokenContract => ({
       name: token.name,
@@ -324,13 +327,14 @@ export const fetchOwnedNonFungibleAssets = ():
     },
   } = state;
 
-  nonFungibleAssets.map(
-    async (nft: NonFungibleTokenContract) => {
-      const ownedNfts = await Erc721Api.fetchTokensForAddress(nft.contract, ethAddress!);
-      dispatch(addOwnedNonFungibleAsset(ownedNfts));
+  nonFungibleAssets
+    .map(
+      async (nft: NonFungibleTokenContract) => {
+        const ownedNfts = await Erc721Api.fetchTokensForAddress(nft.contract, ethAddress!);
+        dispatch(addOwnedNonFungibleAsset(ownedNfts));
 
-      return {
-      };
-    },
-  );
+        return {
+        };
+      },
+    );
 };

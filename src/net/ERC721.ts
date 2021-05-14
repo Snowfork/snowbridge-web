@@ -2,6 +2,15 @@ import { Contract } from 'web3-eth-contract';
 import { OwnedNft } from '../types/types';
 
 /**
+ * Uses ERC165 to check if a contract implements IERC721Enumerable (0x780e9d63)
+ * @param contract
+ */
+export async function isEnumerable(contract: Contract) : Promise<boolean> {
+  const IERC721EnumerableSelector = '0x780e9d63';
+  return contract.methods.supportsInterface(IERC721EnumerableSelector).call();
+}
+
+/**
  * Queries a token contract to find the tokens owned by the user
  * token
  * @param {contractInstance} any The web3 contract instance for the ERC721 token
@@ -13,6 +22,11 @@ export async function fetchTokensForAddress(
 ):
     Promise<OwnedNft[]> {
   try {
+    const isEnum = await isEnumerable(contractInstance);
+    if (!isEnum) {
+      return [];
+    }
+
     const balance = Number.parseFloat(
       await contractInstance.methods.balanceOf(ownerAddress).call(),
     );
