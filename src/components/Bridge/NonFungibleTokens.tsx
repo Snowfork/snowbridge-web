@@ -30,7 +30,7 @@ export const NonFungibleTokens = () => {
                 {
                     Object.values(ownedNonFungibleAssets[contract as any]).map((ownedNft, index) => (
                       <li key={index}>
-                        <img src={ownedNft.tokenURI} alt="token preview" />
+                        {ownedNft.tokenURI && <img src={ownedNft.tokenURI} alt="token preview" />}
                         <p>
                           id:
                           {ownedNft.id}
