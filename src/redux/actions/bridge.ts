@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
+import Web3 from 'web3';
 import { Chain, NonFungibleTokenContract, Token } from '../../types/types';
 import { RootState } from '../store';
 import * as ERC20 from '../../contracts/ERC20.json';
@@ -14,7 +15,7 @@ import { Asset, createAsset } from '../../types/Asset';
 import Erc20TokenList from '../../assets/tokens/Erc20Tokens';
 import DotTokenList from '../../assets/tokens/DotTokens';
 import EthTokenList from '../../assets/tokens/EthTokens';
-import Erc721TokenList from '../../assets/tokens/Erc721Tokens';
+import Erc721TokenList from '../../assets/tokens/collectible.tokenlist.json';
 import ERC721Contract from '../../contracts/TestToken721.json';
 import { dotSelector, etherSelector, bridgeSlice } from '../reducers/bridge';
 
@@ -151,6 +152,21 @@ export const updateBalances = ():
   dispatch(updateGasBalances());
 };
 
+function initCollectibles(web3: Web3) {
+  return Erc721TokenList
+    .tokens
+    .filter(
+      (nft) => nft.chainId === Number.parseInt((web3.currentProvider as any).chainId, 16),
+    )
+    .map((token): NonFungibleTokenContract => ({
+      name: token.name,
+      symbol: token.symbol,
+      chainId: token.chainId,
+      address: token.address,
+      contract: new web3.eth.Contract(ERC721Contract.abi as any, token.address),
+    }));
+}
+
 // use the token list to instantiate contract instances
 // and store them in redux. We also query the balance to use later
 export const initializeTokens = ():
@@ -218,18 +234,7 @@ export const initializeTokens = ():
     assetList = assetList.concat(dotAssets);
 
     // ERC721 tokens
-    const nftAssets = Erc721TokenList
-      .filter(
-        (nft) => nft.chainId === Number.parseInt((web3.currentProvider as any).chainId, 16),
-      )
-      .map((token): NonFungibleTokenContract => ({
-        name: token.name,
-        symbol: token.symbol,
-        chainId: token.chainId,
-        address: token.address,
-        contract: new web3.eth.Contract(ERC721Contract.abi as any, token.address),
-      }));
-
+    const nftAssets = initCollectibles(web3);
     dispatch(setNonFungibleTokenList(nftAssets));
 
     // store the token list
