@@ -7,18 +7,23 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
-import { MessageDispatchedEvent } from 'asset-transfer-sdk/lib/types';
-import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import {
-  Asset, decimals, isDot, isEther, symbols,
-} from '../../types/Asset';
-import { Chain, SwapDirection } from '../../types/types';
-import { RootState } from '../store';
-import {
-  Transaction,
+  MessageDispatchedEvent,
   TransactionStatus,
-  transactionsSlice,
-} from '../reducers/transactions';
+  Chain,
+  SwapDirection,
+  Asset,
+  Transaction,
+} from 'asset-transfer-sdk/lib/types';
+import {
+  isDot,
+  decimals,
+  symbols,
+  isEther,
+} from 'asset-transfer-sdk/lib/utils';
+import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
+import { RootState } from '../store';
+import { transactionsSlice } from '../reducers/transactions';
 import { doEthTransfer } from './EthTransactions';
 import { doPolkadotTransfer } from './PolkadotTransactions';
 import { notify } from './notifications';
@@ -35,6 +40,7 @@ export const {
   updateTransaction,
 } = transactionsSlice.actions;
 
+// TODO: why is this a thunk
 export const updateConfirmations = (
   hash: string, confirmations: number,
 ):
@@ -101,6 +107,26 @@ export function createTransaction(
   };
 
   return pendingTransaction;
+}
+
+// events
+export function onTransactionReady(
+  result: any,
+  pendingTransaction: Transaction,
+  dispatch: Dispatch<any>,
+): Transaction {
+  const hash = (Math.random() * 100).toString();
+  const tx = { ...pendingTransaction, hash, status: TransactionStatus.WAITING_FOR_CONFIRMATION };
+
+  dispatch(
+    addTransaction(
+      pendingTransaction,
+    ),
+  );
+  dispatch(setShowConfirmTransactionModal(false));
+  dispatch(setShowTransactionList(true));
+
+  return tx;
 }
 
 // This will be used in EthTransactions.unlock and PolkadotTransactions.lock
@@ -354,3 +380,52 @@ export function handlePolkadotTransactionErrors(
     });
   }
 }
+
+// The following functions are event handlers.
+// They will be used in EthTransactions.unlock and PolkadotTransactions.lock
+// This is shared logic that will:
+//  be used as a callback for polkadot transaction events
+//  update the transaction state
+
+export const onReady = (transaction: Transaction, dispatch: Dispatch<any>) => {
+  console.log('on ready ', transaction);
+  dispatch(
+    addTransaction(
+      transaction,
+    ),
+  );
+  dispatch(setShowConfirmTransactionModal(false));
+  dispatch(setShowTransactionList(true));
+};
+
+export const onInBlock = (transaction: Transaction, dispatch: Dispatch<any>) => {
+  console.log('inblock with tx', transaction);
+  dispatch(
+    updateTransaction(
+      {
+        hash: transaction.hash,
+        update: transaction,
+      },
+    ),
+  );
+};
+
+export const onFinalized = (transaction: Transaction, dispatch: Dispatch<any>) => {
+  console.log('finalized with tx', transaction);
+  dispatch(
+    setTransactionStatus({
+      hash: transaction.hash,
+      status: TransactionStatus.WAITING_FOR_RELAY,
+    }),
+  );
+};
+
+export const onChannelMessageDispatched = (transaction: Transaction, dispatch: Dispatch<any>) => {
+  console.log('msg dispatched with tx', transaction);
+  dispatch(
+    ethMessageDispatched({
+      nonce: transaction.nonce!,
+      dispatchTransactionNonce: transaction.nonce!,
+    }),
+  );
+};

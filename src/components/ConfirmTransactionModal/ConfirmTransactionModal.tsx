@@ -7,11 +7,11 @@ import {
 } from '@material-ui/core';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { useDispatch } from 'react-redux';
+import { SwapDirection } from 'asset-transfer-sdk/lib/types';
+import { symbols } from 'asset-transfer-sdk/lib/utils';
 import { getNetworkNames, shortenWalletAddress } from '../../utils/common';
-import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import LockToken from './LockToken';
-import { symbols } from '../../types/Asset';
 import PendingTransactionsModal from '../PendingTransactionsUI/PendingTransactions';
 import { useAppSelector } from '../../utils/hooks';
 

@@ -3,6 +3,9 @@ import Web3 from 'web3';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { Dispatch } from 'redux';
 import { AssetTransferSdk } from 'asset-transfer-sdk/lib';
+import { Asset } from 'asset-transfer-sdk/lib/types';
+import { isEther } from 'asset-transfer-sdk/lib/utils';
+
 import Api from './api';
 
 /* tslint:enable */
@@ -13,7 +16,6 @@ import {
   setWeb3,
 } from '../redux/actions/net';
 import { updateBalances } from '../redux/actions/bridge';
-import { Asset, isEther } from '../types/Asset';
 import { fetchEthAddress } from '../redux/actions/EthTransactions';
 
 export default class Eth extends Api {

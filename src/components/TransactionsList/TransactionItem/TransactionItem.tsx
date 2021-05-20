@@ -1,9 +1,9 @@
 import React from 'react';
+import { decimals, symbols } from 'asset-transfer-sdk/lib/utils';
+import { Transaction } from 'asset-transfer-sdk/lib/types';
 import * as S from './TransactionItem.style';
-import { Transaction } from '../../../redux/reducers/transactions';
 import PendingTransactionsUI from '../../PendingTransactionsUI';
 import FormatAmount from '../../FormatAmount';
-import { decimals, symbols } from '../../../types/Asset';
 
 type Props = {
   transaction: Transaction;

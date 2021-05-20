@@ -1,8 +1,9 @@
 import { Keyring } from '@polkadot/keyring';
 import { u8aToHex } from '@polkadot/util';
 import CoinGecko from 'coingecko-api';
+import { Asset } from 'asset-transfer-sdk/lib/types';
+import { isDot, isErc20 } from 'asset-transfer-sdk/lib/utils';
 import { PRICE_CURRENCIES } from '../config';
-import { Asset, isDot, isErc20 } from '../types/Asset';
 
 const CoinGeckoClient = new CoinGecko();
 // the currencies used to query the coin gecko api

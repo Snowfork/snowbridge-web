@@ -5,12 +5,11 @@ import {
   Typography,
 } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
+import { Asset } from 'asset-transfer-sdk/lib/types';
+import { symbols } from 'asset-transfer-sdk/lib/utils';
 
-import { utils } from 'ethers';
 import * as S from './SelectTokenModal.style';
 import { updateSelectedAsset } from '../../redux/actions/bridge';
-import { Asset, decimals, symbols } from '../../types/Asset';
-import { SwapDirection } from '../../types/types';
 import { useAppSelector } from '../../utils/hooks';
 
 const customStyles = {
@@ -60,14 +59,14 @@ function SelectTokenModal({
   }
 
   // returns display formatted balance for source chain
-  function getTokenBalance(asset: Asset): string {
-    const { from } = decimals(asset, swapDirection);
+  // function getTokenBalance(asset: Asset): string {
+  //   const { from } = decimals(asset, swapDirection);
 
-    if (swapDirection === SwapDirection.EthereumToPolkadot) {
-      return utils.formatUnits(asset.balance.eth, from);
-    }
-    return utils.formatUnits(asset.balance.polkadot, from);
-  }
+  //   if (swapDirection === SwapDirection.EthereumToPolkadot) {
+  //     return utils.formatUnits(asset.balance.eth, from);
+  //   }
+  //   return utils.formatUnits(asset.balance.polkadot, from);
+  // }
 
   return (
     <div>
@@ -95,7 +94,7 @@ function SelectTokenModal({
                         <img src={asset.logoUri} alt={`${asset.name} icon`} />
                         <div>
                           <Typography variant="caption">{symbols(asset, swapDirection).from}</Typography>
-                          <Typography>{ getTokenBalance(asset)}</Typography>
+                          {/* <Typography>{ getTokenBalance(asset)}</Typography> */}
                         </div>
                       </Button>
                     </S.Token>

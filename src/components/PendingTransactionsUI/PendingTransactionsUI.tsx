@@ -1,9 +1,6 @@
 import React from 'react';
+import { TransactionStatus, Transaction } from 'asset-transfer-sdk/lib/types';
 import { BLOCK_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../config';
-import {
-  Transaction,
-  TransactionStatus,
-} from '../../redux/reducers/transactions';
 import * as S from './PendingTransactionsUI.style';
 import Step, { StepStatus } from './Step/Step';
 

@@ -22,11 +22,12 @@ import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
+import { SwapDirection } from 'asset-transfer-sdk/lib/types';
+import { decimals, symbols } from 'asset-transfer-sdk/lib/utils';
 import SelectTokenModal from '../SelectTokenModal';
 import {
   setDepositAmount, setShowConfirmTransactionModal, setSwapDirection, updateBalances,
 } from '../../redux/actions/bridge';
-import { SwapDirection } from '../../types/types';
 import ConfirmTransactionModal from '../ConfirmTransactionModal';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 import {
@@ -37,7 +38,6 @@ import {
 } from '../../redux/reducers/bridge';
 import FormatAmount from '../FormatAmount';
 import { getNetworkNames } from '../../utils/common';
-import { decimals, symbols } from '../../types/Asset';
 import { useAppSelector } from '../../utils/hooks';
 
 enum ErrorMessages {
@@ -73,7 +73,7 @@ function Bridge(): React.ReactElement {
 
   const theme = useTheme();
   const dispatch = useDispatch();
-  const decimalMap = decimals(selectedAsset, swapDirection);
+  const decimalMap = decimals(selectedAsset!, swapDirection);
 
   // side effects
   // validate deposit amount on update

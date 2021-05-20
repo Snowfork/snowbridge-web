@@ -2,7 +2,6 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import {
   web3Accounts,
   web3Enable,
-  web3FromSource,
 } from '@polkadot/extension-dapp';
 import {
   InjectedAccountWithMeta,
@@ -11,6 +10,8 @@ import { Dispatch } from 'redux';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
+import { Asset } from 'asset-transfer-sdk/lib/types';
+import { isDot, isErc20 } from 'asset-transfer-sdk/lib/utils';
 import {
   setPolkadotAddress,
   setPolkadotApi,
@@ -21,7 +22,6 @@ import {
 // Config
 import { BASIC_CHANNEL_ID, POLKADOT_API_PROVIDER } from '../config';
 import Api, { ss58ToU8 } from './api';
-import { Asset, isDot, isErc20 } from '../types/Asset';
 import { updateBalances } from '../redux/actions/bridge';
 
 export default class Polkadot extends Api {
@@ -30,31 +30,6 @@ export default class Polkadot extends Api {
   public static async getAddresses(): Promise<InjectedAccountWithMeta[]> {
     const allAccounts = await web3Accounts();
     return allAccounts;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  public static async getDefaultAddress(): Promise<InjectedAccountWithMeta> {
-    const allAccounts = await web3Accounts();
-
-    if (allAccounts[0]) {
-      return allAccounts[0];
-    }
-
-    throw new Error('No default polkadot account');
-  }
-
-  public static async getAccount(polkadotAddress: string): Promise<InjectedAccountWithMeta> {
-    const addresses = await Polkadot.getAddresses();
-    const account = addresses
-      .filter(
-        ({ address }) => address === polkadotAddress,
-      );
-
-    if (account[0]) {
-      return account[0];
-    }
-
-    throw new Error('No valid account for that address');
   }
 
   public static async getGasCurrencyBalance(
@@ -85,7 +60,6 @@ export default class Polkadot extends Api {
           const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
           return balance;
         }
-
         let ethAssetID = polkadotApi.createType('AssetId', 'ETH');
         // create asset ID for tokens
         if (isErc20(asset)) {
@@ -216,31 +190,6 @@ export default class Polkadot extends Api {
       }
       throw new Error('Poldotjs API endpoint not Connected');
     }
-  }
-
-  public static async lockDot(
-    polkadotApi: ApiPromise,
-    ethAddress: string,
-    polkadotAddress: string,
-    amount: string,
-    callback: (result: any) => void,
-  ): Promise<any> {
-    const account = await this.getAccount(polkadotAddress);
-
-    if (account) {
-      // to be able to retrieve the signer interface from this account
-      // we can use web3FromSource which will return an InjectedExtension type
-      const injector = await web3FromSource(account.meta.source);
-
-      return polkadotApi?.tx.dot.lock(
-        BASIC_CHANNEL_ID,
-        ethAddress,
-        amount,
-      )
-        .signAndSend(account.address, { signer: injector.signer }, callback);
-    }
-
-    throw new Error('Failed locking dot');
   }
 
   public static unlockDot(

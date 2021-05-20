@@ -1,9 +1,7 @@
 import React from 'react';
-import {
-  TransactionStatus,
-} from '../../redux/reducers/transactions';
+import { TransactionStatus } from 'asset-transfer-sdk/lib/types';
+import { symbols } from 'asset-transfer-sdk/lib/utils';
 import LoadingSpinner from '../LoadingSpinner';
-import { symbols } from '../../types/Asset';
 import { useAppSelector } from '../../utils/hooks';
 
 const PendingTransaction = (): React.ReactElement => {

@@ -15,12 +15,12 @@ import {
 import { useDispatch } from 'react-redux';
 import { utils } from 'ethers';
 import { BigNumber } from 'bignumber.js';
+import { SwapDirection } from 'asset-transfer-sdk/lib/types';
+import { decimals, isErc20 } from 'asset-transfer-sdk/lib/utils';
 import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
 import LoadingSpinner from '../LoadingSpinner';
 import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
-import { decimals, isErc20 } from '../../types/Asset';
 import { doTransfer } from '../../redux/actions/transactions';
-import { SwapDirection } from '../../types/types';
 import { useAppSelector } from '../../utils/hooks';
 // ------------------------------------------
 //           LockToken component

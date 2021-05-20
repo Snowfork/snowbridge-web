@@ -1,9 +1,9 @@
 /* eslint-disable no-param-reassign */
 import BigNumber from 'bignumber.js';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Asset, SwapDirection } from 'asset-transfer-sdk/lib/types';
+import { isDot, isEther } from 'asset-transfer-sdk/lib/utils';
 import { RootState } from '../store';
-import { Asset, isDot, isEther } from '../../types/Asset';
-import { SwapDirection } from '../../types/types';
 
 export interface BridgeState {
   assets: Asset[],

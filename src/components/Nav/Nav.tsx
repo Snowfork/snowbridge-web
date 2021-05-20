@@ -50,7 +50,7 @@ function Nav(): React.ReactElement {
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethGasBalance = ether?.balance?.eth;
 
-  // fetch polkadot accountsfor the account selector on mount
+  // fetch polkadot accounts for the account selector on mount
   useEffect(() => {
     async function fetchAccounts() {
       const accounts = await Polkadot.getAddresses() as any;

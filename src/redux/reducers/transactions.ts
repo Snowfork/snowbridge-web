@@ -1,54 +1,13 @@
 /* eslint-disable no-param-reassign */
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  TransactionStatus,
+  Transaction,
+} from 'asset-transfer-sdk/lib/types';
+import { } from 'asset-transfer-sdk/lib/utils';
+
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
-import { Asset } from '../../types/Asset';
-import { Chain, SwapDirection } from '../../types/types';
 import { RootState } from '../store';
-
-export enum TransactionStatus {
-  // used for error states
-  REJECTED = -1,
-  // used when waiting for confirmation from chain
-  SUBMITTING_TO_CHAIN = 0,
-  // transaction hash recieved
-  WAITING_FOR_CONFIRMATION = 1,
-  // used when the eth transaction is confirmed
-  // and we are waiting to reach the confirmation threshold
-  CONFIRMING = 2,
-  // transaction finalized (for eth, when we reach enough confirmations.
-  // for parachain, when tx finalized)
-  FINALIZED_ON_CHAIN = 3,
-  // waiting for 'MessageDispatch' event on polkadot for eth transactions
-  // or waiting for 'MessageDispatched' event on Ethereum for polkadot transactions
-  WAITING_FOR_RELAY = 4,
-  // message dispatched on polkadot
-  RELAYED = 5,
-  // transaction dispatched to second chain
-  DISPATCHED = 6
-}
-
-export interface Transaction {
-  hash: string;
-  nonce?: string;
-  confirmations: number;
-  sender: string;
-  receiver: string;
-  amount: string;
-  status: TransactionStatus;
-  isMinted: boolean;
-  isBurned: boolean;
-  chain: Chain;
-  dispatchTransactionHash?: string;
-  error?: string;
-  asset: Asset;
-  direction: SwapDirection
-}
-
-// Interface for an PolkaEth 'Burned' event, emitted by the parachain
-export interface PolkaEthBurnedEvent {
-  accountId: string;
-  amount: string;
-}
 
 export interface TransactionsState {
   transactions: Transaction[],

@@ -20,7 +20,7 @@ export default class Net {
       const sdk = new AssetTransferSdk(
         web3,
         networkId.toString(),
-        polkadotApi,
+        polkadotApi!,
       );
       dispatch(setSdk(sdk));
       /* tslint:enable */

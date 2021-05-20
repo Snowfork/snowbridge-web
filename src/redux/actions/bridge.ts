@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import { Chain, Token } from '../../types/types';
+import { createAsset } from 'asset-transfer-sdk/lib/utils';
+import { Chain, Token, Asset } from 'asset-transfer-sdk/lib/types';
+import { Contract } from 'web3-eth-contract';
 import { RootState } from '../store';
 import * as ERC20 from '../../contracts/ERC20.json';
 import * as WrappedToken from '../../contracts/WrappedToken.json';
@@ -9,7 +11,6 @@ import { getAssetPrice } from '../../net/api';
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
 import { fetchERC20Allowance } from './ERC20Transactions';
-import { Asset, createAsset } from '../../types/Asset';
 import Erc20TokenList from '../../assets/tokens/Erc20Tokens';
 import DotTokenList from '../../assets/tokens/DotTokens';
 import EthTokenList from '../../assets/tokens/EthTokens';
@@ -189,11 +190,11 @@ export const initializeTokens = ():
 
         // All valid contract addresses have 42 characters ('0x' + address)
         if (token.address.length === 42) {
-          //   create token contract instance
+        //   create token contract instance
           contractInstance = new web3.eth.Contract(
               ERC20.abi as any,
               token.address,
-          );
+          ) as Contract;
         }
 
         return createAsset(token, Chain.ETHEREUM, token.decimals, contractInstance);

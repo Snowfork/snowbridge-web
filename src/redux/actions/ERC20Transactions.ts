@@ -2,8 +2,8 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { utils } from 'ethers';
+import { isErc20 } from 'asset-transfer-sdk/lib/utils';
 import { RootState } from '../store';
-import { isErc20 } from '../../types/Asset';
 import { erc20TransactionsSlice } from '../reducers/ERC20Transactions';
 
 // action creators

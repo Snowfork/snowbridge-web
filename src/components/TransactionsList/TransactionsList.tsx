@@ -1,8 +1,8 @@
 import React from 'react';
 import { Typography } from '@material-ui/core';
+import { Transaction } from 'asset-transfer-sdk/lib/types';
 import * as S from './TransactionsList.style';
 import TransactionItem from './TransactionItem';
-import { Transaction } from '../../redux/reducers/transactions';
 
 type Props = {
   transactions: Transaction[];
