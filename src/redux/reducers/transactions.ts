@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-import { EventData } from 'web3-eth-contract';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { Asset } from '../../types/Asset';
@@ -43,12 +42,6 @@ export interface Transaction {
   error?: string;
   asset: Asset;
   direction: SwapDirection
-}
-
-// Interface for the Ethereum 'MessageDispatched' event,
-// emitted by the Incentivized Channel smart contract
-export interface MessageDispatchedEvent extends EventData {
-  returnValues: { nonce: string, result: boolean }
 }
 
 // Interface for an PolkaEth 'Burned' event, emitted by the parachain

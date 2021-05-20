@@ -7,6 +7,7 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
+import { MessageDispatchedEvent } from 'asset-transfer-sdk/lib/types';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import {
   Asset, decimals, isDot, isEther, symbols,
@@ -14,7 +15,6 @@ import {
 import { Chain, SwapDirection } from '../../types/types';
 import { RootState } from '../store';
 import {
-  MessageDispatchedEvent,
   Transaction,
   TransactionStatus,
   transactionsSlice,

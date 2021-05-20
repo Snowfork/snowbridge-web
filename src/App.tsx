@@ -92,8 +92,8 @@ function BridgeApp(): JSX.Element {
   }
 
   if (
-    metamaskNetwork.toLowerCase()
-    !== PERMITTED_METAMASK_NETWORK.toLowerCase()
+    metamaskNetwork
+    !== PERMITTED_METAMASK_NETWORK
   ) {
     return (
       <Paper>
@@ -104,6 +104,17 @@ function BridgeApp(): JSX.Element {
           {' '}
           network in Metamask extension
         </Typography>
+        <p>
+          selected:
+          {' '}
+          {metamaskNetwork}
+        </p>
+        <p>
+          permitted:
+          {' '}
+          {PERMITTED_METAMASK_NETWORK}
+        </p>
+
       </Paper>
     );
   }

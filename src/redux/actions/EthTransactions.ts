@@ -3,17 +3,24 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
+import { MessageDispatchedEvent } from 'asset-transfer-sdk/lib/types';
 import { RootState } from '../store';
 import {
   setPendingTransaction,
   createTransaction,
-  handlePolkadotTransactionEvents,
   handleEthereumTransactionEvents,
   handlePolkadotTransactionErrors,
+  addTransaction,
+  updateTransaction,
+  setTransactionStatus,
+  ethMessageDispatched,
 } from './transactions';
 import EthApi from '../../net/eth';
 import { setEthAddress } from './net';
 import { Chain, SwapDirection } from '../../types/types';
+import { TransactionStatus } from '../reducers/transactions';
+import { setShowConfirmTransactionModal, setShowTransactionList } from './bridge';
+import { isDot } from '../../types/Asset';
 
 /**
  * Locks tokens on Ethereum and mints tokens on Polkadot
@@ -29,11 +36,10 @@ export const lockEthAsset = (
 ): Promise<void> => {
   const state = getState() as RootState;
   const {
-    ethContract,
-    erc20Contract,
     web3,
     ethAddress,
     polkadotAddress,
+    sdk,
   } = state.net;
   const {
     selectedAsset,
@@ -41,7 +47,7 @@ export const lockEthAsset = (
 
   try {
     if (ethAddress) {
-      if (web3 && ethContract && erc20Contract) {
+      if (web3) {
         const pendingTransaction = createTransaction(
             ethAddress!,
             polkadotAddress!,
@@ -52,21 +58,22 @@ export const lockEthAsset = (
         );
         dispatch(setPendingTransaction(pendingTransaction));
 
-        const transactionEvent: any = EthApi.lock(
-          amount,
-            selectedAsset!,
-            ethAddress!,
-            polkadotAddress!,
-            ethContract,
-            erc20Contract,
-        );
+        if (sdk) {
+          const transactionEvent: any = sdk
+            .ethClient!.lock(
+              amount,
+              selectedAsset!.address,
+              ethAddress!,
+              polkadotAddress!,
+            );
 
-        handleEthereumTransactionEvents(
-          transactionEvent,
-          pendingTransaction,
-          dispatch,
-          web3,
-        );
+          handleEthereumTransactionEvents(
+            transactionEvent,
+            pendingTransaction,
+            dispatch,
+            web3,
+          );
+        }
       }
     } else {
       throw new Error('Default Address not found');
@@ -87,9 +94,8 @@ export const unlockEthAsset = (amount: string):
   const {
     polkadotApi,
     polkadotAddress,
-    incentivizedChannelContract,
     ethAddress,
-    basicChannelContract,
+    sdk,
   } = state.net;
   const {
     selectedAsset,
@@ -107,27 +113,73 @@ export const unlockEthAsset = (amount: string):
       // set pending to open pending tx status modal
     await dispatch(setPendingTransaction(pendingTransaction));
 
-    const unsub = await EthApi.unlock(
+    const onReady = (result: any) => {
+      const hash = (Math.random() * 100).toString();
+      pendingTransaction = { ...pendingTransaction, hash, status: TransactionStatus.WAITING_FOR_CONFIRMATION };
+
+      dispatch(
+        addTransaction(
+          pendingTransaction,
+        ),
+      );
+      dispatch(setShowConfirmTransactionModal(false));
+      dispatch(setShowTransactionList(true));
+    };
+
+    const onInBlock = (result: any) => {
+      let nonce = result.events[0].event.data[0].toString();
+
+      if (isDot(pendingTransaction.asset)) {
+        nonce = result.events[1].event.data[0].toString();
+      }
+
+      pendingTransaction = {
+        ...pendingTransaction,
+        nonce,
+        status: TransactionStatus.WAITING_FOR_RELAY,
+      };
+
+      dispatch(
+        updateTransaction(
+          {
+            hash: pendingTransaction.hash,
+            update: pendingTransaction,
+          },
+        ),
+      );
+    };
+
+    const onFinalized = (result: any) => {
+      dispatch(
+        setTransactionStatus({
+          hash: pendingTransaction.hash,
+          status: TransactionStatus.WAITING_FOR_RELAY,
+        }),
+      );
+    };
+
+    const onChannelMessageDispatched = (event: MessageDispatchedEvent) => {
+      if (
+        event.returnValues.nonce === pendingTransaction.nonce
+      ) {
+        dispatch(
+          ethMessageDispatched({
+            nonce: event.returnValues.nonce,
+            dispatchTransactionNonce: pendingTransaction.nonce!,
+          }),
+        );
+      }
+    };
+
+    await sdk?.ethClient?.unlock(
       amount,
-      selectedAsset!,
+      selectedAsset!.address,
       polkadotAddress!,
       ethAddress!,
-      polkadotApi,
-      (result: any) => {
-        const tx = handlePolkadotTransactionEvents(
-          result,
-          unsub,
-          pendingTransaction,
-          dispatch,
-          incentivizedChannelContract!,
-          basicChannelContract!,
-        );
-
-        // tx will be updated in handlePolkadotTransactionEvents
-        // write this to pendingTransaction so it can
-        // have the latest values for the next iteration
-        pendingTransaction = tx;
-      },
+      onReady,
+      onInBlock,
+      onFinalized,
+      onChannelMessageDispatched,
     )
       .catch((error: any) => {
         handlePolkadotTransactionErrors(

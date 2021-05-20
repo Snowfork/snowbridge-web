@@ -6,11 +6,7 @@ import { RootState } from '../store';
 import {
   setPendingTransaction,
   createTransaction,
-  handlePolkadotTransactionEvents,
-  handleEthereumTransactionEvents,
-  handlePolkadotTransactionErrors,
 } from './transactions';
-import Polkadot from '../../net/polkadot';
 import { Chain, SwapDirection } from '../../types/types';
 
 /**
@@ -28,17 +24,14 @@ export const lockPolkadotAsset = (
   const state = getState() as RootState;
   const {
     ethAddress,
-    polkadotApi,
     polkadotAddress,
-    basicChannelContract,
-    incentivizedChannelContract,
   } = state.net;
   const {
     selectedAsset,
   } = state.bridge;
 
   try {
-    let pendingTransaction = createTransaction(
+    const pendingTransaction = createTransaction(
       polkadotAddress!,
       ethAddress!,
       amount,
@@ -48,34 +41,34 @@ export const lockPolkadotAsset = (
     );
     dispatch(setPendingTransaction(pendingTransaction));
 
-    const unsub = await Polkadot.lockDot(
-      polkadotApi!,
-      ethAddress!,
-      polkadotAddress!,
-      amount,
-      (res: any) => {
-        const tx = handlePolkadotTransactionEvents(
-          res,
-            unsub!,
-            pendingTransaction,
-            dispatch,
-            incentivizedChannelContract!,
-            basicChannelContract!,
-        );
+    // const unsub = await Polkadot.lockDot(
+    //   polkadotApi!,
+    //   ethAddress!,
+    //   polkadotAddress!,
+    //   amount,
+    //   (res: any) => {
+    //     const tx = handlePolkadotTransactionEvents(
+    //       res,
+    //         unsub!,
+    //         pendingTransaction,
+    //         dispatch,
+    //         incentivizedChannelContract!,
+    //         basicChannelContract!,
+    //     );
 
-        // tx will be updated in handlePolkadotTransactionEvents
-        // write this to pendingTransaction so it can
-        // have the latest values for the next iteration
-        pendingTransaction = tx;
-      },
-    )
-      .catch((error: any) => {
-        handlePolkadotTransactionErrors(
-          error,
-          pendingTransaction,
-          dispatch,
-        );
-      });
+    //     // tx will be updated in handlePolkadotTransactionEvents
+    //     // write this to pendingTransaction so it can
+    //     // have the latest values for the next iteration
+    //     pendingTransaction = tx;
+    //   },
+    // )
+    //   .catch((error: any) => {
+    //     handlePolkadotTransactionErrors(
+    //       error,
+    //       pendingTransaction,
+    //       dispatch,
+    //     );
+    //   });
   } catch (err) {
     // Todo: Error Sending DOT
     console.log(err);
@@ -96,10 +89,8 @@ export const unlockPolkadotAsset = (
 ): Promise<void> => {
   const state = getState() as RootState;
   const {
-    appDotContract,
     ethAddress,
     polkadotAddress,
-    web3,
   } = state.net;
   try {
     const pendingTransaction = createTransaction(
@@ -112,19 +103,19 @@ export const unlockPolkadotAsset = (
     );
     dispatch(setPendingTransaction(pendingTransaction));
 
-    const transactionEvent = Polkadot.unlockDot(
-      appDotContract!,
-      ethAddress!,
-      polkadotAddress!,
-      amount,
-    );
+    // const transactionEvent = Polkadot.unlockDot(
+    //   appDotContract!,
+    //   ethAddress!,
+    //   polkadotAddress!,
+    //   amount,
+    // );
 
-    handleEthereumTransactionEvents(
-      transactionEvent,
-      pendingTransaction,
-      dispatch,
-      web3!,
-    );
+    // handleEthereumTransactionEvents(
+    //   transactionEvent,
+    //   pendingTransaction,
+    //   dispatch,
+    //   web3!,
+    // );
   } catch (err) {
     // Todo: Error Sending Ethereum
     console.log(err);

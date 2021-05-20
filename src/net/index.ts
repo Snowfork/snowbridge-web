@@ -1,16 +1,29 @@
 import { Dispatch } from 'redux';
+import { AssetTransferSdk } from 'asset-transfer-sdk';
 import Eth from './eth';
 import Polkadot from './polkadot';
-import { setNetworkConnected } from '../redux/actions/net';
+import { setNetworkConnected, setSdk } from '../redux/actions/net';
 
 export default class Net {
   // Start net
   public static async start(dispatch: Dispatch): Promise<void> {
     try {
       // connect to ethereum
-      await Eth.connect(dispatch);
+      const web3 = await Eth.connect(dispatch);
+
       // connect to polkadot
-      await Polkadot.connect(dispatch);
+      const polkadotApi = await Polkadot.connect(dispatch);
+
+      // init sdk
+      const networkId = (await web3.eth.net.getId());
+      /* tslint:disable */
+      const sdk = new AssetTransferSdk(
+        web3,
+        networkId.toString(),
+        polkadotApi,
+      );
+      dispatch(setSdk(sdk));
+      /* tslint:enable */
 
       dispatch(setNetworkConnected(true));
     } catch (e) {

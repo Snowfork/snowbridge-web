@@ -2,7 +2,6 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { utils } from 'ethers';
-import * as ERC20Api from '../../net/ERC20';
 import { RootState } from '../store';
 import { isErc20 } from '../../types/Asset';
 import { erc20TransactionsSlice } from '../reducers/ERC20Transactions';
@@ -18,15 +17,17 @@ export const fetchERC20Allowance = ():
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
 ): Promise<void> => {
   const state = getState() as RootState;
-  const userAddress = state.net.ethAddress!;
-  const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
-  const contractInstance = state.bridge.selectedAsset!.contract!;
+  const {
+    net: {
+      sdk,
+      ethAddress,
+    },
+    bridge: {
+      selectedAsset,
+    },
+  } = state;
   if (isErc20(state.bridge.selectedAsset!)) {
-    const allowance: number = await ERC20Api.fetchERC20Allowance(
-      contractInstance,
-      userAddress,
-      erc20BridgeContractAddress,
-    );
+    const allowance = await sdk!.ethClient!.getERC20Allowance(ethAddress!, selectedAsset!.address);
     dispatch(erc20TransactionsSlice.actions.setERC20Allowance(allowance));
   }
 };
@@ -37,21 +38,29 @@ export const approveERC20 = ():
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
 ): Promise<void> => {
   const state = getState() as RootState;
-  const userAddress = state.net.ethAddress!;
-  const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
-  const { selectedAsset, depositAmount } = state.bridge;
-
+  const {
+    net: {
+      sdk,
+      ethAddress,
+    },
+    bridge: {
+      selectedAsset,
+      depositAmount,
+    },
+  } = state;
   // format deposit amount into unit value
   const decimals = selectedAsset?.decimals;
   const unitValue = utils.parseUnits(depositAmount, decimals).toString();
 
   try {
-    await ERC20Api.approveERC20(
-      selectedAsset!.contract!,
-      erc20BridgeContractAddress,
-      userAddress,
-      unitValue,
-    );
+    if (sdk) {
+      await sdk
+        .ethClient!.approveERC20(
+          selectedAsset!.address,
+          ethAddress!,
+          unitValue,
+        );
+    }
 
     dispatch(fetchERC20Allowance());
   } catch (e) {

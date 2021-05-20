@@ -2,18 +2,18 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface ERC20TransactionsState {
-  allowance: number;
+  allowance: string;
 }
 
 const initialState: ERC20TransactionsState = {
-  allowance: 0,
+  allowance: '0',
 };
 
 export const erc20TransactionsSlice = createSlice({
   name: 'erc20Transactions',
   initialState,
   reducers: {
-    setERC20Allowance: (state, action: PayloadAction<number>) => {
+    setERC20Allowance: (state, action: PayloadAction<string>) => {
       state.allowance = action.payload;
     },
   },

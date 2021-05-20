@@ -22,7 +22,7 @@ export default {
   // URL to the block explorer the UI will redirect to
   BLOCK_EXPLORER_URL: 'https://ropsten.etherscan.io',
 
-  PERMITTED_METAMASK_NETWORK: 'ropsten',
+  PERMITTED_METAMASK_NETWORK: '0x3',
 
   PRICE_CURRENCIES: ['usd'],
 

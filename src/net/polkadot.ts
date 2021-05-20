@@ -110,7 +110,7 @@ export default class Polkadot extends Api {
   }
 
   // Polkadotjs API connector
-  public static async connect(dispatch: Dispatch<any>): Promise<void> {
+  public static async connect(dispatch: Dispatch<any>): Promise<ApiPromise> {
     try {
       // check that the polkadot.js extension is available
       const extensions = await web3Enable('Snowbridge');
@@ -207,6 +207,8 @@ export default class Polkadot extends Api {
 
       // Here we subscribe to the parachain events
       dispatch(subscribeEvents());
+
+      return api;
     } catch (err) {
       console.log('error starting polkadot network', err);
       if (err.message === 'PolkadotJS missing') {

@@ -76,7 +76,7 @@ export const updateGasBalances = ():
 
   // update polkadot gas balance
   const dot = dotSelector(state);
-  const { polkadotApi, polkadotAddress } = state.net;
+  const { polkadotApi, polkadotAddress, sdk } = state.net;
 
   if (dot && polkadotApi && polkadotAddress) {
     const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
@@ -94,7 +94,7 @@ export const updateGasBalances = ():
   const ether = etherSelector(state);
   const { web3, ethAddress } = state.net;
   if (ether && web3 && ethAddress) {
-    const etherBalance = await EthApi.getTokenBalance(web3, ethAddress, ether);
+    const etherBalance = await EthApi.getTokenBalance(sdk!, ethAddress, ether);
     const newEtherData = {
       ...ether,
       balance: {
@@ -117,15 +117,15 @@ export const updateBalances = ():
   const state = getState() as RootState;
   const { selectedAsset } = state.bridge;
   const {
-    web3,
     ethAddress,
     polkadotApi,
     polkadotAddress,
+    sdk,
   } = state.net;
 
   if (selectedAsset) {
     // fetch updated balances
-    const ethBalance = await EthApi.getTokenBalance(web3!, ethAddress!, selectedAsset);
+    const ethBalance = await EthApi.getTokenBalance(sdk!, ethAddress!, selectedAsset);
     const polkadotBalance = await Polkadot.getAssetBalance(
         polkadotApi!,
         polkadotAddress!,
@@ -152,7 +152,9 @@ export const initializeTokens = ():
   dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
 ): Promise<void> => {
   const state = getState() as RootState;
-  const { ethAddress, polkadotApi, polkadotAddress } = state.net;
+  const {
+    ethAddress, polkadotApi, polkadotAddress, sdk,
+  } = state.net;
 
   const tokens = Erc20TokenList;
 
@@ -246,7 +248,7 @@ export const initializeTokens = ():
       // fetch token balances on ethereum
       try {
         const ethBalance = await EthApi.getTokenBalance(
-          web3,
+          sdk!,
             ethAddress!,
             asset,
         );

@@ -13,11 +13,6 @@ import {
 } from '../reducers/net';
 
 export const {
-  setAppDotContract,
-  setBasicChannelContract,
-  setERC20Contract,
-  setEthContract,
-  setIncentivizedChannelContract,
   setEthAddress,
   setPolkadotAddress,
   setMetamaskMissing,
@@ -26,6 +21,7 @@ export const {
   setPolkadotApi,
   setPolkadotjsMissing,
   setWeb3,
+  setSdk,
 } = netSlice.actions;
 
 // Subscribe to Parachain events
