@@ -41,7 +41,7 @@ export const netSlice = createSlice({
   initialState,
   reducers: {
     setMetamaskMissing: (state) => { state.metamaskMissing = true; },
-    setPolkadotjsMissing: (state) => { state.metamaskMissing = true; },
+    setPolkadotjsMissing: (state) => { state.polkadotJSMissing = true; },
     setMetamaskNetwork: (state, action: PayloadAction<string>) => {
       state.metamaskNetwork = action.payload;
     },
