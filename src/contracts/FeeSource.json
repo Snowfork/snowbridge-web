@@ -20,7 +20,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"feePayer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"burnFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/home/jamie/dev/clients/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol\":\"FeeSource\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/jamie/dev/clients/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol\":{\"keccak256\":\"0x5707c61628b397c740230df2232fae1254fe5054d7e2b900ab16da92cc99955d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://5f4e2dff77f6843b06408d9a7342985ccee777ba6ed9a48b9fd8c07ba092fb63\",\"dweb:/ipfs/QmZHJm139hD78LdPrSjLAcAJWfACAsPg3G8uByLLELvrQB\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.6+commit.11564f7e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"feePayer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"burnFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/FeeSource.sol\":\"FeeSource\"},\"evmVersion\":\"berlin\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/FeeSource.sol\":{\"keccak256\":\"0x5707c61628b397c740230df2232fae1254fe5054d7e2b900ab16da92cc99955d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://5f4e2dff77f6843b06408d9a7342985ccee777ba6ed9a48b9fd8c07ba092fb63\",\"dweb:/ipfs/QmZHJm139hD78LdPrSjLAcAJWfACAsPg3G8uByLLELvrQB\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -29,20 +29,20 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity >=0.7.6;\npragma experimental ABIEncoderV2;\n\n// Something that can burn a fee from a feepayer account.\ninterface FeeSource {\n    function burnFee(address feePayer, uint256 _amount) external;\n}\n",
-  "sourcePath": "/home/jamie/dev/clients/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol",
+  "sourcePath": "/home/jamie/dev/clients/snowfork/snowbridge/ethereum/contracts/FeeSource.sol",
   "ast": {
-    "absolutePath": "/home/jamie/dev/clients/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol",
+    "absolutePath": "project:/contracts/FeeSource.sol",
     "exportedSymbols": {
       "FeeSource": [
-        1111
+        9249
       ]
     },
-    "id": 1112,
+    "id": 9250,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1102,
+        "id": 9240,
         "literals": [
           "solidity",
           ">=",
@@ -50,16 +50,16 @@
           ".6"
         ],
         "nodeType": "PragmaDirective",
-        "src": "32:24:6"
+        "src": "32:24:30"
       },
       {
-        "id": 1103,
+        "id": 9241,
         "literals": [
           "experimental",
           "ABIEncoderV2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "57:33:6"
+        "src": "57:33:30"
       },
       {
         "abstract": false,
@@ -67,33 +67,36 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1111,
+        "id": 9249,
         "linearizedBaseContracts": [
-          1111
+          9249
         ],
         "name": "FeeSource",
+        "nameLocation": "160:9:30",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "functionSelector": "0c86269f",
-            "id": 1110,
+            "id": 9248,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "burnFee",
+            "nameLocation": "185:7:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1108,
+              "id": 9246,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1105,
+                  "id": 9243,
                   "mutability": "mutable",
                   "name": "feePayer",
+                  "nameLocation": "201:8:30",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1110,
-                  "src": "193:16:6",
+                  "scope": 9248,
+                  "src": "193:16:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -101,10 +104,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1104,
+                    "id": 9242,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "193:7:6",
+                    "src": "193:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -115,12 +118,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1107,
+                  "id": 9245,
                   "mutability": "mutable",
                   "name": "_amount",
+                  "nameLocation": "219:7:30",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1110,
-                  "src": "211:15:6",
+                  "scope": 9248,
+                  "src": "211:15:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -128,10 +132,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1106,
+                    "id": 9244,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "211:7:6",
+                    "src": "211:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -140,40 +144,41 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "192:35:6"
+              "src": "192:35:30"
             },
             "returnParameters": {
-              "id": 1109,
+              "id": 9247,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "236:0:6"
+              "src": "236:0:30"
             },
-            "scope": 1111,
-            "src": "176:61:6",
+            "scope": 9249,
+            "src": "176:61:30",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1112,
-        "src": "150:89:6"
+        "scope": 9250,
+        "src": "150:89:30",
+        "usedErrors": []
       }
     ],
-    "src": "32:208:6"
+    "src": "32:208:30"
   },
   "legacyAST": {
-    "absolutePath": "/home/jamie/dev/clients/snowfork/polkadot-ethereum/ethereum/contracts/FeeSource.sol",
+    "absolutePath": "project:/contracts/FeeSource.sol",
     "exportedSymbols": {
       "FeeSource": [
-        1111
+        9249
       ]
     },
-    "id": 1112,
+    "id": 9250,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1102,
+        "id": 9240,
         "literals": [
           "solidity",
           ">=",
@@ -181,16 +186,16 @@
           ".6"
         ],
         "nodeType": "PragmaDirective",
-        "src": "32:24:6"
+        "src": "32:24:30"
       },
       {
-        "id": 1103,
+        "id": 9241,
         "literals": [
           "experimental",
           "ABIEncoderV2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "57:33:6"
+        "src": "57:33:30"
       },
       {
         "abstract": false,
@@ -198,33 +203,36 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1111,
+        "id": 9249,
         "linearizedBaseContracts": [
-          1111
+          9249
         ],
         "name": "FeeSource",
+        "nameLocation": "160:9:30",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "functionSelector": "0c86269f",
-            "id": 1110,
+            "id": 9248,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "burnFee",
+            "nameLocation": "185:7:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1108,
+              "id": 9246,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1105,
+                  "id": 9243,
                   "mutability": "mutable",
                   "name": "feePayer",
+                  "nameLocation": "201:8:30",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1110,
-                  "src": "193:16:6",
+                  "scope": 9248,
+                  "src": "193:16:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -232,10 +240,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1104,
+                    "id": 9242,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "193:7:6",
+                    "src": "193:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -246,12 +254,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1107,
+                  "id": 9245,
                   "mutability": "mutable",
                   "name": "_amount",
+                  "nameLocation": "219:7:30",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1110,
-                  "src": "211:15:6",
+                  "scope": 9248,
+                  "src": "211:15:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -259,10 +268,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1106,
+                    "id": 9244,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "211:7:6",
+                    "src": "211:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -271,34 +280,35 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "192:35:6"
+              "src": "192:35:30"
             },
             "returnParameters": {
-              "id": 1109,
+              "id": 9247,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "236:0:6"
+              "src": "236:0:30"
             },
-            "scope": 1111,
-            "src": "176:61:6",
+            "scope": 9249,
+            "src": "176:61:30",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1112,
-        "src": "150:89:6"
+        "scope": 9250,
+        "src": "150:89:30",
+        "usedErrors": []
       }
     ],
-    "src": "32:208:6"
+    "src": "32:208:30"
   },
   "compiler": {
     "name": "solc",
-    "version": "0.7.6+commit.7338295f.Emscripten.clang"
+    "version": "0.8.6+commit.11564f7e.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.2.5",
-  "updatedAt": "2021-04-12T08:59:23.058Z",
+  "schemaVersion": "3.4.1",
+  "updatedAt": "2021-07-19T08:57:19.430Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

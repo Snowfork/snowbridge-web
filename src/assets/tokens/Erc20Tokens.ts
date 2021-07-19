@@ -1,7 +1,7 @@
 export default [
   {
     name: 'TestToken',
-    address: '0xF8F7758FbcEfd546eAEff7dE24AFf666B6228e73',
+    address: '0x4283d8996E5a7F4BEa58c6052b1471a2a9524C87',
     symbol: 'TEST',
     decimals: 18,
     chainId: 344,
