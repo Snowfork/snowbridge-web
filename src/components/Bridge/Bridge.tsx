@@ -60,7 +60,7 @@ function Bridge(): React.ReactElement {
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethereumGasBalance = ether?.balance?.eth;
 
-  const [errors, setErrors] = useState<{balance?: ErrorMessages, gas?: ErrorMessages}>({
+  const [errors, setErrors] = useState<{ balance?: ErrorMessages, gas?: ErrorMessages }>({
     balance: undefined,
     gas: undefined,
   });
@@ -206,8 +206,8 @@ function Bridge(): React.ReactElement {
   const errorText = Object.values(errors).filter((e) => e)[0];
   const assetPrice = Number.isNaN(Number.parseFloat(transferUsdValue)) ? '0' : transferUsdValue;
   const isDepositDisabled = !!errorText
-  || Number.parseFloat(depositAmount) <= 0
-  || Number.isNaN(Number.parseFloat(transferUsdValue));
+    || Number.parseFloat(depositAmount) <= 0
+    || Number.isNaN(Number.parseFloat(transferUsdValue));
 
   return (
 
@@ -242,7 +242,7 @@ function Bridge(): React.ReactElement {
               </Paper>
             </Grid>
 
-            <Grid item container justify="space-between">
+            <Grid item container justifyContent="space-between">
               <Typography gutterBottom>
                 $
                 {assetPrice}
@@ -255,10 +255,10 @@ function Bridge(): React.ReactElement {
                   {
                     selectedAsset
                     && (
-                    <FormatAmount
-                      amount={tokenBalances.sourceNetwork}
-                      decimals={decimalMap.from}
-                    />
+                      <FormatAmount
+                        amount={tokenBalances.sourceNetwork}
+                        decimals={decimalMap.from}
+                      />
                     )
                   }
                   {' '}
@@ -284,7 +284,7 @@ function Bridge(): React.ReactElement {
             <Grid item>
               <Typography>TO</Typography>
             </Grid>
-            <Grid item container justify="space-between">
+            <Grid item container justifyContent="space-between">
               <Typography gutterBottom display="block">{getNetworkNames(swapDirection).to}</Typography>
               <Grid item>
                 <Typography gutterBottom variant="caption">
@@ -293,12 +293,12 @@ function Bridge(): React.ReactElement {
                 <Typography gutterBottom>
                   {
                     selectedAsset
-                  && (
-                  <FormatAmount
-                    amount={tokenBalances.destinationNetwork}
-                    decimals={decimalMap.to}
-                  />
-                  )
+                    && (
+                      <FormatAmount
+                        amount={tokenBalances.destinationNetwork}
+                        decimals={decimalMap.to}
+                      />
+                    )
                   }
                   {' '}
                   {

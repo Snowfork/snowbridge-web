@@ -87,7 +87,7 @@ function ConfirmTransactionModal({
         <Paper>
           {
             isPending ? <PendingTransactionsModal /> : (
-              <Grid container justify="center">
+              <Grid container justifyContent="center">
 
                 <Grid item>
                   <Typography>
@@ -95,7 +95,7 @@ function ConfirmTransactionModal({
                   </Typography>
                 </Grid>
 
-                <Grid item container justify="center">
+                <Grid item container justifyContent="center">
                   <Typography variant="h4">
                     {depositAmount}
                     {' '}
@@ -106,7 +106,7 @@ function ConfirmTransactionModal({
                   </Typography>
                 </Grid>
 
-                <Grid item container justify="space-between">
+                <Grid item container justifyContent="space-between">
                   <Grid item>
                     <Typography>
                       {getNetworkNames(swapDirection).from}
