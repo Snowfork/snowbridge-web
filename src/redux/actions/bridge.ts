@@ -11,7 +11,7 @@ import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
 import * as Erc721Api from '../../net/ERC721';
 import { fetchERC20Allowance } from './ERC20Transactions';
-import { Asset, createAsset } from '../../types/Asset';
+import { Asset, createFungibleAsset } from '../../types/Asset';
 import Erc20TokenList from '../../assets/tokens/Erc20Tokens';
 import DotTokenList from '../../assets/tokens/DotTokens';
 import EthTokenList from '../../assets/tokens/EthTokens';
@@ -196,7 +196,7 @@ export const initializeTokens = ():
     let assetList: Asset[] = [];
 
     // append Ether
-    const ethAssets: Asset[] = ethTokenListFiltered.map((token: Token) => createAsset(
+    const ethAssets: Asset[] = ethTokenListFiltered.map((token: Token) => createFungibleAsset(
       token,
       Chain.ETHEREUM,
       18,
@@ -219,7 +219,7 @@ export const initializeTokens = ():
           );
         }
 
-        return createAsset(token, Chain.ETHEREUM, token.decimals, contractInstance);
+        return createFungibleAsset(token, Chain.ETHEREUM, token.decimals, contractInstance);
       },
     );
     assetList = assetList.concat(erc20Assets);
@@ -227,7 +227,7 @@ export const initializeTokens = ():
     // append DOT
     const dotAssets = dotTokenListFiltered
       .map(
-        (dotToken: Token) => createAsset(
+        (dotToken: Token) => createFungibleAsset(
           dotToken,
           Chain.POLKADOT,
           18,

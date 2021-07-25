@@ -1,6 +1,17 @@
 import { Contract } from 'web3-eth-contract';
 import { Chain, SwapDirection, Token } from './types';
 
+export interface FungibleToken {
+  // native decimals
+  decimals: number;
+  // decimals for the wrapped version of this token
+  wrappedDecimals: number;
+}
+
+export interface NonFungibleToken {
+  id: string;
+}
+
 export interface Asset {
     // the chain for the native asset
     chain: Chain;
@@ -12,10 +23,7 @@ export interface Asset {
     symbol: string;
     // wrapped token symbol - for opposite chain
     wrappedSymbol: string;
-    // native decimals
-    decimals: number;
-    // decimals for the wrapped version of this token
-    wrappedDecimals: number;
+    token: FungibleToken | NonFungibleToken;
     // address for contract on ethereum
     address: string;
     // deployed ethereum chain ID
@@ -52,6 +60,10 @@ export function isDot(asset: Asset): boolean {
   return asset.chain === Chain.POLKADOT
     && !isErc20(asset)
     && !isEther(asset);
+}
+
+export function isNonFungible(asset: Asset): boolean {
+  return ('id' in asset.token);
 }
 
 function ethSymbols(
@@ -106,9 +118,10 @@ function polkadotDecimals(
   asset: Asset,
   swapDirection: SwapDirection,
 ): {to: number, from: number} {
-  let result = { to: asset.decimals, from: asset.wrappedDecimals };
+  const { decimals, wrappedDecimals } = (asset.token as FungibleToken);
+  let result = { to: decimals, from: wrappedDecimals };
   if (swapDirection === SwapDirection.PolkadotToEthereum) {
-    result = { to: asset.wrappedDecimals, from: asset.decimals };
+    result = { to: wrappedDecimals, from: decimals };
   }
   return result;
 }
@@ -117,9 +130,10 @@ function ethDecimals(
   asset: Asset,
   swapDirection: SwapDirection,
 ): {to: number, from: number} {
-  let result = { to: asset.decimals, from: asset.wrappedDecimals };
+  const { decimals, wrappedDecimals } = (asset.token as FungibleToken);
+  let result = { to: decimals, from: wrappedDecimals };
   if (swapDirection === SwapDirection.EthereumToPolkadot) {
-    result = { to: asset.wrappedDecimals, from: asset.decimals };
+    result = { to: wrappedDecimals, from: decimals };
   }
   return result;
 }
@@ -139,7 +153,7 @@ export function decimals(asset: Asset | undefined, swapDirection: SwapDirection)
 }
 
 // Asset factory function
-export function createAsset(
+export function createFungibleAsset(
   token: Token,
   chain: Chain,
   wrappedDecimals: number,
@@ -158,11 +172,46 @@ export function createAsset(
       polkadot: '0',
     },
     chainId: token.chainId,
-    decimals: token.decimals,
+    token: {
+      decimals: token.decimals,
+      wrappedDecimals,
+    },
     logoUri: token.logoURI,
     prices: {
 
     },
-    wrappedDecimals,
+  };
+}
+
+export function createNonFungibleAsset(
+  contract: Contract,
+  chain: Chain,
+  id: string,
+  name = '',
+  symbol = '',
+  chainId = 344,
+  logoUri = '',
+): Asset {
+  // TODO: fetch name and symbol from the contract
+  return {
+    name,
+    symbol,
+    wrappedSymbol: `snow${symbol}`,
+    wrappedName: `snow${name}`,
+    contract,
+    address: contract.options.address,
+    chain,
+    balance: {
+      eth: '0',
+      polkadot: '0',
+    },
+    chainId,
+    token: {
+      id,
+    },
+    logoUri,
+    prices: {
+
+    },
   };
 }

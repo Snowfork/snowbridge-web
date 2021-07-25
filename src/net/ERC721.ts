@@ -1,4 +1,5 @@
 import { Contract } from 'web3-eth-contract';
+import { APP_ERC721_CONTRACT_ADDRESS } from '../config';
 import { OwnedNft } from '../types/types';
 
 /**
@@ -65,4 +66,25 @@ export async function fetchTokensForAddress(
     console.log('error fetching nfts');
     throw e;
   }
+}
+
+export async function approveERC721(
+  contractInstance: Contract,
+  id: string,
+  spenderAddress: string,
+  ownerAddress: string,
+): Promise<void> {
+  return contractInstance.methods.approve(
+    spenderAddress,
+    id,
+  ).send({
+    from: ownerAddress,
+  });
+}
+
+export async function getApproved(
+  contractInstance: Contract,
+  id: string,
+): Promise<string> {
+  return contractInstance.methods.getApproved(id).call();
 }
