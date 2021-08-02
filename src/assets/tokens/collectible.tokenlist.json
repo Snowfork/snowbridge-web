@@ -43,8 +43,8 @@
       ]
     },
     {
-      "chainId": 344,
-      "address": "0xA79fC743bcCDF8ec0078021fF7b00837a7CDB032",
+      "chainId": 15,
+      "address": "0x4283d8996E5a7F4BEa58c6052b1471a2a9524C87",
       "symbol": "TestToken721",
       "name": "TestToken721",
       "standard": "erc721",

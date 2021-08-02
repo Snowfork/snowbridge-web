@@ -1,10 +1,10 @@
 export default [
   {
     name: 'TestToken',
-    address: '0x4283d8996E5a7F4BEa58c6052b1471a2a9524C87',
+    address: '0x440eDFFA1352B13227e8eE646f3Ea37456deC701',
     symbol: 'TEST',
     decimals: 18,
-    chainId: 344,
+    chainId: 15,
     logoURI: '/images/snow_logo.jpg',
   },
   {
