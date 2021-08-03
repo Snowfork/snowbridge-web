@@ -284,14 +284,14 @@ export default class Eth extends Api {
   ): Promise<any> {
     let burnExtrinsic;
     if (isEther(asset)) {
-      burnExtrinsic = polkadotApi.tx.eth.burn(
+      burnExtrinsic = polkadotApi.tx.ethApp.burn(
         // TODO: set incentivized channel ID
         BASIC_CHANNEL_ID,
         recipient,
         amount,
       );
     } else {
-      burnExtrinsic = polkadotApi.tx.erc20.burn(
+      burnExtrinsic = polkadotApi.tx.erc20App.burn(
         // TODO: set incentivized channel ID
         BASIC_CHANNEL_ID,
         asset.address,
