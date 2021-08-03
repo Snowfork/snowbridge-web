@@ -20,7 +20,7 @@ export const approveERC721 = ():
   try {
     await ERC721Api.approveERC721(
       selectedAsset!.contract!,
-      token.id.toString(),
+      token.ethId.toString(),
       erc721BridgeContractAddress,
       userAddress,
     );

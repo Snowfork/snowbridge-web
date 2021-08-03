@@ -22,9 +22,11 @@ export interface NonFungibleTokenContract {
 // ERC721 token instance interface
 export interface OwnedNft {
   address: string,
-  id: string,
+  ethId?: string,
   name: string,
-  tokenURI: string
+  tokenURI?: string
+  polkadotId?: string;
+  chain: Chain;
 }
 
 export enum Chain {

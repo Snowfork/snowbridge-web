@@ -3,7 +3,9 @@ import BigNumber from 'bignumber.js';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { Asset, isDot, isEther } from '../../types/Asset';
-import { NonFungibleTokenContract, OwnedNft, SwapDirection } from '../../types/types';
+import {
+  NonFungibleTokenContract, OwnedNft, SwapDirection,
+} from '../../types/types';
 
 export interface BridgeState {
   assets: Asset[],
@@ -13,7 +15,14 @@ export interface BridgeState {
   showConfirmTransactionModal: boolean,
   showTransactionsList: boolean,
   nonFungibleAssets: NonFungibleTokenContract[],
-  ownedNonFungibleAssets: { [contractAddress: string]: OwnedNft[]}
+  ownedNonFungibleAssets: {
+    polkadot: {
+      [contractAddress: string]: OwnedNft[],
+    },
+    ethereum: {
+      [contractAddress: string]: OwnedNft[],
+    }
+  }
 }
 
 const initialState: BridgeState = {
@@ -24,7 +33,7 @@ const initialState: BridgeState = {
   showConfirmTransactionModal: false,
   showTransactionsList: false,
   nonFungibleAssets: [],
-  ownedNonFungibleAssets: {},
+  ownedNonFungibleAssets: { polkadot: {}, ethereum: {} },
 };
 
 // export default bridgeReducer;
@@ -51,14 +60,24 @@ export const bridgeSlice = createSlice({
     setNonFungibleTokenList: (state, action: PayloadAction<NonFungibleTokenContract[]>) => {
       state.nonFungibleAssets = action.payload;
     },
-    addOwnedNonFungibleAsset: (state, action: PayloadAction<OwnedNft[]>) => {
+    addOwnedEthereumNonFungibleAsset: (state, action: PayloadAction<OwnedNft[]>) => {
       action.payload.forEach((ownedNft) => {
-        state
-          .ownedNonFungibleAssets[ownedNft.address as any] = action.payload;
+        state.ownedNonFungibleAssets.ethereum[ownedNft.address] = action.payload;
+      });
+    },
+    // this is called with the entire list of nfts for all contracts
+    addOwnedPolkadotNonFungibleAssets: (state, action: PayloadAction<OwnedNft[]>) => {
+      state.ownedNonFungibleAssets.polkadot = {};
+      action.payload.forEach((ownedNft) => {
+        const otherTokensForContract = state.ownedNonFungibleAssets.polkadot[ownedNft.address] || [];
+        state.ownedNonFungibleAssets.polkadot[ownedNft.address] = otherTokensForContract.concat(ownedNft);
       });
     },
     resetOwnedNonFungibleAssets: (state) => {
-      state.ownedNonFungibleAssets = {};
+      state.ownedNonFungibleAssets = {
+        polkadot: {},
+        ethereum: {},
+      };
     },
   },
 });

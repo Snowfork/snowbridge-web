@@ -9,7 +9,8 @@ export interface FungibleToken {
 }
 
 export interface NonFungibleToken {
-  id: string;
+  ethId: string;
+  subId?: string
 }
 
 export interface Asset {
@@ -63,7 +64,7 @@ export function isDot(asset: Asset): boolean {
 }
 
 export function isNonFungible(asset: Asset): boolean {
-  return ('id' in asset.token);
+  return ('ethId' in asset.token || 'subId' in asset.token);
 }
 
 function ethSymbols(
@@ -183,16 +184,31 @@ export function createFungibleAsset(
   };
 }
 
-export function createNonFungibleAsset(
+interface Props {
   contract: Contract,
   chain: Chain,
-  id: string,
-  name = '',
-  symbol = '',
-  chainId = 344,
-  logoUri = '',
-): Asset {
-  // TODO: fetch name and symbol from the contract
+  ethId: string,
+  subId?: string,
+  _name?: string,
+  _symbol?: string,
+  chainId?: number,
+  logoUri?: string,
+}
+
+export async function createNonFungibleAsset(
+  {
+    contract,
+    chain,
+    ethId,
+    subId,
+    _name,
+    _symbol,
+    chainId = 15,
+    logoUri = '',
+  }: Props,
+): Promise<Asset> {
+  const name = _name || await contract.methods.name().call();
+  const symbol = _symbol || await contract.methods.symbol().call();
   return {
     name,
     symbol,
@@ -207,7 +223,8 @@ export function createNonFungibleAsset(
     },
     chainId,
     token: {
-      id,
+      ethId,
+      subId,
     },
     logoUri,
     prices: {

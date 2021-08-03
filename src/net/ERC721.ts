@@ -1,6 +1,8 @@
+import { ApiPromise } from '@polkadot/api';
+import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
-import { APP_ERC721_CONTRACT_ADDRESS } from '../config';
-import { OwnedNft } from '../types/types';
+import { Chain, OwnedNft } from '../types/types';
+import * as ERC721 from '../contracts/TestToken721.json';
 
 /**
  * Uses ERC165 to check if a contract implements IERC721Enumerable (0x780e9d63)
@@ -12,58 +14,63 @@ export async function isEnumerable(contract: Contract) : Promise<boolean> {
 }
 
 /**
- * Queries a token contract to find the tokens owned by the user
+ * Queries a token contract to find the tokens owned by the user on Ethereum
  * token
  * @param {contractInstance} any The web3 contract instance for the ERC721 token
  * @return {Promise<[OwnedNft]>} An array of tokens that are owned by the current user
  */
-export async function fetchTokensForAddress(
+export async function fetchTokens(
   contractInstance: Contract,
-  ownerAddress: string,
+  ownerEthAddress: string,
 ):
     Promise<OwnedNft[]> {
   try {
+    // fetch tokens on ethereum
+    let ethTokens: OwnedNft[] = [];
     const isEnum = await isEnumerable(contractInstance);
-    if (!isEnum) {
-      return [];
-    }
-
-    const balance = Number.parseFloat(
-      await contractInstance.methods.balanceOf(ownerAddress).call(),
-    );
-    if (balance && balance > 0) {
+    if (isEnum) {
+      const balance = Number.parseFloat(
+        (await contractInstance.methods.balanceOf(ownerEthAddress).call()).toString(),
+      );
+      if (balance && balance > 0) {
       // fetch name
-      const name = await contractInstance.methods.name().call();
+        const name = await contractInstance.methods.name().call();
 
-      const proms = new Array(balance)
-        .fill(null)
-        .map(async (value, index) => {
-          const tokenId = await contractInstance
-            .methods
-            .tokenOfOwnerByIndex(ownerAddress, index)
-            .call();
+        const proms = new Array(balance)
+          .fill(null)
+          .map(async (value, index): Promise<OwnedNft> => {
+            let ethId;
+            let tokenURI;
+            if (isEnum) {
+              ethId = await contractInstance
+                .methods
+                .tokenOfOwnerByIndex(ownerEthAddress, index)
+                .call();
 
-          // fetch tokenURI
-          const tokenURI = await contractInstance
-            .methods
-            .tokenURI(tokenId)
-            .call();
+            // // check if supports IERC721URIStorange and query tokenURI
+            // tokenURI = await contractInstance
+            //   .methods
+            //   .tokenURI(ethId)
+            //   .call();
+            }
 
-          const nft: OwnedNft = {
-            address: contractInstance.options.address,
-            id: tokenId.toString(),
-            name,
-            tokenURI,
-          };
+            const nft: OwnedNft = {
+              address: contractInstance.options.address,
+              ethId,
+              name: name.toString(),
+              tokenURI,
+              chain: Chain.ETHEREUM,
+            };
 
-          return nft;
-        });
-      return Promise.all(proms);
+            return nft;
+          });
+        ethTokens = ethTokens.concat(await Promise.all(proms));
+      }
     }
 
-    return Promise.resolve([]);
+    return ethTokens;
   } catch (e) {
-    console.log('error fetching nfts');
+    console.log('error fetching nfts here');
     throw e;
   }
 }
@@ -87,4 +94,59 @@ export async function getApproved(
   id: string,
 ): Promise<string> {
   return contractInstance.methods.getApproved(id).call();
+}
+
+/**
+ * Queries a token contract to find the tokens owned by the user on Ethereum
+ * token
+ * @param {contractInstance} any The web3 contract instance for the ERC721 token
+ * @return {Promise<[OwnedNft]>} An array of tokens that are owned by the current user
+ */
+export async function fetchTokensOnPolkadot(
+  polkadotApi: ApiPromise,
+  web3: Web3,
+  ownerPolkadotAddress: string,
+):
+    Promise<OwnedNft[]> {
+  try {
+    const polkadotTokens: OwnedNft[] = [];
+    const polkadotAddress = ownerPolkadotAddress.toString();
+
+    const tokensByOwner = await polkadotApi
+      .query
+      .nft
+      .tokensByOwner
+      .entries(polkadotAddress);
+
+    const tokenDetails = tokensByOwner
+      .map(async ([key]) => {
+        const id = key.args[1].toString();
+        const tokenData = (await polkadotApi.query.nft.tokens(id)).toJSON() as any;
+        const address = tokenData?.data?.tokenContract.toString();
+        const contractInstance = new web3.eth.Contract(ERC721.abi as any, address);
+        const name = await contractInstance.methods.name().call();
+
+        return {
+          subId: id,
+          ethId: tokenData?.data?.tokenId.toString(),
+          address,
+          name,
+        };
+      });
+
+    await Promise.all(tokenDetails).then((tokens) => {
+      tokens.forEach((token) => polkadotTokens.push({
+        address: token.address,
+        chain: Chain.POLKADOT,
+        name: token.name,
+        ethId: token.ethId,
+        polkadotId: token.subId,
+      }));
+    });
+
+    return polkadotTokens;
+  } catch (e) {
+    console.log('error fetching nfts');
+    throw e;
+  }
 }

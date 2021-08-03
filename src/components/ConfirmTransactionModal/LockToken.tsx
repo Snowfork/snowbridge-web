@@ -56,7 +56,10 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
 
     function nonFungiblePoll() {
       return setInterval(async () => {
-        const res = await ERC721Api.getApproved(selectedAsset!.contract!, (selectedAsset?.token as NonFungibleToken).id);
+        const res = await ERC721Api.getApproved(
+          selectedAsset!.contract!,
+          (selectedAsset?.token as NonFungibleToken).ethId,
+        );
         setIsApproved(res === APP_ERC721_CONTRACT_ADDRESS);
       }, REFRESH_INTERVAL_MILLISECONDS);
     }

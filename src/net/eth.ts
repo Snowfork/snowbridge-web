@@ -222,7 +222,7 @@ export default class Eth extends Api {
         const token = asset.token as NonFungibleToken;
         return erc721AppContract.methods.lock(
           asset.contract!.options.address,
-          token.id.toString(),
+          token.ethId.toString(),
           polkadotRecipientBytes,
           BASIC_CHANNEL_ID,
         ).send({

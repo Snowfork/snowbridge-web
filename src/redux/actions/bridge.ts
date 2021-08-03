@@ -4,7 +4,7 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
 import { Chain, NonFungibleTokenContract, Token } from '../../types/types';
 import { RootState } from '../store';
-import * as ERC20 from '../../contracts/ERC20.json';
+import * as ERC20 from '../../contracts/TestToken.json';
 import * as WrappedToken from '../../contracts/WrappedToken.json';
 import { getAssetPrice } from '../../net/api';
 import EthApi from '../../net/eth';
@@ -27,8 +27,9 @@ export const {
   setShowTransactionList,
   setSwapDirection,
   setNonFungibleTokenList,
-  addOwnedNonFungibleAsset,
   resetOwnedNonFungibleAssets,
+  addOwnedEthereumNonFungibleAsset,
+  addOwnedPolkadotNonFungibleAssets,
 } = bridgeSlice.actions;
 
 // async middleware actions
@@ -194,7 +195,6 @@ export const initializeTokens = ():
     const ethTokenListFiltered = EthTokenList.filter(networkFilter);
 
     let assetList: Asset[] = [];
-
     // append Ether
     const ethAssets: Asset[] = ethTokenListFiltered.map((token: Token) => createFungibleAsset(
       token,
@@ -324,17 +324,20 @@ export const fetchOwnedNonFungibleAssets = ():
     },
     net: {
       ethAddress,
+      polkadotAddress,
+      polkadotApi,
+      web3,
     },
   } = state;
 
   nonFungibleAssets
     .map(
       async (nft: NonFungibleTokenContract) => {
-        const ownedNfts = await Erc721Api.fetchTokensForAddress(nft.contract, ethAddress!);
-        dispatch(addOwnedNonFungibleAsset(ownedNfts));
-
-        return {
-        };
+        const ownedNftsOnEthereum = await Erc721Api.fetchTokens(nft.contract, ethAddress!);
+        dispatch(addOwnedEthereumNonFungibleAsset(ownedNftsOnEthereum));
       },
     );
+
+  const ownedNftsOnPolkadot = await Erc721Api.fetchTokensOnPolkadot(polkadotApi!, web3!, polkadotAddress!);
+  dispatch(addOwnedPolkadotNonFungibleAssets(ownedNftsOnPolkadot));
 };
