@@ -20,7 +20,7 @@
   "tokens": [
     {
       "chainId": 15,
-      "address": "0x7fd05e5970D66A8fF6E10966241e6f7942869d6A",
+      "address": "0x54D6643762E46036b3448659791adAf554225541",
       "symbol": "TESTE",
       "name": "Test Enum",
       "standard": "erc721",
