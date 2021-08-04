@@ -9,7 +9,7 @@ import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import {
-  Asset, decimals, isDot, isEther, symbols,
+  Asset, decimals, isDot, isEther, isNonFungible, symbols,
 } from '../../types/Asset';
 import { Chain, SwapDirection } from '../../types/types';
 import { RootState } from '../store';
@@ -40,7 +40,6 @@ export const updateConfirmations = (
 ):
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>,
-  getState,
 ): Promise<void> => {
   if (
     confirmations >= REQUIRED_ETH_CONFIRMATIONS
@@ -143,7 +142,7 @@ export function handlePolkadotTransactionEvents(
   if (result.status.isInBlock) {
     let nonce = result.events[0].event.data[0].toString();
 
-    if (isDot(transaction.asset)) {
+    if (isDot(transaction.asset) && !isNonFungible(transaction.asset)) {
       nonce = result.events[1].event.data[0].toString();
     }
 
@@ -160,6 +159,7 @@ export function handlePolkadotTransactionEvents(
     );
 
     const handleChannelMessageDispatched = (event: MessageDispatchedEvent) => {
+      console.log('message dispatched', event);
       if (
         event.returnValues.nonce === nonce
       ) {
