@@ -16,6 +16,14 @@ export default [
     logoURI: '/images/snow_logo.jpg',
   },
   {
+    name: 'TestToken',
+    address: '0xBb0Ed63218FE9043658C8178E9566Fc10213E528',
+    symbol: 'TEST',
+    decimals: 18,
+    chainId: 3,
+    logoURI: '/images/snow_logo.jpg',
+  },
+  {
     chainId: 1,
     address: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
     name: 'Aave',
