@@ -170,7 +170,7 @@ export default class Polkadot extends Api {
       // we can use web3FromSource which will return an InjectedExtension type
       const injector = await web3FromSource(account.meta.source);
 
-      return polkadotApi?.tx.dot.lock(
+      return polkadotApi?.tx.dotApp.lock(
         BASIC_CHANNEL_ID,
         ethAddress,
         amount,
