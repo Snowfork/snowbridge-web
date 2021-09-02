@@ -1,18 +1,22 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
-import { Chain, Token } from '../../types/types';
+import Web3 from 'web3';
+import { Chain, NonFungibleTokenContract, Token } from '../../types/types';
 import { RootState } from '../store';
-import * as ERC20 from '../../contracts/ERC20.json';
+import * as ERC20 from '../../contracts/TestToken.json';
 import * as WrappedToken from '../../contracts/WrappedToken.json';
 import { getAssetPrice } from '../../net/api';
 import EthApi from '../../net/eth';
 import Polkadot from '../../net/polkadot';
+import * as Erc721Api from '../../net/ERC721';
 import { fetchERC20Allowance } from './ERC20Transactions';
-import { Asset, createAsset } from '../../types/Asset';
+import { Asset, createFungibleAsset } from '../../types/Asset';
 import Erc20TokenList from '../../assets/tokens/Erc20Tokens';
 import DotTokenList from '../../assets/tokens/DotTokens';
 import EthTokenList from '../../assets/tokens/EthTokens';
+import Erc721TokenList from '../../assets/tokens/collectible.tokenlist.json';
+import ERC721Contract from '../../contracts/TestToken721.json';
 import { dotSelector, etherSelector, bridgeSlice } from '../reducers/bridge';
 
 export const {
@@ -22,6 +26,10 @@ export const {
   setShowConfirmTransactionModal,
   setShowTransactionList,
   setSwapDirection,
+  setNonFungibleTokenList,
+  resetOwnedNonFungibleAssets,
+  addOwnedEthereumNonFungibleAsset,
+  addOwnedPolkadotNonFungibleAssets,
 } = bridgeSlice.actions;
 
 // async middleware actions
@@ -145,6 +153,24 @@ export const updateBalances = ():
   dispatch(updateGasBalances());
 };
 
+function initCollectibles(web3: Web3) {
+  return Erc721TokenList
+    .tokens
+    .filter(
+      (nft) => nft.chainId === Number.parseInt(
+        (web3.currentProvider as any
+        ).chainId, 16,
+      ) && nft.standard === 'erc721',
+    )
+    .map((token): NonFungibleTokenContract => ({
+      name: token.name,
+      symbol: token.symbol,
+      chainId: token.chainId,
+      address: token.address,
+      contract: new web3.eth.Contract(ERC721Contract.abi as any, token.address),
+    }));
+}
+
 // use the token list to instantiate contract instances
 // and store them in redux. We also query the balance to use later
 export const initializeTokens = ():
@@ -169,9 +195,8 @@ export const initializeTokens = ():
     const ethTokenListFiltered = EthTokenList.filter(networkFilter);
 
     let assetList: Asset[] = [];
-
     // append Ether
-    const ethAssets: Asset[] = ethTokenListFiltered.map((token: Token) => createAsset(
+    const ethAssets: Asset[] = ethTokenListFiltered.map((token: Token) => createFungibleAsset(
       token,
       Chain.ETHEREUM,
       18,
@@ -194,7 +219,7 @@ export const initializeTokens = ():
           );
         }
 
-        return createAsset(token, Chain.ETHEREUM, token.decimals, contractInstance);
+        return createFungibleAsset(token, Chain.ETHEREUM, token.decimals, contractInstance);
       },
     );
     assetList = assetList.concat(erc20Assets);
@@ -202,7 +227,7 @@ export const initializeTokens = ():
     // append DOT
     const dotAssets = dotTokenListFiltered
       .map(
-        (dotToken: Token) => createAsset(
+        (dotToken: Token) => createFungibleAsset(
           dotToken,
           Chain.POLKADOT,
           18,
@@ -210,6 +235,10 @@ export const initializeTokens = ():
         ),
       );
     assetList = assetList.concat(dotAssets);
+
+    // ERC721 tokens
+    const nftAssets = initCollectibles(web3);
+    dispatch(setNonFungibleTokenList(nftAssets));
 
     // store the token list
     dispatch(_setTokenList(assetList));
@@ -278,4 +307,37 @@ export const initializeTokens = ():
       }
     });
   }
+};
+
+export const fetchOwnedNonFungibleAssets = ():
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
+): Promise<void> => {
+  const state = getState() as RootState;
+
+  // clear out old data
+  dispatch(resetOwnedNonFungibleAssets());
+
+  const {
+    bridge: {
+      nonFungibleAssets,
+    },
+    net: {
+      ethAddress,
+      polkadotAddress,
+      polkadotApi,
+      web3,
+    },
+  } = state;
+
+  nonFungibleAssets
+    .map(
+      async (nft: NonFungibleTokenContract) => {
+        const ownedNftsOnEthereum = await Erc721Api.fetchTokens(nft.contract, ethAddress!);
+        dispatch(addOwnedEthereumNonFungibleAsset(ownedNftsOnEthereum));
+      },
+    );
+
+  const ownedNftsOnPolkadot = await Erc721Api.fetchTokensOnPolkadot(polkadotApi!, web3!, polkadotAddress!);
+  dispatch(addOwnedPolkadotNonFungibleAssets(ownedNftsOnPolkadot));
 };

@@ -34,6 +34,7 @@ export const lockEthAsset = (
     web3,
     ethAddress,
     polkadotAddress,
+    erc721AppContract,
   } = state.net;
   const {
     selectedAsset,
@@ -59,6 +60,7 @@ export const lockEthAsset = (
             polkadotAddress!,
             ethContract,
             erc20Contract,
+            erc721AppContract!,
         );
 
         handleEthereumTransactionEvents(

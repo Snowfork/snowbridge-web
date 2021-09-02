@@ -1,4 +1,4 @@
-import { createMuiTheme } from '@material-ui/core';
+import { createTheme } from '@material-ui/core';
 // import React, { ReactNode } from 'react';
 // import { ThemeProvider } from 'styled-components';
 
@@ -29,7 +29,7 @@ import { createMuiTheme } from '@material-ui/core';
 
 // export default Theme;
 
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: {
       main: '#3f51b5',

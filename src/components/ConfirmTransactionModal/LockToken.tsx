@@ -17,11 +17,15 @@ import { utils } from 'ethers';
 import { BigNumber } from 'bignumber.js';
 import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
 import LoadingSpinner from '../LoadingSpinner';
-import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
-import { decimals, isErc20 } from '../../types/Asset';
+import { APP_ERC721_CONTRACT_ADDRESS, REFRESH_INTERVAL_MILLISECONDS } from '../../config';
+import {
+  decimals, isErc20, isNonFungible, NonFungibleToken,
+} from '../../types/Asset';
 import { doTransfer } from '../../redux/actions/transactions';
 import { SwapDirection } from '../../types/types';
 import { useAppSelector } from '../../utils/hooks';
+import { approveERC721 } from '../../redux/actions/ERC721Transacitons';
+import * as ERC721Api from '../../net/ERC721';
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
@@ -33,6 +37,8 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
   const { selectedAsset, depositAmount, swapDirection } = useAppSelector(
     (state) => state.bridge,
   );
+
+  const [isApproved, setIsApproved] = useState(false);
   const [isApprovalPending, setIsApprovalPending] = useState(false);
 
   const dispatch = useDispatch();
@@ -42,18 +48,36 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
   // e.g the user might spend entire allowance on 1st transaction
   // so we need to update the allowance before sending the 2nd transaction
   useEffect(() => {
-    function poll() {
+    function fungiblePoll() {
       return setInterval(() => {
         dispatch(fetchERC20Allowance());
       }, REFRESH_INTERVAL_MILLISECONDS);
     }
 
-    const interval = poll();
+    function nonFungiblePoll() {
+      return setInterval(async () => {
+        const res = await ERC721Api.getApproved(
+          selectedAsset!.contract!,
+          (selectedAsset?.token as NonFungibleToken).ethId,
+        );
+        setIsApproved(res === APP_ERC721_CONTRACT_ADDRESS);
+      }, REFRESH_INTERVAL_MILLISECONDS);
+    }
+
+    let interval: NodeJS.Timeout;
+
+    if (!isNonFungible(selectedAsset!)) {
+      interval = fungiblePoll();
+    } else {
+      interval = nonFungiblePoll();
+    }
 
     return () => {
-      clearInterval(interval);
+      if (interval) {
+        clearInterval(interval);
+      }
     };
-  }, [dispatch]);
+  }, [dispatch, selectedAsset]);
 
   // lock assets
   const handleDepositToken = async () => {
@@ -69,7 +93,11 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
   const handleTokenUnlock = async () => {
     try {
       setIsApprovalPending(true);
-      await dispatch(approveERC20());
+      if (isNonFungible(selectedAsset!)) {
+        await dispatch(approveERC721());
+      } else {
+        await dispatch(approveERC20());
+      }
     } catch (e) {
       console.log('error approving!');
     } finally {
@@ -86,11 +114,14 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
     : '0');
 
   // we don't need approval to burn snowDot
-  // we only need approval for erc20 transfers in eth -> polkadot direction
+  // we only need approval for erc20, erc721 transfers in eth -> polkadot direction
   const requiresApproval = swapDirection === SwapDirection.EthereumToPolkadot
     && selectedAsset
-    && isErc20(selectedAsset)
-    && depositAmountFormatted.isGreaterThan(currentAllowanceFormatted);
+    && (isErc20(selectedAsset) || isNonFungible(selectedAsset))
+    && (
+      (isErc20(selectedAsset) && depositAmountFormatted.isGreaterThan(currentAllowanceFormatted))
+      || (isNonFungible(selectedAsset) && !isApproved)
+    );
 
   const DepositButton = () => {
     if (requiresApproval) {

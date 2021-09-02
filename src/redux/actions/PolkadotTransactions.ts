@@ -12,6 +12,7 @@ import {
 } from './transactions';
 import Polkadot from '../../net/polkadot';
 import { Chain, SwapDirection } from '../../types/types';
+import { isNonFungible, NonFungibleToken } from '../../types/Asset';
 
 /**
  * Locks tokens on Polkadot and mints tokens on Ethereum
@@ -47,37 +48,67 @@ export const lockPolkadotAsset = (
       SwapDirection.PolkadotToEthereum,
     );
     dispatch(setPendingTransaction(pendingTransaction));
+    const token = selectedAsset?.token as NonFungibleToken;
+    const subTokenId = Number(token.subId);
 
-    const unsub = await Polkadot.lockDot(
-      polkadotApi!,
-      ethAddress!,
-      polkadotAddress!,
-      amount,
-      (res: any) => {
-        const tx = handlePolkadotTransactionEvents(
-          res,
+    if (isNonFungible(selectedAsset!)) {
+      const unsub = await Polkadot.burnERC721(polkadotApi!, subTokenId, polkadotAddress!, ethAddress!,
+        (res: any) => {
+          const tx = handlePolkadotTransactionEvents(
+            res,
             unsub!,
             pendingTransaction,
             dispatch,
             incentivizedChannelContract!,
             basicChannelContract!,
-        );
+          );
 
-        // tx will be updated in handlePolkadotTransactionEvents
-        // write this to pendingTransaction so it can
-        // have the latest values for the next iteration
-        pendingTransaction = tx;
-      },
-    )
-      .catch((error: any) => {
-        handlePolkadotTransactionErrors(
-          error,
-          pendingTransaction,
-          dispatch,
-        );
-      });
+          // tx will be updated in handlePolkadotTransactionEvents
+          // write this to pendingTransaction so it can
+          // have the latest values for the next iteration
+          pendingTransaction = tx;
+        })
+        .catch((error: any) => {
+          console.log('error in sub for nft tx', error);
+          handlePolkadotTransactionErrors(
+            error,
+            pendingTransaction,
+            dispatch,
+          );
+        });
+    } else {
+      const unsub = await Polkadot.lockDot(
+        polkadotApi!,
+        ethAddress!,
+        polkadotAddress!,
+        amount,
+        (res: any) => {
+          const tx = handlePolkadotTransactionEvents(
+            res,
+            unsub!,
+            pendingTransaction,
+            dispatch,
+            incentivizedChannelContract!,
+            basicChannelContract!,
+          );
+
+          // tx will be updated in handlePolkadotTransactionEvents
+          // write this to pendingTransaction so it can
+          // have the latest values for the next iteration
+          pendingTransaction = tx;
+        },
+      )
+        .catch((error: any) => {
+          handlePolkadotTransactionErrors(
+            error,
+            pendingTransaction,
+            dispatch,
+          );
+        });
+    }
   } catch (err) {
     // Todo: Error Sending DOT
+    console.log('error sending tokens from polkadot');
     console.log(err);
   }
 };

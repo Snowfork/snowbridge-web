@@ -1,10 +1,10 @@
 export default [
   {
     name: 'TestToken',
-    address: '0xF8F7758FbcEfd546eAEff7dE24AFf666B6228e73',
+    address: '0x440eDFFA1352B13227e8eE646f3Ea37456deC701',
     symbol: 'TEST',
     decimals: 18,
-    chainId: 344,
+    chainId: 15,
     logoURI: '/images/snow_logo.jpg',
   },
   {
@@ -13,6 +13,14 @@ export default [
     symbol: 'TEST',
     decimals: 18,
     chainId: 1337,
+    logoURI: '/images/snow_logo.jpg',
+  },
+  {
+    name: 'TestToken',
+    address: '0xBb0Ed63218FE9043658C8178E9566Fc10213E528',
+    symbol: 'TEST',
+    decimals: 18,
+    chainId: 3,
     logoURI: '/images/snow_logo.jpg',
   },
   {

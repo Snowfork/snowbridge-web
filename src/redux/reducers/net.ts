@@ -11,6 +11,7 @@ export interface NetState {
   web3?: Web3,
   ethContract?: Contract,
   erc20Contract?: Contract,
+  erc721AppContract?: Contract,
   incentivizedChannelContract?: Contract,
   basicChannelContract?: Contract,
   appDotContract?: Contract,
@@ -34,6 +35,7 @@ const initialState : NetState = {
   ethAddress: undefined,
   isNetworkConnected: false,
   basicChannelContract: undefined,
+  erc721AppContract: undefined,
 };
 
 export const netSlice = createSlice({
@@ -41,7 +43,7 @@ export const netSlice = createSlice({
   initialState,
   reducers: {
     setMetamaskMissing: (state) => { state.metamaskMissing = true; },
-    setPolkadotjsMissing: (state) => { state.metamaskMissing = true; },
+    setPolkadotjsMissing: (state) => { state.polkadotJSMissing = true; },
     setMetamaskNetwork: (state, action: PayloadAction<string>) => {
       state.metamaskNetwork = action.payload;
     },
@@ -62,6 +64,9 @@ export const netSlice = createSlice({
     },
     setAppDotContract: (state, action: PayloadAction<Contract>) => {
       state.appDotContract = action.payload;
+    },
+    setErc721AppContract: (state, action: PayloadAction<Contract>) => {
+      state.erc721AppContract = action.payload;
     },
     setEthAddress: (state, action: PayloadAction<string>) => {
       state.ethAddress = action.payload;

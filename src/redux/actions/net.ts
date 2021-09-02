@@ -26,6 +26,7 @@ export const {
   setPolkadotApi,
   setPolkadotjsMissing,
   setWeb3,
+  setErc721AppContract,
 } = netSlice.actions;
 
 // Subscribe to Parachain events

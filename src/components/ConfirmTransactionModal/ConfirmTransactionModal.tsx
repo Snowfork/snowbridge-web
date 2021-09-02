@@ -11,7 +11,7 @@ import { getNetworkNames, shortenWalletAddress } from '../../utils/common';
 import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import LockToken from './LockToken';
-import { symbols } from '../../types/Asset';
+import { isNonFungible, NonFungibleToken, symbols } from '../../types/Asset';
 import PendingTransactionsModal from '../PendingTransactionsUI/PendingTransactions';
 import { useAppSelector } from '../../utils/hooks';
 
@@ -87,7 +87,7 @@ function ConfirmTransactionModal({
         <Paper>
           {
             isPending ? <PendingTransactionsModal /> : (
-              <Grid container justify="center">
+              <Grid container justifyContent="center">
 
                 <Grid item>
                   <Typography>
@@ -95,18 +95,38 @@ function ConfirmTransactionModal({
                   </Typography>
                 </Grid>
 
-                <Grid item container justify="center">
-                  <Typography variant="h4">
-                    {depositAmount}
-                    {' '}
-                    {
-                      selectedAsset
-                      && symbols(selectedAsset, swapDirection).from
-                    }
-                  </Typography>
-                </Grid>
+                {
+                  selectedAsset && isNonFungible(selectedAsset)
+                    ? (
+                      <Grid item container justifyContent="center">
+                        <Typography variant="h4">
+                          {
+                            selectedAsset
+                            && symbols(selectedAsset, swapDirection).from
+                          }
+                          {' '}
+                          [
+                          {(selectedAsset?.token as NonFungibleToken).ethId}
+                          ]
+                        </Typography>
+                      </Grid>
+                    )
 
-                <Grid item container justify="space-between">
+                    : (
+                      <Grid item container justifyContent="center">
+                        <Typography variant="h4">
+                          {depositAmount}
+                          {' '}
+                          {
+                            selectedAsset
+                            && symbols(selectedAsset, swapDirection).from
+                          }
+                        </Typography>
+                      </Grid>
+                    )
+                }
+
+                <Grid item container justifyContent="space-between">
                   <Grid item>
                     <Typography>
                       {getNetworkNames(swapDirection).from}

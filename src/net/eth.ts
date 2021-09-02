@@ -16,6 +16,7 @@ import {
   INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
   BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
   APP_DOT_CONTRACT_ADDRESS,
+  APP_ERC721_CONTRACT_ADDRESS,
   BASIC_CHANNEL_ID,
 } from '../config';
 
@@ -25,6 +26,7 @@ import * as ERC20App from '../contracts/ERC20App.json';
 import * as IncentivizedInboundChannel from '../contracts/IncentivizedInboundChannel.json';
 import * as BasicInboundChannel from '../contracts/BasicInboundChannel.json';
 import * as DotApp from '../contracts/DOTApp.json';
+import * as ERC721App from '../contracts/ERC721App.json';
 
 /* tslint:enable */
 import {
@@ -37,10 +39,13 @@ import {
   setMetamaskMissing,
   setMetamaskNetwork,
   setWeb3,
+  setErc721AppContract,
 } from '../redux/actions/net';
 import * as ERC20Api from './ERC20';
 import { updateBalances } from '../redux/actions/bridge';
-import { Asset, isEther } from '../types/Asset';
+import {
+  Asset, isEther, isNonFungible, NonFungibleToken,
+} from '../types/Asset';
 import { fetchEthAddress } from '../redux/actions/EthTransactions';
 
 export default class Eth extends Api {
@@ -74,6 +79,13 @@ export default class Eth extends Api {
     APP_DOT_CONTRACT_ADDRESS,
     );
     dispatch(setAppDotContract(appDotContract));
+
+    const erc721App = new web3.eth.Contract(
+      ERC721App.abi as any,
+      APP_ERC721_CONTRACT_ADDRESS,
+    );
+
+    dispatch(setErc721AppContract(erc721App));
   }
 
   // Web3 API connector
@@ -188,6 +200,7 @@ export default class Eth extends Api {
  * @param {polkadotAddress} string The ss58 encoded address of the polkadot recipient
  * @param {ethContract} Contract web3 contract instance for the eth app
  * @param {erc20Contract} Contract web3 contract instance for the erc20 app
+ * @param {erc20Contract} Contract web3 contract instance for the erc721 app
  * @return {Promise<void>}
  */
   public static lock(
@@ -197,11 +210,27 @@ export default class Eth extends Api {
     polkadotRecipient: string,
     ethContract: Contract,
     erc20Contract: Contract,
+    erc721AppContract: Contract,
   ): PromiEvent<Contract> {
     try {
       const polkadotRecipientBytes: Uint8Array = ss58ToU8(
         polkadotRecipient!,
       );
+
+      // call ERC721 app for nfts
+      if (isNonFungible(asset)) {
+        const token = asset.token as NonFungibleToken;
+        return erc721AppContract.methods.lock(
+          asset.contract!.options.address,
+          token.ethId.toString(),
+          polkadotRecipientBytes,
+          BASIC_CHANNEL_ID,
+        ).send({
+          from: sender,
+          gas: 500000,
+          value: 0,
+        });
+      }
 
       // call ether contract for ether
       if (isEther(asset)) {
@@ -255,14 +284,14 @@ export default class Eth extends Api {
   ): Promise<any> {
     let burnExtrinsic;
     if (isEther(asset)) {
-      burnExtrinsic = polkadotApi.tx.eth.burn(
+      burnExtrinsic = polkadotApi.tx.ethApp.burn(
         // TODO: set incentivized channel ID
         BASIC_CHANNEL_ID,
         recipient,
         amount,
       );
     } else {
-      burnExtrinsic = polkadotApi.tx.erc20.burn(
+      burnExtrinsic = polkadotApi.tx.erc20App.burn(
         // TODO: set incentivized channel ID
         BASIC_CHANNEL_ID,
         asset.address,

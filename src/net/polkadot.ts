@@ -11,6 +11,7 @@ import { Dispatch } from 'redux';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
+import { bundle } from '@snowfork/snowbridge-types';
 import {
   setPolkadotAddress,
   setPolkadotApi,
@@ -123,70 +124,9 @@ export default class Polkadot extends Api {
 
       const api = await ApiPromise.create({
         provider,
-        types: {
-          Address: 'MultiAddress',
-          LookupSource: 'MultiAddress',
-          ChannelId: {
-            _enum: {
-              Basic: null,
-              Incentivized: null,
-            },
-          },
-          MessageNonce: 'u64',
-          MessageId: {
-            channelId: 'ChannelId',
-            nonce: 'u64',
-          },
-          Message: {
-            data: 'Vec<u8>',
-            proof: 'Proof',
-          },
-          Proof: {
-            blockHash: 'H256',
-            txIndex: 'u32',
-            data: '(Vec<Vec<u8>>, Vec<Vec<u8>>)',
-          },
-          EthereumHeader: {
-            parentHash: 'H256',
-            timestamp: 'u64',
-            number: 'u64',
-            author: 'H160',
-            transactionsRoot: 'H256',
-            ommersHash: 'H256',
-            extraData: 'Vec<u8>',
-            stateRoot: 'H256',
-            receiptsRoot: 'H256',
-            logBloom: 'Bloom',
-            gasUsed: 'U256',
-            gasLimit: 'U256',
-            difficulty: 'U256',
-            seal: 'Vec<Vec<u8>>',
-          },
-          EthashProofData: {
-            dagNodes: '[H512; 2]',
-            proof: 'Vec<H128>',
-          },
-          Bloom: {
-            _: '[u8; 256]',
-          },
-          PruningRange: {
-            oldestUnprunedBlock: 'u64',
-            oldestBlockToKeep: 'u64',
-          },
-          AssetId: {
-            _enum: {
-              ETH: null,
-              Token: 'H160',
-            },
-          },
-          InboundChannelData: {
-            nonce: 'u64',
-          },
-          OutboundChannelData: {
-            nonce: 'u64',
-          },
-        },
+        typesBundle: bundle as any,
       });
+
       // set polkadot api
       dispatch(setPolkadotApi(api));
       console.log('- Polkadot API endpoint connected');
@@ -230,7 +170,7 @@ export default class Polkadot extends Api {
       // we can use web3FromSource which will return an InjectedExtension type
       const injector = await web3FromSource(account.meta.source);
 
-      return polkadotApi?.tx.dot.lock(
+      return polkadotApi?.tx.dotApp.lock(
         BASIC_CHANNEL_ID,
         ethAddress,
         amount,
@@ -267,5 +207,27 @@ export default class Polkadot extends Api {
       console.log(err);
       throw new Error('failed unlocking DOT');
     }
+  }
+
+  public static async getSubTokenIdFromEthTokenId(
+    polkadotApi: ApiPromise,
+    address: string,
+    ethTokenId: string,
+  ): Promise<string> {
+    return (await polkadotApi.query.erc721App.tokensByERC721Id([address, ethTokenId])).toString();
+  }
+
+  public static async burnERC721(
+    polkadotApi: ApiPromise,
+    subTokenId: number,
+    polkadotSenderAddress: string,
+    ethRecipient: string,
+    callback: (result: any) => void,
+  ): Promise<() => void> {
+    const account = await this.getAccount(polkadotSenderAddress);
+    const injector = await web3FromSource(account.meta.source);
+
+    return polkadotApi.tx.erc721App.burn(BASIC_CHANNEL_ID, subTokenId, ethRecipient)
+      .signAndSend(account.address, { signer: injector.signer }, callback);
   }
 }

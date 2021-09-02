@@ -4,7 +4,7 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { utils } from 'ethers';
 import * as ERC20Api from '../../net/ERC20';
 import { RootState } from '../store';
-import { isErc20 } from '../../types/Asset';
+import { FungibleToken, isErc20, isNonFungible } from '../../types/Asset';
 import { erc20TransactionsSlice } from '../reducers/ERC20Transactions';
 
 // action creators
@@ -21,6 +21,11 @@ export const fetchERC20Allowance = ():
   const userAddress = state.net.ethAddress!;
   const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
   const contractInstance = state.bridge.selectedAsset!.contract!;
+
+  if (isNonFungible(state.bridge.selectedAsset!)) {
+    return;
+  }
+
   if (isErc20(state.bridge.selectedAsset!)) {
     const allowance: number = await ERC20Api.fetchERC20Allowance(
       contractInstance,
@@ -40,9 +45,10 @@ export const approveERC20 = ():
   const userAddress = state.net.ethAddress!;
   const erc20BridgeContractAddress = state.net.erc20Contract!.options.address!;
   const { selectedAsset, depositAmount } = state.bridge;
+  const selectedToken = selectedAsset?.token as FungibleToken;
 
   // format deposit amount into unit value
-  const decimals = selectedAsset?.decimals;
+  const { decimals } = selectedToken;
   const unitValue = utils.parseUnits(depositAmount, decimals).toString();
 
   try {
