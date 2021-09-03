@@ -9,7 +9,13 @@ import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import {
-  Asset, decimals, isDot, isErc20, isEther, isNonFungible, symbols,
+  Asset,
+  decimals,
+  isDot,
+  isErc20,
+  isEther,
+  isNonFungible,
+  symbols,
 } from '../../types/Asset';
 import { Chain, SwapDirection } from '../../types/types';
 import { RootState } from '../store';
