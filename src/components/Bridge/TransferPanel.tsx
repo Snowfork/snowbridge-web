@@ -116,18 +116,10 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
   }));
   const classes = useStyles(theme);
 
-  // show confirm transaction modal
   const handleTransferClicked = () => {
     dispatch(setShowConfirmTransactionModal(true));
   };
 
-  const errorText = (selectedAsset?.type === AssetType.ERC20 && errors.asset) || errors.balance;
-  const isDepositDisabled = !!errorText
-    || Number.parseFloat(depositAmount) <= 0;
-
-  // Event handlers
-
-  // update transaction direction between chains
   const changeTransactionDirection = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
       dispatch(setSwapDirection(SwapDirection.PolkadotToEthereum));
@@ -137,6 +129,12 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
   };
 
   const selectedAssetSourceChain = selectedAsset?.chain === Chain.ETHEREUM ? 0 : 1;
+  const selectedAssetValid = selectedAsset?.type === 0 ||
+    selectedAsset?.type === 1 && selectedAssetSourceChain === swapDirection;
+  const errorText = (selectedAsset?.type === AssetType.ERC20 && errors.asset) || errors.balance;
+
+  const isDepositDisabled = !!errorText
+    || (selectedAsset?.type === AssetType.ERC20 && Number.parseFloat(depositAmount) <= 0) || !selectedAssetValid;
 
   return (
     <Grid container spacing={2}>
@@ -150,9 +148,9 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
         </Grid>
         {selectedAsset?.type === 0 &&
           <SelectedFungibleToken setShowAssetSelector={setShowAssetSelector} setError={setAssetError} />}
-        {selectedAsset?.type === 1 && selectedAssetSourceChain === swapDirection &&
+        {selectedAsset?.type === 1 && selectedAssetValid &&
           <SelectedNFT setShowAssetSelector={setShowAssetSelector} />}
-        {selectedAsset?.type === 1 && selectedAssetSourceChain !== swapDirection &&
+        {!selectedAssetValid &&
           <SelectAnAsset setShowAssetSelector={setShowAssetSelector} />}
       </Grid>
 
