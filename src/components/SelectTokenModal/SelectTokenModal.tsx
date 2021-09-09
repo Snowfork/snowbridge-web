@@ -116,7 +116,7 @@ function SelectTokenModal({
             </S.TokenList>
           </TabPanel>
           <TabPanel value={selectedTab} index={1}>
-            <NonFungibleTokens />
+            <NonFungibleTokens handleTokenSelection={handleTokenSelection} />
           </TabPanel>
 
           <S.Button onClick={closeModal}>Close</S.Button>

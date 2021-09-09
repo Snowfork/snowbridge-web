@@ -62,17 +62,15 @@ const TokensForContract = (
 };
 
 interface Props {
-  onClick: (contract: string, id: string) => void;
-  buttonText: string;
+  onNFTSelected: (contract: string, id: string) => void;
   ownedNfts: { [address: string]: OwnedNft[] };
 }
 
 const NftSelector = ({
-  onClick,
-  buttonText,
+  onNFTSelected,
   ownedNfts,
 }: Props) => {
-  const [selectedContractAddress, setSelectedContractAddress] = useState('0x4283d8996E5a7F4BEa58c6052b1471a2a9524C87');
+  const [selectedContractAddress, setSelectedContractAddress] = useState('0xf8DC0d61Ec6d90faCdCf10Ed601a3505554471E7');
   const [selectedTokenId, setSelectedTokenId] = useState('3');
 
   const handleContractChanged = (contract: string) => {
@@ -86,10 +84,7 @@ const NftSelector = ({
   const handleTokenSelected = (token: OwnedNft) => {
     handleIdChanged(token.ethId!);
     handleContractChanged(token.address);
-  };
-
-  const handleTransfer = () => {
-    onClick(selectedContractAddress, selectedTokenId);
+    onNFTSelected(token.address, token.ethId!);
   };
 
   return (
@@ -101,16 +96,6 @@ const NftSelector = ({
       </List>
 
       <ManualInput onContractChanged={handleContractChanged} onIdChanged={handleIdChanged} />
-
-      <Button
-        variant="contained"
-        size="large"
-        color="primary"
-        onClick={handleTransfer}
-        style={{ margin: '0 auto' }}
-      >
-        {buttonText}
-      </Button>
 
     </div>
   );

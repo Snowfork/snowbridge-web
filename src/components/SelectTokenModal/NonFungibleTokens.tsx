@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Paper, Tab, Tabs,
+  Paper,
 } from '@material-ui/core';
 import {
-  fetchOwnedNonFungibleAssets, setShowConfirmTransactionModal, setSwapDirection, updateSelectedAsset,
+  fetchOwnedNonFungibleAssets, setShowConfirmTransactionModal, updateSelectedAsset,
 } from '../../redux/actions/bridge';
 import { RootState } from '../../redux/store';
-import TabPanel from '../TabPanel';
 import NftSelector from './nft/NftSelector';
 import { Chain, SwapDirection } from '../../types/types';
 import * as ERC721 from '../../contracts/TestToken721.json';
 import { createNonFungibleAsset } from '../../types/Asset';
+import { Asset } from '../../types/Asset';
 
-export const NonFungibleTokens = () => {
-  const [selectedTab, setSelectedTab] = useState(0);
+type Props = {
+  handleTokenSelection: (asset: Asset) => void;
+};
+
+export const NonFungibleTokens = ({ handleTokenSelection }: Props) => {
 
   const {
     bridge: {
@@ -26,6 +29,9 @@ export const NonFungibleTokens = () => {
       polkadotAddress,
       web3,
     },
+    bridge: {
+      swapDirection,
+    }
   } = useSelector((state: RootState) => state);
   const dispatch = useDispatch();
 
@@ -35,9 +41,9 @@ export const NonFungibleTokens = () => {
     }
   }, [dispatch, ethAddress, polkadotAddress, nonFungibleAssets]);
 
-  const handleTransfer = async ({
-    chain, direction, address, id,
-  }: { chain: Chain, direction: SwapDirection, address: string, id: string }) => {
+  const handleNFTSelected = async ({
+    chain, address, id,
+  }: { chain: Chain, address: string, id: string }) => {
     try {
       const contract = new web3!.eth.Contract(ERC721.abi as any, address);
       const selectedAsset = await createNonFungibleAsset(
@@ -47,41 +53,31 @@ export const NonFungibleTokens = () => {
           ethId: id,
         },
       );
-      dispatch(setSwapDirection(direction));
-      dispatch(updateSelectedAsset(selectedAsset));
-      dispatch(setShowConfirmTransactionModal(true));
+      handleTokenSelection(selectedAsset)
     } catch (e) {
       alert('error finding token. Double check address and ID');
     }
   };
 
-  async function handleTransferToPolkadot(address: string, id: string) {
+  async function handleEthereumNFTSelected(address: string, id: string) {
     // TODO: confirm this token exists
-    handleTransfer({
-      chain: Chain.ETHEREUM, direction: SwapDirection.EthereumToPolkadot, address, id,
+    handleNFTSelected({
+      chain: Chain.ETHEREUM, address, id,
     });
   }
 
-  async function handleTransferToEthereum(address: string, id: string) {
+  async function handlePolkadotNFTSelected(address: string, id: string) {
     // TODO: confirm this token exists
-    handleTransfer({
-      chain: Chain.POLKADOT, direction: SwapDirection.PolkadotToEthereum, address, id,
+    handleNFTSelected({
+      chain: Chain.POLKADOT, address, id,
     });
   }
 
+  const onNFTSelected = swapDirection === SwapDirection.EthereumToPolkadot ? handleEthereumNFTSelected : handlePolkadotNFTSelected;
+  const ownedNfts = swapDirection === SwapDirection.EthereumToPolkadot ? ownedNonFungibleAssets.ethereum : ownedNonFungibleAssets.polkadot;
   return (
     <Paper>
-      <Tabs value={selectedTab} onChange={(event, newTab) => setSelectedTab(newTab)}>
-        <Tab label="Ethereum" />
-        <Tab label="Polkadot" />
-      </Tabs>
-      <TabPanel value={selectedTab} index={0}>
-        <NftSelector buttonText="Transfer to Polkadot" onClick={handleTransferToPolkadot} ownedNfts={ownedNonFungibleAssets.ethereum} />
-      </TabPanel>
-      <TabPanel value={selectedTab} index={1}>
-        <NftSelector buttonText="Transfer to Ethereum" onClick={handleTransferToEthereum} ownedNfts={ownedNonFungibleAssets.polkadot} />
-
-      </TabPanel>
-    </Paper>
+      <NftSelector onNFTSelected={onNFTSelected} ownedNfts={ownedNfts} />
+    </Paper >
   );
 };
