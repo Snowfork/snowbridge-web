@@ -13,6 +13,11 @@ export interface NonFungibleToken {
   subId?: string
 }
 
+export enum AssetType {
+  ERC20 = 0,
+  ERC721 = 1,
+}
+
 export interface Asset {
   // the chain for the native asset
   chain: Chain;
@@ -39,7 +44,8 @@ export interface Asset {
     // eth: string,
     // polkadot: string
     [chain in Chain]: string
-  }
+  },
+  type: AssetType;
 }
 
 export function isErc20(asset: Asset): boolean {
@@ -172,6 +178,7 @@ export function createFungibleAsset(
       wrappedDecimals,
     },
     logoUri: token.logoURI,
+    type: AssetType.ERC20,
   };
 }
 
@@ -218,5 +225,6 @@ export async function createNonFungibleAsset(
       subId,
     },
     logoUri,
+    type: AssetType.ERC721,
   };
 }

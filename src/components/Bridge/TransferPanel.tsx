@@ -12,9 +12,9 @@ import { useDispatch } from 'react-redux';
 import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 
 import {
-  setShowConfirmTransactionModal, setSwapDirection, updateBalances,
+  setShowConfirmTransactionModal, setSwapDirection,
 } from '../../redux/actions/bridge';
-import { SwapDirection } from '../../types/types';
+import { SwapDirection, Chain } from '../../types/types';
 
 import {
   dotSelector,
@@ -23,9 +23,11 @@ import {
 } from '../../redux/reducers/bridge';
 import FormatAmount from '../FormatAmount';
 import { getNetworkNames } from '../../utils/common';
-import { decimals, symbols } from '../../types/Asset';
+import { AssetType, decimals, symbols } from '../../types/Asset';
 import { useAppSelector } from '../../utils/hooks';
 import { SelectedFungibleToken } from './SelectedFungibleToken';
+import { SelectedNFT } from './SelectedNFT';
+import { SelectAnAsset } from './SelectAnAsset';
 
 const INSUFFICIENT_GAS_ERROR = 'Insufficient gas';
 
@@ -119,7 +121,7 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
     dispatch(setShowConfirmTransactionModal(true));
   };
 
-  const errorText = Object.values(errors).filter((e) => e)[0];
+  const errorText = (selectedAsset?.type === AssetType.ERC20 && errors.asset) || errors.balance;
   const isDepositDisabled = !!errorText
     || Number.parseFloat(depositAmount) <= 0;
 
@@ -134,6 +136,8 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
     }
   };
 
+  const selectedAssetSourceChain = selectedAsset?.chain === Chain.ETHEREUM ? 0 : 1;
+
   return (
     <Grid container spacing={2}>
       {/* From section */}
@@ -144,7 +148,12 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
             {getNetworkNames(swapDirection).from}
           </Typography>
         </Grid>
-        <SelectedFungibleToken setShowAssetSelector={setShowAssetSelector} setError={setAssetError} />
+        {selectedAsset?.type === 0 &&
+          <SelectedFungibleToken setShowAssetSelector={setShowAssetSelector} setError={setAssetError} />}
+        {selectedAsset?.type === 1 && selectedAssetSourceChain === swapDirection &&
+          <SelectedNFT setShowAssetSelector={setShowAssetSelector} />}
+        {selectedAsset?.type === 1 && selectedAssetSourceChain !== swapDirection &&
+          <SelectAnAsset setShowAssetSelector={setShowAssetSelector} />}
       </Grid>
 
       <Grid item className={classes.switch}>

@@ -1,15 +1,15 @@
 /* eslint-disable no-param-reassign */
-import BigNumber from 'bignumber.js';
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
-import { Asset, isDot, isEther } from '../../types/Asset';
+import { Asset, AssetType, isDot, isEther } from '../../types/Asset';
 import {
   NonFungibleTokenContract, OwnedNft, SwapDirection,
 } from '../../types/types';
 
 export interface BridgeState {
   assets: Asset[],
-  selectedAsset?: Asset
+  selectedAsset?: Asset,
   depositAmount: string,
   swapDirection: SwapDirection,
   showConfirmTransactionModal: boolean,
