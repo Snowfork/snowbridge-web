@@ -10,15 +10,11 @@ import {
   Theme,
   createStyles,
   useTheme,
-  Tabs,
-  Tab,
 } from '@material-ui/core';
 import { useAppSelector } from '../../utils/hooks';
 import ConfirmTransactionModal from '../ConfirmTransactionModal';
 import SelectTokenModal from '../SelectTokenModal';
-import TabPanel from '../TabPanel';
 import { FungibleTokens } from './FungibleTokens';
-import { NonFungibleTokens } from './NonFungibleTokens';
 
 // ------------------------------------------
 //               Bank component
@@ -26,7 +22,6 @@ import { NonFungibleTokens } from './NonFungibleTokens';
 function Bridge(): React.ReactElement {
   // state
   const [showAssetSelector, setShowAssetSelector] = useState(false);
-  const [selectedTab, setSelectedTab] = useState(1);
   const { showConfirmTransactionModal } = useAppSelector((state) => state.bridge);
 
   const theme = useTheme();
@@ -71,17 +66,7 @@ function Bridge(): React.ReactElement {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <Tabs value={selectedTab} onChange={(event, newTab) => setSelectedTab(newTab)}>
-          <Tab label="Fungible" />
-          <Tab label="Non-Fungible" />
-        </Tabs>
-        <TabPanel value={selectedTab} index={0}>
-          <FungibleTokens setShowAssetSelector={setShowAssetSelector} />
-        </TabPanel>
-        <TabPanel value={selectedTab} index={1}>
-          <NonFungibleTokens />
-        </TabPanel>
-
+        <FungibleTokens setShowAssetSelector={setShowAssetSelector} />
       </Paper>
       <SelectTokenModal
         open={showAssetSelector}

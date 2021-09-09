@@ -14,36 +14,32 @@ export interface NonFungibleToken {
 }
 
 export interface Asset {
-    // the chain for the native asset
-    chain: Chain;
-    // full native asset name
-    name: string;
-    // wrapped asset name - for opposite chain
-    wrappedName: string;
-    // native token symbol
-    symbol: string;
-    // wrapped token symbol - for opposite chain
-    wrappedSymbol: string;
-    token: FungibleToken | NonFungibleToken;
-    // address for contract on ethereum
-    address: string;
-    // deployed ethereum chain ID
-    chainId: number;
-    // token logo
-    logoUri: string;
-    // web3 contract instance
-    // this will be undefined for Ether
-    contract?: Contract;
-    // asset balances for each chain
-    balance: {
-        // eth: string,
-        // polkadot: string
-        [chain in Chain]: string
-    }
-    // prices for this asset
-    prices: {
-        [currency: string]: string
-    }
+  // the chain for the native asset
+  chain: Chain;
+  // full native asset name
+  name: string;
+  // wrapped asset name - for opposite chain
+  wrappedName: string;
+  // native token symbol
+  symbol: string;
+  // wrapped token symbol - for opposite chain
+  wrappedSymbol: string;
+  token: FungibleToken | NonFungibleToken;
+  // address for contract on ethereum
+  address: string;
+  // deployed ethereum chain ID
+  chainId: number;
+  // token logo
+  logoUri: string;
+  // web3 contract instance
+  // this will be undefined for Ether
+  contract?: Contract;
+  // asset balances for each chain
+  balance: {
+    // eth: string,
+    // polkadot: string
+    [chain in Chain]: string
+  }
 }
 
 export function isErc20(asset: Asset): boolean {
@@ -70,7 +66,7 @@ export function isNonFungible(asset: Asset): boolean {
 function ethSymbols(
   asset: Asset,
   swapDirection: SwapDirection,
-):{to: string, from: string} {
+): { to: string, from: string } {
   if (swapDirection === SwapDirection.EthereumToPolkadot) {
     return {
       to: asset.wrappedSymbol,
@@ -86,7 +82,7 @@ function ethSymbols(
 function polkadotSymbols(
   asset: Asset,
   swapDirection: SwapDirection,
-):{to: string, from: string} {
+): { to: string, from: string } {
   if (!asset) {
     return { to: '', from: '' };
   }
@@ -104,8 +100,7 @@ function polkadotSymbols(
 }
 
 // returns the symbol for each corresponding chain based on the swap direction
-export function symbols(asset: Asset, swapDirection: SwapDirection):
- {to: string, from: string} {
+export function symbols(asset: Asset, swapDirection: SwapDirection): { to: string, from: string } {
   let result = polkadotSymbols(asset, swapDirection);
 
   if (!isDot(asset)) {
@@ -118,7 +113,7 @@ export function symbols(asset: Asset, swapDirection: SwapDirection):
 function polkadotDecimals(
   asset: Asset,
   swapDirection: SwapDirection,
-): {to: number, from: number} {
+): { to: number, from: number } {
   const { decimals, wrappedDecimals } = (asset.token as FungibleToken);
   let result = { to: decimals, from: wrappedDecimals };
   if (swapDirection === SwapDirection.PolkadotToEthereum) {
@@ -130,7 +125,7 @@ function polkadotDecimals(
 function ethDecimals(
   asset: Asset,
   swapDirection: SwapDirection,
-): {to: number, from: number} {
+): { to: number, from: number } {
   const { decimals, wrappedDecimals } = (asset.token as FungibleToken);
   let result = { to: decimals, from: wrappedDecimals };
   if (swapDirection === SwapDirection.EthereumToPolkadot) {
@@ -140,8 +135,7 @@ function ethDecimals(
 }
 
 // returns the decimals for each corresponding chain based on the swap direction
-export function decimals(asset: Asset | undefined, swapDirection: SwapDirection):
-{to: number, from: number} {
+export function decimals(asset: Asset | undefined, swapDirection: SwapDirection): { to: number, from: number } {
   if (!asset) {
     return { to: 0, from: 0 };
   }
@@ -178,9 +172,6 @@ export function createFungibleAsset(
       wrappedDecimals,
     },
     logoUri: token.logoURI,
-    prices: {
-
-    },
   };
 }
 
@@ -227,8 +218,5 @@ export async function createNonFungibleAsset(
       subId,
     },
     logoUri,
-    prices: {
-
-    },
   };
 }

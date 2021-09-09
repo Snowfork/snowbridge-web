@@ -3,6 +3,8 @@ import ReactModal from 'react-modal';
 import {
   Button,
   Typography,
+  Tabs,
+  Tab,
 } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
@@ -12,6 +14,9 @@ import { updateSelectedAsset } from '../../redux/actions/bridge';
 import { Asset, decimals, symbols } from '../../types/Asset';
 import { SwapDirection } from '../../types/types';
 import { useAppSelector } from '../../utils/hooks';
+
+import TabPanel from '../TabPanel';
+import { NonFungibleTokens } from './NonFungibleTokens';
 
 const customStyles = {
   overlay: {},
@@ -38,6 +43,7 @@ function SelectTokenModal({
 }: Props): React.ReactElement<Props> {
   const [isOpen, setIsOpen] = useState(open);
   const [searchInput, setSearchInput] = useState('');
+  const [selectedTab, setSelectedTab] = useState(0);
   const { assets, swapDirection } = useAppSelector((state) => state.bridge);
   const dispatch = useDispatch();
 
@@ -78,31 +84,41 @@ function SelectTokenModal({
         contentLabel="Select Token"
       >
         <S.Wrapper>
-          <S.Heading>Select Token</S.Heading>
-          <S.Input onChange={handleInputChange} />
-          <S.TokenList>
-            {
-              assets
-              // filter assets by search term
-                ?.filter(
-                  (asset: Asset) => asset.name.toLowerCase().includes(searchInput)
-                  || asset.symbol.toLowerCase().includes(searchInput),
-                ).map(
-                  // render each asset
-                  (asset: Asset) => (
-                    <S.Token key={`${asset.chainId}-${asset.address}`}>
-                      <Button onClick={() => handleTokenSelection(asset)}>
-                        <img src={asset.logoUri} alt={`${asset.name} icon`} />
-                        <div>
-                          <Typography variant="caption">{symbols(asset, swapDirection).from}</Typography>
-                          <Typography>{ getTokenBalance(asset)}</Typography>
-                        </div>
-                      </Button>
-                    </S.Token>
-                  ),
-                )
-            }
-          </S.TokenList>
+          <S.Heading>Select Asset</S.Heading>
+          <Tabs value={selectedTab} onChange={(event, newTab) => setSelectedTab(newTab)}>
+            <Tab label="Fungible" />
+            <Tab label="Non-Fungible" />
+          </Tabs>
+          <TabPanel value={selectedTab} index={0}>
+            <S.Input onChange={handleInputChange} />
+            <S.TokenList>
+              {
+                assets
+                  // filter assets by search term
+                  ?.filter(
+                    (asset: Asset) => asset.name.toLowerCase().includes(searchInput)
+                      || asset.symbol.toLowerCase().includes(searchInput),
+                  ).map(
+                    // render each asset
+                    (asset: Asset) => (
+                      <S.Token key={`${asset.chainId}-${asset.address}`}>
+                        <Button onClick={() => handleTokenSelection(asset)}>
+                          <img src={asset.logoUri} alt={`${asset.name} icon`} />
+                          <div>
+                            <Typography variant="caption">{symbols(asset, swapDirection).from}</Typography>
+                            <Typography>{getTokenBalance(asset)}</Typography>
+                          </div>
+                        </Button>
+                      </S.Token>
+                    ),
+                  )
+              }
+            </S.TokenList>
+          </TabPanel>
+          <TabPanel value={selectedTab} index={1}>
+            <NonFungibleTokens />
+          </TabPanel>
+
           <S.Button onClick={closeModal}>Close</S.Button>
         </S.Wrapper>
       </ReactModal>

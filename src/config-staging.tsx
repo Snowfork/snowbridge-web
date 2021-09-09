@@ -29,8 +29,6 @@ export default {
 
   PERMITTED_METAMASK_NETWORK: 'ropsten',
 
-  PRICE_CURRENCIES: ['usd'],
-
   BASIC_CHANNEL_ID: 0,
   INCENTIVIZED_CHANNEL_ID: 1,
 };

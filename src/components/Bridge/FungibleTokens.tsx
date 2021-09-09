@@ -26,7 +26,6 @@ import {
   dotSelector,
   etherSelector,
   tokenBalancesByNetwork,
-  tokenSwapUsdValueSelector,
 } from '../../redux/reducers/bridge';
 import FormatAmount from '../FormatAmount';
 import { getNetworkNames } from '../../utils/common';
@@ -39,20 +38,19 @@ enum ErrorMessages {
 }
 
 type Props = {
-    setShowAssetSelector: (show: boolean) => void,
+  setShowAssetSelector: (show: boolean) => void,
 }
 
 export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
-// state
+  // state
   const tokenBalances = useAppSelector(tokenBalancesByNetwork);
-  const transferUsdValue = useAppSelector(tokenSwapUsdValueSelector);
   const dot = useAppSelector(dotSelector);
   const ether = useAppSelector(etherSelector);
 
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethereumGasBalance = ether?.balance?.eth;
 
-  const [errors, setErrors] = useState<{balance?: ErrorMessages, gas?: ErrorMessages}>({
+  const [errors, setErrors] = useState<{ balance?: ErrorMessages, gas?: ErrorMessages }>({
     balance: undefined,
     gas: undefined,
   });
@@ -71,16 +69,16 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
   // validate deposit amount on update
   useEffect(() => {
     if (depositAmount
-    && decimalMap.from
-    && new BigNumber(
-      // make sure we are comparing the same units
-      utils.parseUnits(
-        depositAmount || '0', decimalMap.from,
-      ).toString(),
-    )
-      .isGreaterThan(
-        new BigNumber(tokenBalances.sourceNetwork),
+      && decimalMap.from
+      && new BigNumber(
+        // make sure we are comparing the same units
+        utils.parseUnits(
+          depositAmount || '0', decimalMap.from,
+        ).toString(),
       )
+        .isGreaterThan(
+          new BigNumber(tokenBalances.sourceNetwork),
+        )
     ) {
       setErrors((errors) => ({ ...errors, balance: ErrorMessages.INSUFFICIENT_BALANCE }));
     } else {
@@ -111,7 +109,7 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
       hasEnoughGas = Number.parseFloat(ethereumGasBalance) > 0;
     } else {
-    // check DOT balance for polkadot -> eth transactions
+      // check DOT balance for polkadot -> eth transactions
       hasEnoughGas = Number.parseFloat(polkadotGasBalance) > 0;
     }
 
@@ -168,10 +166,7 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
 
   const errorText = Object.values(errors).filter((e) => e)[0];
   const isDepositDisabled = !!errorText
-|| Number.parseFloat(depositAmount) <= 0
-|| Number.isNaN(Number.parseFloat(transferUsdValue));
-
-  const assetPrice = Number.isNaN(Number.parseFloat(transferUsdValue)) ? '0' : transferUsdValue;
+    || Number.parseFloat(depositAmount) <= 0;
 
   // Event handlers
 
@@ -232,11 +227,7 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
           </Paper>
         </Grid>
 
-        <Grid item container justify="space-between">
-          <Typography gutterBottom>
-            $
-            {assetPrice}
-          </Typography>
+        <Grid item container justifyContent="space-between">
           <Grid item>
             <Typography gutterBottom variant="caption">
               Available Balance:
@@ -244,17 +235,17 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
             <Typography gutterBottom>
               {
                 selectedAsset
-          && (
-          <FormatAmount
-            amount={tokenBalances.sourceNetwork}
-            decimals={decimalMap.from}
-          />
-          )
-        }
+                && (
+                  <FormatAmount
+                    amount={tokenBalances.sourceNetwork}
+                    decimals={decimalMap.from}
+                  />
+                )
+              }
               {' '}
               {
                 selectedAsset && symbols(selectedAsset, swapDirection).from
-        }
+              }
             </Typography>
           </Grid>
         </Grid>
@@ -274,7 +265,7 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
         <Grid item>
           <Typography>TO</Typography>
         </Grid>
-        <Grid item container justify="space-between">
+        <Grid item container justifyContent="space-between">
           <Typography gutterBottom display="block">{getNetworkNames(swapDirection).to}</Typography>
           <Grid item>
             <Typography gutterBottom variant="caption">
@@ -283,17 +274,17 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
             <Typography gutterBottom>
               {
                 selectedAsset
-        && (
-        <FormatAmount
-          amount={tokenBalances.destinationNetwork}
-          decimals={decimalMap.to}
-        />
-        )
-        }
+                && (
+                  <FormatAmount
+                    amount={tokenBalances.destinationNetwork}
+                    decimals={decimalMap.to}
+                  />
+                )
+              }
               {' '}
               {
                 selectedAsset && symbols(selectedAsset, swapDirection).to
-        }
+              }
             </Typography>
           </Grid>
         </Grid>
