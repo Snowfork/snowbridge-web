@@ -172,7 +172,7 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
         </Grid>
         <Grid item container justifyContent="space-between">
           <Typography gutterBottom display="block">{getNetworkNames(swapDirection).to}</Typography>
-          <Grid item>
+          {selectedAsset?.type === 0 && <Grid item>
             <Typography gutterBottom variant="caption">
               Available Balance:
             </Typography>
@@ -191,7 +191,7 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
                 selectedAsset && symbols(selectedAsset, swapDirection).to
               }
             </Typography>
-          </Grid>
+          </Grid>}
         </Grid>
       </Grid>
 
