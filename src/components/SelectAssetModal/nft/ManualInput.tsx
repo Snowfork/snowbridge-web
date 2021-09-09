@@ -25,8 +25,8 @@ const ManualInput = ({
   onIdChanged,
 }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedTokenAddress, setSelectedTokenAddress] = useState('0xf8DC0d61Ec6d90faCdCf10Ed601a3505554471E7');
-  const [selectedTokenId, setSelectedTokenId] = useState('3');
+  const [selectedTokenAddress, setSelectedTokenAddress] = useState('');
+  const [selectedTokenId, setSelectedTokenId] = useState('');
 
   const handleTokenAddressChanged = (e: any) => {
     setSelectedTokenAddress(e.target.value);

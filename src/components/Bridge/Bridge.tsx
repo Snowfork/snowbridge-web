@@ -13,8 +13,8 @@ import {
 } from '@material-ui/core';
 import { useAppSelector } from '../../utils/hooks';
 import ConfirmTransactionModal from '../ConfirmTransactionModal';
-import SelectTokenModal from '../SelectTokenModal';
-import { FungibleTokens } from './FungibleTokens';
+import SelectAssetModal from '../SelectAssetModal';
+import { TransferPanel } from './TransferPanel';
 
 // ------------------------------------------
 //               Bank component
@@ -66,9 +66,9 @@ function Bridge(): React.ReactElement {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <FungibleTokens setShowAssetSelector={setShowAssetSelector} />
+        <TransferPanel setShowAssetSelector={setShowAssetSelector} />
       </Paper>
-      <SelectTokenModal
+      <SelectAssetModal
         open={showAssetSelector}
         onClose={() => setShowAssetSelector(false)}
       />

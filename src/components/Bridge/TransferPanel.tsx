@@ -2,26 +2,20 @@ import React, { useEffect, useState } from 'react';
 import {
   Typography,
   Grid,
-  Paper,
   makeStyles,
   Theme,
   createStyles,
-  InputBase,
-  Divider,
   useTheme,
   Button,
 } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import BigNumber from 'bignumber.js';
-import { utils } from 'ethers';
 import {
-  setDepositAmount, setShowConfirmTransactionModal, setSwapDirection, updateBalances,
+  setShowConfirmTransactionModal, setSwapDirection, updateBalances,
 } from '../../redux/actions/bridge';
 import { SwapDirection } from '../../types/types';
-import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
+
 import {
   dotSelector,
   etherSelector,
@@ -31,17 +25,15 @@ import FormatAmount from '../FormatAmount';
 import { getNetworkNames } from '../../utils/common';
 import { decimals, symbols } from '../../types/Asset';
 import { useAppSelector } from '../../utils/hooks';
+import { SelectedFungibleToken } from './SelectedFungibleToken';
 
-enum ErrorMessages {
-  INSUFFICIENT_BALANCE = 'Insufficient funds',
-  INSUFFICIENT_GAS = 'Insufficient gas',
-}
+const INSUFFICIENT_GAS_ERROR = 'Insufficient gas';
 
 type Props = {
   setShowAssetSelector: (show: boolean) => void,
 }
 
-export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
+export const TransferPanel = ({ setShowAssetSelector }: Props) => {
   // state
   const tokenBalances = useAppSelector(tokenBalancesByNetwork);
   const dot = useAppSelector(dotSelector);
@@ -50,9 +42,9 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethereumGasBalance = ether?.balance?.eth;
 
-  const [errors, setErrors] = useState<{ balance?: ErrorMessages, gas?: ErrorMessages }>({
+  const [errors, setErrors] = useState<{ balance?: string, asset?: string }>({
     balance: undefined,
-    gas: undefined,
+    asset: undefined,
   });
 
   const {
@@ -64,42 +56,6 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const decimalMap = decimals(selectedAsset, swapDirection);
-
-  // side effects
-  // validate deposit amount on update
-  useEffect(() => {
-    if (depositAmount
-      && decimalMap.from
-      && new BigNumber(
-        // make sure we are comparing the same units
-        utils.parseUnits(
-          depositAmount || '0', decimalMap.from,
-        ).toString(),
-      )
-        .isGreaterThan(
-          new BigNumber(tokenBalances.sourceNetwork),
-        )
-    ) {
-      setErrors((errors) => ({ ...errors, balance: ErrorMessages.INSUFFICIENT_BALANCE }));
-    } else {
-      setErrors((errors) => ({ ...errors, balance: undefined }));
-    }
-  }, [depositAmount, selectedAsset, tokenBalances.sourceNetwork, decimalMap.from]);
-
-  // poll APIs to keep balances up to date
-  useEffect(() => {
-    function startPolling() {
-      return setInterval(() => {
-        dispatch(updateBalances());
-      }, REFRESH_INTERVAL_MILLISECONDS);
-    }
-
-    const interval = startPolling();
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [dispatch]);
 
   // check the user has enough gas for the transaction
   useEffect(() => {
@@ -114,13 +70,17 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
     }
 
     if (!hasEnoughGas) {
-      setErrors((errors) => ({ ...errors, gas: ErrorMessages.INSUFFICIENT_GAS }));
+      setErrors((errors) => ({ ...errors, gas: INSUFFICIENT_GAS_ERROR }));
     } else {
       setErrors(
         (errors) => ({ ...errors, gas: undefined }),
       );
     }
   }, [swapDirection, selectedAsset, ethereumGasBalance, polkadotGasBalance]);
+
+  const setAssetError = (assetError: string) => {
+    setErrors((errors) => ({ ...errors, asset: assetError }));
+  }
 
   const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -136,11 +96,6 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
       alignItems: 'center',
       margin: '0 auto',
       marginBottom: theme.spacing(2),
-    },
-    paper: {
-      padding: theme.spacing(2),
-      margin: '0 auto',
-      maxWidth: 500,
     },
     input: {
       marginLeft: theme.spacing(1),
@@ -179,24 +134,6 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
     }
   };
 
-  // set deposit amount to balance of current asset
-  const handleMaxClicked = () => {
-    // format ammount for display
-    const amount = tokenBalances.sourceNetwork;
-    const depositAmountFormatted = utils.formatUnits(amount, decimalMap.from);
-
-    dispatch(setDepositAmount(depositAmountFormatted));
-  };
-
-  // update deposit amount in redux store
-  const handleDepositAmountChanged = (e: any) => {
-    if (e.target.value) {
-      dispatch(setDepositAmount(e.target.value));
-    } else {
-      dispatch(setDepositAmount(''));
-    }
-  };
-
   return (
     <Grid container spacing={2}>
       {/* From section */}
@@ -207,48 +144,7 @@ export const FungibleTokens = ({ setShowAssetSelector }: Props) => {
             {getNetworkNames(swapDirection).from}
           </Typography>
         </Grid>
-        {/* amount input */}
-        <Grid item>
-          <Paper className={classes.amountInput}>
-            <InputBase
-              className={classes.input}
-              placeholder="0.0"
-              inputProps={{ 'aria-label': '0.0', min: 0 }}
-              value={depositAmount}
-              onChange={handleDepositAmountChanged}
-              type="number"
-            />
-            <Button size="small" onClick={handleMaxClicked}>MAX</Button>
-            <Divider className={classes.divider} orientation="vertical" />
-            <Button onClick={() => setShowAssetSelector(true)}>
-              {selectedAsset?.name}
-              <ExpandMoreIcon />
-            </Button>
-          </Paper>
-        </Grid>
-
-        <Grid item container justifyContent="space-between">
-          <Grid item>
-            <Typography gutterBottom variant="caption">
-              Available Balance:
-            </Typography>
-            <Typography gutterBottom>
-              {
-                selectedAsset
-                && (
-                  <FormatAmount
-                    amount={tokenBalances.sourceNetwork}
-                    decimals={decimalMap.from}
-                  />
-                )
-              }
-              {' '}
-              {
-                selectedAsset && symbols(selectedAsset, swapDirection).from
-              }
-            </Typography>
-          </Grid>
-        </Grid>
+        <SelectedFungibleToken setShowAssetSelector={setShowAssetSelector} setError={setAssetError} />
       </Grid>
 
       <Grid item className={classes.switch}>

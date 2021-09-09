@@ -9,7 +9,7 @@ import {
 import { useDispatch } from 'react-redux';
 
 import { utils } from 'ethers';
-import * as S from './SelectTokenModal.style';
+import * as S from './SelectAssetModal.style';
 import { updateSelectedAsset } from '../../redux/actions/bridge';
 import { Asset, decimals, symbols } from '../../types/Asset';
 import { SwapDirection } from '../../types/types';
@@ -37,7 +37,7 @@ type Props = {
   onClose: () => void;
 };
 
-function SelectTokenModal({
+function SelectAssetModal({
   open,
   onClose,
 }: Props): React.ReactElement<Props> {
@@ -126,4 +126,4 @@ function SelectTokenModal({
   );
 }
 
-export default SelectTokenModal;
+export default SelectAssetModal;

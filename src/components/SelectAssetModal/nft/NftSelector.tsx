@@ -70,8 +70,8 @@ const NftSelector = ({
   onNFTSelected,
   ownedNfts,
 }: Props) => {
-  const [selectedContractAddress, setSelectedContractAddress] = useState('0xf8DC0d61Ec6d90faCdCf10Ed601a3505554471E7');
-  const [selectedTokenId, setSelectedTokenId] = useState('3');
+  const [selectedContractAddress, setSelectedContractAddress] = useState('');
+  const [selectedTokenId, setSelectedTokenId] = useState('');
 
   const handleContractChanged = (contract: string) => {
     setSelectedContractAddress(contract);
