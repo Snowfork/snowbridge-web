@@ -148,13 +148,12 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
 };
 
 export default styled(TransferPanel)`
+  width: 520px;
   align-items: center;
-  border: 1px solid ${props => props.theme.colors.transferPanelBorder};
-  background: ${props => props.theme.colors.transferPanelBackground};
-
   gap: 15px;
 
-  width: 520px;
+  border: 1px solid ${props => props.theme.colors.transferPanelBorder};
+  background: ${props => props.theme.colors.transferPanelBackground};
 
   .chain-direction-display {
     display: flex;
