@@ -48,7 +48,7 @@ const ManualInput = ({
         <TokenForm>
           <InputLabel htmlFor="contract">Contract</InputLabel>
           <Input type="text" name="contract" value={selectedTokenAddress} onChange={handleTokenAddressChanged} />
-          <InputLabel htmlFor="token">Token</InputLabel>
+          <InputLabel htmlFor="token">Token ID</InputLabel>
           <Input type="text" name="token" value={selectedTokenId} onChange={handleIdChanged} />
         </TokenForm>
         <Button onClick={selectNFT}>Select</Button>
