@@ -1,7 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Button,
-} from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 import styled from 'styled-components';
@@ -27,6 +24,8 @@ import { SelectAnAsset } from '../SelectAnAsset';
 import Panel from '../../Panel/Panel';
 import ChainDisplay from './ChainDisplay';
 import DirectionBadge from './DirectionBadge';
+import Button from '../../Button/Button';
+import SwitchButton from '../../Button/SwitchButton';
 
 const INSUFFICIENT_GAS_ERROR = 'Insufficient gas';
 
@@ -121,12 +120,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       </Panel>
 
       <div>
-        <Button onClick={changeTransactionDirection}>
-          <SwapVerticalCircleIcon height="40px" color="primary" />
-        </Button>
-        <div>
-          Switch
-        </div>
+        <SwitchButton onClick={changeTransactionDirection} />
       </div>
 
       <Panel>
@@ -163,13 +157,10 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       </div>
 
       <Button
-        variant="contained"
-        fullWidth
-        color="primary"
         onClick={handleTransferClicked}
         disabled={isDepositDisabled}
       >
-        Transfer
+        Transfer Asset(s)
       </Button>
 
     </Panel>
@@ -180,6 +171,8 @@ export default styled(TransferPanel)`
   align-items: center;
   border: 1px solid ${props => props.theme.colors.transferPanelBorder};
   background: ${props => props.theme.colors.transferPanelBackground};
+
+  gap: 15px;
 
   width: 520px;
 
