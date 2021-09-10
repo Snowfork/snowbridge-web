@@ -11,7 +11,7 @@ const SelectAssetButton = ({ className, onClick, children }: React.PropsWithChil
   return (
     <Button onClick={onClick} className={className}>
       {children}
-      <img style={{ width: 24, height: 24 }} src='/images/icons/expand.svg' />
+      <img alt='expand' style={{ width: 24, height: 24 }} src='/images/icons/expand.svg' />
     </Button>
   );
 };

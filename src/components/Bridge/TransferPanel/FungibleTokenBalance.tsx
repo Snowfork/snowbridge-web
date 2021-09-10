@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
-import { decimals } from '../../../types/Asset';
 import FormatAmount from '../../FormatAmount';
 
 type Props = {

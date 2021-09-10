@@ -5,10 +5,9 @@ import styled from 'styled-components';
 import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
 import {
-  setDepositAmount, updateBalances,
+  setDepositAmount
 } from '../../../redux/actions/bridge';
 
-import { REFRESH_INTERVAL_MILLISECONDS } from '../../../config';
 import {
   tokenBalancesByNetwork,
 } from '../../../redux/reducers/bridge';
@@ -41,58 +40,44 @@ const SelectedFungibleToken = ({ className, setShowAssetSelector, setError }: Pr
   const dispatch = useDispatch();
   const decimalMap = decimals(selectedAsset, swapDirection);
 
-  // poll APIs to keep balances up to date
   useEffect(() => {
-    function startPolling() {
-      return setInterval(() => {
-        dispatch(updateBalances());
-      }, REFRESH_INTERVAL_MILLISECONDS);
-    }
-
-    const interval = startPolling();
-
-    return () => {
-      clearInterval(interval);
-    };
   }, [dispatch]);
+
+  useEffect(() => {
+    const checkDepositAmount = (amount: string) => {
+      if (amount
+        && decimalMap.from
+        && new BigNumber(
+          // make sure we are comparing the same units
+          utils.parseUnits(
+            amount || '0', decimalMap.from,
+          ).toString(),
+        )
+          .isGreaterThan(
+            new BigNumber(tokenBalances.sourceNetwork),
+          )
+      ) {
+        setError(INSUFFICIENT_BALANCE_ERROR);
+      } else {
+        setError('');
+      }
+    }
+    checkDepositAmount(depositAmount);
+  }, [depositAmount, tokenBalances, decimalMap.from]);
 
   const handleMaxClicked = () => {
     const amount = tokenBalances.sourceNetwork;
     const depositAmountFormatted = utils.formatUnits(amount, decimalMap.from);
-    checkAndSetDepositAmount(depositAmountFormatted)
+    dispatch(setDepositAmount(depositAmountFormatted));
   };
 
   const handleDepositAmountChanged = (e: any) => {
     if (e.target.value) {
-      checkAndSetDepositAmount(e.target.value);
+      dispatch(setDepositAmount(e.target.value));
     } else {
-      checkAndSetDepositAmount('');
+      dispatch(setDepositAmount(''));
     }
   };
-
-  const checkDepositAmount = (amount: string) => {
-    if (amount
-      && decimalMap.from
-      && new BigNumber(
-        // make sure we are comparing the same units
-        utils.parseUnits(
-          amount || '0', decimalMap.from,
-        ).toString(),
-      )
-        .isGreaterThan(
-          new BigNumber(tokenBalances.sourceNetwork),
-        )
-    ) {
-      setError(INSUFFICIENT_BALANCE_ERROR);
-    } else {
-      setError('');
-    }
-  }
-
-  const checkAndSetDepositAmount = (amount: string) => {
-    checkDepositAmount(amount);
-    dispatch(setDepositAmount(amount));
-  }
 
   return (
     <div className={className}>

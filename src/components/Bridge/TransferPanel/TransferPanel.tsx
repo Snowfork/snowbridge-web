@@ -12,9 +12,8 @@ import {
   etherSelector,
   tokenBalancesByNetwork,
 } from '../../../redux/reducers/bridge';
-import FormatAmount from '../../FormatAmount';
 import { getChainsFromDirection } from '../../../utils/common';
-import { AssetType, decimals, symbols } from '../../../types/Asset';
+import { AssetType, decimals } from '../../../types/Asset';
 import { useAppSelector } from '../../../utils/hooks';
 import SelectedFungibleToken from './SelectedFungibleToken';
 import { SelectedNFT } from '../SelectedNFT';
