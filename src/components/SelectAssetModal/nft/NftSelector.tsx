@@ -63,28 +63,18 @@ const TokensForContract = (
 };
 
 interface Props {
+  sourceChain: SwapDirection,
   onNFTSelected: (contract: string, ethId: string, polkadotId: string | undefined) => void;
   ownedNfts: { [address: string]: OwnedNft[] };
 }
 
 const NftSelector = ({
+  sourceChain,
   onNFTSelected,
   ownedNfts,
 }: Props) => {
-  const [selectedContractAddress, setSelectedContractAddress] = useState('');
-  const [selectedTokenId, setSelectedTokenId] = useState('');
-
-  const handleContractChanged = (contract: string) => {
-    setSelectedContractAddress(contract);
-  };
-
-  const handleIdChanged = (id: string) => {
-    setSelectedTokenId(id);
-  };
 
   const handleTokenSelected = (token: OwnedNft) => {
-    handleIdChanged(token.ethId!);
-    handleContractChanged(token.address);
     onNFTSelected(token.address, token.ethId!, token.polkadotId);
   };
 
@@ -96,7 +86,7 @@ const NftSelector = ({
         }
       </List>
 
-      <ManualInput onContractChanged={handleContractChanged} onIdChanged={handleIdChanged} />
+      {sourceChain === SwapDirection.EthereumToPolkadot && <ManualInput onNFTSelected={onNFTSelected} />}
 
     </div>
   );

@@ -78,7 +78,7 @@ export const NonFungibleTokens = ({ handleTokenSelection }: Props) => {
   const ownedNfts = swapDirection === SwapDirection.EthereumToPolkadot ? ownedNonFungibleAssets.ethereum : ownedNonFungibleAssets.polkadot;
   return (
     <Paper>
-      <NftSelector onNFTSelected={onNFTSelected} ownedNfts={ownedNfts} />
+      <NftSelector sourceChain={swapDirection} onNFTSelected={onNFTSelected} ownedNfts={ownedNfts} />
     </Paper >
   );
 };

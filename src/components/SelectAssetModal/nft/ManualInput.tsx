@@ -1,5 +1,5 @@
 import {
-  InputLabel, Input, ListItemText, Collapse, ListItem,
+  Button, InputLabel, Input, ListItemText, Collapse, ListItem,
 } from '@material-ui/core';
 import React, { useState } from 'react';
 import ExpandLess from '@material-ui/icons/ExpandLess';
@@ -16,13 +16,11 @@ const TokenForm = styled.div`
 `;
 
 interface Props {
-  onContractChanged: (c: string) => void,
-  onIdChanged: (id: string) => void
+  onNFTSelected: (contract: string, ethId: string, polkadotId: string | undefined) => void;
 }
 
 const ManualInput = ({
-  onContractChanged,
-  onIdChanged,
+  onNFTSelected
 }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTokenAddress, setSelectedTokenAddress] = useState('');
@@ -30,13 +28,15 @@ const ManualInput = ({
 
   const handleTokenAddressChanged = (e: any) => {
     setSelectedTokenAddress(e.target.value);
-    onContractChanged(e.target.value);
   };
 
   const handleIdChanged = (e: any) => {
     setSelectedTokenId(e.target.value);
-    onIdChanged(e.target.value);
   };
+
+  const selectNFT = () => {
+    onNFTSelected(selectedTokenAddress, selectedTokenId, undefined)
+  }
 
   return (
     <>
@@ -51,6 +51,7 @@ const ManualInput = ({
           <InputLabel htmlFor="token">Token</InputLabel>
           <Input type="text" name="token" value={selectedTokenId} onChange={handleIdChanged} />
         </TokenForm>
+        <Button onClick={selectNFT}>Select</Button>
       </Collapse>
     </>
   );
