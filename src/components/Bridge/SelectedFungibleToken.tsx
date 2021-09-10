@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   Typography,
   Grid,
@@ -69,7 +69,7 @@ export const SelectedFungibleToken = ({ setShowAssetSelector, setError }: Props)
     } else {
       setError('');
     }
-  }, [depositAmount, selectedAsset, tokenBalances.sourceNetwork, decimalMap.from]);
+  }, [depositAmount, selectedAsset, tokenBalances.sourceNetwork, decimalMap.from, setError]);
 
   // poll APIs to keep balances up to date
   useEffect(() => {

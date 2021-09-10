@@ -1,6 +1,6 @@
 /* eslint-disable react/no-array-index-key */
 import {
-  Button, Collapse, List, ListItem, ListItemIcon, ListItemText,
+  Collapse, List, ListItem, ListItemIcon, ListItemText,
 } from '@material-ui/core';
 import React, { useState } from 'react';
 

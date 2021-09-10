@@ -2,7 +2,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
-import { Asset, AssetType, isDot, isEther } from '../../types/Asset';
+import { Asset, isDot, isEther } from '../../types/Asset';
 import {
   NonFungibleTokenContract, OwnedNft, SwapDirection,
 } from '../../types/types';

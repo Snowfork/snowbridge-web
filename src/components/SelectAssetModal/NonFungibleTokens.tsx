@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Paper,
 } from '@material-ui/core';
 import {
-  fetchOwnedNonFungibleAssets, setShowConfirmTransactionModal, updateSelectedAsset,
+  fetchOwnedNonFungibleAssets,
 } from '../../redux/actions/bridge';
 import { RootState } from '../../redux/store';
 import NftSelector from './nft/NftSelector';

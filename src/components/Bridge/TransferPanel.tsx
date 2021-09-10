@@ -130,7 +130,7 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
 
   const selectedAssetSourceChain = selectedAsset?.chain === Chain.ETHEREUM ? 0 : 1;
   const selectedAssetValid = selectedAsset?.type === 0 ||
-    selectedAsset?.type === 1 && selectedAssetSourceChain === swapDirection;
+    (selectedAsset?.type === 1 && selectedAssetSourceChain === swapDirection);
   const errorText = (selectedAsset?.type === AssetType.ERC20 && errors.asset) || errors.balance;
 
   const isDepositDisabled = !!errorText
