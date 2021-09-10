@@ -18,11 +18,4 @@ const SwitchButton = ({ className, onClick }: Props) => {
 export default styled(SwitchButton)`
   width: 32px;
   height: 32px;
-
-  .button-frame {
-    border: none;
-    width: 100%;
-    padding: 0px;
-  }
-
 `;

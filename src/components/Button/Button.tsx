@@ -13,9 +13,7 @@ const Button = ({ className, onClick, disabled, children }: React.PropsWithChild
       onClick={onClick}
       disabled={disabled}
       className={className}>
-      <div className="button-frame">
-        {children}
-      </div>
+      {children}
     </button>
   );
 };
@@ -41,7 +39,6 @@ export default styled(Button)`
   line-height: 100%;
   letter-spacing: -0.04em;
 
-  width: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -50,9 +47,4 @@ export default styled(Button)`
     opacity: 0.5;
   }
 
-  .button-frame {
-    border: 1px solid ${props => props.theme.colors.transferPanelBorder};
-    width: calc(100% - 22px);
-    padding: 10px;
-  }
 `;

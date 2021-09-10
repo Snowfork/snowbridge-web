@@ -34,6 +34,12 @@ const GlobalStyle = createGlobalStyle`
     src: url('/fonts/SFUIText-Regular.woff') format('woff');
   }
 
+  @font-face {
+    font-family: 'SF UI Text';
+    font-style: normal;
+    font-weight: normal;
+    src: url('/fonts/SFUIText-Regular.woff') format('woff');
+  }
 
   @font-face {
     font-family: 'SF UI Text Italic';

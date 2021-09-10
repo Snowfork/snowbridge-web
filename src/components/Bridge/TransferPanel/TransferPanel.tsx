@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
 import styled from 'styled-components';
 
 import {
@@ -17,15 +16,16 @@ import FormatAmount from '../../FormatAmount';
 import { getChainsFromDirection } from '../../../utils/common';
 import { AssetType, decimals, symbols } from '../../../types/Asset';
 import { useAppSelector } from '../../../utils/hooks';
-import { SelectedFungibleToken } from '../SelectedFungibleToken';
+import SelectedFungibleToken from './SelectedFungibleToken';
 import { SelectedNFT } from '../SelectedNFT';
 import { SelectAnAsset } from '../SelectAnAsset';
 
 import Panel from '../../Panel/Panel';
 import ChainDisplay from './ChainDisplay';
 import DirectionBadge from './DirectionBadge';
-import Button from '../../Button/Button';
+import DOSButton from '../../Button/DOSButton';
 import SwitchButton from '../../Button/SwitchButton';
+import FungibleTokenBalance from './FungibleTokenBalance';
 
 const INSUFFICIENT_GAS_ERROR = 'Insufficient gas';
 
@@ -128,40 +128,21 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
           <DirectionBadge direction="To" />
           <ChainDisplay chain={chains.to} />
         </div>
-        <div>
-          {selectedAsset?.type === 0 && <div >
-            <div>
-              Available Balance:
-            </div>
-            <div>
-              {
-                selectedAsset
-                && (
-                  <FormatAmount
-                    amount={tokenBalances.destinationNetwork}
-                    decimals={decimalMap.to}
-                  />
-                )
-              }
-              {' '}
-              {
-                selectedAsset && symbols(selectedAsset, swapDirection).to
-              }
-            </div>
-          </div>}
-        </div>
+        {selectedAsset?.type === 0 &&
+          <FungibleTokenBalance amount={tokenBalances.destinationNetwork}
+            decimals={decimalMap.to} />}
       </Panel>
 
       <div color="error">
         {errorText}
       </div>
 
-      <Button
+      <DOSButton
         onClick={handleTransferClicked}
         disabled={isDepositDisabled}
       >
         Transfer Asset(s)
-      </Button>
+      </DOSButton>
 
     </Panel>
   );
@@ -181,5 +162,6 @@ export default styled(TransferPanel)`
     flex-direction: row;
     justify-content: left;
     align-items: center;
+    gap: 5px;
   }
 `;

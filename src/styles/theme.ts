@@ -20,7 +20,7 @@ const basic: DefaultTheme = {
     transferPanelBackground: colors.shark,
 
     panelBorder: colors.straw,
-    panelBackground: colors.darkGrey,
+    panelBackground: colors.shark,
   },
 };
 

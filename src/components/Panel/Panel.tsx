@@ -17,7 +17,7 @@ export default styled(Panel)`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 5px;
+  gap: 10px;
 
   box-sizing: border-box;
   box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.4);
