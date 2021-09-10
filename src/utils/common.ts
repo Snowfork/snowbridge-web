@@ -1,6 +1,6 @@
 import { REQUIRED_ETH_CONFIRMATIONS } from '../config';
 import { Transaction } from '../redux/reducers/transactions';
-import { SwapDirection } from '../types/types';
+import { SwapDirection, Chain } from '../types/types';
 
 /**
  * Shortens a wallet address, showing X number of letters, an ellipsis, and
@@ -56,11 +56,29 @@ export function formatToDecimalString(
  */
 export const pendingTransactions = (transactions: Transaction[])
   : number => transactions.filter(
-  (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
-).length;
+    (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
+  ).length;
 
-export const getNetworkNames = (swapDirection: SwapDirection): {from: string, to: string} => (
+export const getChainsFromDirection = (swapDirection: SwapDirection): { from: Chain, to: Chain } => (
   swapDirection === SwapDirection.EthereumToPolkadot
-    ? { from: 'Ethereum', to: 'Polkadot' }
-    : { from: 'Polkadot', to: 'Ethereum' }
+    ? { from: Chain.ETHEREUM, to: Chain.POLKADOT }
+    : { from: Chain.POLKADOT, to: Chain.ETHEREUM }
 );
+
+export const getChainName = (chain: Chain): string => {
+  switch (chain) {
+    case Chain.ETHEREUM:
+      return 'Ethereum';
+    case Chain.POLKADOT:
+      return 'Polkadot';
+  }
+};
+
+export const getChainImage = (chain: Chain): string => {
+  switch (chain) {
+    case Chain.ETHEREUM:
+      return '/images/logos/ethereum.svg';
+    case Chain.POLKADOT:
+      return '/images/logos/polkadot.svg';
+  }
+};

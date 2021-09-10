@@ -7,7 +7,7 @@ import {
 } from '@material-ui/core';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { useDispatch } from 'react-redux';
-import { getNetworkNames, shortenWalletAddress } from '../../utils/common';
+import { getChainsFromDirection, shortenWalletAddress } from '../../utils/common';
 import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import LockToken from './LockToken';
@@ -129,7 +129,7 @@ function ConfirmTransactionModal({
                 <Grid item container justifyContent="space-between">
                   <Grid item>
                     <Typography>
-                      {getNetworkNames(swapDirection).from}
+                      {getChainsFromDirection(swapDirection).from}
                     </Typography>
                     <Typography variant="caption">
                       Sending Address
@@ -145,7 +145,7 @@ function ConfirmTransactionModal({
                   <ArrowRightIcon />
                   <Grid item>
                     <Typography>
-                      {getNetworkNames(swapDirection).to}
+                      {getChainsFromDirection(swapDirection).to}
                     </Typography>
                     <Typography variant="caption">
                       Receiving Address

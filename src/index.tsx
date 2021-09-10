@@ -4,12 +4,12 @@ import { Provider } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
 import App from './App';
 import GlobalStyle from './styles/globalStyle';
-import theme from './styles/theme';
+import { basic } from './styles/theme';
 import store from './redux/store';
 
 ReactDOM.render(
   <Provider store={store}>
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={basic}>
       <GlobalStyle />
       <Suspense fallback="...">
         <App />

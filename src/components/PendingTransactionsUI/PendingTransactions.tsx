@@ -5,7 +5,7 @@ import {
 import LoadingSpinner from '../LoadingSpinner';
 import { isNonFungible, NonFungibleToken, symbols } from '../../types/Asset';
 import { useAppSelector } from '../../utils/hooks';
-import { getNetworkNames } from '../../utils/common';
+import { getChainsFromDirection } from '../../utils/common';
 
 const PendingTransaction = (): React.ReactElement => {
   const transactions = useAppSelector((state) => state.transactions);
@@ -66,11 +66,11 @@ const PendingTransaction = (): React.ReactElement => {
 
           from
           {' '}
-          {getNetworkNames(bridge.swapDirection).from}
+          {getChainsFromDirection(bridge.swapDirection).from}
           {' '}
           to
           {' '}
-          {getNetworkNames(bridge.swapDirection).to}
+          {getChainsFromDirection(bridge.swapDirection).to}
 
         </div>
       );

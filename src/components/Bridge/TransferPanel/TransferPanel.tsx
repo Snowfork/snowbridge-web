@@ -1,41 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Typography,
-  Grid,
-  makeStyles,
-  Theme,
-  createStyles,
-  useTheme,
   Button,
 } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import SwapVerticalCircleIcon from '@material-ui/icons/SwapVerticalCircle';
+import styled from 'styled-components';
 
 import {
   setShowConfirmTransactionModal, setSwapDirection,
-} from '../../redux/actions/bridge';
-import { SwapDirection, Chain } from '../../types/types';
+} from '../../../redux/actions/bridge';
+import { SwapDirection, Chain } from '../../../types/types';
 
 import {
   dotSelector,
   etherSelector,
   tokenBalancesByNetwork,
-} from '../../redux/reducers/bridge';
-import FormatAmount from '../FormatAmount';
-import { getNetworkNames } from '../../utils/common';
-import { AssetType, decimals, symbols } from '../../types/Asset';
-import { useAppSelector } from '../../utils/hooks';
-import { SelectedFungibleToken } from './SelectedFungibleToken';
-import { SelectedNFT } from './SelectedNFT';
-import { SelectAnAsset } from './SelectAnAsset';
+} from '../../../redux/reducers/bridge';
+import FormatAmount from '../../FormatAmount';
+import { getChainsFromDirection } from '../../../utils/common';
+import { AssetType, decimals, symbols } from '../../../types/Asset';
+import { useAppSelector } from '../../../utils/hooks';
+import { SelectedFungibleToken } from '../SelectedFungibleToken';
+import { SelectedNFT } from '../SelectedNFT';
+import { SelectAnAsset } from '../SelectAnAsset';
+
+import Panel from '../../Panel/Panel';
+import ChainDisplay from './ChainDisplay';
+import DirectionBadge from './DirectionBadge';
 
 const INSUFFICIENT_GAS_ERROR = 'Insufficient gas';
 
 type Props = {
+  className?: string;
   setShowAssetSelector: (show: boolean) => void,
 }
 
-export const TransferPanel = ({ setShowAssetSelector }: Props) => {
+const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
   // state
   const tokenBalances = useAppSelector(tokenBalancesByNetwork);
   const dot = useAppSelector(dotSelector);
@@ -55,7 +55,6 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
     swapDirection,
   } = useAppSelector((state) => state.bridge);
 
-  const theme = useTheme();
   const dispatch = useDispatch();
   const decimalMap = decimals(selectedAsset, swapDirection);
 
@@ -84,38 +83,6 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
     setErrors((errors) => ({ ...errors, asset: assetError }));
   }
 
-  const useStyles = makeStyles((theme: Theme) => createStyles({
-    root: {
-      padding: '2px 4px',
-      display: 'flex',
-      alignItems: 'center',
-      margin: '0 auto',
-      maxWidth: 400,
-    },
-    amountInput: {
-      padding: '2px 4px',
-      display: 'flex',
-      alignItems: 'center',
-      margin: '0 auto',
-      marginBottom: theme.spacing(2),
-    },
-    input: {
-      marginLeft: theme.spacing(1),
-      flex: 1,
-    },
-    divider: {
-      height: 28,
-      margin: 4,
-    },
-    transfer: {
-      width: '100%',
-    },
-    switch: {
-      margin: 'auto',
-    },
-  }));
-  const classes = useStyles(theme);
-
   const handleTransferClicked = () => {
     dispatch(setShowConfirmTransactionModal(true));
   };
@@ -136,45 +103,43 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
   const isDepositDisabled = !!errorText
     || (selectedAsset?.type === AssetType.ERC20 && Number.parseFloat(depositAmount) <= 0) || !selectedAssetValid;
 
+  const chains = getChainsFromDirection(swapDirection);
+
   return (
-    <Grid container spacing={2}>
-      {/* From section */}
-      <Grid item>
-        <Grid item>
-          <Typography>FROM</Typography>
-          <Typography variant="subtitle1" gutterBottom>
-            {getNetworkNames(swapDirection).from}
-          </Typography>
-        </Grid>
+    <Panel className={className}>
+      <Panel>
+        <div className='chain-direction-display'>
+          <DirectionBadge direction="From" />
+          <ChainDisplay chain={chains.from} />
+        </div>
         {selectedAsset?.type === 0 &&
           <SelectedFungibleToken setShowAssetSelector={setShowAssetSelector} setError={setAssetError} />}
         {selectedAsset?.type === 1 && selectedAssetValid &&
           <SelectedNFT setShowAssetSelector={setShowAssetSelector} />}
         {!selectedAssetValid &&
           <SelectAnAsset setShowAssetSelector={setShowAssetSelector} />}
-      </Grid>
+      </Panel>
 
-      <Grid item className={classes.switch}>
+      <div>
         <Button onClick={changeTransactionDirection}>
           <SwapVerticalCircleIcon height="40px" color="primary" />
         </Button>
-        <Typography align="center" variant="caption" display="block">
+        <div>
           Switch
-        </Typography>
-      </Grid>
+        </div>
+      </div>
 
-      {/* To section */}
-      <Grid item container>
-        <Grid item>
-          <Typography>TO</Typography>
-        </Grid>
-        <Grid item container justifyContent="space-between">
-          <Typography gutterBottom display="block">{getNetworkNames(swapDirection).to}</Typography>
-          {selectedAsset?.type === 0 && <Grid item>
-            <Typography gutterBottom variant="caption">
+      <Panel>
+        <div className='chain-direction-display'>
+          <DirectionBadge direction="To" />
+          <ChainDisplay chain={chains.to} />
+        </div>
+        <div>
+          {selectedAsset?.type === 0 && <div >
+            <div>
               Available Balance:
-            </Typography>
-            <Typography gutterBottom>
+            </div>
+            <div>
               {
                 selectedAsset
                 && (
@@ -188,14 +153,14 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
               {
                 selectedAsset && symbols(selectedAsset, swapDirection).to
               }
-            </Typography>
-          </Grid>}
-        </Grid>
-      </Grid>
+            </div>
+          </div>}
+        </div>
+      </Panel>
 
-      <Typography color="error">
+      <div color="error">
         {errorText}
-      </Typography>
+      </div>
 
       <Button
         variant="contained"
@@ -207,6 +172,21 @@ export const TransferPanel = ({ setShowAssetSelector }: Props) => {
         Transfer
       </Button>
 
-    </Grid>
+    </Panel>
   );
 };
+
+export default styled(TransferPanel)`
+  align-items: center;
+  border: 1px solid ${props => props.theme.colors.transferPanelBorder};
+  background: ${props => props.theme.colors.transferPanelBackground};
+
+  width: 520px;
+
+  .chain-direction-display {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+  }
+`;
