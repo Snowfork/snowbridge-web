@@ -50,27 +50,6 @@ export const SelectedFungibleToken = ({ setShowAssetSelector, setError }: Props)
   const dispatch = useDispatch();
   const decimalMap = decimals(selectedAsset, swapDirection);
 
-  // side effects
-  // validate deposit amount on update
-  useEffect(() => {
-    if (depositAmount
-      && decimalMap.from
-      && new BigNumber(
-        // make sure we are comparing the same units
-        utils.parseUnits(
-          depositAmount || '0', decimalMap.from,
-        ).toString(),
-      )
-        .isGreaterThan(
-          new BigNumber(tokenBalances.sourceNetwork),
-        )
-    ) {
-      setError(INSUFFICIENT_BALANCE_ERROR);
-    } else {
-      setError('');
-    }
-  }, [depositAmount, selectedAsset, tokenBalances.sourceNetwork, decimalMap.from]);
-
   // poll APIs to keep balances up to date
   useEffect(() => {
     function startPolling() {
@@ -110,25 +89,39 @@ export const SelectedFungibleToken = ({ setShowAssetSelector, setError }: Props)
   }));
   const classes = useStyles(theme);
 
-  // Event handlers
-
-  // set deposit amount to balance of current asset
   const handleMaxClicked = () => {
-    // format ammount for display
     const amount = tokenBalances.sourceNetwork;
     const depositAmountFormatted = utils.formatUnits(amount, decimalMap.from);
-
-    dispatch(setDepositAmount(depositAmountFormatted));
+    checkAndSetDepositAmount(depositAmountFormatted)
   };
 
-  // update deposit amount in redux store
   const handleDepositAmountChanged = (e: any) => {
     if (e.target.value) {
-      dispatch(setDepositAmount(e.target.value));
+      checkAndSetDepositAmount(e.target.value);
     } else {
-      dispatch(setDepositAmount(''));
+      checkAndSetDepositAmount('');
     }
   };
+
+  const checkAndSetDepositAmount = (amount: string) => {
+    if (amount
+      && decimalMap.from
+      && new BigNumber(
+        // make sure we are comparing the same units
+        utils.parseUnits(
+          amount || '0', decimalMap.from,
+        ).toString(),
+      )
+        .isGreaterThan(
+          new BigNumber(tokenBalances.sourceNetwork),
+        )
+    ) {
+      setError(INSUFFICIENT_BALANCE_ERROR);
+    } else {
+      setError('');
+    }
+    dispatch(setDepositAmount(amount));
+  }
 
   return (
     <Grid item>
