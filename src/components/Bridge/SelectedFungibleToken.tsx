@@ -69,7 +69,7 @@ export const SelectedFungibleToken = ({ setShowAssetSelector, setError }: Props)
     } else {
       setError('');
     }
-  }, [depositAmount, selectedAsset, tokenBalances.sourceNetwork, decimalMap.from, setError]);
+  }, [depositAmount, selectedAsset, tokenBalances.sourceNetwork, decimalMap.from]);
 
   // poll APIs to keep balances up to date
   useEffect(() => {
