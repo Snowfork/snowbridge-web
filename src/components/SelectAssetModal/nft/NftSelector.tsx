@@ -8,6 +8,7 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import ManualInput from './ManualInput';
 import { OwnedNft } from '../../../types/types';
+import { SwapDirection } from '../../../types/types';
 
 const TokensForContract = (
   {
@@ -62,7 +63,7 @@ const TokensForContract = (
 };
 
 interface Props {
-  onNFTSelected: (contract: string, id: string) => void;
+  onNFTSelected: (contract: string, ethId: string, polkadotId: string | undefined) => void;
   ownedNfts: { [address: string]: OwnedNft[] };
 }
 
@@ -84,7 +85,7 @@ const NftSelector = ({
   const handleTokenSelected = (token: OwnedNft) => {
     handleIdChanged(token.ethId!);
     handleContractChanged(token.address);
-    onNFTSelected(token.address, token.ethId!);
+    onNFTSelected(token.address, token.ethId!, token.polkadotId);
   };
 
   return (

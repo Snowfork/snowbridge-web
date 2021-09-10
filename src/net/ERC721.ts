@@ -8,7 +8,7 @@ import * as ERC721 from '../contracts/TestToken721.json';
  * Uses ERC165 to check if a contract implements IERC721Enumerable (0x780e9d63)
  * @param contract
  */
-export async function isEnumerable(contract: Contract) : Promise<boolean> {
+export async function isEnumerable(contract: Contract): Promise<boolean> {
   const IERC721EnumerableSelector = '0x780e9d63';
   return contract.methods.supportsInterface(IERC721EnumerableSelector).call();
 }
@@ -23,7 +23,7 @@ export async function fetchTokens(
   contractInstance: Contract,
   ownerEthAddress: string,
 ):
-    Promise<OwnedNft[]> {
+  Promise<OwnedNft[]> {
   try {
     // fetch tokens on ethereum
     let ethTokens: OwnedNft[] = [];
@@ -33,7 +33,7 @@ export async function fetchTokens(
         (await contractInstance.methods.balanceOf(ownerEthAddress).call()).toString(),
       );
       if (balance && balance > 0) {
-      // fetch name
+        // fetch name
         const name = await contractInstance.methods.name().call();
 
         const proms = new Array(balance)
@@ -47,11 +47,11 @@ export async function fetchTokens(
                 .tokenOfOwnerByIndex(ownerEthAddress, index)
                 .call();
 
-            // // check if supports IERC721URIStorange and query tokenURI
-            // tokenURI = await contractInstance
-            //   .methods
-            //   .tokenURI(ethId)
-            //   .call();
+              // // check if supports IERC721URIStorange and query tokenURI
+              // tokenURI = await contractInstance
+              //   .methods
+              //   .tokenURI(ethId)
+              //   .call();
             }
 
             const nft: OwnedNft = {
@@ -107,7 +107,7 @@ export async function fetchTokensOnPolkadot(
   web3: Web3,
   ownerPolkadotAddress: string,
 ):
-    Promise<OwnedNft[]> {
+  Promise<OwnedNft[]> {
   try {
     const polkadotTokens: OwnedNft[] = [];
     const polkadotAddress = ownerPolkadotAddress.toString();

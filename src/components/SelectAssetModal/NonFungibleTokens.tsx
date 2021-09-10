@@ -42,15 +42,16 @@ export const NonFungibleTokens = ({ handleTokenSelection }: Props) => {
   }, [dispatch, ethAddress, polkadotAddress, nonFungibleAssets]);
 
   const handleNFTSelected = async ({
-    chain, address, id,
-  }: { chain: Chain, address: string, id: string }) => {
+    chain, address, ethId, subId,
+  }: { chain: Chain, address: string, ethId: string, subId: undefined | string }) => {
     try {
       const contract = new web3!.eth.Contract(ERC721.abi as any, address);
       const selectedAsset = await createNonFungibleAsset(
         {
           contract,
           chain,
-          ethId: id,
+          ethId,
+          subId,
         },
       );
       handleTokenSelection(selectedAsset)
@@ -59,17 +60,17 @@ export const NonFungibleTokens = ({ handleTokenSelection }: Props) => {
     }
   };
 
-  async function handleEthereumNFTSelected(address: string, id: string) {
+  async function handleEthereumNFTSelected(address: string, ethId: string, subId: string | undefined) {
     // TODO: confirm this token exists
     handleNFTSelected({
-      chain: Chain.ETHEREUM, address, id,
+      chain: Chain.ETHEREUM, address, ethId, subId: undefined,
     });
   }
 
-  async function handlePolkadotNFTSelected(address: string, id: string) {
+  async function handlePolkadotNFTSelected(address: string, ethId: string, subId: string | undefined) {
     // TODO: confirm this token exists
     handleNFTSelected({
-      chain: Chain.POLKADOT, address, id,
+      chain: Chain.POLKADOT, address, ethId, subId,
     });
   }
 
