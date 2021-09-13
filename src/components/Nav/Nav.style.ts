@@ -4,8 +4,8 @@ export const Wrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #24292e;
   padding: 0 30px;
+  height: 150px;
 `;
 
 export const Heading = styled.h1`

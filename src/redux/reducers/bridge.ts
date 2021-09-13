@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import BigNumber from 'bignumber.js';
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { Asset, isDot, isEther } from '../../types/Asset';
@@ -9,7 +9,7 @@ import {
 
 export interface BridgeState {
   assets: Asset[],
-  selectedAsset?: Asset
+  selectedAsset?: Asset,
   depositAmount: string,
   swapDirection: SwapDirection,
   showConfirmTransactionModal: boolean,
@@ -46,17 +46,17 @@ export const bridgeSlice = createSlice({
     _setSelectedAsset:
       (state, action: PayloadAction<Asset>) => { state.selectedAsset = action.payload; },
     setDepositAmount:
-     (state, action: PayloadAction<string>) => { state.depositAmount = action.payload; },
+      (state, action: PayloadAction<string>) => { state.depositAmount = action.payload; },
     setSwapDirection:
-     (state, action: PayloadAction<SwapDirection>) => {
-       state.swapDirection = action.payload;
-     },
+      (state, action: PayloadAction<SwapDirection>) => {
+        state.swapDirection = action.payload;
+      },
     setShowConfirmTransactionModal:
-     (state, action: PayloadAction<boolean>) => {
-       state.showConfirmTransactionModal = action.payload;
-     },
+      (state, action: PayloadAction<boolean>) => {
+        state.showConfirmTransactionModal = action.payload;
+      },
     setShowTransactionList:
-     (state, action: PayloadAction<boolean>) => { state.showTransactionsList = action.payload; },
+      (state, action: PayloadAction<boolean>) => { state.showTransactionsList = action.payload; },
     setNonFungibleTokenList: (state, action: PayloadAction<NonFungibleTokenContract[]>) => {
       state.nonFungibleAssets = action.payload;
     },
@@ -85,8 +85,7 @@ export const bridgeSlice = createSlice({
 export default bridgeSlice.reducer;
 
 // selectors
-export const tokenBalancesByNetwork = (state: RootState):
- {sourceNetwork: string, destinationNetwork: string} => {
+export const tokenBalancesByNetwork = (state: RootState): { sourceNetwork: string, destinationNetwork: string } => {
   let result = {
     sourceNetwork: state.bridge.selectedAsset?.balance.eth ?? '0',
     destinationNetwork: state.bridge.selectedAsset?.balance.polkadot ?? '0',
@@ -102,16 +101,10 @@ export const tokenBalancesByNetwork = (state: RootState):
   return result;
 };
 
-// asset value in usd
-export const tokenSwapUsdValueSelector = (state: RootState)
-: string => new BigNumber(state.bridge.selectedAsset?.prices.usd ?? 0)
-  .multipliedBy(state.bridge.depositAmount)
-  .toString();
-
 // return DOT asset from asset list
 export const dotSelector = (state: RootState)
-: Asset => state.bridge.assets.filter((asset) => isDot(asset))[0];
+  : Asset => state.bridge.assets.filter((asset) => isDot(asset))[0];
 
 // return Ether asset from asset list
 export const etherSelector = (state: RootState)
-: Asset => state.bridge.assets.filter((asset) => isEther(asset))[0];
+  : Asset => state.bridge.assets.filter((asset) => isEther(asset))[0];

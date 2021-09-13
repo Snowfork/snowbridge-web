@@ -39,39 +39,39 @@ export const updateConfirmations = (
   hash: string, confirmations: number,
 ):
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
-  dispatch: ThunkDispatch<{}, {}, AnyAction>,
-): Promise<void> => {
-  if (
-    confirmations >= REQUIRED_ETH_CONFIRMATIONS
-  ) {
-    dispatch(setTransactionStatus({ hash, status: TransactionStatus.WAITING_FOR_RELAY }));
-  }
-  dispatch(setConfirmations({ hash, confirmations }));
-};
+    dispatch: ThunkDispatch<{}, {}, AnyAction>,
+  ): Promise<void> => {
+    if (
+      confirmations >= REQUIRED_ETH_CONFIRMATIONS
+    ) {
+      dispatch(setTransactionStatus({ hash, status: TransactionStatus.WAITING_FOR_RELAY }));
+    }
+    dispatch(setConfirmations({ hash, confirmations }));
+  };
 
 export const doTransfer = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
-  dispatch: ThunkDispatch<{}, {}, AnyAction>,
-  getState,
-): Promise<void> => {
-  const state = getState() as RootState;
-  const {
-    selectedAsset,
-    depositAmount,
-    swapDirection,
-  } = state.bridge;
+    dispatch: ThunkDispatch<{}, {}, AnyAction>,
+    getState,
+  ): Promise<void> => {
+    const state = getState() as RootState;
+    const {
+      selectedAsset,
+      depositAmount,
+      swapDirection,
+    } = state.bridge;
 
-  const { from } = decimals(selectedAsset!, swapDirection);
-  const fromDecimals = utils.parseUnits(depositAmount, from).toString();
-  const amount = fromDecimals;
+    const { from } = decimals(selectedAsset!, swapDirection);
+    const fromDecimals = utils.parseUnits(depositAmount, from).toString();
+    const amount = fromDecimals;
 
-  // transaction direction logic
-  if (!isDot(selectedAsset!)) {
-    dispatch(doEthTransfer(amount));
-  } else {
-    dispatch(doPolkadotTransfer(amount));
-  }
-};
+    // transaction direction logic
+    if (!isDot(selectedAsset!)) {
+      dispatch(doEthTransfer(amount));
+    } else {
+      dispatch(doPolkadotTransfer(amount));
+    }
+  };
 
 // Transaction factory function
 export function createTransaction(
@@ -190,6 +190,7 @@ export function handlePolkadotTransactionEvents(
   }
 
   if (result.status.isFinalized) {
+    console.log({ result })
     console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
     dispatch(
       setTransactionStatus({
@@ -201,6 +202,9 @@ export function handlePolkadotTransactionEvents(
     if (unsub) {
       unsub();
     }
+  }
+  if (result.dispatchError) {
+    alert("Error with dispatchable - see polkadotjs explorer for more info: " + result.dispatchError)
   }
   return pendingTransaction;
 }
@@ -243,11 +247,9 @@ export function handleEthereumTransactionEvents(
       dispatch(
         notify(
           {
-            text: `${
-              symbols(pendingTransaction.asset, pendingTransaction.direction).from
-            } to ${
-              symbols(pendingTransaction.asset, pendingTransaction.direction).to
-            } Transaction created`,
+            text: `${symbols(pendingTransaction.asset, pendingTransaction.direction).from
+              } to ${symbols(pendingTransaction.asset, pendingTransaction.direction).to
+              } Transaction created`,
           },
         ),
       );

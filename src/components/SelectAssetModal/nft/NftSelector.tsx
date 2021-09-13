@@ -1,6 +1,6 @@
 /* eslint-disable react/no-array-index-key */
 import {
-  Button, Collapse, List, ListItem, ListItemIcon, ListItemText,
+  Collapse, List, ListItem, ListItemIcon, ListItemText,
 } from '@material-ui/core';
 import React, { useState } from 'react';
 
@@ -8,6 +8,7 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import ManualInput from './ManualInput';
 import { OwnedNft } from '../../../types/types';
+import { SwapDirection } from '../../../types/types';
 
 const TokensForContract = (
   {
@@ -62,34 +63,19 @@ const TokensForContract = (
 };
 
 interface Props {
-  onClick: (contract: string, id: string) => void;
-  buttonText: string;
+  sourceChain: SwapDirection,
+  onNFTSelected: (contract: string, ethId: string, polkadotId: string | undefined) => void;
   ownedNfts: { [address: string]: OwnedNft[] };
 }
 
 const NftSelector = ({
-  onClick,
-  buttonText,
+  sourceChain,
+  onNFTSelected,
   ownedNfts,
 }: Props) => {
-  const [selectedContractAddress, setSelectedContractAddress] = useState('0x4283d8996E5a7F4BEa58c6052b1471a2a9524C87');
-  const [selectedTokenId, setSelectedTokenId] = useState('3');
-
-  const handleContractChanged = (contract: string) => {
-    setSelectedContractAddress(contract);
-  };
-
-  const handleIdChanged = (id: string) => {
-    setSelectedTokenId(id);
-  };
 
   const handleTokenSelected = (token: OwnedNft) => {
-    handleIdChanged(token.ethId!);
-    handleContractChanged(token.address);
-  };
-
-  const handleTransfer = () => {
-    onClick(selectedContractAddress, selectedTokenId);
+    onNFTSelected(token.address, token.ethId!, token.polkadotId);
   };
 
   return (
@@ -100,17 +86,7 @@ const NftSelector = ({
         }
       </List>
 
-      <ManualInput onContractChanged={handleContractChanged} onIdChanged={handleIdChanged} />
-
-      <Button
-        variant="contained"
-        size="large"
-        color="primary"
-        onClick={handleTransfer}
-        style={{ margin: '0 auto' }}
-      >
-        {buttonText}
-      </Button>
+      {sourceChain === SwapDirection.EthereumToPolkadot && <ManualInput onNFTSelected={onNFTSelected} />}
 
     </div>
   );

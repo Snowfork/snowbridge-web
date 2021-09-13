@@ -1,5 +1,5 @@
 import {
-  InputLabel, Input, ListItemText, Collapse, ListItem,
+  Button, InputLabel, Input, ListItemText, Collapse, ListItem,
 } from '@material-ui/core';
 import React, { useState } from 'react';
 import ExpandLess from '@material-ui/icons/ExpandLess';
@@ -16,27 +16,27 @@ const TokenForm = styled.div`
 `;
 
 interface Props {
-  onContractChanged: (c: string) => void,
-  onIdChanged: (id: string) => void
+  onNFTSelected: (contract: string, ethId: string, polkadotId: string | undefined) => void;
 }
 
 const ManualInput = ({
-  onContractChanged,
-  onIdChanged,
+  onNFTSelected
 }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedTokenAddress, setSelectedTokenAddress] = useState('0x4283d8996E5a7F4BEa58c6052b1471a2a9524C87');
-  const [selectedTokenId, setSelectedTokenId] = useState('3');
+  const [selectedTokenAddress, setSelectedTokenAddress] = useState('');
+  const [selectedTokenId, setSelectedTokenId] = useState('');
 
   const handleTokenAddressChanged = (e: any) => {
     setSelectedTokenAddress(e.target.value);
-    onContractChanged(e.target.value);
   };
 
   const handleIdChanged = (e: any) => {
     setSelectedTokenId(e.target.value);
-    onIdChanged(e.target.value);
   };
+
+  const selectNFT = () => {
+    onNFTSelected(selectedTokenAddress, selectedTokenId, undefined)
+  }
 
   return (
     <>
@@ -48,9 +48,10 @@ const ManualInput = ({
         <TokenForm>
           <InputLabel htmlFor="contract">Contract</InputLabel>
           <Input type="text" name="contract" value={selectedTokenAddress} onChange={handleTokenAddressChanged} />
-          <InputLabel htmlFor="token">Token</InputLabel>
+          <InputLabel htmlFor="token">Token ID</InputLabel>
           <Input type="text" name="token" value={selectedTokenId} onChange={handleIdChanged} />
         </TokenForm>
+        <Button onClick={selectNFT}>Select</Button>
       </Collapse>
     </>
   );

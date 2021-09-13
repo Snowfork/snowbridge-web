@@ -1,19 +1,10 @@
-// Copyright 2017-2020 @polkadot/apps-routing authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
-
-// external imports
 import React, { useEffect } from 'react';
 import ReactModal from 'react-modal';
-
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
 
-// local imports and components
 import { ToastContainer } from 'react-toastify';
-import {
-  Paper,
-  Typography,
-} from '@material-ui/core';
+
 import Bridge from './components/Bridge/Bridge';
 import Nav from './components/Nav';
 import Net from './net';
@@ -27,7 +18,11 @@ import { useAppSelector } from './utils/hooks';
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
-function BridgeApp(): JSX.Element {
+type Props = {
+  className?: string;
+}
+
+const BridgeApp = ({ className }: Props) => {
   const dispatch = useDispatch();
   const {
     isNetworkConnected,
@@ -54,40 +49,40 @@ function BridgeApp(): JSX.Element {
   // check if required extensions are missing
   if (polkadotJSMissing) {
     return (
-      <Paper>
-        <Typography color="primary" variant="h2" align="center">
+      <div>
+        <h2 style={{ color: 'white' }}>
           Please install the
           {' '}
           <a href="https://github.com/polkadot-js/extension">
             Polkadot.js extension
           </a>
-        </Typography>
-      </Paper>
+        </h2>
+      </div>
     );
   }
 
   if (metamaskMissing) {
     return (
-      <Paper>
-        <Typography color="primary" variant="h2" align="center">
+      <div>
+        <h2 style={{ color: 'white' }}>
           Please install the
           {' '}
           <a href="https://metamask.io/">
             Metamask extension
           </a>
-        </Typography>
-      </Paper>
+        </h2>
+      </div>
     );
   }
 
   // Check if Network has been started
   if (!isNetworkConnected) {
     return (
-      <Paper>
-        <Typography color="primary" variant="h2" align="center">
+      <div>
+        <h2 style={{ color: 'white' }}>
           Loading network
-        </Typography>
-      </Paper>
+        </h2>
+      </div>
     );
   }
 
@@ -96,20 +91,20 @@ function BridgeApp(): JSX.Element {
     !== PERMITTED_METAMASK_NETWORK.toLowerCase()
   ) {
     return (
-      <Paper>
-        <Typography color="primary" variant="h2" align="center">
+      <div>
+        <h2 style={{ color: 'white' }}>
           Please select
           {' '}
           {PERMITTED_METAMASK_NETWORK}
           {' '}
           network in Metamask extension
-        </Typography>
-      </Paper>
+        </h2>
+      </div >
     );
   }
 
   return (
-    <main>
+    <main className={className}>
       <Nav />
       <Bridge />
       <ToastContainer autoClose={10000} />
@@ -117,4 +112,8 @@ function BridgeApp(): JSX.Element {
   );
 }
 
-export default BridgeApp;
+export default styled(BridgeApp)`
+  height: 100%;
+  min-height: 100vh;
+  background: ${props => props.theme.colors.background};
+`;
