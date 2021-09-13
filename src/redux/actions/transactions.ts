@@ -146,11 +146,7 @@ export function handlePolkadotTransactionEvents(
   }
 
   if (result.status.isInBlock) {
-    let nonce = '0';
-
-    if ((transaction.asset.address === '0x0')) {
-      nonce = result.events[0]?.event?.data[0]?.toString();
-    }
+    let nonce = result.events[0].event.data[0].toString();
 
     if (isDot(transaction.asset) && !isNonFungible(transaction.asset)) {
       nonce = result.events[1].event.data[0].toString();
