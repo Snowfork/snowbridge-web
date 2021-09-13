@@ -9,7 +9,13 @@ import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import {
-  Asset, decimals, isDot, isEther, isNonFungible, symbols,
+  Asset,
+  decimals,
+  isDot,
+  isErc20,
+  isEther,
+  isNonFungible,
+  symbols,
 } from '../../types/Asset';
 import { Chain, SwapDirection } from '../../types/types';
 import { RootState } from '../store';
@@ -270,7 +276,9 @@ export function handleEthereumTransactionEvents(
           name: 'payload',
         },
       ];
-      const logIndex = isEther(pendingTransaction.asset) ? 0 : 2;
+      const logIndex = isEther(pendingTransaction.asset) || isErc20(pendingTransaction.asset)
+        ? 0 : 2;
+
       const channelEvent = receipt.events[logIndex];
       const decodedEvent = web3.eth.abi.decodeLog(
         outChannelLogFields,
