@@ -1,18 +1,10 @@
 import React from 'react';
-import {
-  Grid,
-  Paper,
-  makeStyles,
-  Theme,
-  createStyles,
-  useTheme,
-  Button,
-} from '@material-ui/core';
 
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import SelectAssetButton from '../Button/SelectAssetButton';
 
 import { useAppSelector } from '../../utils/hooks';
 import { NonFungibleToken } from '../../types/Asset';
+import { Chain } from '../../types/types';
 
 type Props = {
   setShowAssetSelector: (show: boolean) => void,
@@ -22,48 +14,18 @@ export const SelectedNFT = ({ setShowAssetSelector }: Props) => {
 
   const {
     selectedAsset,
+    swapDirection,
   } = useAppSelector((state) => state.bridge);
 
-  const theme = useTheme();
-
-  const useStyles = makeStyles((theme: Theme) => createStyles({
-    amountInput: {
-      padding: '2px 4px',
-      display: 'flex',
-      alignItems: 'center',
-      margin: '0 auto',
-      marginBottom: theme.spacing(2),
-    },
-    paper: {
-      padding: theme.spacing(2),
-      margin: '0 auto',
-      maxWidth: 500,
-    },
-    input: {
-      marginLeft: theme.spacing(1),
-      flex: 1,
-    },
-    divider: {
-      height: 28,
-      margin: 4,
-    },
-  }));
-  const classes = useStyles(theme);
-
   const token = (selectedAsset?.token as NonFungibleToken);
+  const tokenSourceChain = selectedAsset?.chain === Chain.ETHEREUM ? 0 : 1;
+  const tokenValid = tokenSourceChain === swapDirection;
 
-  return (
-    <Grid item>
-      {/* amount input */}
-      <Grid item>
-        <Paper className={classes.amountInput}>
-          <Button onClick={() => setShowAssetSelector(true)}>
-            {selectedAsset?.name}:{token.subId || token?.ethId}
-            <ExpandMoreIcon />
-          </Button>
-        </Paper>
-      </Grid>
+  const selectedAssetText = tokenValid
+    ? `${selectedAsset?.name}:${token.subId || token?.ethId}`
+    : 'Select an asset';
 
-    </Grid>
-  );
+  return <SelectAssetButton onClick={() => setShowAssetSelector(true)}>
+    {selectedAssetText}
+  </SelectAssetButton>;
 };

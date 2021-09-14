@@ -17,11 +17,11 @@ import { AssetType, decimals } from '../../../types/Asset';
 import { useAppSelector } from '../../../utils/hooks';
 import SelectedFungibleToken from './SelectedFungibleToken';
 import { SelectedNFT } from '../SelectedNFT';
-import { SelectAnAsset } from '../SelectAnAsset';
 
 import Panel from '../../Panel/Panel';
 import ChainDisplay from './ChainDisplay';
 import DirectionBadge from './DirectionBadge';
+
 import DOSButton from '../../Button/DOSButton';
 import SwitchButton from '../../Button/SwitchButton';
 import FungibleTokenBalance from './FungibleTokenBalance';
@@ -112,10 +112,8 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
         </div>
         {selectedAsset?.type === 0 &&
           <SelectedFungibleToken setShowAssetSelector={setShowAssetSelector} setError={setAssetError} />}
-        {selectedAsset?.type === 1 && selectedAssetValid &&
+        {selectedAsset?.type === 1 &&
           <SelectedNFT setShowAssetSelector={setShowAssetSelector} />}
-        {!selectedAssetValid &&
-          <SelectAnAsset setShowAssetSelector={setShowAssetSelector} />}
       </Panel>
 
       <div>
