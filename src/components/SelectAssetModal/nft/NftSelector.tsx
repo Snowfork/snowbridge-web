@@ -11,6 +11,7 @@ import { OwnedNft } from '../../../types/types';
 import { SwapDirection } from '../../../types/types';
 
 import * as S from '../SelectAssetModal.style';
+import ExternalLink from '../../Link/ExternalLink';
 
 const TokensForContract = (
   {
@@ -86,9 +87,14 @@ const NftSelector = ({
         {
           Object.keys(ownedNfts).map((contract) => <TokensForContract contract={contract} tokens={ownedNfts[contract]} key={contract} onSelected={handleTokenSelected} />)
         }
+        {Object.keys(ownedNfts).length === 0 && <div style={{ fontSize: '12px', maxWidth: '300px' }}>
+          Looks like you don't have any enumerable ERC721 NFTs :(
+          You can mint some test ones using this demo app: <ExternalLink href="https://nft-mint-demo.netlify.app/">NFT Minter</ExternalLink>
+          , or enter a custom ERC721 address and ID for non-enumerable tokens.
+        </div>}
         {sourceChain === SwapDirection.EthereumToPolkadot && <ManualInput onNFTSelected={onNFTSelected} />}
-      </S.TokenList>
-    </div>
+      </S.TokenList >
+    </div >
   );
 };
 export default NftSelector;
