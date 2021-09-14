@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import ReactModal from 'react-modal';
 import {
-  Button,
-  Typography,
   Tabs,
   Tab,
 } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
 
 import { utils } from 'ethers';
 import * as S from './SelectAssetModal.style';
@@ -15,8 +14,11 @@ import { Asset, decimals, symbols } from '../../types/Asset';
 import { SwapDirection } from '../../types/types';
 import { useAppSelector } from '../../utils/hooks';
 
-import TabPanel from '../TabPanel';
+import Panel from '../Panel/Panel';
 import { NonFungibleTokens } from './NonFungibleTokens';
+
+import DOSButton from '../Button/DOSButton';
+import Input from '../Input/Input';
 
 const customStyles = {
   overlay: {},
@@ -33,11 +35,13 @@ const customStyles = {
 };
 
 type Props = {
+  className?: string;
   open: boolean;
   onClose: () => void;
 };
 
 function SelectAssetModal({
+  className,
   open,
   onClose,
 }: Props): React.ReactElement<Props> {
@@ -76,21 +80,26 @@ function SelectAssetModal({
   }
 
   return (
-    <div>
-      <ReactModal
-        isOpen={isOpen}
-        onRequestClose={closeModal}
-        style={customStyles}
-        contentLabel="Select Token"
-      >
-        <S.Wrapper>
+    <ReactModal
+      isOpen={isOpen}
+      onRequestClose={closeModal}
+      style={customStyles}
+      contentLabel="Select Token"
+    >
+      <Panel className={className}>
+        <Panel>
           <S.Heading>Select Asset</S.Heading>
+        </Panel>
+        <Panel>
           <Tabs value={selectedTab} onChange={(event, newTab) => setSelectedTab(newTab)}>
             <Tab label="Fungible" />
             <Tab label="Non-Fungible" />
           </Tabs>
-          <TabPanel value={selectedTab} index={0}>
-            <S.Input onChange={handleInputChange} />
+          {selectedTab === 0 && <div style={{ height: '334px' }}>
+            <Input
+              placeholder="Search for a token"
+              style={{ textAlign: 'left', width: 'calc(100% - 20px)' }}
+              onChange={handleInputChange} />
             <S.TokenList>
               {
                 assets
@@ -102,28 +111,33 @@ function SelectAssetModal({
                     // render each asset
                     (asset: Asset) => (
                       <S.Token key={`${asset.chainId}-${asset.address}`}>
-                        <Button onClick={() => handleTokenSelection(asset)}>
+                        <button onClick={() => handleTokenSelection(asset)}>
                           <img src={asset.logoUri} alt={`${asset.name} icon`} />
-                          <div>
-                            <Typography variant="caption">{symbols(asset, swapDirection).from}</Typography>
-                            <Typography>{getTokenBalance(asset)}</Typography>
-                          </div>
-                        </Button>
+                          <span>{symbols(asset, swapDirection).from} {getTokenBalance(asset)}</span>
+                        </button>
                       </S.Token>
                     ),
                   )
               }
             </S.TokenList>
-          </TabPanel>
-          <TabPanel value={selectedTab} index={1}>
+          </div>}
+          {selectedTab === 1 && <div style={{ height: '334px' }}>
             <NonFungibleTokens handleTokenSelection={handleTokenSelection} />
-          </TabPanel>
-
-          <S.Button onClick={closeModal}>Close</S.Button>
-        </S.Wrapper>
-      </ReactModal>
-    </div>
+          </div>}
+        </Panel>
+        <Panel>
+          <DOSButton onClick={closeModal}>Close</DOSButton>
+        </Panel>
+      </Panel>
+    </ReactModal>
   );
 }
 
-export default SelectAssetModal;
+export default styled(SelectAssetModal)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid ${props => props.theme.colors.transferPanelBorder};
+  background: ${props => props.theme.colors.transferPanelBackground};
+`;

@@ -1,9 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Paper,
-} from '@material-ui/core';
-import {
   fetchOwnedNonFungibleAssets,
 } from '../../redux/actions/bridge';
 import { RootState } from '../../redux/store';
@@ -77,8 +74,6 @@ export const NonFungibleTokens = ({ handleTokenSelection }: Props) => {
   const onNFTSelected = swapDirection === SwapDirection.EthereumToPolkadot ? handleEthereumNFTSelected : handlePolkadotNFTSelected;
   const ownedNfts = swapDirection === SwapDirection.EthereumToPolkadot ? ownedNonFungibleAssets.ethereum : ownedNonFungibleAssets.polkadot;
   return (
-    <Paper>
-      <NftSelector sourceChain={swapDirection} onNFTSelected={onNFTSelected} ownedNfts={ownedNfts} />
-    </Paper >
+    <NftSelector sourceChain={swapDirection} onNFTSelected={onNFTSelected} ownedNfts={ownedNfts} />
   );
 };

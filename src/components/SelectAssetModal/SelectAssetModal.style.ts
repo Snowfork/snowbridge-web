@@ -1,21 +1,13 @@
 import styled from 'styled-components';
 
-export const Wrapper = styled.section`
-  display: flex;
-  flex-direction: column;
-  min-width: 420px;
-`;
-
 export const Heading = styled.h2`
   text-align: center;
 `;
 
-export const Input = styled.input``;
-
 export const TokenList = styled.ul`
   display: flex;
   flex-direction: column;
-  height: 334px;
+  height: 100%;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -24,9 +16,10 @@ export const TokenList = styled.ul`
 export const Token = styled.li`
   button {
     display: flex;
+    align-items: center;
     width: 100%;
 
-    padding: 12px 20px;
+    padding: 6px 0px;
     margin: 0;
 
     background: none;
@@ -34,27 +27,17 @@ export const Token = styled.li`
 
     cursor: pointer;
 
+    color: ${props => props.theme.colors.secondary};
+
     transition: background-color 180ms ease-out;
     :hover {
       background-color: #999;
     }
     img {
       width: 24px;
-      height: 24px;
+      100%: 24px;
       margin-right: 15px;
       margin-top: 2px;
     }
-    h3 {
-      margin: 0;
-    }
-    p {
-      margin: 0;
-      font-size: 12px;
-      font-weight: 300;
-    }
   }
-`;
-
-export const Button = styled.button`
-  margin-top: 20px;
 `;

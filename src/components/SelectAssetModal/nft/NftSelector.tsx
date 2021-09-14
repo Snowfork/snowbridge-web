@@ -1,6 +1,6 @@
 /* eslint-disable react/no-array-index-key */
 import {
-  Collapse, List, ListItem, ListItemIcon, ListItemText,
+  Collapse, ListItem, ListItemIcon, ListItemText,
 } from '@material-ui/core';
 import React, { useState } from 'react';
 
@@ -9,6 +9,8 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 import ManualInput from './ManualInput';
 import { OwnedNft } from '../../../types/types';
 import { SwapDirection } from '../../../types/types';
+
+import * as S from '../SelectAssetModal.style';
 
 const TokensForContract = (
   {
@@ -43,7 +45,7 @@ const TokensForContract = (
         {isOpen ? <ExpandLess /> : <ExpandMore />}
       </ListItem>
       <Collapse in={isOpen} timeout="auto" unmountOnExit>
-        <List>
+        <ul>
           {
             tokens.map((ownedNft, i) => (
               <ListItem dense button key={ownedNft.ethId + ownedNft.address + i} onClick={() => handleTokenClicked(i)}>
@@ -56,7 +58,7 @@ const TokensForContract = (
               </ListItem>
             ))
           }
-        </List>
+        </ul>
       </Collapse>
     </>
   );
@@ -80,14 +82,12 @@ const NftSelector = ({
 
   return (
     <div>
-      <List>
+      <S.TokenList>
         {
           Object.keys(ownedNfts).map((contract) => <TokensForContract contract={contract} tokens={ownedNfts[contract]} key={contract} onSelected={handleTokenSelected} />)
         }
-      </List>
-
-      {sourceChain === SwapDirection.EthereumToPolkadot && <ManualInput onNFTSelected={onNFTSelected} />}
-
+        {sourceChain === SwapDirection.EthereumToPolkadot && <ManualInput onNFTSelected={onNFTSelected} />}
+      </S.TokenList>
     </div>
   );
 };
