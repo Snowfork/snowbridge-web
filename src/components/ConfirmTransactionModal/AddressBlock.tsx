@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 
 import { getChainName, shortenWalletAddress } from '../../utils/common';
 import { Chain } from '../../types/types';
@@ -21,13 +22,13 @@ function AddressBlock({
 
   return (
     <div className={className}>
-      <div>
-        {chainName}
-      </div>
-      <div>
+      <div className="address-block-direction">
         {type === 'sending' ? 'Sending' : 'Receiving'} Address
       </div>
-      <div>
+      <div className="address-block-chain-name">
+        {chainName}
+      </div>
+      <div className="address-block-chain-address">
         {
           shortenWalletAddress(
             address,
@@ -38,4 +39,25 @@ function AddressBlock({
   );
 }
 
-export default AddressBlock;
+export default styled(AddressBlock)`
+  border: solid 1px ${props => props.theme.colors.main};
+  padding: 10px;
+  height: 80px;
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  .address-block-direction {
+    color: ${props => props.theme.colors.main};
+    font-size: 12px;
+  }
+
+  .address-block-chain-name {
+    font-size: 14px;
+  }
+
+  .address-block-chain-address {
+    font-size: 16px;
+  }
+  `;
