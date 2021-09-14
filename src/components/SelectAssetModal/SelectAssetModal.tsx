@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import ReactModal from 'react-modal';
-import {
-  Tabs,
-  Tab,
-} from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -18,6 +14,7 @@ import Panel from '../Panel/Panel';
 import { NonFungibleTokens } from './NonFungibleTokens';
 
 import DOSButton from '../Button/DOSButton';
+import TabButton from '../Button/TabButton';
 import Input from '../Input/Input';
 
 const customStyles = {
@@ -31,7 +28,7 @@ const customStyles = {
     transform: 'translate(-50%, -50%)',
     overflow: 'hidden',
     padding: '0',
-  },
+  }
 };
 
 type Props = {
@@ -91,10 +88,19 @@ function SelectAssetModal({
           <S.Heading>Select Asset</S.Heading>
         </Panel>
         <Panel>
-          <Tabs value={selectedTab} onChange={(event, newTab) => setSelectedTab(newTab)}>
-            <Tab label="Fungible" />
-            <Tab label="Non-Fungible" />
-          </Tabs>
+          <div style={{
+            justifyContent: 'space-around',
+            display: 'flex',
+            flexDirection: 'row',
+            gap: '5px'
+          }}>
+            <TabButton selected={(selectedTab === 0)} onClick={() => setSelectedTab(0)}>
+              Fungible
+            </TabButton>
+            <TabButton selected={(selectedTab === 1)} onClick={() => setSelectedTab(1)}>
+              Non-Fungible
+            </TabButton>
+          </div>
           {selectedTab === 0 && <div style={{ height: '334px' }}>
             <Input
               placeholder="Search for a token"
@@ -129,7 +135,7 @@ function SelectAssetModal({
           <DOSButton onClick={closeModal}>Close</DOSButton>
         </Panel>
       </Panel>
-    </ReactModal>
+    </ReactModal >
   );
 }
 
