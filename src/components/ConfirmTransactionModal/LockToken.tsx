@@ -1,15 +1,6 @@
-// Copyright 2017-2020 @polkadot/apps-routing authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
-
 // General
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-
-// External
-import {
-  Button,
-} from '@material-ui/core';
 
 // Local
 import { useDispatch } from 'react-redux';
@@ -26,6 +17,9 @@ import { SwapDirection } from '../../types/types';
 import { useAppSelector } from '../../utils/hooks';
 import { approveERC721 } from '../../redux/actions/ERC721Transacitons';
 import * as ERC721Api from '../../net/ERC721';
+
+import DOSButton from '../Button/DOSButton';
+
 // ------------------------------------------
 //           LockToken component
 // ------------------------------------------
@@ -126,10 +120,7 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
   const DepositButton = () => {
     if (requiresApproval) {
       return (
-        <Button
-          variant="contained"
-          size="large"
-          color="primary"
+        <DOSButton
           onClick={handleTokenUnlock}
           disabled={isApprovalPending}
         >
@@ -137,21 +128,18 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
           {
             isApprovalPending && <LoadingSpinner spinnerWidth="40px" spinnerHeight="40px" />
           }
-        </Button>
+        </DOSButton>
       );
     }
 
     return (
-      <Button
-        variant="contained"
-        size="large"
-        color="primary"
+      <DOSButton
         onClick={handleDepositToken}
       >
         Deposit
         {' '}
         {selectedAsset?.symbol}
-      </Button>
+      </DOSButton>
     );
   };
 

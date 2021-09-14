@@ -1,9 +1,5 @@
 import styled from 'styled-components';
 
-export const Heading = styled.h2`
-  text-align: center;
-`;
-
 export const TokenList = styled.ul`
   display: flex;
   flex-direction: column;
