@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { useDispatch } from 'react-redux';
 import { getChainsFromDirection, assetToString } from '../../utils/common';
 import { SwapDirection } from '../../types/types';

@@ -3,13 +3,17 @@ import {
   TransactionStatus,
 } from '../../redux/reducers/transactions';
 import LoadingSpinner from '../LoadingSpinner';
-import { isNonFungible, NonFungibleToken, symbols } from '../../types/Asset';
 import { useAppSelector } from '../../utils/hooks';
-import { getChainsFromDirection } from '../../utils/common';
+import { getChainsFromDirection, assetToString, getChainName } from '../../utils/common';
+
+import { Heading } from '../Modal/Modal.style';
+import ChainDisplay from '../Bridge/TransferPanel/ChainDisplay';
 
 const PendingTransaction = (): React.ReactElement => {
   const transactions = useAppSelector((state) => state.transactions);
   const bridge = useAppSelector((state) => state.bridge);
+
+  const chains = getChainsFromDirection(transactions.pendingTransaction!.direction);
 
   /* tx rejected / error */
   if (transactions.pendingTransaction?.status === TransactionStatus.REJECTED) {
@@ -24,65 +28,24 @@ const PendingTransaction = (): React.ReactElement => {
 
   /* submitting - waiting for confirmation in metamask */
   if (transactions.pendingTransaction?.status === TransactionStatus.SUBMITTING_TO_CHAIN) {
-    let Message = (
+    const Message = (
       <h4>
         Bridging
-        {bridge.depositAmount}
-        {' '}
-        {
-          symbols(
-            transactions.pendingTransaction.asset,
-            bridge.swapDirection,
-          ).from
-        }
-        {' '}
+        {assetToString(transactions.pendingTransaction.asset!, bridge.depositAmount)}
+        from
+        <ChainDisplay chain={chains.from} />
         to
-        {' '}
-        {bridge.depositAmount}
-        {' '}
-        {
-          symbols(
-            transactions.pendingTransaction.asset,
-            bridge.swapDirection,
-          ).to
-        }
-
+        <ChainDisplay chain={chains.to} />
       </h4>
     );
 
-    if (isNonFungible(transactions.pendingTransaction.asset)) {
-      const { asset } = transactions.pendingTransaction;
-      const token = asset.token as NonFungibleToken;
-      Message = (
-        <div>
-
-          Bridging
-          {' '}
-          {asset
-            && symbols(asset, bridge.swapDirection).from}
-          [
-          {token.ethId}
-          ]
-
-          from
-          {' '}
-          {getChainsFromDirection(bridge.swapDirection).from}
-          {' '}
-          to
-          {' '}
-          {getChainsFromDirection(bridge.swapDirection).to}
-
-        </div>
-      );
-    }
-
     return (
       <div>
+        <Heading>Submitting transaction</Heading>
+        {Message}
         <div style={{ width: '40px', height: '40px' }}>
           <LoadingSpinner />
         </div>
-        <h3>Submitting transaction</h3>
-        {Message}
         <div>Confirm this transaction in your wallet</div>
       </div>
     );
