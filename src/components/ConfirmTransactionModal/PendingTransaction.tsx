@@ -4,7 +4,7 @@ import {
 } from '../../redux/reducers/transactions';
 import LoadingSpinner from '../LoadingSpinner';
 import { useAppSelector } from '../../utils/hooks';
-import { getChainsFromDirection, assetToString, getChainName } from '../../utils/common';
+import { getChainsFromDirection, assetToString } from '../../utils/common';
 
 import { Heading } from '../Modal/Modal.style';
 import ChainDisplay from '../Bridge/TransferPanel/ChainDisplay';
