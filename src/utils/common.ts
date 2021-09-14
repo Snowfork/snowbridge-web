@@ -1,6 +1,7 @@
 import { REQUIRED_ETH_CONFIRMATIONS } from '../config';
 import { Transaction } from '../redux/reducers/transactions';
 import { SwapDirection, Chain } from '../types/types';
+import { isNonFungible, NonFungibleToken, Asset } from '../types/Asset';
 
 /**
  * Shortens a wallet address, showing X number of letters, an ellipsis, and
@@ -81,4 +82,10 @@ export const getChainImage = (chain: Chain): string => {
     case Chain.POLKADOT:
       return '/images/logos/polkadot.svg';
   }
+};
+
+export const assetToString = (asset: Asset, amount?: string): string => {
+  return isNonFungible(asset) ?
+    `${asset.name} [${(asset.token as NonFungibleToken).ethId}]` :
+    `${amount} ${asset.name}`
 };

@@ -2,18 +2,17 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { useDispatch } from 'react-redux';
-import { getChainsFromDirection, shortenWalletAddress } from '../../utils/common';
+import { getChainsFromDirection, assetToString } from '../../utils/common';
 import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import LockToken from './LockToken';
-import { isNonFungible, NonFungibleToken, symbols } from '../../types/Asset';
 import PendingTransactionsModal from '../PendingTransactionsUI/PendingTransactions';
 import { useAppSelector } from '../../utils/hooks';
 
-import Panel from '../Panel/Panel';
-
 import Modal from '../Modal/Modal';
 import { Heading } from '../Modal/Modal.style';
+
+import AddressBlock from './AddressBlock';
 
 type Props = {
   open: boolean;
@@ -62,92 +61,41 @@ function ConfirmTransactionModal({
       : polkadotAddress,
   };
 
+  if (!isOpen) {
+    return <div></div>;
+  }
+
   return (
-    <div>
-      <Modal
-        isOpen={isOpen}
-        onRequestClose={closeModal}
-      >
-        <Heading>
-          Confirm transfer
-        </Heading>
-        {
-          isPending ? <PendingTransactionsModal /> : (
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={closeModal}
+    >
+      {
+        isPending ? <PendingTransactionsModal /> : (
+          <div>
+            <Heading>
+              Confirm transfer
+            </Heading>
+            {assetToString(selectedAsset!, depositAmount)}
             <div>
-
-              {
-                selectedAsset && isNonFungible(selectedAsset)
-                  ? (
-                    <Panel>
-                      <div>
-                        {
-                          selectedAsset
-                          && symbols(selectedAsset, swapDirection).from
-                        }
-                        {' '}
-                        [
-                        {(selectedAsset?.token as NonFungibleToken).ethId}
-                        ]
-                      </div>
-                    </Panel>
-                  )
-
-                  : (
-                    <Panel>
-                      <div>
-                        {depositAmount}
-                        {' '}
-                        {
-                          selectedAsset
-                          && symbols(selectedAsset, swapDirection).from
-                        }
-                      </div>
-                    </Panel>
-                  )
-              }
-
-              <div>
-                <Panel>
-                  <div>
-                    {getChainsFromDirection(swapDirection).from}
-                  </div>
-                  <div>
-                    Sending Address
-                  </div>
-                  <div>
-                    {
-                      shortenWalletAddress(
-                        addresses.from ?? '',
-                      )
-                    }
-                  </div>
-                </Panel>
-                <ArrowRightIcon />
-                <Panel>
-                  <div>
-                    {getChainsFromDirection(swapDirection).to}
-                  </div>
-                  <div>
-                    Receiving Address
-                  </div>
-                  <div>
-                    {
-                      shortenWalletAddress(
-                        addresses.to ?? '',
-                      )
-                    }
-                  </div>
-                </Panel>
-
-              </div>
-
-              <LockToken onTokenLocked={onTokenLocked} />
+              <AddressBlock
+                type="sending"
+                chain={getChainsFromDirection(swapDirection).from}
+                address={addresses.from!}
+              />
+              <ArrowRightIcon />
+              <AddressBlock
+                type="receiving"
+                chain={getChainsFromDirection(swapDirection).to}
+                address={addresses.to!}
+              />
             </div>
-          )
-        }
+            <LockToken onTokenLocked={onTokenLocked} />
+          </div>
+        )
+      }
 
-      </Modal>
-    </div >
+    </Modal>
   );
 }
 
