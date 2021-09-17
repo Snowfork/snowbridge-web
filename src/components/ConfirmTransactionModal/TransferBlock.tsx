@@ -44,11 +44,14 @@ function TransferBlock({
 }
 
 export default styled(TransferBlock)`
+  padding-bottom: 10px;
+
 .confirm-modal-asset-name {
   font-size: 16px;
   text-align: center;
   width: 100%;
   text-transform: uppercase;
+  margin-bottom: 10px;
 }
 
 .confirm-modal-address-blocks {
