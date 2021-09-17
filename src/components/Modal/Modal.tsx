@@ -31,7 +31,6 @@ function Modal({
   isOpen,
   onRequestClose,
   className,
-  type
 }: Props): JSX.Element {
   return (
     <ReactModal

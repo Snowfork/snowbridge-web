@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useAppSelector } from '../../utils/hooks';
 import ConfirmTransactionModal from '../ConfirmTransactionModal';
+import TransactionsListModal from '../TransactionsListModal';
 import SelectAssetModal from '../SelectAssetModal';
 import TransferPanel from './TransferPanel/TransferPanel';
 
@@ -11,7 +12,7 @@ type Props = {
 
 const Bridge = ({ className }: Props) => {
   const [showAssetSelector, setShowAssetSelector] = useState(false);
-  const { showConfirmTransactionModal } = useAppSelector((state) => state.bridge);
+  const { showConfirmTransactionModal, showTransactionListModal } = useAppSelector((state) => state.bridge);
 
   return (
     <div className={className}>
@@ -22,6 +23,9 @@ const Bridge = ({ className }: Props) => {
       />
       <ConfirmTransactionModal
         open={showConfirmTransactionModal}
+      />
+      <TransactionsListModal
+        open={showTransactionListModal}
       />
     </div>
   );

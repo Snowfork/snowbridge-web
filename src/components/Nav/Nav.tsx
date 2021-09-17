@@ -9,12 +9,11 @@ import { formatBalance } from '@polkadot/util';
 import { Button } from '@material-ui/core';
 import * as S from './Nav.style';
 import Modal from '../Modal';
-import TransactionsList from '../TransactionsList';
 import { transactionsInProgressSelector } from '../../redux/reducers/transactions';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
 import Polkadot from '../../net/polkadot';
-import { setShowTransactionList, updateBalances } from '../../redux/actions/bridge';
+import { setShowTransactionListModal, updateBalances } from '../../redux/actions/bridge';
 import FormatAmount from '../FormatAmount';
 import { shortenWalletAddress } from '../../utils/common';
 import { dotSelector, etherSelector } from '../../redux/reducers/bridge';
@@ -41,8 +40,6 @@ function Nav(): React.ReactElement {
   ] = useState<boolean>(false);
 
   const { polkadotAddress, ethAddress, polkadotApi } = useAppSelector((state) => state.net);
-  const { showTransactionsList } = useAppSelector((state) => state.bridge);
-  const { transactions } = useAppSelector((state) => state.transactions);
   const dot = useAppSelector(dotSelector);
   const ether = useAppSelector(etherSelector);
   const transactionsInProgress = useAppSelector(transactionsInProgressSelector);
@@ -141,11 +138,7 @@ function Nav(): React.ReactElement {
   });
 
   const openTransactionsList = () => {
-    dispatch(setShowTransactionList(true));
-  };
-
-  const onTransactionsListClosed = () => {
-    dispatch(setShowTransactionList(false));
+    dispatch(setShowTransactionListModal(true));
   };
 
   return (
@@ -207,12 +200,6 @@ function Nav(): React.ReactElement {
             && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />
           }
         </Button>
-        <Modal
-          isOpen={showTransactionsList}
-          onRequestClose={onTransactionsListClosed}
-        >
-          <TransactionsList transactions={transactions} />
-        </Modal>
       </S.CurrencyList>
     </S.Wrapper>
   );

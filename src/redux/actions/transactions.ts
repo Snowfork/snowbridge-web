@@ -28,7 +28,7 @@ import {
 import { doEthTransfer } from './EthTransactions';
 import { doPolkadotTransfer } from './PolkadotTransactions';
 import { notify } from './notifications';
-import { setShowConfirmTransactionModal, setShowTransactionList } from './bridge';
+import { setShowConfirmTransactionModal, setShowTransactionListModal } from './bridge';
 
 export const {
   addTransaction,
@@ -141,7 +141,7 @@ export function handlePolkadotTransactionEvents(
       ),
     );
     dispatch(setShowConfirmTransactionModal(false));
-    dispatch(setShowTransactionList(true));
+    dispatch(setShowTransactionListModal(true));
     return pendingTransaction;
   }
 
@@ -237,7 +237,7 @@ export function handleEthereumTransactionEvents(
     .on('transactionHash', async (hash: string) => {
       console.log('Transaction hash received', hash);
       dispatch(setShowConfirmTransactionModal(false));
-      dispatch(setShowTransactionList(true));
+      dispatch(setShowTransactionListModal(true));
 
       transactionHash = hash;
 

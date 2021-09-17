@@ -23,7 +23,7 @@ export const {
   _setSelectedAsset,
   setDepositAmount,
   setShowConfirmTransactionModal,
-  setShowTransactionList,
+  setShowTransactionListModal,
   setSwapDirection,
   setNonFungibleTokenList,
   resetOwnedNonFungibleAssets,
