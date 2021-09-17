@@ -28,7 +28,7 @@ const TransactionListButton = ({ className }: React.PropsWithChildren<Props>) =>
   return (
     <div className={className}>
       <PillButton onClick={openTransactionsList}>
-        {buttonNumber} {buttonText} Transactions&nbsp;
+        <span className='tl-button-number'>{buttonNumber}</span> {buttonText} Transaction{buttonNumber != 1 && 's'}&nbsp;
         {
           transactionsInProgress.length > 0
           && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />
@@ -39,6 +39,16 @@ const TransactionListButton = ({ className }: React.PropsWithChildren<Props>) =>
 };
 
 export default styled(TransactionListButton)`
+
+  .tl-button-number {
+    border-radius: 10px;
+    background:  ${props => props.theme.colors.main};
+    color:  ${props => props.theme.colors.panelBackground};
+    width: 13px;
+    padding: 1px;
+    margin-right: 5px;
+  }
+
   display: flex;
   width: 100%;
   justify-content: flex-end;
