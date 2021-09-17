@@ -23,6 +23,8 @@ import ChainDisplay from './ChainDisplay';
 import DirectionBadge from './DirectionBadge';
 
 import DOSButton from '../../Button/DOSButton';
+import TransactionListButton from '../../Button/TransactionListButton';
+
 import SwitchButton from '../../Button/SwitchButton';
 import FungibleTokenBalance from './FungibleTokenBalance';
 
@@ -140,7 +142,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       >
         Transfer Asset(s)
       </DOSButton>
-
+      <TransactionListButton />
     </Panel>
   );
 };

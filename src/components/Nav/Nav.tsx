@@ -6,18 +6,15 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { useDispatch } from 'react-redux';
 import { formatBalance } from '@polkadot/util';
-import { Button } from '@material-ui/core';
 import * as S from './Nav.style';
 import Modal from '../Modal';
-import { transactionsInProgressSelector } from '../../redux/reducers/transactions';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
 import Polkadot from '../../net/polkadot';
-import { setShowTransactionListModal, updateBalances } from '../../redux/actions/bridge';
+import { updateBalances } from '../../redux/actions/bridge';
 import FormatAmount from '../FormatAmount';
 import { shortenWalletAddress } from '../../utils/common';
 import { dotSelector, etherSelector } from '../../redux/reducers/bridge';
-import LoadingSpinner from '../LoadingSpinner';
 import { useAppSelector } from '../../utils/hooks';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -42,7 +39,6 @@ function Nav(): React.ReactElement {
   const { polkadotAddress, ethAddress, polkadotApi } = useAppSelector((state) => state.net);
   const dot = useAppSelector(dotSelector);
   const ether = useAppSelector(etherSelector);
-  const transactionsInProgress = useAppSelector(transactionsInProgressSelector);
 
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethGasBalance = ether?.balance?.eth;
@@ -137,10 +133,6 @@ function Nav(): React.ReactElement {
     withUnit: polkadotApi?.registry.chainTokens[0],
   });
 
-  const openTransactionsList = () => {
-    dispatch(setShowTransactionListModal(true));
-  };
-
   return (
     <S.Wrapper>
       <S.Heading>Snowbridge</S.Heading>
@@ -190,16 +182,6 @@ function Nav(): React.ReactElement {
           />
 
         </S.DisplayWrapper>
-        <Button
-          variant="contained"
-          onClick={openTransactionsList}
-        >
-          Transactions
-          {
-            transactionsInProgress.length > 0
-            && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />
-          }
-        </Button>
       </S.CurrencyList>
     </S.Wrapper>
   );

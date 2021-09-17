@@ -21,7 +21,7 @@ const DOSButton = ({ className, onClick, disabled, loading, loadingMessage, chil
         {children}
         {
           loading && <div className="dosbutton-loading" >
-            <LoadingSpinner spinnerWidth="40px" spinnerHeight="40px" />
+            <LoadingSpinner spinnerWidth="40px" spinnerHeight="40px" inverted={true} />
             <div className="dosbutton-loading-message">{loadingMessage}</div>
           </div>
         }
