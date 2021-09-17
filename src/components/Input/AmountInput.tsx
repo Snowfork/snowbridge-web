@@ -21,6 +21,7 @@ const AmountInput = ({ className, disabled, placeholder, value, onChange, type, 
         value={value}
         onChange={onChange}
         type={type}
+        step="0.1"
         disabled={disabled}
         className={className}>
       </Input>

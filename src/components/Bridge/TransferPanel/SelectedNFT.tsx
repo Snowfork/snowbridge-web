@@ -1,10 +1,10 @@
 import React from 'react';
 
-import SelectAssetButton from '../Button/SelectAssetButton';
+import SelectAssetButton from '../../Button/SelectAssetButton';
 
-import { useAppSelector } from '../../utils/hooks';
-import { NonFungibleToken } from '../../types/Asset';
-import { Chain } from '../../types/types';
+import { useAppSelector } from '../../../utils/hooks';
+import { NonFungibleToken } from '../../../types/Asset';
+import { Chain } from '../../../types/types';
 
 type Props = {
   setShowAssetSelector: (show: boolean) => void,

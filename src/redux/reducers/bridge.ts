@@ -13,7 +13,7 @@ export interface BridgeState {
   depositAmount: string,
   swapDirection: SwapDirection,
   showConfirmTransactionModal: boolean,
-  showTransactionsList: boolean,
+  showTransactionListModal: boolean,
   nonFungibleAssets: NonFungibleTokenContract[],
   ownedNonFungibleAssets: {
     polkadot: {
@@ -28,10 +28,10 @@ export interface BridgeState {
 const initialState: BridgeState = {
   assets: [],
   selectedAsset: undefined,
-  depositAmount: '0.0',
+  depositAmount: '0',
   swapDirection: SwapDirection.EthereumToPolkadot,
   showConfirmTransactionModal: false,
-  showTransactionsList: false,
+  showTransactionListModal: false,
   nonFungibleAssets: [],
   ownedNonFungibleAssets: { polkadot: {}, ethereum: {} },
 };
@@ -55,8 +55,8 @@ export const bridgeSlice = createSlice({
       (state, action: PayloadAction<boolean>) => {
         state.showConfirmTransactionModal = action.payload;
       },
-    setShowTransactionList:
-      (state, action: PayloadAction<boolean>) => { state.showTransactionsList = action.payload; },
+    setShowTransactionListModal:
+      (state, action: PayloadAction<boolean>) => { state.showTransactionListModal = action.payload; },
     setNonFungibleTokenList: (state, action: PayloadAction<NonFungibleTokenContract[]>) => {
       state.nonFungibleAssets = action.payload;
     },

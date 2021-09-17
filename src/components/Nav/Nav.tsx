@@ -6,19 +6,15 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { useDispatch } from 'react-redux';
 import { formatBalance } from '@polkadot/util';
-import { Button } from '@material-ui/core';
 import * as S from './Nav.style';
 import Modal from '../Modal';
-import TransactionsList from '../TransactionsList';
-import { transactionsInProgressSelector } from '../../redux/reducers/transactions';
 import { setPolkadotAddress } from '../../redux/actions/net';
 import { BLOCK_EXPLORER_URL } from '../../config';
 import Polkadot from '../../net/polkadot';
-import { setShowTransactionList, updateBalances } from '../../redux/actions/bridge';
+import { updateBalances } from '../../redux/actions/bridge';
 import FormatAmount from '../FormatAmount';
 import { shortenWalletAddress } from '../../utils/common';
 import { dotSelector, etherSelector } from '../../redux/reducers/bridge';
-import LoadingSpinner from '../LoadingSpinner';
 import { useAppSelector } from '../../utils/hooks';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -41,11 +37,8 @@ function Nav(): React.ReactElement {
   ] = useState<boolean>(false);
 
   const { polkadotAddress, ethAddress, polkadotApi } = useAppSelector((state) => state.net);
-  const { showTransactionsList } = useAppSelector((state) => state.bridge);
-  const { transactions } = useAppSelector((state) => state.transactions);
   const dot = useAppSelector(dotSelector);
   const ether = useAppSelector(etherSelector);
-  const transactionsInProgress = useAppSelector(transactionsInProgressSelector);
 
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethGasBalance = ether?.balance?.eth;
@@ -140,14 +133,6 @@ function Nav(): React.ReactElement {
     withUnit: polkadotApi?.registry.chainTokens[0],
   });
 
-  const openTransactionsList = () => {
-    dispatch(setShowTransactionList(true));
-  };
-
-  const onTransactionsListClosed = () => {
-    dispatch(setShowTransactionList(false));
-  };
-
   return (
     <S.Wrapper>
       <S.Heading>Snowbridge</S.Heading>
@@ -197,22 +182,6 @@ function Nav(): React.ReactElement {
           />
 
         </S.DisplayWrapper>
-        <Button
-          variant="contained"
-          onClick={openTransactionsList}
-        >
-          Transactions
-          {
-            transactionsInProgress.length > 0
-            && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />
-          }
-        </Button>
-        <Modal
-          isOpen={showTransactionsList}
-          onRequestClose={onTransactionsListClosed}
-        >
-          <TransactionsList transactions={transactions} />
-        </Modal>
       </S.CurrencyList>
     </S.Wrapper>
   );

@@ -8,16 +8,20 @@ type Props = {
   value?: string;
   onChange?: any;
   type?: string;
+  step?: string;
+  lang?: string;
   style?: object;
 }
 
-const Input = ({ className, disabled, placeholder, value, onChange, type, children, style }: React.PropsWithChildren<Props>) => {
+const Input = ({ step, lang, className, disabled, placeholder, value, onChange, type, children, style }: React.PropsWithChildren<Props>) => {
   return (
     <input
       placeholder={placeholder}
       value={value}
       onChange={onChange}
       type={type}
+      step={step}
+      lang={lang}
       disabled={disabled}
       className={className}
       style={style}>

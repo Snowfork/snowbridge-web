@@ -84,7 +84,7 @@ const SelectedFungibleToken = ({ className, setShowAssetSelector, setError }: Pr
       <div>
         <div className={'sft-amount-section'}>
           <AmountInput
-            placeholder="0.0"
+            placeholder="0"
             value={depositAmount}
             onChange={handleDepositAmountChanged}
             type="number"
