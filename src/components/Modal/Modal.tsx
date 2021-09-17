@@ -1,6 +1,17 @@
 import React, { ReactNode } from 'react';
 import ReactModal from 'react-modal';
 
+import styled from 'styled-components';
+
+import Panel from '../Panel/Panel';
+
+type Props = {
+  children: ReactNode;
+  isOpen: boolean;
+  onRequestClose: () => void;
+  className?: string;
+};
+
 const customStyles = {
   content: {
     top: '50%',
@@ -10,32 +21,34 @@ const customStyles = {
     marginRight: '-50%',
     transform: 'translate(-50%, -50%)',
     overflow: 'hidden',
+    padding: '0',
   },
-};
-
-type Props = {
-  children: ReactNode;
-  isOpen: boolean;
-  onClose: () => void;
 };
 
 function Modal({
   children,
   isOpen,
-  onClose,
+  onRequestClose,
+  className,
 }: Props): JSX.Element {
   return (
-    <div>
-      <ReactModal
-        isOpen={isOpen}
-        onRequestClose={onClose}
-        style={customStyles}
-
-      >
+    <ReactModal
+      isOpen={isOpen}
+      onRequestClose={onRequestClose}
+      style={customStyles}
+    >
+      <Panel className={className}>
         {children}
-      </ReactModal>
-    </div>
+      </Panel>
+    </ReactModal>
   );
 }
 
-export default Modal;
+export default styled(Modal)`
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+
+  border: 1px solid ${props => props.theme.colors.transferPanelBorder};
+  background: ${props => props.theme.colors.transferPanelBackground};
+`;

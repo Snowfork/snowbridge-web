@@ -1,40 +1,26 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import ReactModal from 'react-modal';
-import {
-  Grid,
-  Paper,
-  Typography,
-} from '@material-ui/core';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
+import styled from 'styled-components';
+
 import { useDispatch } from 'react-redux';
-import { getChainsFromDirection, shortenWalletAddress } from '../../utils/common';
+import { getChainsFromDirection, assetToString } from '../../utils/common';
 import { SwapDirection } from '../../types/types';
 import { setShowConfirmTransactionModal } from '../../redux/actions/bridge';
 import LockToken from './LockToken';
-import { isNonFungible, NonFungibleToken, symbols } from '../../types/Asset';
-import PendingTransactionsModal from '../PendingTransactionsUI/PendingTransactions';
+import PendingTransaction from './PendingTransaction';
 import { useAppSelector } from '../../utils/hooks';
 
-const customStyles = {
-  overlay: {},
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-    overflow: 'hidden',
-    padding: '0',
-  },
-};
+import Modal from '../Modal/Modal';
+import { Heading } from '../Modal/Modal.style';
+
+import AddressBlock from './AddressBlock';
 
 type Props = {
   open: boolean;
+  className?: string;
 };
 
 function ConfirmTransactionModal({
-  open,
+  open, className,
 }: Props): React.ReactElement<Props> {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(open);
@@ -76,100 +62,64 @@ function ConfirmTransactionModal({
       : polkadotAddress,
   };
 
+  if (!isOpen) {
+    return <div></div>;
+  }
+
   return (
-    <div>
-      <ReactModal
-        isOpen={isOpen}
-        onRequestClose={closeModal}
-        style={customStyles}
-        contentLabel="Confirm Transaction"
-      >
-        <Paper>
-          {
-            isPending ? <PendingTransactionsModal /> : (
-              <Grid container justifyContent="center">
-
-                <Grid item>
-                  <Typography>
-                    Confirm transfer
-                  </Typography>
-                </Grid>
-
-                {
-                  selectedAsset && isNonFungible(selectedAsset)
-                    ? (
-                      <Grid item container justifyContent="center">
-                        <Typography variant="h4">
-                          {
-                            selectedAsset
-                            && symbols(selectedAsset, swapDirection).from
-                          }
-                          {' '}
-                          [
-                          {(selectedAsset?.token as NonFungibleToken).ethId}
-                          ]
-                        </Typography>
-                      </Grid>
-                    )
-
-                    : (
-                      <Grid item container justifyContent="center">
-                        <Typography variant="h4">
-                          {depositAmount}
-                          {' '}
-                          {
-                            selectedAsset
-                            && symbols(selectedAsset, swapDirection).from
-                          }
-                        </Typography>
-                      </Grid>
-                    )
-                }
-
-                <Grid item container justifyContent="space-between">
-                  <Grid item>
-                    <Typography>
-                      {getChainsFromDirection(swapDirection).from}
-                    </Typography>
-                    <Typography variant="caption">
-                      Sending Address
-                    </Typography>
-                    <Typography>
-                      {
-                        shortenWalletAddress(
-                          addresses.from ?? '',
-                        )
-                      }
-                    </Typography>
-                  </Grid>
-                  <ArrowRightIcon />
-                  <Grid item>
-                    <Typography>
-                      {getChainsFromDirection(swapDirection).to}
-                    </Typography>
-                    <Typography variant="caption">
-                      Receiving Address
-                    </Typography>
-                    <Typography>
-                      {
-                        shortenWalletAddress(
-                          addresses.to ?? '',
-                        )
-                      }
-                    </Typography>
-                  </Grid>
-
-                </Grid>
-
-                <LockToken onTokenLocked={onTokenLocked} />
-              </Grid>
-            )
-          }
-
-        </Paper>
-      </ReactModal>
-    </div>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={closeModal}
+    >
+      {
+        isPending ? <PendingTransaction /> : (
+          <div className={className}>
+            <Heading>
+              Confirm transfer
+            </Heading>
+            <div className="confirm-modal-asset-name">
+              {assetToString(selectedAsset!, depositAmount)}
+            </div>
+            <div className="confirm-modal-address-blocks">
+              <AddressBlock
+                type="sending"
+                chain={getChainsFromDirection(swapDirection).from}
+                address={addresses.from!}
+              />
+              <div>--&#62;---&#62;---&#62;--</div>
+              <AddressBlock
+                type="receiving"
+                chain={getChainsFromDirection(swapDirection).to}
+                address={addresses.to!}
+              />
+            </div>
+            <LockToken onTokenLocked={onTokenLocked} />
+          </div>
+        )
+      }
+    </Modal>
   );
 }
 
-export default ConfirmTransactionModal;
+export default styled(ConfirmTransactionModal)`
+gap: 10px;
+display: flex;
+flex-direction: column;
+min-width: 480px;
+align-items: center;
+
+.confirm-modal-asset-name {
+  font-size: 16px;
+  text-align: center;
+  width: 100%;
+  text-transform: uppercase;
+}
+
+.confirm-modal-address-blocks {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+`;

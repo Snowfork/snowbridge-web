@@ -93,7 +93,7 @@ function Nav(): React.ReactElement {
     return (
       <Modal
         isOpen={isOpen}
-        onClose={onClose}
+        onRequestClose={onClose}
       >
         <S.ModalContainer>
           <S.ModalHeader>
@@ -204,12 +204,12 @@ function Nav(): React.ReactElement {
           Transactions
           {
             transactionsInProgress.length > 0
-             && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />
+            && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />
           }
         </Button>
         <Modal
           isOpen={showTransactionsList}
-          onClose={onTransactionsListClosed}
+          onRequestClose={onTransactionsListClosed}
         >
           <TransactionsList transactions={transactions} />
         </Modal>

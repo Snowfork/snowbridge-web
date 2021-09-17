@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import ReactModal from 'react-modal';
-import {
-  Button,
-  Typography,
-  Tabs,
-  Tab,
-} from '@material-ui/core';
+
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
 
 import { utils } from 'ethers';
 import * as S from './SelectAssetModal.style';
@@ -15,29 +10,24 @@ import { Asset, decimals, symbols } from '../../types/Asset';
 import { SwapDirection } from '../../types/types';
 import { useAppSelector } from '../../utils/hooks';
 
-import TabPanel from '../TabPanel';
+import Modal from '../Modal/Modal';
+import { Heading } from '../Modal/Modal.style';
+
+import Panel from '../Panel/Panel';
 import { NonFungibleTokens } from './NonFungibleTokens';
 
-const customStyles = {
-  overlay: {},
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-    overflow: 'hidden',
-    padding: '0',
-  },
-};
+import DOSButton from '../Button/DOSButton';
+import TabButton from '../Button/TabButton';
+import Input from '../Input/Input';
 
 type Props = {
+  className?: string;
   open: boolean;
   onClose: () => void;
 };
 
 function SelectAssetModal({
+  className,
   open,
   onClose,
 }: Props): React.ReactElement<Props> {
@@ -76,54 +66,61 @@ function SelectAssetModal({
   }
 
   return (
-    <div>
-      <ReactModal
-        isOpen={isOpen}
-        onRequestClose={closeModal}
-        style={customStyles}
-        contentLabel="Select Token"
-      >
-        <S.Wrapper>
-          <S.Heading>Select Asset</S.Heading>
-          <Tabs value={selectedTab} onChange={(event, newTab) => setSelectedTab(newTab)}>
-            <Tab label="Fungible" />
-            <Tab label="Non-Fungible" />
-          </Tabs>
-          <TabPanel value={selectedTab} index={0}>
-            <S.Input onChange={handleInputChange} />
-            <S.TokenList>
-              {
-                assets
-                  // filter assets by search term
-                  ?.filter(
-                    (asset: Asset) => asset.name.toLowerCase().includes(searchInput)
-                      || asset.symbol.toLowerCase().includes(searchInput),
-                  ).map(
-                    // render each asset
-                    (asset: Asset) => (
-                      <S.Token key={`${asset.chainId}-${asset.address}`}>
-                        <Button onClick={() => handleTokenSelection(asset)}>
-                          <img src={asset.logoUri} alt={`${asset.name} icon`} />
-                          <div>
-                            <Typography variant="caption">{symbols(asset, swapDirection).from}</Typography>
-                            <Typography>{getTokenBalance(asset)}</Typography>
-                          </div>
-                        </Button>
-                      </S.Token>
-                    ),
-                  )
-              }
-            </S.TokenList>
-          </TabPanel>
-          <TabPanel value={selectedTab} index={1}>
-            <NonFungibleTokens handleTokenSelection={handleTokenSelection} />
-          </TabPanel>
-
-          <S.Button onClick={closeModal}>Close</S.Button>
-        </S.Wrapper>
-      </ReactModal>
-    </div>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={closeModal}
+    >
+      <Heading>Select Asset</Heading>
+      <Panel>
+        <div style={{
+          justifyContent: 'space-around',
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '5px'
+        }}>
+          <TabButton selected={(selectedTab === 0)} onClick={() => setSelectedTab(0)}>
+            Fungible
+          </TabButton>
+          <TabButton selected={(selectedTab === 1)} onClick={() => setSelectedTab(1)}>
+            Non-Fungible
+          </TabButton>
+        </div>
+        {selectedTab === 0 && <div style={{ height: '334px' }}>
+          <Input
+            placeholder="Search for a token"
+            style={{ textAlign: 'left', width: 'calc(100% - 20px)' }}
+            onChange={handleInputChange} />
+          <S.TokenList>
+            {
+              assets
+                // filter assets by search term
+                ?.filter(
+                  (asset: Asset) => asset.name.toLowerCase().includes(searchInput)
+                    || asset.symbol.toLowerCase().includes(searchInput),
+                ).map(
+                  // render each asset
+                  (asset: Asset) => (
+                    <S.Token key={`${asset.chainId}-${asset.address}`}>
+                      <button onClick={() => handleTokenSelection(asset)}>
+                        <img src={asset.logoUri} alt={`${asset.name} icon`} />
+                        <span>{symbols(asset, swapDirection).from} {getTokenBalance(asset)}</span>
+                      </button>
+                    </S.Token>
+                  ),
+                )
+            }
+          </S.TokenList>
+        </div>}
+        {selectedTab === 1 && <div style={{ height: '334px' }}>
+          <NonFungibleTokens handleTokenSelection={handleTokenSelection} />
+        </div>}
+      </Panel>
+      <Panel>
+        <DOSButton onClick={closeModal}>Close</DOSButton>
+      </Panel>
+    </Modal>
   );
 }
 
-export default SelectAssetModal;
+export default styled(SelectAssetModal)`
+`;

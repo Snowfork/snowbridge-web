@@ -1,9 +1,9 @@
 import React from 'react';
-import { BLOCK_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../config';
+import { BLOCK_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../../config';
 import {
   Transaction,
   TransactionStatus,
-} from '../../redux/reducers/transactions';
+} from '../../../redux/reducers/transactions';
 import * as S from './PendingTransactionsUI.style';
 import Step, { StepStatus } from './Step/Step';
 

@@ -1,10 +1,13 @@
 import {
-  Button, InputLabel, Input, ListItemText, Collapse, ListItem,
+  ListItemText, Collapse, ListItem,
 } from '@material-ui/core';
 import React, { useState } from 'react';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import styled from 'styled-components';
+
+import Input from '../../Input/Input';
+import DOSButton from '../../Button/DOSButton';
 
 const TokenForm = styled.div`
   margin: auto 0;
@@ -41,17 +44,23 @@ const ManualInput = ({
   return (
     <>
       <ListItem style={{ cursor: 'pointer' }} onClick={() => setIsOpen(!isOpen)}>
-        <ListItemText>Dont see your nft?</ListItemText>
+        <ListItemText>Custom nft contract?</ListItemText>
         {isOpen ? <ExpandLess /> : <ExpandMore />}
       </ListItem>
       <Collapse in={isOpen} timeout="auto" unmountOnExit>
         <TokenForm>
-          <InputLabel htmlFor="contract">Contract</InputLabel>
-          <Input type="text" name="contract" value={selectedTokenAddress} onChange={handleTokenAddressChanged} />
-          <InputLabel htmlFor="token">Token ID</InputLabel>
-          <Input type="text" name="token" value={selectedTokenId} onChange={handleIdChanged} />
+          <label>Contract</label>
+          <Input
+            style={{ textAlign: 'left', width: 'calc(100% - 20px)' }}
+            placeholder="Enter Contract Address"
+            type="text" value={selectedTokenAddress} onChange={handleTokenAddressChanged} />
+          <label>Token ID</label>
+          <Input
+            style={{ textAlign: 'left', width: 'calc(100% - 20px)' }}
+            placeholder="Enter Token ID"
+            type="text" value={selectedTokenId} onChange={handleIdChanged} />
+          <DOSButton onClick={selectNFT}>Select</DOSButton>
         </TokenForm>
-        <Button onClick={selectNFT}>Select</Button>
       </Collapse>
     </>
   );

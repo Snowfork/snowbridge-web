@@ -1,7 +1,7 @@
 import React from 'react';
 import * as S from './TransactionItem.style';
 import { Transaction } from '../../../redux/reducers/transactions';
-import PendingTransactionsUI from '../../PendingTransactionsUI';
+import PendingTransactionsUI from '../PendingTransactions/PendingTransactionsUI';
 import FormatAmount from '../../FormatAmount';
 import { decimals, symbols } from '../../../types/Asset';
 
