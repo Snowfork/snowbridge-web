@@ -44,18 +44,6 @@ const LoadingSpinner: React.FC<ISpinnerProps> = ({
     mainColor="#868686"
     accentColor="#000000"
   >
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
-    <div />
   </Wrapper>
 );
 

@@ -10,6 +10,7 @@ type Props = {
   isOpen: boolean;
   onRequestClose: () => void;
   className?: string;
+  type?: string | undefined;
 };
 
 const customStyles = {
@@ -30,6 +31,7 @@ function Modal({
   isOpen,
   onRequestClose,
   className,
+  type
 }: Props): JSX.Element {
   return (
     <ReactModal
@@ -50,5 +52,7 @@ export default styled(Modal)`
   justify-content: center;
 
   border: 1px solid ${props => props.theme.colors.transferPanelBorder};
-  background: ${props => props.theme.colors.transferPanelBackground};
+  background: ${props => props.type === 'error' ?
+    props.theme.colors.errorBackground :
+    props.theme.colors.transferPanelBackground};
 `;

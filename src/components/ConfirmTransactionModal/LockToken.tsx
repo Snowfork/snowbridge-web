@@ -7,7 +7,6 @@ import { useDispatch } from 'react-redux';
 import { utils } from 'ethers';
 import { BigNumber } from 'bignumber.js';
 import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
-import LoadingSpinner from '../LoadingSpinner';
 import { APP_ERC721_CONTRACT_ADDRESS, REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 import {
   decimals, isErc20, isNonFungible, NonFungibleToken,
@@ -24,9 +23,10 @@ import DOSButton from '../Button/DOSButton';
 //           LockToken component
 // ------------------------------------------
 type Props = {
-  onTokenLocked: () => void
+  onTokenLocked: () => void;
+  transactionPending?: boolean;
 }
-function LockToken({ onTokenLocked }: Props): React.ReactElement {
+function LockToken({ onTokenLocked, transactionPending }: Props): React.ReactElement {
   const { allowance } = useAppSelector((state) => state.ERC20Transactions);
   const { selectedAsset, depositAmount, swapDirection } = useAppSelector(
     (state) => state.bridge,
@@ -73,8 +73,7 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
     };
   }, [dispatch, selectedAsset]);
 
-  // lock assets
-  const handleDepositToken = async () => {
+  const handleTransferToken = async () => {
     try {
       dispatch(doTransfer());
       onTokenLocked();
@@ -83,8 +82,7 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
     }
   };
 
-  // approve spending of token
-  const handleTokenUnlock = async () => {
+  const handleApproveToken = async () => {
     try {
       setIsApprovalPending(true);
       if (isNonFungible(selectedAsset!)) {
@@ -100,7 +98,7 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
   };
 
   const currentAllowanceFormatted = new BigNumber(currentTokenAllowance.toString());
-  const depositAmountFormatted = new BigNumber(selectedAsset
+  const transferAmountFormatted = new BigNumber(selectedAsset
     ? utils.parseUnits(
       depositAmount.toString(),
       decimals(selectedAsset, swapDirection).from,
@@ -113,30 +111,31 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
     && selectedAsset
     && (isErc20(selectedAsset) || isNonFungible(selectedAsset))
     && (
-      (isErc20(selectedAsset) && depositAmountFormatted.isGreaterThan(currentAllowanceFormatted))
+      (isErc20(selectedAsset) && transferAmountFormatted.isGreaterThan(currentAllowanceFormatted))
       || (isNonFungible(selectedAsset) && !isApproved)
     );
 
-  const DepositButton = () => {
+  const TransferButton = () => {
     if (requiresApproval) {
       return (
         <DOSButton
-          onClick={handleTokenUnlock}
+          onClick={handleApproveToken}
           disabled={isApprovalPending}
+          loading={isApprovalPending}
+          loadingMessage={'Confirm this transaction in your wallet'}
         >
-          Unlock Token
-          {
-            isApprovalPending && <LoadingSpinner spinnerWidth="40px" spinnerHeight="40px" />
-          }
+          Approve Token
         </DOSButton>
       );
     }
 
     return (
       <DOSButton
-        onClick={handleDepositToken}
+        onClick={handleTransferToken}
+        loading={transactionPending}
+        loadingMessage={'Confirm this transaction in your wallet'}
       >
-        Deposit
+        Transfer
         {' '}
         {selectedAsset?.symbol}
       </DOSButton>
@@ -145,7 +144,7 @@ function LockToken({ onTokenLocked }: Props): React.ReactElement {
 
   // Render
   return (
-    <DepositButton />
+    <TransferButton />
   );
 }
 

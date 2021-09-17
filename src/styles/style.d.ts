@@ -14,6 +14,8 @@ declare module 'styled-components' {
 
       panelBorder: string;
       panelBackground: string;
+
+      errorBackground: string;
     };
   }
 }

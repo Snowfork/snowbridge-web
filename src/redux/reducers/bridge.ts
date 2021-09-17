@@ -28,7 +28,7 @@ export interface BridgeState {
 const initialState: BridgeState = {
   assets: [],
   selectedAsset: undefined,
-  depositAmount: '0.0',
+  depositAmount: '0',
   swapDirection: SwapDirection.EthereumToPolkadot,
   showConfirmTransactionModal: false,
   showTransactionsList: false,

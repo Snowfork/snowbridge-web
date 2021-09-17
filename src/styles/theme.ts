@@ -6,6 +6,7 @@ const colors = {
   straw: '#CFB97F',
   pitchBlack: '#000000',
   white: 'rgba(255, 255, 255, 1)',
+  thunderbird: '#BA1C10',
 };
 
 const basic: DefaultTheme = {
@@ -21,6 +22,8 @@ const basic: DefaultTheme = {
 
     panelBorder: colors.straw,
     panelBackground: colors.shark,
+
+    errorBackground: colors.thunderbird,
   },
 };
 
