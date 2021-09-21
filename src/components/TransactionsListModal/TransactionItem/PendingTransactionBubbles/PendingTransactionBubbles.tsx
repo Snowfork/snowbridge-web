@@ -1,13 +1,17 @@
 import React from 'react';
+import styled from 'styled-components';
+
 import { BLOCK_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../../../config';
 import {
   Transaction,
   TransactionStatus,
 } from '../../../../redux/reducers/transactions';
-import * as S from './PendingTransactionBubbles.style';
 import Step, { StepStatus } from './Step/Step';
 
+import Line from '../../../Line/Line';
+
 type Props = {
+  className?: string;
   transaction: Transaction;
 };
 
@@ -66,26 +70,26 @@ function createSteps(transaction: Transaction) {
   }]
 }
 
-function PendingTransactionBubbles({ transaction }: Props): JSX.Element {
+function PendingTransactionBubbles({ className, transaction }: Props): JSX.Element {
   const steps = createSteps(transaction);
   return (
-    <div>
-      <S.Wrapper>
-        <S.Container>
-          {steps.map((step, index) => {
-            const line = index !== steps.length - 1 ? <S.StyledLine key={`l${index}`} /> : null;
-            return <><Step
-              key={index}
-              link={step.link}
-              toolTip={step.toolTip}
-              subtext={step.subtext}
-              status={step.status}
-            />{line}</>
-          })}
-        </S.Container>
-      </S.Wrapper>
+    <div className={className}>
+      {steps.map((step, index) => {
+        const line = index !== steps.length - 1 ? <Line key={`l${index}`} /> : null;
+        return <><Step
+          key={index}
+          link={step.link}
+          toolTip={step.toolTip}
+          subtext={step.subtext}
+          status={step.status}
+        />{line}</>
+      })}
     </div>
   );
 }
 
-export default PendingTransactionBubbles;
+export default styled(PendingTransactionBubbles)`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`

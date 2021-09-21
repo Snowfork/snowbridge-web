@@ -95,8 +95,6 @@ const SelectedFungibleToken = ({ className, setShowAssetSelector, setError }: Pr
           </ExpandButton>
         </div>
       </div>
-      {selectedAsset && <FungibleTokenBalance amount={tokenBalances.sourceNetwork}
-        decimals={decimalMap.from} />}
     </div>
   );
 };

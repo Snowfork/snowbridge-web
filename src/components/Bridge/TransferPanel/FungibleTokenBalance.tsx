@@ -29,10 +29,19 @@ export default styled(SelectedFungibleToken)`
   justify-content: space-between;
   gap: 10px;
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+
   width: 302px;
 
   font-family: SF UI Text;
   font-style: normal;
   font-size: 16px;
   line-height: 100%;
+
+  font-size: 13px;
+
+  .sft-balance-text {
+    color: ${props => props.theme.colors.main};
+  }
 `;

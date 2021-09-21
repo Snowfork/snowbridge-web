@@ -17,4 +17,5 @@ const ExpandButton = ({ className, onClick, children }: React.PropsWithChildren<
 };
 
 export default styled(ExpandButton)`
+  font-size: 15px;
 `;

@@ -36,7 +36,7 @@ export default styled(Select)`
   font-family: Menlo;
   font-style: normal;
   font-weight: normal;
-  font-size: 18px;
+  font-size: 15px;
   line-height: 100%;
   letter-spacing: -0.04em;
   color: ${props => props.theme.colors.secondary};

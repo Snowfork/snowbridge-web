@@ -1,12 +1,14 @@
 import React from 'react';
 import { utils } from 'ethers';
+import styled from 'styled-components';
 
 interface Props {
-    amount: string,
-    decimals: number
+  className?: string;
+  amount: string,
+  decimals: number
 }
 
-export default function FormatAmount({ amount = '0', decimals = 0 }: Props): React.ReactElement {
+function FormatAmount({ className, amount = '0', decimals = 0 }: Props): React.ReactElement {
   let formattedAmount = amount;
 
   try {
@@ -15,5 +17,9 @@ export default function FormatAmount({ amount = '0', decimals = 0 }: Props): Rea
     console.log('error formatting amount', amount, decimals);
   }
 
-  return <>{formattedAmount}</>;
+  return <span className={className}>{formattedAmount}</span>;
 }
+
+export default styled(FormatAmount)`
+  font-size: 11px;
+`;
