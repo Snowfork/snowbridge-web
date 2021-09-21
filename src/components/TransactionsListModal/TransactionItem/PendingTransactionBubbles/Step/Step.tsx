@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/ban-types */
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import LoadingSpinner from '../../../../LoadingSpinner';
+import ToolTip from '../../../../ToolTip/ToolTip';
 
-const CIRCLE_SIZE = 30;
+const CIRCLE_SIZE = 15;
 
 type StyledProps = {
   status: StepStatus;
@@ -18,11 +18,13 @@ export enum StepStatus {
 
 const Wrapper = styled.div<StyledProps>`
   border-radius: 50%;
-  border: 2px solid black;
+  border: 1px solid ${(props) => props.theme.colors.secondary};
   width: ${CIRCLE_SIZE}px;
   height: ${CIRCLE_SIZE}px;
   box-sizing: border-box;
-  background-color: ${(props) => (props.status === StepStatus.COMPLETE ? 'green' : 'white')};
+  background-color: ${(props) => (props.status === StepStatus.COMPLETE ?
+    props.theme.colors.stepComplete :
+    'transparent')};
 `;
 
 const Link = styled.a`
@@ -34,64 +36,61 @@ const Link = styled.a`
   height: 100%;
 `;
 
-const ToolTip = styled.div<{ show: boolean }>`
-  position: absolute;
-  background: white;
-  color: black;
-  border: 1px solid black;
-  width: fit-content;
-  opacity: ${({ show }) => (show ? 1 : 0)};
-  z-index: 999;
-`;
 
 type Props = {
-  status: StepStatus;
-  href?: string;
-  toolTip?: object | string | null;
   children?: object | string | null;
+  link?: string;
+  toolTip: string;
+  subtext?: string;
+  status: StepStatus;
+  className?: string;
 };
 
-function stepContent(status: StepStatus, children?: object | string | null)
-  : JSX.Element | undefined | string | object {
-  if (status === StepStatus.PENDING) {
-    return undefined;
-  }
-  if (status === StepStatus.LOADING && children) {
-    return children;
-  }
-  if (status === StepStatus.LOADING) {
-    return <LoadingSpinner />;
-  }
-  return undefined;
-}
-
 function Step({
-  status,
-  children,
-  href,
+  className,
+  link,
   toolTip,
+  subtext,
+  status
 }: Props): React.ReactElement<Props> {
-  const [showToolTip, setShowToolTip] = useState(false);
-
   return (
-    <Wrapper status={status}>
+    <Wrapper className={className} status={status}>
+      <ToolTip className='step-tooltip' text={toolTip} />
       <Link
-        href={href}
+        href={link}
         target="_blank"
-        onMouseOver={() => setShowToolTip(true)}
-        onMouseOut={() => setShowToolTip(false)}
       >
-        {stepContent(status, children)}
-        <ToolTip show={showToolTip}>{toolTip}</ToolTip>
+        {status === StepStatus.LOADING ? <LoadingSpinner spinnerWidth='5px' spinnerHeight='5px' micro={true} /> : undefined}
       </Link>
+      <div className='step-subtext-container'>
+        <div className='step-subtext'>{subtext}</div>
+      </div>
     </Wrapper>
   );
 }
 
-Step.defaultProps = {
-  href: '',
-  toolTip: '',
-  children: '',
-};
+export default styled(Step)`
+  position: relative;
 
-export default Step;
+  .step-tooltip {
+    position: absolute;
+    top: -17px;
+    right: -12px;
+  }
+
+  .step-subtext-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 5px;
+    position: relative;
+  }
+
+  .step-subtext {
+    font-size: 8px;
+    text-align: center;
+    top: 0px;
+    position: absolute;
+    width: 300px;
+  }
+`;
