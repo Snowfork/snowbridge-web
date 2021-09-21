@@ -21,7 +21,7 @@ export interface NetState {
   isNetworkConnected: boolean,
 }
 
-const initialState : NetState = {
+const initialState: NetState = {
   metamaskMissing: false,
   polkadotJSMissing: false,
   metamaskNetwork: '',
@@ -68,7 +68,7 @@ export const netSlice = createSlice({
     setErc721AppContract: (state, action: PayloadAction<Contract>) => {
       state.erc721AppContract = action.payload;
     },
-    setEthAddress: (state, action: PayloadAction<string>) => {
+    setEthAddress: (state, action: PayloadAction<string | undefined>) => {
       state.ethAddress = action.payload;
     },
     setPolkadotAddress: (state, action: PayloadAction<string>) => {

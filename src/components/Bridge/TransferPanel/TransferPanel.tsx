@@ -20,6 +20,7 @@ import { SelectedNFT } from './SelectedNFT';
 
 import Panel from '../../Panel/Panel';
 import ChainDisplay from './ChainDisplay';
+import AddressDisplay from './AddressDisplay/AddressDisplay';
 import DirectionBadge from './DirectionBadge';
 
 import DOSButton from '../../Button/DOSButton';
@@ -111,6 +112,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
         <div className='chain-direction-display'>
           <DirectionBadge direction="From" />
           <ChainDisplay chain={chains.from} />
+          <AddressDisplay className={'address-display'} chain={chains.from} />
         </div>
         {selectedAsset?.type === 0 &&
           <SelectedFungibleToken setShowAssetSelector={setShowAssetSelector} setError={setAssetError} />}
@@ -126,6 +128,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
         <div className='chain-direction-display'>
           <DirectionBadge direction="To" />
           <ChainDisplay chain={chains.to} />
+          <AddressDisplay className={'address-display'} chain={chains.to} />
         </div>
         {selectedAsset?.type === 0 &&
           <FungibleTokenBalance amount={tokenBalances.destinationNetwork}
@@ -161,5 +164,9 @@ export default styled(TransferPanel)`
     justify-content: left;
     align-items: center;
     gap: 5px;
+  }
+
+  .address-display {
+    margin-left: 5px;
   }
 `;
