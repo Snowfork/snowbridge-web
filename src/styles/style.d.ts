@@ -16,6 +16,8 @@ declare module 'styled-components' {
       panelBackground: string;
 
       errorBackground: string;
+
+      stepComplete: string;
     };
   }
 }

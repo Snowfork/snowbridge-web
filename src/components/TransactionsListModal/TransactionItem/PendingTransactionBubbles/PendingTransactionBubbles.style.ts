@@ -6,12 +6,11 @@ export const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background: white;
 `;
 
 export const StyledLine = styled.div`
-  height: 3px;
+  height: 2px;
   width: 40px;
-  background: black;
+  background: ${props => props.theme.colors.secondary};
   margin: 0 10px;
 `;

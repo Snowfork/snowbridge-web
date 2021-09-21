@@ -28,7 +28,7 @@ const TransactionListButton = ({ className }: React.PropsWithChildren<Props>) =>
   return (
     <div className={className}>
       <PillButton onClick={openTransactionsList}>
-        <span className='tl-button-number'>{buttonNumber}</span> {buttonText} Transaction{buttonNumber != 1 && 's'}&nbsp;
+        <span className='tl-button-number'>{buttonNumber}</span> {buttonText} Transaction{buttonNumber !== 1 && 's'}&nbsp;
         {
           transactionsInProgress.length > 0
           && <LoadingSpinner spinnerHeight="10px" spinnerWidth="10px" />
