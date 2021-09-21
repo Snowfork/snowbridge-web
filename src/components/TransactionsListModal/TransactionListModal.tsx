@@ -62,9 +62,10 @@ function TransactionListModal({
 }
 
 export default styled(TransactionListModal)`
-gap: 10px;
-display: flex;
-flex-direction: column;
-min-width: 480px;
-align-items: center;
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  min-width: 480px;
+  align-items: center;
+  width: 100%;
 `;

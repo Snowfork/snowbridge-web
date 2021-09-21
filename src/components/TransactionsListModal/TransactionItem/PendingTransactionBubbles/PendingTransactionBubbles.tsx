@@ -1,10 +1,10 @@
 import React from 'react';
-import { BLOCK_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../../config';
+import { BLOCK_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../../../config';
 import {
   Transaction,
   TransactionStatus,
-} from '../../../redux/reducers/transactions';
-import * as S from './PendingTransactionsUI.style';
+} from '../../../../redux/reducers/transactions';
+import * as S from './PendingTransactionBubbles.style';
 import Step, { StepStatus } from './Step/Step';
 
 type Props = {
@@ -37,7 +37,7 @@ function getEtherscanLink(transaction: Transaction) {
   return `${BLOCK_EXPLORER_URL}/tx/${transaction.hash}`;
 }
 
-function PendingTransactionsUI({ transaction }: Props): JSX.Element {
+function PendingTransactionBubbles({ transaction }: Props): JSX.Element {
   return (
     <div>
       <S.Wrapper>
@@ -70,4 +70,4 @@ function PendingTransactionsUI({ transaction }: Props): JSX.Element {
   );
 }
 
-export default PendingTransactionsUI;
+export default PendingTransactionBubbles;
