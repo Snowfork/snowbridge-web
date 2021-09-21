@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import LoadingSpinner from '../../../../LoadingSpinner';
 import ToolTip from '../../../../ToolTip/ToolTip';
 
-const CIRCLE_SIZE = 15;
+const CIRCLE_SIZE = 20;
 
 type StyledProps = {
   status: StepStatus;
@@ -60,7 +60,7 @@ function Step({
         href={link}
         target="_blank"
       >
-        {status === StepStatus.LOADING ? <LoadingSpinner spinnerWidth='5px' spinnerHeight='5px' micro={true} /> : undefined}
+        {status === StepStatus.LOADING ? <LoadingSpinner spinnerWidth='10px' spinnerHeight='10px' micro={true} /> : undefined}
       </Link>
       <div className='step-subtext-container'>
         <div className='step-subtext'>{subtext}</div>

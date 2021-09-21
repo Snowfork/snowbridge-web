@@ -4,7 +4,6 @@ import {
   Transaction,
   TransactionStatus,
 } from '../../../../redux/reducers/transactions';
-import { Chain } from '../../../../types/types';
 import * as S from './PendingTransactionBubbles.style';
 import Step, { StepStatus } from './Step/Step';
 
