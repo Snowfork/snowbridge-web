@@ -33,6 +33,7 @@ const AmountInput = ({ className, disabled, placeholder, value, onChange, type, 
 
 export default styled(AmountInput)`
   position: relative;
+  font-size: 15px;
 
   .amount-input-pill {
     position: absolute;

@@ -15,7 +15,7 @@ import {
 import { decimals } from '../../../types/Asset';
 import { useAppSelector } from '../../../utils/hooks';
 
-import SelectAssetButton from '../../Button/SelectAssetButton';
+import ExpandButton from '../../Button/ExpandButton';
 import AmountInput from '../../Input/AmountInput';
 import FungibleTokenBalance from './FungibleTokenBalance';
 
@@ -90,13 +90,11 @@ const SelectedFungibleToken = ({ className, setShowAssetSelector, setError }: Pr
             type="number"
             onPillClick={handleMaxClicked}
           />
-          <SelectAssetButton onClick={() => setShowAssetSelector(true)}>
+          <ExpandButton onClick={() => setShowAssetSelector(true)}>
             {selectedAsset?.symbol}
-          </SelectAssetButton>
+          </ExpandButton>
         </div>
       </div>
-      {selectedAsset && <FungibleTokenBalance amount={tokenBalances.sourceNetwork}
-        decimals={decimalMap.from} />}
     </div>
   );
 };

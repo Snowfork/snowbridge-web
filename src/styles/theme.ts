@@ -7,6 +7,7 @@ const colors = {
   pitchBlack: '#000000',
   white: 'rgba(255, 255, 255, 1)',
   green: 'green',
+  red: 'red',
   thunderbird: '#BA1C10',
 };
 
@@ -27,6 +28,9 @@ const basic: DefaultTheme = {
     errorBackground: colors.thunderbird,
 
     stepComplete: colors.green,
+
+    statusGood: colors.green,
+    statusBad: colors.red,
   },
 };
 

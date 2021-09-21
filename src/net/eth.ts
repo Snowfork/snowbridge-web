@@ -75,8 +75,8 @@ export default class Eth extends Api {
     dispatch(setBasicChannelContract(basicChannelContract));
 
     const appDotContract = new web3.eth.Contract(
-    DotApp.abi as any,
-    APP_DOT_CONTRACT_ADDRESS,
+      DotApp.abi as any,
+      APP_DOT_CONTRACT_ADDRESS,
     );
     dispatch(setAppDotContract(appDotContract));
 
@@ -110,7 +110,7 @@ export default class Eth extends Api {
     };
 
     const provider = await detectEthereumProvider() as any;
-
+    console.log({ provider });
     if (provider) {
       await connectionComplete(provider);
 
@@ -118,10 +118,20 @@ export default class Eth extends Api {
         if (accounts[0]) {
           await dispatch(setEthAddress(accounts[0]));
           dispatch(updateBalances());
+        } else {
+          setEthAddress();
         }
       });
 
+      provider.on('disconnect', async () => {
+        setEthAddress();
+      });
+
       provider.on('chainChanged', () => {
+        window.location.reload();
+      });
+
+      provider.on('disconnect', () => {
         window.location.reload();
       });
     } else {
@@ -235,7 +245,7 @@ export default class Eth extends Api {
       // call ether contract for ether
       if (isEther(asset)) {
         return ethContract.methods
-        // TODO: SET incentivized channel ID
+          // TODO: SET incentivized channel ID
           .lock(polkadotRecipientBytes, BASIC_CHANNEL_ID)
           .send({
             from: sender,

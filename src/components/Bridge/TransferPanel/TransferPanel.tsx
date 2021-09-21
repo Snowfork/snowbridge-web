@@ -20,6 +20,7 @@ import { SelectedNFT } from './SelectedNFT';
 
 import Panel from '../../Panel/Panel';
 import ChainDisplay from './ChainDisplay';
+import AddressDisplay from './AddressDisplay/AddressDisplay';
 import DirectionBadge from './DirectionBadge';
 
 import DOSButton from '../../Button/DOSButton';
@@ -27,6 +28,8 @@ import TransactionListButton from '../../Button/TransactionListButton';
 
 import SwitchButton from '../../Button/SwitchButton';
 import FungibleTokenBalance from './FungibleTokenBalance';
+
+import Line from '../../Line/Line';
 
 const INSUFFICIENT_GAS_ERROR = 'Insufficient gas';
 
@@ -107,25 +110,31 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
 
   return (
     <Panel className={className}>
-      <Panel>
-        <div className='chain-direction-display'>
-          <DirectionBadge direction="From" />
-          <ChainDisplay chain={chains.from} />
-        </div>
+      <div className='selected-asset-section'>
         {selectedAsset?.type === 0 &&
           <SelectedFungibleToken setShowAssetSelector={setShowAssetSelector} setError={setAssetError} />}
         {selectedAsset?.type === 1 &&
           <SelectedNFT setShowAssetSelector={setShowAssetSelector} />}
+      </div>
+      <Panel className='chain-direction-display-panel'>
+        <div className='chain-direction-display'>
+          <DirectionBadge direction="From" />
+          <ChainDisplay chain={chains.from} />
+          <AddressDisplay className={'address-display'} chain={chains.from} />
+        </div>
+        {selectedAsset?.type === 0 && <FungibleTokenBalance amount={tokenBalances.sourceNetwork}
+          decimals={decimalMap.from} />}
       </Panel>
 
       <div>
         <SwitchButton onClick={changeTransactionDirection} />
       </div>
 
-      <Panel>
+      <Panel className='chain-direction-display-panel'>
         <div className='chain-direction-display'>
           <DirectionBadge direction="To" />
           <ChainDisplay chain={chains.to} />
+          <AddressDisplay className={'address-display'} chain={chains.to} />
         </div>
         {selectedAsset?.type === 0 &&
           <FungibleTokenBalance amount={tokenBalances.destinationNetwork}
@@ -155,11 +164,24 @@ export default styled(TransferPanel)`
   border: 1px solid ${props => props.theme.colors.transferPanelBorder};
   background: ${props => props.theme.colors.transferPanelBackground};
 
+  .selected-asset-section {
+    margin-bottom: 10px;
+  }
+  .chain-direction-display-panel {
+    width: auto;
+    min-width: 370px;
+  }
+
   .chain-direction-display {
     display: flex;
     flex-direction: row;
     justify-content: left;
     align-items: center;
     gap: 5px;
+    width: auto;
+  }
+
+  .address-display {
+    margin-left: 5px;
   }
 `;
