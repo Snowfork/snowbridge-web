@@ -44,7 +44,7 @@ export const bridgeSlice = createSlice({
     _setTokenList:
       (state, action: PayloadAction<Asset[]>) => { state.assets = action.payload; },
     _setSelectedAsset:
-      (state, action: PayloadAction<Asset>) => { state.selectedAsset = action.payload; },
+      (state, action: PayloadAction<Asset | undefined>) => { state.selectedAsset = action.payload; },
     setDepositAmount:
       (state, action: PayloadAction<string>) => { state.depositAmount = action.payload; },
     setSwapDirection:

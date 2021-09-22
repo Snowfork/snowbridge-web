@@ -18,6 +18,7 @@ import {
   symbols,
 } from '../../types/Asset';
 import { Chain, SwapDirection } from '../../types/types';
+import { AssetType } from '../../types/Asset';
 import { RootState } from '../store';
 import {
   MessageDispatchedEvent,
@@ -29,6 +30,7 @@ import { doEthTransfer } from './EthTransactions';
 import { doPolkadotTransfer } from './PolkadotTransactions';
 import { notify } from './notifications';
 import { setShowConfirmTransactionModal, setShowTransactionListModal } from './bridge';
+import { updateSelectedAsset } from '../../redux/actions/bridge';
 
 export const {
   addTransaction,
@@ -238,6 +240,10 @@ export function handleEthereumTransactionEvents(
       console.log('Transaction hash received', hash);
       dispatch(setShowConfirmTransactionModal(false));
       dispatch(setShowTransactionListModal(true));
+
+      if (pendingTransaction.asset.type === AssetType.ERC721) {
+        dispatch(updateSelectedAsset(undefined));
+      }
 
       transactionHash = hash;
 
