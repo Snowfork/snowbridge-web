@@ -16,7 +16,7 @@ const SelectedFungibleToken = ({ className, amount, decimals }: Props) => {
         Balance
       </span >
       <span>
-        <FormatAmount
+        <FormatAmount className="ftb-format-amount"
           amount={amount}
           decimals={decimals}
         />
@@ -43,5 +43,9 @@ export default styled(SelectedFungibleToken)`
 
   .sft-balance-text {
     color: ${props => props.theme.colors.main};
+  }
+
+  .ftb-format-amount {
+    font-size: 11px;
   }
 `;

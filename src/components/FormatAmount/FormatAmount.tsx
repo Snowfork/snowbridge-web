@@ -21,5 +21,4 @@ function FormatAmount({ className, amount = '0', decimals = 0 }: Props): React.R
 }
 
 export default styled(FormatAmount)`
-  font-size: 11px;
 `;
