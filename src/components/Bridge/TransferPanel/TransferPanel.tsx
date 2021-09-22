@@ -29,8 +29,6 @@ import TransactionListButton from '../../Button/TransactionListButton';
 import SwitchButton from '../../Button/SwitchButton';
 import FungibleTokenBalance from './FungibleTokenBalance';
 
-import Line from '../../Line/Line';
-
 const INSUFFICIENT_GAS_ERROR = 'Insufficient gas';
 
 type Props = {
