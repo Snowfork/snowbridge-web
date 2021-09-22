@@ -57,7 +57,6 @@ const SelectedFungibleToken = ({ className, setShowAssetSelector, setError }: Pr
         new BigNumber(tokenBalances.sourceNetwork),
       );
       const amountTooLow = amountParsed && amountParsed.isEqualTo(0);
-      console.log(amountParsed)
       if (amountTooHigh) {
         setError(INSUFFICIENT_BALANCE_ERROR);
       } else if (amountTooLow) {
