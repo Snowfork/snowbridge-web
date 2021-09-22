@@ -9,8 +9,8 @@ type Props = {
 
 const Select = ({ className, children, value, onChange }: React.PropsWithChildren<Props>) => {
   return (
-    <div className={className} onChange={onChange}>
-      <select value={value} id="standard-select">
+    <div className={className}>
+      <select value={value} onChange={onChange} id="standard-select">
         {children}
       </select>
       <img alt='expand' className='select-expand-button' src='/images/icons/expand.svg' />
