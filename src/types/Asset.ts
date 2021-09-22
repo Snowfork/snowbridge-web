@@ -49,7 +49,8 @@ export interface Asset {
 }
 
 export function isErc20(asset: Asset): boolean {
-  return asset.address.length === 42
+  return asset.type === AssetType.ERC20
+    && asset.address.length === 42
     && asset.chain === Chain.ETHEREUM;
 }
 
@@ -61,7 +62,7 @@ export function isEther(asset: Asset): boolean {
 
 export function isDot(asset: Asset): boolean {
   return asset.chain === Chain.POLKADOT
-    && !isErc20(asset)
+    && asset.type !== AssetType.ERC20
     && !isEther(asset);
 }
 
@@ -163,8 +164,8 @@ export function createFungibleAsset(
   return {
     name: token.name,
     symbol: token.symbol,
-    wrappedSymbol: `snow${token.symbol}`,
-    wrappedName: `snow${token.name}`,
+    wrappedSymbol: `${token.symbol}`,
+    wrappedName: `${token.name}`,
     contract,
     address: token.address,
     chain,
@@ -210,8 +211,8 @@ export async function createNonFungibleAsset(
   return {
     name,
     symbol,
-    wrappedSymbol: `snow${symbol}`,
-    wrappedName: `snow${name}`,
+    wrappedSymbol: `${symbol}`,
+    wrappedName: `${name}`,
     contract,
     address: contract.options.address,
     chain,

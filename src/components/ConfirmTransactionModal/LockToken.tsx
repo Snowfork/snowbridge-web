@@ -7,15 +7,15 @@ import { useDispatch } from 'react-redux';
 import { utils } from 'ethers';
 import { BigNumber } from 'bignumber.js';
 import { approveERC20, fetchERC20Allowance } from '../../redux/actions/ERC20Transactions';
-import { APP_ERC721_CONTRACT_ADDRESS, REFRESH_INTERVAL_MILLISECONDS } from '../../config';
+import { approveERC721, fetchERC721Approved } from '../../redux/actions/ERC721Transactions';
+
+import { REFRESH_INTERVAL_MILLISECONDS } from '../../config';
 import {
-  decimals, isErc20, isNonFungible, NonFungibleToken,
+  decimals, isErc20, isNonFungible,
 } from '../../types/Asset';
 import { doTransfer } from '../../redux/actions/transactions';
 import { SwapDirection } from '../../types/types';
 import { useAppSelector } from '../../utils/hooks';
-import { approveERC721 } from '../../redux/actions/ERC721Transacitons';
-import * as ERC721Api from '../../net/ERC721';
 
 import DOSButton from '../Button/DOSButton';
 
@@ -28,33 +28,31 @@ type Props = {
 }
 function LockToken({ onTokenLocked, transactionPending }: Props): React.ReactElement {
   const { allowance } = useAppSelector((state) => state.ERC20Transactions);
+  const { approved } = useAppSelector((state) => state.ERC721Transactions);
   const { selectedAsset, depositAmount, swapDirection } = useAppSelector(
     (state) => state.bridge,
   );
 
-  const [isApproved, setIsApproved] = useState(false);
   const [isApprovalPending, setIsApprovalPending] = useState(false);
 
   const dispatch = useDispatch();
-  const currentTokenAllowance = allowance;
+  const currentERC20TokenAllowance = allowance;
 
   // update allowances to prevent failed transactions
   // e.g the user might spend entire allowance on 1st transaction
   // so we need to update the allowance before sending the 2nd transaction
   useEffect(() => {
     function fungiblePoll() {
+      dispatch(fetchERC20Allowance());
       return setInterval(() => {
         dispatch(fetchERC20Allowance());
       }, REFRESH_INTERVAL_MILLISECONDS);
     }
 
     function nonFungiblePoll() {
+      dispatch(fetchERC721Approved());
       return setInterval(async () => {
-        const res = await ERC721Api.getApproved(
-          selectedAsset!.contract!,
-          (selectedAsset?.token as NonFungibleToken).ethId,
-        );
-        setIsApproved(res === APP_ERC721_CONTRACT_ADDRESS);
+        dispatch(fetchERC721Approved());
       }, REFRESH_INTERVAL_MILLISECONDS);
     }
 
@@ -97,7 +95,7 @@ function LockToken({ onTokenLocked, transactionPending }: Props): React.ReactEle
     }
   };
 
-  const currentAllowanceFormatted = new BigNumber(currentTokenAllowance.toString());
+  const currentERC20AllowanceFormatted = new BigNumber(currentERC20TokenAllowance.toString());
   const transferAmountFormatted = new BigNumber(selectedAsset
     ? utils.parseUnits(
       depositAmount.toString(),
@@ -111,8 +109,8 @@ function LockToken({ onTokenLocked, transactionPending }: Props): React.ReactEle
     && selectedAsset
     && (isErc20(selectedAsset) || isNonFungible(selectedAsset))
     && (
-      (isErc20(selectedAsset) && transferAmountFormatted.isGreaterThan(currentAllowanceFormatted))
-      || (isNonFungible(selectedAsset) && !isApproved)
+      (isErc20(selectedAsset) && transferAmountFormatted.isGreaterThan(currentERC20AllowanceFormatted))
+      || (isNonFungible(selectedAsset) && !approved)
     );
 
   const TransferButton = () => {

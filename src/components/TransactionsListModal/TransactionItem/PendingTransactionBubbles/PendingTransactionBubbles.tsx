@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { BLOCK_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../../../config';
+import { BLOCK_EXPLORER_URL, SNOWBRIDGE_EXPLORER_URL, REQUIRED_ETH_CONFIRMATIONS } from '../../../../config';
 import {
   Transaction,
   TransactionStatus,
@@ -9,6 +9,9 @@ import {
 import Step, { StepStatus } from './Step/Step';
 
 import Line from '../../../Line/Line';
+
+import { Chain } from '../../../../types/types';
+import { getChainsFromDirection } from '../../../../utils/common';
 
 type Props = {
   className?: string;
@@ -29,8 +32,32 @@ function getStepStatus(
   return StepStatus.PENDING;
 }
 
-function getEtherscanLink(transaction: Transaction) {
-  return `${BLOCK_EXPLORER_URL}/tx/${transaction.hash}`;
+function getTransactionLink(chain: Chain, transaction: Transaction) {
+
+  switch (chain) {
+    case Chain.ETHEREUM:
+      return `${BLOCK_EXPLORER_URL}/tx/${transaction.hash}`;
+    case Chain.POLKADOT:
+      return `${SNOWBRIDGE_EXPLORER_URL}`;
+  }
+}
+
+function getSourceTransactionTooltip(chain: Chain) {
+  switch (chain) {
+    case Chain.ETHEREUM:
+      return `The transaction is finalizing with ${REQUIRED_ETH_CONFIRMATIONS} confirmations required.`;
+    case Chain.POLKADOT:
+      return `The transaction is finalizing on Polkadot.`;
+  }
+}
+
+function getSourceTransactionSubtext(chain: Chain, transaction: Transaction) {
+  switch (chain) {
+    case Chain.ETHEREUM:
+      return `${calculateNumberOfConfirmations(transaction)}/${REQUIRED_ETH_CONFIRMATIONS}`;
+    case Chain.POLKADOT:
+      return undefined;
+  }
 }
 
 type Step = {
@@ -51,10 +78,12 @@ const calculateNumberOfConfirmations = (transaction: Transaction) => {
 };
 
 function createSteps(transaction: Transaction) {
+  const chains = getChainsFromDirection(transaction.direction);
+  const chain = chains.from;
   return [{
-    link: getEtherscanLink(transaction),
-    toolTip: `The transaction is finalizing with ${REQUIRED_ETH_CONFIRMATIONS} confirmations required.`,
-    subtext: `${calculateNumberOfConfirmations(transaction)}/${REQUIRED_ETH_CONFIRMATIONS}`,
+    link: getTransactionLink(chain, transaction),
+    toolTip: getSourceTransactionTooltip(chain),
+    subtext: getSourceTransactionSubtext(chain, transaction),
     status: transaction.status > TransactionStatus.CONFIRMING
       ? StepStatus.COMPLETE
       : StepStatus.LOADING,
