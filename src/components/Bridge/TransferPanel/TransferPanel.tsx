@@ -141,15 +141,11 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
             decimals={decimalMap.to} />}
       </Panel>
 
-      <div color="error">
-        {errorText}
-      </div>
-
       <DOSButton
         onClick={handleTransferClicked}
         disabled={isDepositDisabled}
       >
-        Transfer Asset(s)
+        {errorText ? errorText : 'Transfer Asset(s)'}
       </DOSButton>
       <TransactionListButton />
     </Panel>

@@ -17,9 +17,9 @@ import { useAppSelector } from '../../../utils/hooks';
 
 import ExpandButton from '../../Button/ExpandButton';
 import AmountInput from '../../Input/AmountInput';
-import FungibleTokenBalance from './FungibleTokenBalance';
 
 const INSUFFICIENT_BALANCE_ERROR = 'Insufficient funds';
+const AMOUNT_NOT_SET_ERROR = 'Set transfer amount';
 
 type Props = {
   className?: string;
@@ -45,20 +45,25 @@ const SelectedFungibleToken = ({ className, setShowAssetSelector, setError }: Pr
 
   useEffect(() => {
     const checkDepositAmount = (amount: string) => {
-      if (amount
+      const amountParsed = amount
         && decimalMap.from
         && new BigNumber(
           // make sure we are comparing the same units
           utils.parseUnits(
             amount || '0', decimalMap.from,
           ).toString(),
-        )
-          .isGreaterThan(
-            new BigNumber(tokenBalances.sourceNetwork),
-          )
-      ) {
+        );
+      const amountTooHigh = amountParsed && amountParsed.isGreaterThan(
+        new BigNumber(tokenBalances.sourceNetwork),
+      );
+      const amountTooLow = amountParsed && amountParsed.isEqualTo(0);
+      console.log(amountParsed)
+      if (amountTooHigh) {
         setError(INSUFFICIENT_BALANCE_ERROR);
-      } else {
+      } else if (amountTooLow) {
+        setError(AMOUNT_NOT_SET_ERROR);
+      }
+      else {
         setError('');
       }
     }
