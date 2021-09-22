@@ -23,7 +23,11 @@ const customStyles = {
     transform: 'translate(-50%, -50%)',
     overflow: 'hidden',
     padding: '0',
+    border: 'none',
   },
+  overlay: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)'
+  }
 };
 
 function Modal({

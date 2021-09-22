@@ -6,6 +6,7 @@ import {
   setShowConfirmTransactionModal, setSwapDirection,
 } from '../../../redux/actions/bridge';
 import { SwapDirection, Chain } from '../../../types/types';
+import { updateSelectedAsset } from '../../../redux/actions/bridge';
 
 import {
   dotSelector,
@@ -20,6 +21,7 @@ import { SelectedNFT } from './SelectedNFT';
 
 import Panel from '../../Panel/Panel';
 import ChainDisplay from './ChainDisplay';
+import AddressDisplay from './AddressDisplay/AddressDisplay';
 import DirectionBadge from './DirectionBadge';
 
 import DOSButton from '../../Button/DOSButton';
@@ -53,6 +55,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
     selectedAsset,
     depositAmount,
     swapDirection,
+    assets
   } = useAppSelector((state) => state.bridge);
 
   const dispatch = useDispatch();
@@ -60,6 +63,11 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
 
   // check the user has enough gas for the transaction
   useEffect(() => {
+
+    if (!selectedAsset) {
+      dispatch(updateSelectedAsset(assets[0]));
+    }
+
     let hasEnoughGas;
 
     // check eth balance for eth -> polkadot transactions
@@ -107,40 +115,42 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
 
   return (
     <Panel className={className}>
-      <Panel>
-        <div className='chain-direction-display'>
-          <DirectionBadge direction="From" />
-          <ChainDisplay chain={chains.from} />
-        </div>
+      <div className='selected-asset-section'>
         {selectedAsset?.type === 0 &&
           <SelectedFungibleToken setShowAssetSelector={setShowAssetSelector} setError={setAssetError} />}
         {selectedAsset?.type === 1 &&
           <SelectedNFT setShowAssetSelector={setShowAssetSelector} />}
+      </div>
+      <Panel className='chain-direction-display-panel'>
+        <div className='chain-direction-display'>
+          <DirectionBadge direction="From" />
+          <ChainDisplay chain={chains.from} />
+          <AddressDisplay className={'address-display'} chain={chains.from} />
+        </div>
+        {selectedAsset?.type === 0 && <FungibleTokenBalance amount={tokenBalances.sourceNetwork}
+          decimals={decimalMap.from} />}
       </Panel>
 
       <div>
         <SwitchButton onClick={changeTransactionDirection} />
       </div>
 
-      <Panel>
+      <Panel className='chain-direction-display-panel'>
         <div className='chain-direction-display'>
           <DirectionBadge direction="To" />
           <ChainDisplay chain={chains.to} />
+          <AddressDisplay className={'address-display'} chain={chains.to} />
         </div>
         {selectedAsset?.type === 0 &&
           <FungibleTokenBalance amount={tokenBalances.destinationNetwork}
             decimals={decimalMap.to} />}
       </Panel>
 
-      <div color="error">
-        {errorText}
-      </div>
-
       <DOSButton
         onClick={handleTransferClicked}
         disabled={isDepositDisabled}
       >
-        Transfer Asset(s)
+        {errorText ? errorText : 'Transfer Asset(s)'}
       </DOSButton>
       <TransactionListButton />
     </Panel>
@@ -155,11 +165,24 @@ export default styled(TransferPanel)`
   border: 1px solid ${props => props.theme.colors.transferPanelBorder};
   background: ${props => props.theme.colors.transferPanelBackground};
 
+  .selected-asset-section {
+    margin-bottom: 10px;
+  }
+  .chain-direction-display-panel {
+    width: auto;
+    min-width: 370px;
+  }
+
   .chain-direction-display {
     display: flex;
     flex-direction: row;
     justify-content: left;
     align-items: center;
     gap: 5px;
+    width: auto;
+  }
+
+  .address-display {
+    margin-left: 5px;
   }
 `;

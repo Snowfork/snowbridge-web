@@ -2,6 +2,7 @@ import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
 export interface ISpinnerProps {
+  micro?: boolean;
   spinnerHeight?: string;
   spinnerWidth?: string;
   inverted?: boolean;
@@ -9,6 +10,7 @@ export interface ISpinnerProps {
 
 interface StyledProps {
   borderSize: string;
+  micro?: boolean;
   spinnerWidth: string;
   spinnerHeight: string;
   inverted?: boolean;
@@ -24,9 +26,9 @@ const spinnerRotate = keyframes`
 `;
 
 const Wrapper = styled.div<StyledProps>`
-  border: ${(props) => props.borderSize} solid ${(props) => props.inverted ?
+  border: ${(props) => props.micro ? '1px' : props.borderSize} solid ${(props) => props.inverted ?
     props.theme.colors.panelBackground : props.theme.colors.main};
-  border-top: ${(props) => props.borderSize} solid
+  border-top: ${(props) => props.micro ? '1px' : props.borderSize} solid
     ${(props) => props.inverted ? props.theme.colors.main : props.theme.colors.panelBackground};
   border-radius: 50%;
   width: ${(props) => props.spinnerWidth};
@@ -38,8 +40,10 @@ const LoadingSpinner: React.FC<ISpinnerProps> = ({
   spinnerHeight = '40%',
   spinnerWidth = '40%',
   inverted,
+  micro,
 }: ISpinnerProps) => (
   <Wrapper
+    micro={micro}
     borderSize="3px"
     spinnerWidth={spinnerWidth}
     spinnerHeight={spinnerHeight}

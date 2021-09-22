@@ -13,6 +13,9 @@ import { SwapDirection } from '../../../types/types';
 import * as S from '../SelectAssetModal.style';
 import ExternalLink from '../../Link/ExternalLink';
 
+import { getChainsFromDirection } from '../../../utils/common';
+import { Chain } from '../../../types/types';
+
 const TokensForContract = (
   {
     contract,
@@ -66,13 +69,13 @@ const TokensForContract = (
 };
 
 interface Props {
-  sourceChain: SwapDirection,
+  swapDirection: SwapDirection,
   onNFTSelected: (contract: string, ethId: string, polkadotId: string | undefined) => void;
   ownedNfts: { [address: string]: OwnedNft[] };
 }
 
 const NftSelector = ({
-  sourceChain,
+  swapDirection,
   onNFTSelected,
   ownedNfts,
 }: Props) => {
@@ -81,18 +84,23 @@ const NftSelector = ({
     onNFTSelected(token.address, token.ethId!, token.polkadotId);
   };
 
+  const sourceChain = getChainsFromDirection(swapDirection).from;
+
   return (
     <div>
       <S.TokenList>
         {
           Object.keys(ownedNfts).map((contract) => <TokensForContract contract={contract} tokens={ownedNfts[contract]} key={contract} onSelected={handleTokenSelected} />)
         }
-        {Object.keys(ownedNfts).length === 0 && <div style={{ fontSize: '12px', maxWidth: '300px' }}>
+        {Object.keys(ownedNfts).length === 0 && sourceChain === Chain.ETHEREUM && <div style={{ fontSize: '12px', maxWidth: '300px' }}>
           Looks like you don't have any enumerable ERC721 NFTs :(
           You can mint some test ones using this demo app: <ExternalLink href="https://nft-mint-demo.netlify.app/">NFT Minter</ExternalLink>
           , or enter a custom ERC721 address and ID for non-enumerable tokens.
         </div>}
-        {sourceChain === SwapDirection.EthereumToPolkadot && <ManualInput onNFTSelected={onNFTSelected} />}
+        {Object.keys(ownedNfts).length === 0 && sourceChain === Chain.POLKADOT && <div style={{ fontSize: '12px', maxWidth: '300px' }}>
+          Looks like you don't have any NFTs on Polkadot. Try bridge some over!
+        </div>}
+        {sourceChain === Chain.ETHEREUM && <ManualInput onNFTSelected={onNFTSelected} />}
       </S.TokenList >
     </div >
   );

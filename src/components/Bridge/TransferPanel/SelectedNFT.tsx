@@ -1,6 +1,6 @@
 import React from 'react';
 
-import SelectAssetButton from '../../Button/SelectAssetButton';
+import ExpandButton from '../../Button/ExpandButton';
 
 import { useAppSelector } from '../../../utils/hooks';
 import { NonFungibleToken } from '../../../types/Asset';
@@ -25,7 +25,7 @@ export const SelectedNFT = ({ setShowAssetSelector }: Props) => {
     ? `${selectedAsset?.name}:${token.subId || token?.ethId}`
     : 'Select an asset';
 
-  return <SelectAssetButton onClick={() => setShowAssetSelector(true)}>
+  return <ExpandButton onClick={() => setShowAssetSelector(true)}>
     {selectedAssetText}
-  </SelectAssetButton>;
+  </ExpandButton>;
 };

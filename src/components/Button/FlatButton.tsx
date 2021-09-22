@@ -7,16 +7,15 @@ type Props = {
   onClick?: any;
 }
 
-const SelectAssetButton = ({ className, onClick, children }: React.PropsWithChildren<Props>) => {
+const FlatButton = ({ className, onClick, children }: React.PropsWithChildren<Props>) => {
   return (
     <Button onClick={onClick} className={className}>
       {children}
-      <img alt='expand' style={{ width: 24, height: 24 }} src='/images/icons/expand.svg' />
     </Button>
   );
 };
 
-export default styled(SelectAssetButton)`
+export default styled(FlatButton)`
   display: flex;
   flex-direction: row;
   justify-content: space-between;

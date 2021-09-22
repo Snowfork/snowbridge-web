@@ -32,24 +32,24 @@ export const {
 // Subscribe to Parachain events
 export const subscribeEvents = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
-  dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
-): Promise<void> => {
-  const state = getState() as RootState;
-  const { polkadotApi } = state.net;
-  if (polkadotApi) {
-    polkadotApi.query.system.events((eventRecords) => {
-      const dispatchEvents = _.filter(eventRecords, (eR) => eR.event.section === 'dispatch');
-      dispatchEvents.forEach(({ event }) => {
-        const nonce = (event.data as any)[0].nonce.toString();
-        // TODO:
-        // const dispatchSuccessNotification = (text: string) => this.dispatch(
-        // notify({ text, color: "success" })
-        // );
-        console.log('parachain message dispatched', nonce);
-        dispatch(parachainMessageDispatched({ nonce }));
+    dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
+  ): Promise<void> => {
+    const state = getState() as RootState;
+    const { polkadotApi } = state.net;
+    if (polkadotApi) {
+      polkadotApi.query.system.events((eventRecords) => {
+        const dispatchEvents = _.filter(eventRecords, (eR) => eR.event.section === 'dispatch');
+        dispatchEvents.forEach(({ event }) => {
+          const nonce = (event.data as any)[0].nonce.toString();
+          // TODO:
+          // const dispatchSuccessNotification = (text: string) => this.dispatch(
+          // notify({ text, color: "success" })
+          // );
+          console.log('parachain message dispatched', nonce);
+          dispatch(parachainMessageDispatched({ nonce }));
+        });
       });
-    });
-  } else {
-    throw new Error('Polkadot API not connected');
-  }
-};
+    } else {
+      throw new Error('Polkadot API not connected');
+    }
+  };

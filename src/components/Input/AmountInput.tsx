@@ -22,6 +22,7 @@ const AmountInput = ({ className, disabled, placeholder, value, onChange, type, 
         onChange={onChange}
         type={type}
         step="0.1"
+        min="0"
         disabled={disabled}
         className={className}>
       </Input>
@@ -32,6 +33,7 @@ const AmountInput = ({ className, disabled, placeholder, value, onChange, type, 
 
 export default styled(AmountInput)`
   position: relative;
+  font-size: 15px;
 
   .amount-input-pill {
     position: absolute;

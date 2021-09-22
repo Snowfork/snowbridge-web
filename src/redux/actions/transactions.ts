@@ -7,17 +7,16 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
-import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
+import { REQUIRED_ETH_CONFIRMATIONS, BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS } from '../../config';
 import {
   Asset,
   decimals,
   isDot,
-  isErc20,
-  isEther,
   isNonFungible,
   symbols,
 } from '../../types/Asset';
 import { Chain, SwapDirection } from '../../types/types';
+import { AssetType } from '../../types/Asset';
 import { RootState } from '../store';
 import {
   MessageDispatchedEvent,
@@ -29,6 +28,7 @@ import { doEthTransfer } from './EthTransactions';
 import { doPolkadotTransfer } from './PolkadotTransactions';
 import { notify } from './notifications';
 import { setShowConfirmTransactionModal, setShowTransactionListModal } from './bridge';
+import { updateSelectedAsset } from '../../redux/actions/bridge';
 
 export const {
   addTransaction,
@@ -239,6 +239,10 @@ export function handleEthereumTransactionEvents(
       dispatch(setShowConfirmTransactionModal(false));
       dispatch(setShowTransactionListModal(true));
 
+      if (pendingTransaction.asset.type === AssetType.ERC721) {
+        dispatch(updateSelectedAsset(undefined));
+      }
+
       transactionHash = hash;
 
       dispatch(
@@ -276,8 +280,13 @@ export function handleEthereumTransactionEvents(
           name: 'payload',
         },
       ];
-      const logIndex = isEther(pendingTransaction.asset) || isErc20(pendingTransaction.asset)
-        ? 0 : 2;
+      const logIndex = Object.keys(receipt.events).find(index => {
+        return receipt.events[index].address === BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS;
+      })
+
+      if (!logIndex) {
+        return
+      }
 
       const channelEvent = receipt.events[logIndex];
       const decodedEvent = web3.eth.abi.decodeLog(

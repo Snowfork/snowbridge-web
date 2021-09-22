@@ -22,10 +22,11 @@ export default {
 
   // Minimum Number of confirmations required for an ETH transaction
   // to be regarded as a success
-  REQUIRED_ETH_CONFIRMATIONS: 3,
+  REQUIRED_ETH_CONFIRMATIONS: 8,
 
   // URL to the block explorer the UI will redirect to
   BLOCK_EXPLORER_URL: 'https://ropsten.etherscan.io',
+  SNOWBRIDGE_EXPLORER_URL: 'https://polkadot.js.org/apps/?rpc=wss://parachain-rpc.snowbridge.network#/explorer',
 
   PERMITTED_METAMASK_NETWORK: 'ropsten',
 
