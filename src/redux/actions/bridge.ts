@@ -33,7 +33,7 @@ export const {
 
 // async middleware actions
 // sets selected asset and updates ERC20 spend allowance
-export const updateSelectedAsset = (asset: Asset):
+export const updateSelectedAsset = (asset: Asset | undefined):
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
     dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
   ): Promise<void> => {

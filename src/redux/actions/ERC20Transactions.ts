@@ -20,7 +20,7 @@ export const fetchERC20Allowance = ():
     const erc20BridgeContractAddress = state.net.erc20Contract?.options.address;
     const contractInstance = state.bridge.selectedAsset?.contract;
 
-    if (state.bridge.selectedAsset!.type !== AssetType.ERC20) {
+    if (state.bridge.selectedAsset?.type !== AssetType.ERC20) {
       return;
     }
 

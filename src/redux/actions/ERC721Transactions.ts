@@ -39,7 +39,7 @@ export const fetchERC721Approved = ():
     const erc721BridgeContractAddress = state.net.erc721AppContract?.options.address;
     const contractInstance = state.bridge.selectedAsset?.contract;
 
-    if (state.bridge.selectedAsset!.type !== AssetType.ERC721) {
+    if (state.bridge.selectedAsset?.type !== AssetType.ERC721) {
       return;
     }
 

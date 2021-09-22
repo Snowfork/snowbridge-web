@@ -6,6 +6,7 @@ import {
   setShowConfirmTransactionModal, setSwapDirection,
 } from '../../../redux/actions/bridge';
 import { SwapDirection, Chain } from '../../../types/types';
+import { updateSelectedAsset } from '../../../redux/actions/bridge';
 
 import {
   dotSelector,
@@ -54,6 +55,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
     selectedAsset,
     depositAmount,
     swapDirection,
+    assets
   } = useAppSelector((state) => state.bridge);
 
   const dispatch = useDispatch();
@@ -61,6 +63,11 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
 
   // check the user has enough gas for the transaction
   useEffect(() => {
+
+    if (!selectedAsset) {
+      dispatch(updateSelectedAsset(assets[0]));
+    }
+
     let hasEnoughGas;
 
     // check eth balance for eth -> polkadot transactions
