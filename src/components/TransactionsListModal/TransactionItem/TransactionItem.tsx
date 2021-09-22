@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Transaction } from '../../../redux/reducers/transactions';
 import PendingTransactionsUI from './PendingTransactionBubbles/PendingTransactionBubbles';
 import FormatAmount from '../../FormatAmount';
-import { decimals, symbols } from '../../../types/Asset';
+import { AssetType, decimals, symbols, NonFungibleToken } from '../../../types/Asset';
 
 import { getChainsFromDirection } from '../../../utils/common';
 
@@ -19,15 +19,24 @@ function TransactionItem({
 }: Props): React.ReactElement<Props> {
   const chains = getChainsFromDirection(transaction.direction);
   const { from } = decimals(transaction.asset, transaction.direction);
+
+  const asset = transaction.asset;
+  const nft = (asset?.token as NonFungibleToken);
+
+  const assetDisplay = asset.type === AssetType.ERC721 ?
+    `${asset.name}:${nft.subId || nft?.ethId}` : <span>
+      <FormatAmount
+        amount={transaction.amount}
+        decimals={from}
+      />
+      {' '}
+      {symbols(transaction.asset, transaction.direction).from}
+    </span>;
+
   return (
     <li className={className}>
       <div className="ti-text-div">
-        <FormatAmount
-          amount={transaction.amount}
-          decimals={from}
-        />
-        {' '}
-        {symbols(transaction.asset, transaction.direction).from}{' '}
+        {assetDisplay}{' '}
         from{' '}
         <ChainDisplay mini={true} chain={chains.from} />{' '}
         to{' '}

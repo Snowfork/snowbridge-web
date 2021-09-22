@@ -7,13 +7,11 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
-import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
+import { REQUIRED_ETH_CONFIRMATIONS, BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS } from '../../config';
 import {
   Asset,
   decimals,
   isDot,
-  isErc20,
-  isEther,
   isNonFungible,
   symbols,
 } from '../../types/Asset';
@@ -282,8 +280,13 @@ export function handleEthereumTransactionEvents(
           name: 'payload',
         },
       ];
-      const logIndex = isEther(pendingTransaction.asset) || isErc20(pendingTransaction.asset)
-        ? 0 : 2;
+      const logIndex = Object.keys(receipt.events).find(index => {
+        return receipt.events[index].address === BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS;
+      })
+
+      if (!logIndex) {
+        return
+      }
 
       const channelEvent = receipt.events[logIndex];
       const decodedEvent = web3.eth.abi.decodeLog(
