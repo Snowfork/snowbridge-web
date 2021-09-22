@@ -51,8 +51,6 @@ export const fetchERC721Approved = ():
       contractInstance,
       (state.bridge.selectedAsset?.token as NonFungibleToken).ethId,
     );
-    console.log({ approved })
-    console.log({ erc721BridgeContractAddress })
 
     dispatch(erc721TransactionsSlice.actions.setERC721Approved(approved === erc721BridgeContractAddress));
   };

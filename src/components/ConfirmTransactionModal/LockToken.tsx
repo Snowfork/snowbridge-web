@@ -53,7 +53,6 @@ function LockToken({ onTokenLocked, transactionPending }: Props): React.ReactEle
       dispatch(fetchERC721Approved());
       return setInterval(async () => {
         dispatch(fetchERC721Approved());
-        console.log('dispatched')
       }, REFRESH_INTERVAL_MILLISECONDS);
     }
 
