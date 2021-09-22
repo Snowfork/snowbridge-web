@@ -8,6 +8,7 @@ import {
   Route,
 } from 'react-router-dom';
 
+import BridgeHealth from './components/BridgeHealth/BridgeHealth';
 import Bridge from './components/Bridge/Bridge';
 import Net from './net';
 
@@ -89,6 +90,7 @@ const BridgeApp = () => {
       <Layout>
         <Switch>
           <Route path="/">
+            <BridgeHealth />
             <Bridge />
           </Route>
         </Switch>
