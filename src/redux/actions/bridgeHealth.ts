@@ -13,10 +13,14 @@ import {
 import Web3 from "web3";
 import { ApiPromise } from "@polkadot/api";
 
-export const updateHealthCheck = (web3: Web3 | undefined, polkdadotApi: ApiPromise | undefined):
+export const updateHealthCheck = (web3: Web3 | undefined, polkadotApi: ApiPromise | undefined):
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
     dispatch: ThunkDispatch<{}, {}, AnyAction>,
   ): Promise<void> => {
+
+    const parachainEthHeader: any = await polkadotApi!.query.ethereumLightClient.finalizedBlock();
+    const parachainFinalizedBlock = Number(parachainEthHeader.number);
+    const ethFinalizedBlock = await web3!.eth.getBlockNumber();
 
     const update: BridgeHealthState = {
       basicOutboundEthNonce: await getEthNonce(web3!, BasicOutboundChannel.abi, BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS),
@@ -24,21 +28,25 @@ export const updateHealthCheck = (web3: Web3 | undefined, polkdadotApi: ApiPromi
       incentivizedOutboundEthNonce: await getEthNonce(web3!, IncentivizedOutboundChannel.abi, INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS),
       incentivizedInboundEthNonce: await getEthNonce(web3!, IncentivizedInboundChannel.abi, INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS),
 
-      basicOutboundParachainNonce: 0,
-      basicInboundParachainNonce: 0,
-      incentivizedOutboundParachainNonce: 0,
-      incentivizedInboundParachainNonce: 0,
+      basicOutboundParachainNonce: await getParachainNonce(polkadotApi!, 'basicOutboundChannel'),
+      basicInboundParachainNonce: await getParachainNonce(polkadotApi!, 'basicInboundChannel'),
+      incentivizedOutboundParachainNonce: await getParachainNonce(polkadotApi!, 'incentivizedOutboundChannel'),
+      incentivizedInboundParachainNonce: await getParachainNonce(polkadotApi!, 'incentivizedInboundChannel'),
 
-      relayChainLatestBlock: 0,
-      ethBeefyLatestBlock: 0,
+      relaychainLatestBlock: 0, // TODO: Need to pull in the relay chain address here
+      ethLatestBeefyBlock: 0, // TODO: Need to pull in the beefy light client address and contract
 
-      relayChainLatestEthHeader: 0,
-      ethLatestBlock: 0,
+      parachainLatestEthHeader: parachainFinalizedBlock,
+      ethLatestBlock: ethFinalizedBlock,
     };
 
-    console.log(update);
     dispatch(bridgeHealthSlice.actions.refresh(update));
   };
+
+const getParachainNonce = async (polkadotApi: ApiPromise, channel: string): Promise<number> => {
+  const nonce = await polkadotApi.query[channel].nonce()
+  return Number(nonce);
+}
 
 const getEthNonce = async (web3: Web3, abi: any, address: string): Promise<number> => {
   const basicChannelContract = new web3.eth.Contract(
@@ -46,6 +54,5 @@ const getEthNonce = async (web3: Web3, abi: any, address: string): Promise<numbe
     address,
   );
   const nonce = await basicChannelContract.methods.nonce().call();
-  console.log(basicChannelContract.methods);
   return Number(nonce);
 }

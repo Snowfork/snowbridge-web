@@ -11,10 +11,10 @@ export interface BridgeHealthState {
   incentivizedOutboundParachainNonce: number,
   incentivizedInboundParachainNonce: number,
 
-  relayChainLatestBlock: number,
-  ethBeefyLatestBlock: number,
+  relaychainLatestBlock: number,
+  ethLatestBeefyBlock: number,
 
-  relayChainLatestEthHeader: number,
+  parachainLatestEthHeader: number,
   ethLatestBlock: number,
 }
 
@@ -29,10 +29,10 @@ const initialState: BridgeHealthState = {
   incentivizedOutboundParachainNonce: 0,
   incentivizedInboundParachainNonce: 0,
 
-  relayChainLatestBlock: 0,
-  ethBeefyLatestBlock: 0,
+  relaychainLatestBlock: 0,
+  ethLatestBeefyBlock: 0,
 
-  relayChainLatestEthHeader: 0,
+  parachainLatestEthHeader: 0,
   ethLatestBlock: 0,
 };
 

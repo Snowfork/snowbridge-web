@@ -25,9 +25,9 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
       incentivizedOutboundEthNonce,
       incentivizedInboundParachainNonce,
       incentivizedInboundEthNonce,
-      relayChainLatestBlock,
-      ethBeefyLatestBlock,
-      relayChainLatestEthHeader,
+      relaychainLatestBlock,
+      ethLatestBeefyBlock,
+      parachainLatestEthHeader,
       ethLatestBlock,
     },
   } = useSelector((state: RootState) => state);
@@ -93,13 +93,13 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
             <tbody>
               <tr>
                 <td>Beefy</td>
-                <td>{relayChainLatestBlock}</td>
-                <td>{ethBeefyLatestBlock}</td>
+                <td>{relaychainLatestBlock}</td>
+                <td>{ethLatestBeefyBlock}</td>
                 <td></td>
               </tr>
               <tr>
                 <td>Ethereum</td>
-                <td>{relayChainLatestEthHeader}</td>
+                <td>{parachainLatestEthHeader}</td>
                 <td>{ethLatestBlock}</td>
                 <td></td>
               </tr>
