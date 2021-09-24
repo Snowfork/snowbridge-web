@@ -48,5 +48,6 @@ export default styled(ToolTip)`
     border-radius: ${(props) => props.theme.colors.secondary};
     font-size: 10px;
     color: ${(props) => props.theme.colors.secondary};
+    pointer-events: none;
   }
 `;

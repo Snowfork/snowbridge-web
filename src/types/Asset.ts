@@ -62,7 +62,7 @@ export function isEther(asset: Asset): boolean {
 
 export function isDot(asset: Asset): boolean {
   return asset.chain === Chain.POLKADOT
-    && asset.type !== AssetType.ERC20
+    && !isErc20(asset)
     && !isEther(asset);
 }
 
