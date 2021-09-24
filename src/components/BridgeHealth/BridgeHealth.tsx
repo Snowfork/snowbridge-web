@@ -5,9 +5,38 @@ import DOSButton from '../Button/DOSButton';
 import Panel from '../Panel/Panel';
 import { updateHealthCheck } from '../../redux/actions/bridgeHealth';
 import { RootState } from '../../redux/store';
+import { BridgeInfo } from '../../redux/reducers/bridgeHealth';
 
 type BridgeHealthProps = {
   className?: string
+}
+
+const RenderBridgeInfo = (props:{heading: string, info: BridgeInfo}) => {
+  return (
+    <div>
+      <h4>{props.heading}</h4>
+      <table>
+        <tbody>
+          <tr>
+            <td>Block Latency:</td>
+            <td>{props.info.blocks.latency} blocks</td>
+          </tr>
+          <tr>
+            <td>Last Block Update:</td>
+            <td>{props.info.blocks.lastUpdated.toISOString()}</td>
+          </tr>
+          <tr>
+            <td>Unconfirmed Messages:</td>
+            <td>{props.info.messages.unconfirmed} messages</td>
+          </tr>
+          <tr>
+            <td>Last Message Update:</td>
+            <td>{props.info.messages.lastUpdated.toISOString()}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 export const BridgeHealth = ({ className }: BridgeHealthProps) => {
@@ -17,18 +46,8 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
       polkadotApi,
     },
     bridgeHealth: {
-      basicOutboundParachainNonce,
-      basicOutboundEthNonce,
-      basicInboundParachainNonce,
-      basicInboundEthNonce,
-      incentivizedOutboundParachainNonce,
-      incentivizedOutboundEthNonce,
-      incentivizedInboundParachainNonce,
-      incentivizedInboundEthNonce,
-      relaychainLatestBlock,
-      ethLatestBeefyBlock,
-      parachainLatestEthHeader,
-      ethLatestBlock,
+      polkadotToEthereum,
+      ethereumToPolkadot
     },
   } = useSelector((state: RootState) => state);
 
@@ -38,73 +57,16 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
     dispatch(updateHealthCheck(web3,  polkadotApi));
   };
 
+
   return (
     <div className={className}>
       <Panel className="bridge-health-panel">
+        <h3>Bridge Health</h3>
         <Panel className='bridge-health'>
-          <h3>Bridge Health</h3>
-          <h4>Channels</h4>
-          <table>
-            <thead>
-              <tr>
-                <th></th>
-                <th>Parachain</th>
-                <th>Eth</th>
-                <th>Lag</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Basic Outbound Channel</td>
-                <td>{basicOutboundParachainNonce}</td>
-                <td>{basicOutboundEthNonce}</td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>Basic Inbound Channel</td>
-                <td>{basicInboundParachainNonce}</td>
-                <td>{basicInboundEthNonce}</td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>Incentivized Outbound Channel</td>
-                <td>{incentivizedOutboundParachainNonce}</td>
-                <td>{incentivizedOutboundEthNonce}</td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>Incentivized Inbound Channel</td>
-                <td>{incentivizedInboundParachainNonce}</td>
-                <td>{incentivizedInboundEthNonce}</td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-          <h4>Light Clients</h4>
-          <table>
-            <thead>
-              <tr>
-                <th></th>
-                <th>RelayChain</th>
-                <th>Eth</th>
-                <th>Lag</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Beefy</td>
-                <td>{relaychainLatestBlock}</td>
-                <td>{ethLatestBeefyBlock}</td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>Ethereum</td>
-                <td>{parachainLatestEthHeader}</td>
-                <td>{ethLatestBlock}</td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
+          <RenderBridgeInfo heading="Polkadot -> Ethereum" info={polkadotToEthereum}/>
+        </Panel>
+        <Panel className='bridge-health'>
+          <RenderBridgeInfo heading="Ethereum -> Polkadot" info={ethereumToPolkadot}/>
         </Panel>
         <DOSButton onClick={handleTransferClicked}>
           Refresh
@@ -129,7 +91,12 @@ export default styled(BridgeHealth)`
     margin-bottom: 16px;
   }
 
-  .bridge-health {
+  h3, h4 {
     text-align: center;
+  }
+
+  table {
+    font-size: 15px;
+    margin: 0 auto 0 auto;
   }
 `;

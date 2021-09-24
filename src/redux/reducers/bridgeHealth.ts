@@ -1,47 +1,72 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export interface BlockInfo {
+  latency: number,
+  lastUpdated: Date,
+}
+
+export interface MessageInfo {
+  unconfirmed: number,
+  lastUpdated: Date,
+}
+
+export interface BridgeInfo {
+  blocks: BlockInfo,
+  messages: MessageInfo,
+}
+
 export interface BridgeHealthState {
-  basicOutboundEthNonce: number,
-  basicInboundEthNonce: number,
-  incentivizedOutboundEthNonce: number,
-  incentivizedInboundEthNonce: number,
-
-  basicOutboundParachainNonce: number,
-  basicInboundParachainNonce: number,
-  incentivizedOutboundParachainNonce: number,
-  incentivizedInboundParachainNonce: number,
-
-  relaychainLatestBlock: number,
-  ethLatestBeefyBlock: number,
-
-  parachainLatestEthHeader: number,
-  ethLatestBlock: number,
+  polkadotToEthereum: BridgeInfo,
+  ethereumToPolkadot: BridgeInfo,
 }
 
 const initialState: BridgeHealthState = {
-  basicOutboundEthNonce: 0,
-  basicInboundEthNonce: 0,
-  incentivizedOutboundEthNonce: 0,
-  incentivizedInboundEthNonce: 0,
-
-  basicOutboundParachainNonce: 0,
-  basicInboundParachainNonce: 0,
-  incentivizedOutboundParachainNonce: 0,
-  incentivizedInboundParachainNonce: 0,
-
-  relaychainLatestBlock: 0,
-  ethLatestBeefyBlock: 0,
-
-  parachainLatestEthHeader: 0,
-  ethLatestBlock: 0,
-};
+  polkadotToEthereum: {
+      blocks: {
+        latency: 0,
+        lastUpdated: new Date(Date.now()),
+      },
+      messages: {
+        unconfirmed: 0,
+        lastUpdated: new Date(Date.now()),
+      }
+    },
+    ethereumToPolkadot: {
+      blocks: {
+        latency: 0,
+        lastUpdated: new Date(Date.now()),
+      },
+      messages: {
+        unconfirmed: 0,
+        lastUpdated: new Date(Date.now()),
+      }
+    }
+  };
 
 export const bridgeHealthSlice = createSlice({
   name: 'bridgeHealth',
   initialState,
   reducers: {
-    refresh:
-      (_, action: PayloadAction<BridgeHealthState>) => action.payload,
+    setPolkadotBlockHealth:
+      (state, action: PayloadAction<BlockInfo>) => {
+          state.polkadotToEthereum.blocks = action.payload;
+        return state;
+      },
+    setPolkadotMessageHealth:
+      (state, action: PayloadAction<MessageInfo>) => {
+          state.polkadotToEthereum.messages = action.payload;
+        return state;
+      },
+    setEthereumBlockHealth:
+      (state, action: PayloadAction<BlockInfo>) => {
+          state.ethereumToPolkadot.blocks = action.payload;
+        return state;
+      },
+    setEthereumMessageHealth:
+      (state, action: PayloadAction<MessageInfo>) => {
+          state.ethereumToPolkadot.messages = action.payload;
+        return state;
+      },
   },
 });
 

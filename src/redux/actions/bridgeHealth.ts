@@ -1,5 +1,5 @@
 import { AnyAction, ThunkAction, ThunkDispatch } from "@reduxjs/toolkit";
-import { bridgeHealthSlice, BridgeHealthState } from "../reducers/bridgeHealth";
+import { bridgeHealthSlice } from "../reducers/bridgeHealth";
 import * as BasicInboundChannel from '../../contracts/BasicInboundChannel.json';
 import * as BasicOutboundChannel from '../../contracts/BasicOutboundChannel.json';
 import * as IncentivizedInboundChannel from '../../contracts/IncentivizedInboundChannel.json';
@@ -22,25 +22,52 @@ export const updateHealthCheck = (web3: Web3 | undefined, polkadotApi: ApiPromis
     const parachainFinalizedBlock = Number(parachainEthHeader.number);
     const ethFinalizedBlock = await web3!.eth.getBlockNumber();
 
-    const update: BridgeHealthState = {
-      basicOutboundEthNonce: await getEthNonce(web3!, BasicOutboundChannel.abi, BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS),
-      basicInboundEthNonce: await getEthNonce(web3!, BasicInboundChannel.abi, BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS),
+    const update = {
       incentivizedOutboundEthNonce: await getEthNonce(web3!, IncentivizedOutboundChannel.abi, INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS),
       incentivizedInboundEthNonce: await getEthNonce(web3!, IncentivizedInboundChannel.abi, INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS),
+      incentivizedOutboundParachainNonce: await getParachainNonce(polkadotApi!, 'incentivizedOutboundChannel'),
+      incentivizedInboundParachainNonce: await getParachainNonce(polkadotApi!, 'incentivizedInboundChannel'),
+
+      basicOutboundEthNonce: await getEthNonce(web3!, BasicOutboundChannel.abi, BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS),
+      basicInboundEthNonce: await getEthNonce(web3!, BasicInboundChannel.abi, BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS),
 
       basicOutboundParachainNonce: await getParachainNonce(polkadotApi!, 'basicOutboundChannel'),
       basicInboundParachainNonce: await getParachainNonce(polkadotApi!, 'basicInboundChannel'),
-      incentivizedOutboundParachainNonce: await getParachainNonce(polkadotApi!, 'incentivizedOutboundChannel'),
-      incentivizedInboundParachainNonce: await getParachainNonce(polkadotApi!, 'incentivizedInboundChannel'),
 
       relaychainLatestBlock: 0, // TODO: Need to pull in the relay chain address here
       ethLatestBeefyBlock: 0, // TODO: Need to pull in the beefy light client address and contract
 
-      parachainLatestEthHeader: parachainFinalizedBlock,
+      parachainLatestEthBlock: parachainFinalizedBlock,
       ethLatestBlock: ethFinalizedBlock,
     };
+    console.log(update);
 
-    dispatch(bridgeHealthSlice.actions.refresh(update));
+    const polkToEth = {
+      blocks: {
+        latency: update.relaychainLatestBlock - update.ethLatestBeefyBlock,
+        lastUpdated: new Date(Date.now()),
+      },
+      messages: {
+        unconfirmed: update.basicOutboundParachainNonce - update.basicInboundEthNonce,
+        lastUpdated: new Date(Date.now()),
+      },
+    }
+
+    const ethToPolk = {
+      blocks: {
+        latency: update.ethLatestBlock - update.parachainLatestEthBlock,
+        lastUpdated: new Date(Date.now()),
+      },
+      messages: {
+        unconfirmed: update.basicOutboundEthNonce - update.basicInboundParachainNonce,
+        lastUpdated: new Date(Date.now()),
+      }
+    }
+
+    dispatch(bridgeHealthSlice.actions.setPolkadotBlockHealth(polkToEth.blocks));
+    dispatch(bridgeHealthSlice.actions.setPolkadotMessageHealth(polkToEth.messages));
+    dispatch(bridgeHealthSlice.actions.setEthereumBlockHealth(ethToPolk.blocks));
+    dispatch(bridgeHealthSlice.actions.setEthereumMessageHealth(ethToPolk.messages));
   };
 
 const getParachainNonce = async (polkadotApi: ApiPromise, channel: string): Promise<number> => {
