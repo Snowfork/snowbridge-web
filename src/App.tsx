@@ -25,10 +25,13 @@ ReactModal.setAppElement('#root');
 const BridgeApp = () => {
   const dispatch = useDispatch();
   const {
-    isNetworkConnected,
-    polkadotJSMissing,
-    metamaskMissing,
-  } = useAppSelector((state) => state.net);
+    tab,
+    net: {   
+      isNetworkConnected,
+      polkadotJSMissing,
+      metamaskMissing,
+    }
+  } = useAppSelector((state) => state);
 
   // Start Network
   useEffect(() => {

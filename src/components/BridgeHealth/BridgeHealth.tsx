@@ -14,7 +14,7 @@ type BridgeHealthProps = {
 const RenderBridgeInfo = (props:{heading: string, info: BridgeInfo}) => {
   return (
     <div>
-      <h4>{props.heading}</h4>
+      <span>{props.heading}</span>
       <table>
         <tbody>
           <tr>
@@ -61,7 +61,7 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
   return (
     <div className={className}>
       <Panel className="bridge-health-panel">
-        <h3>Bridge Health</h3>
+        <span>Bridge Health</span>
         <Panel className='bridge-health'>
           <RenderBridgeInfo heading="Polkadot -> Ethereum" info={polkadotToEthereum}/>
         </Panel>
@@ -80,6 +80,7 @@ export default styled(BridgeHealth)`
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
 
   .bridge-health-panel {
     width: 520px;
@@ -91,12 +92,23 @@ export default styled(BridgeHealth)`
     margin-bottom: 16px;
   }
 
-  h3, h4 {
-    text-align: center;
+  .bridge-health {
+    width: 75%;
+  }
+
+  span {
+    display: inline-block;
+    padding: 10px;
   }
 
   table {
-    font-size: 15px;
+    color: white;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 12px;
+    letter-spacing: -0.04em;
+    text-align: left;
     margin: 0 auto 0 auto;
   }
 `;
