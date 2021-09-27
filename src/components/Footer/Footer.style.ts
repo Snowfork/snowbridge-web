@@ -10,9 +10,7 @@ export const Wrapper = styled.div`
 `;
 
 export const TabContainer = styled.div`
-`
-
-export const Tab = styled.div`
+display: flex;
 `
 
 export const Copyright = styled.p`
