@@ -19,6 +19,9 @@ export default {
   // Fetch chain data interval
   REFRESH_INTERVAL_MILLISECONDS: 10000,
 
+  // Health check data refresh interval
+  HEALTH_CHECK_POLL_INTERVAL_MILLISECONDS: 120_000,
+
   // Polkadotjs API Provider
   POLKADOT_API_PROVIDER: 'wss://parachain-rpc.snowbridge.network',
 

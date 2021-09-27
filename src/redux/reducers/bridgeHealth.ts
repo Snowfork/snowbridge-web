@@ -16,11 +16,19 @@ export interface BridgeInfo {
 }
 
 export interface BridgeHealthState {
+  lastUpdated: Date,
+  error: boolean,
+  errorMessage: string,
+  loading: boolean,
   polkadotToEthereum: BridgeInfo,
   ethereumToPolkadot: BridgeInfo,
 }
 
 const initialState: BridgeHealthState = {
+  lastUpdated: new Date(0),
+  error: false,
+  errorMessage: "",
+  loading: true,
   polkadotToEthereum: {
       blocks: {
         latency: 0,
@@ -49,22 +57,45 @@ export const bridgeHealthSlice = createSlice({
   reducers: {
     setPolkadotBlockHealth:
       (state, action: PayloadAction<BlockInfo>) => {
-          state.polkadotToEthereum.blocks = action.payload;
+        state.polkadotToEthereum.blocks = action.payload;
         return state;
       },
     setPolkadotMessageHealth:
       (state, action: PayloadAction<MessageInfo>) => {
-          state.polkadotToEthereum.messages = action.payload;
+        state.polkadotToEthereum.messages = action.payload;
         return state;
       },
     setEthereumBlockHealth:
       (state, action: PayloadAction<BlockInfo>) => {
-          state.ethereumToPolkadot.blocks = action.payload;
+        state.ethereumToPolkadot.blocks = action.payload;
         return state;
       },
     setEthereumMessageHealth:
       (state, action: PayloadAction<MessageInfo>) => {
-          state.ethereumToPolkadot.messages = action.payload;
+        state.ethereumToPolkadot.messages = action.payload;
+        return state;
+      },
+    setLastUpdated:
+      (state, action: PayloadAction<Date>) => {
+        state.lastUpdated = action.payload;
+        return state;
+      },
+    setError: 
+      (state, action: PayloadAction<string>) => {
+        state.loading = false;
+        state.error = true;
+        state.errorMessage = action.payload;
+        return state;
+      },
+    setLoading:
+      (state, action: PayloadAction<boolean>) => {
+        if(action.payload) {
+          state.loading = true;
+        } else {
+          state.loading = false;
+        }
+        state.error = false;
+        state.errorMessage = "";
         return state;
       },
   },
