@@ -3,6 +3,8 @@ import { Contract } from 'web3-eth-contract';
 import Web3 from 'web3';
 import { ApiPromise } from '@polkadot/api';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '../store';
+import { PERMITTED_METAMASK_NETWORK } from '../../config';
 
 export interface NetState {
   metamaskMissing: boolean,
@@ -84,3 +86,10 @@ export const netSlice = createSlice({
 });
 
 export default netSlice.reducer;
+
+// selectors
+export const isNetworkPermittedSelector = (state: RootState):
+  boolean => state.net.metamaskNetwork.toLowerCase() === PERMITTED_METAMASK_NETWORK;
+
+export const ethereumProviderSelector = (state: RootState):
+  any => (state.net.web3?.currentProvider as any);

@@ -6,6 +6,7 @@ import {
   setShowConfirmTransactionModal, setSwapDirection,
   updateSelectedAsset,
 } from '../../../redux/actions/bridge';
+import { ethereumProviderSelector, isNetworkPermittedSelector } from '../../../redux/reducers/net';
 import { SwapDirection, Chain } from '../../../types/types';
 
 import {
@@ -29,6 +30,7 @@ import TransactionListButton from '../../Button/TransactionListButton';
 
 import SwitchButton from '../../Button/SwitchButton';
 import FungibleTokenBalance from './FungibleTokenBalance';
+
 import { PERMITTED_METAMASK_NETWORK, PERMITTED_METAMASK_NETWORK_ID } from '../../../config';
 
 const INSUFFICIENT_GAS_ERROR = 'Insufficient gas';
@@ -43,7 +45,8 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
   const tokenBalances = useAppSelector(tokenBalancesByNetwork);
   const dot = useAppSelector(dotSelector);
   const ether = useAppSelector(etherSelector);
-  const { metamaskNetwork, web3 } = useAppSelector((state) => state.net);
+  const isMetamaskNetworkPermitted = useAppSelector(isNetworkPermittedSelector);
+  const ethereumProvider = useAppSelector(ethereumProviderSelector);
 
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethereumGasBalance = ether?.balance?.eth;
@@ -115,10 +118,9 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
   const chains = getChainsFromDirection(swapDirection);
 
   const switchNetwork = async () => {
-    const provider = (web3?.currentProvider as any);
-    if (provider) {
+    if (ethereumProvider) {
       try {
-        await provider.request({
+        await ethereumProvider.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: PERMITTED_METAMASK_NETWORK_ID }],
         });
@@ -129,7 +131,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
   };
 
   const renderActionButton = () => {
-    if (metamaskNetwork.toLowerCase() !== PERMITTED_METAMASK_NETWORK) {
+    if (!isMetamaskNetworkPermitted) {
       return (
         <DOSButton
           onClick={switchNetwork}
