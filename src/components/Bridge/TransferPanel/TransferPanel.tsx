@@ -107,16 +107,6 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
     }
   };
 
-  const selectedAssetSourceChain = selectedAsset?.chain === Chain.ETHEREUM ? 0 : 1;
-  const selectedAssetValid = selectedAsset?.type === 0
-    || (selectedAsset?.type === 1 && selectedAssetSourceChain === swapDirection);
-  const errorText = (selectedAsset?.type === AssetType.ERC20 && errors.asset) || errors.balance;
-
-  const isDepositDisabled = !!errorText
-    || (selectedAsset?.type === AssetType.ERC20 && Number.parseFloat(depositAmount) <= 0) || !selectedAssetValid;
-
-  const chains = getChainsFromDirection(swapDirection);
-
   const switchNetwork = async () => {
     if (ethereumProvider) {
       try {
@@ -129,6 +119,24 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       }
     }
   };
+
+  const handleAssetSelect = () => {
+    if (isMetamaskNetworkPermitted) {
+      setShowAssetSelector(true);
+    } else {
+      switchNetwork();
+    }
+  };
+
+  const selectedAssetSourceChain = selectedAsset?.chain === Chain.ETHEREUM ? 0 : 1;
+  const selectedAssetValid = selectedAsset?.type === 0
+    || (selectedAsset?.type === 1 && selectedAssetSourceChain === swapDirection);
+  const errorText = (selectedAsset?.type === AssetType.ERC20 && errors.asset) || errors.balance;
+
+  const isDepositDisabled = !!errorText
+    || (selectedAsset?.type === AssetType.ERC20 && Number.parseFloat(depositAmount) <= 0) || !selectedAssetValid;
+
+  const chains = getChainsFromDirection(swapDirection);
 
   const renderActionButton = () => {
     if (!isMetamaskNetworkPermitted) {
@@ -155,9 +163,9 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
     <Panel className={className}>
       <div className="selected-asset-section">
         {selectedAsset?.type === 0
-          && <SelectedFungibleToken setShowAssetSelector={setShowAssetSelector} setError={setAssetError} />}
+          && <SelectedFungibleToken openAssetSelector={handleAssetSelect} setError={setAssetError} />}
         {selectedAsset?.type === 1
-          && <SelectedNFT setShowAssetSelector={setShowAssetSelector} />}
+          && <SelectedNFT openAssetSelector={handleAssetSelect} />}
       </div>
       <Panel className="chain-direction-display-panel">
         <div className="chain-direction-display">
