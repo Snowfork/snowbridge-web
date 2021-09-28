@@ -6,7 +6,7 @@ import { startHealthCheckPoll } from '../../redux/actions/bridgeHealth';
 import { RootState } from '../../redux/store';
 import { bridgeHealthSlice, BridgeInfo } from '../../redux/reducers/bridgeHealth';
 import DOSButton from '../Button/DOSButton';
-import { tabSlice } from '../../redux/reducers/tab';
+import Modal from '../Modal';
 
 type BridgeHealthProps = {
   className?: string
@@ -48,21 +48,21 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
     },
     bridgeHealth: {
       lastUpdated,
+      isOpen,
       error,
       errorMessage,
       loading,
       polkadotToEthereum,
       ethereumToPolkadot
-    },
-    tab
+    }
   } = useSelector((state: RootState) => state);
 
   const closeTab = () => {
-    dispatch(tabSlice.actions.toggleTab(tab));
-  };
+    dispatch(bridgeHealthSlice.actions.setOpen(false));
+  }
 
   const refreshTab = () => {
-    dispatch(bridgeHealthSlice.actions.setLoading(true))
+    dispatch(bridgeHealthSlice.actions.setLoading(true));
     dispatch(startHealthCheckPoll(web3, polkadotApi));
   };
 
@@ -71,43 +71,41 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
     dispatch(startHealthCheckPoll(web3, polkadotApi));
   }, []);
 
-  if(loading) {
-    return (
-      <div className={className}>
-        <Panel className="bridge-health-panel">
-          <div>Loading...</div>
-          <DOSButton onClick={closeTab}>Close</DOSButton>
-        </Panel>
-      </div>
-    )
-  }
-
-  if(error) {
-    return (
-      <div className={className}>
-        <Panel className="bridge-health-panel">
-          <div>{errorMessage}</div>
-          <DOSButton onClick={refreshTab}>Refresh</DOSButton>
-          <DOSButton onClick={closeTab}>Close</DOSButton>
-        </Panel>
-      </div>
-    )
-  }
-
   return (
-    <div className={className}>
-      <Panel className="bridge-health-panel">
-        <span>Bridge Health</span>
-        <Panel className='bridge-health'>
-          <RenderBridgeInfo heading="Polkadot -> Ethereum" info={polkadotToEthereum}/>
-        </Panel>
-        <Panel className='bridge-health'>
-          <RenderBridgeInfo heading="Ethereum -> Polkadot" info={ethereumToPolkadot}/>
-        </Panel>
-        <div>Last updated {lastUpdated.toISOString()}</div>
-        <DOSButton onClick={closeTab}>Close</DOSButton>
-      </Panel>
-    </div>
+    <Modal isOpen={isOpen} onRequestClose={closeTab} className={className}>
+      { 
+        (!error && loading) && (
+          <>
+            <div>Loading...</div>
+            <DOSButton onClick={closeTab}>Close</DOSButton>
+          </>
+        )
+      }
+      { 
+        (error) && (
+          <>
+            <div>{errorMessage}</div>
+            <DOSButton onClick={refreshTab}>Refresh</DOSButton>
+            <DOSButton onClick={closeTab}>Close</DOSButton>
+          </>
+        )
+      }
+      { 
+        (!error && !loading) && (
+          <>
+            <span>Bridge Health</span>
+            <Panel className='bridge-health'>
+              <RenderBridgeInfo heading="Polkadot -> Ethereum" info={polkadotToEthereum}/>
+            </Panel>
+            <Panel className='bridge-health'>
+              <RenderBridgeInfo heading="Ethereum -> Polkadot" info={ethereumToPolkadot}/>
+            </Panel>
+            <div>Last updated {lastUpdated.toISOString()}</div>
+            <DOSButton onClick={closeTab}>Close</DOSButton>
+          </>
+        )
+      }
+    </Modal>
   );
 }
 
@@ -116,19 +114,10 @@ export default styled(BridgeHealth)`
   align-items: center;
   justify-content: center;
   text-align: center;
-
-  .bridge-health-panel {
-    width: 520px;
-    align-items: center;
-    gap: 15px;
-  
-    border: 1px solid ${props => props.theme.colors.transferPanelBorder};
-    background: ${props => props.theme.colors.transferPanelBackground};
-    margin-bottom: 16px;
-  }
+  width: 500px;
 
   .bridge-health {
-    width: 75%;
+    width: 80%;
   }
 
   span {

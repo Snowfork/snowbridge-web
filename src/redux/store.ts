@@ -1,7 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import thunkMiddleware from 'redux-thunk';
 import net from './reducers/net';
-import tab from './reducers/tab';
 import transactions from './reducers/transactions';
 import ERC20Transactions from './reducers/ERC20Transactions';
 import ERC721Transactions from './reducers/ERC721Transactions';
@@ -10,7 +9,6 @@ import bridgeHealthReducer from './reducers/bridgeHealth';
 
 const store = configureStore({
   reducer: {
-    tab,
     net,
     transactions,
     ERC20Transactions,

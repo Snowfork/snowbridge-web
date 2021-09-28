@@ -25,7 +25,6 @@ ReactModal.setAppElement('#root');
 const BridgeApp = () => {
   const dispatch = useDispatch();
   const {
-    tab,
     net: {   
       isNetworkConnected,
       polkadotJSMissing,
