@@ -11,7 +11,6 @@ import Net from './net';
 
 import 'react-toastify/dist/ReactToastify.css';
 
-import { PERMITTED_METAMASK_NETWORK } from './config';
 import { initializeTokens } from './redux/actions/bridge';
 import { useAppSelector } from './utils/hooks';
 
@@ -26,7 +25,6 @@ const BridgeApp = ({ className }: Props) => {
   const dispatch = useDispatch();
   const {
     isNetworkConnected,
-    metamaskNetwork,
     polkadotJSMissing,
     metamaskMissing,
   } = useAppSelector((state) => state.net);
@@ -86,23 +84,6 @@ const BridgeApp = ({ className }: Props) => {
     );
   }
 
-  if (
-    metamaskNetwork.toLowerCase()
-    !== PERMITTED_METAMASK_NETWORK.toLowerCase()
-  ) {
-    return (
-      <div>
-        <h2 style={{ color: 'white' }}>
-          Please select
-          {' '}
-          {PERMITTED_METAMASK_NETWORK}
-          {' '}
-          network in Metamask extension
-        </h2>
-      </div >
-    );
-  }
-
   return (
     <main className={className}>
       <Nav />
@@ -110,10 +91,10 @@ const BridgeApp = ({ className }: Props) => {
       <ToastContainer autoClose={10000} />
     </main>
   );
-}
+};
 
 export default styled(BridgeApp)`
   height: 100%;
   min-height: 100vh;
-  background: ${props => props.theme.colors.background};
+  background: ${(props) => props.theme.colors.background};
 `;

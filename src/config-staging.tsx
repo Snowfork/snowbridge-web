@@ -29,6 +29,7 @@ export default {
   SNOWBRIDGE_EXPLORER_URL: 'https://polkadot.js.org/apps/?rpc=wss://parachain-rpc.snowbridge.network#/explorer',
 
   PERMITTED_METAMASK_NETWORK: 'ropsten',
+  PERMITTED_METAMASK_NETWORK_ID: '0x3',
 
   BASIC_CHANNEL_ID: 0,
   INCENTIVIZED_CHANNEL_ID: 1,
