@@ -7,7 +7,7 @@ import { RootState } from '../../redux/store';
 import { bridgeHealthSlice, BridgeInfo } from '../../redux/reducers/bridgeHealth';
 import DOSButton from '../Button/DOSButton';
 import Modal from '../Modal';
-import { formatRelativeTimeToString } from '../../utils/relativeTime';
+import moment from 'moment';
 
 type BridgeHealthProps = {
   className?: string
@@ -18,7 +18,7 @@ const formatTime = (time: Date | null, bestGuess: boolean, now: Date) => {
     return "unavailable";
   }
 
-  const relativeTime = formatRelativeTimeToString(now, time);
+  const relativeTime = moment(time).from(moment(now));
   if(bestGuess) {
     return "more than " + relativeTime;
   }
