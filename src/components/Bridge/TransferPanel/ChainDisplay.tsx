@@ -29,6 +29,6 @@ export default styled(ChainDisplay)`
   flex-direction: ${props => props.mini ? 'column' : 'row'};
   justify-content: left;
   align-items: center;
-  font-size: ${props => props.mini ? '8px' : 'undefined'};
+  font-size: ${props => props.mini ? '10px' : 'undefined'};
   gap: ${props => props.mini ? '5px' : 'undefined'};
 `;

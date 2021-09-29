@@ -87,7 +87,7 @@ export default styled(Step)`
   }
 
   .step-subtext {
-    font-size: 8px;
+    font-size: 10px;
     text-align: center;
     top: 0px;
     position: absolute;
