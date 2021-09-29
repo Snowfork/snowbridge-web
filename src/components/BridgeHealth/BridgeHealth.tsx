@@ -12,7 +12,11 @@ type BridgeHealthProps = {
   className?: string
 }
 
-const RenderBridgeInfo = (props:{heading: string, info: BridgeInfo}) => {
+const formatTime = (time: Date | null, bestGuess: boolean, relative: boolean, now: Date) => {
+ return time?.toISOString() ?? "unavailable";
+}
+
+const RenderBridgeInfo = (props:{heading: string, info: BridgeInfo, time: Date}) => {
   return (
     <div>
       <span>{props.heading}</span>
@@ -24,7 +28,7 @@ const RenderBridgeInfo = (props:{heading: string, info: BridgeInfo}) => {
           </tr>
           <tr>
             <td>Last Block Update:</td>
-            <td>{props.info.blocks.lastUpdated.toISOString()}</td>
+            <td>{formatTime(props.info.blocks.lastUpdated, props.info.blocks.lastUpdatedBestGuess, props.info.blocksRelativeTime, props.time)}</td>
           </tr>
           <tr>
             <td>Unconfirmed Messages:</td>
@@ -32,7 +36,7 @@ const RenderBridgeInfo = (props:{heading: string, info: BridgeInfo}) => {
           </tr>
           <tr>
             <td>Last Message Update:</td>
-            <td>{props.info.messages.lastUpdated.toISOString()}</td>
+            <td>{formatTime(props.info.messages.lastUpdated, props.info.messages.lastUpdatedBestGuess, props.info.messagesRelativeTime, props.time)}</td>
           </tr>
         </tbody>
       </table>
@@ -48,10 +52,11 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
     },
     bridgeHealth: {
       lastUpdated,
+      lastUpdatedRelative,
       isOpen,
-      error,
+      hasError,
       errorMessage,
-      loading,
+      isLoading,
       polkadotToEthereum,
       ethereumToPolkadot
     }
@@ -71,10 +76,12 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
     dispatch(startHealthCheckPoll(web3, polkadotApi));
   }, []);
 
+  const now = new Date(Date.now());
+
   return (
     <Modal isOpen={isOpen} onRequestClose={closeTab} className={className}>
       { 
-        (!error && loading) && (
+        (!hasError && isLoading) && (
           <>
             <div>Loading...</div>
             <DOSButton onClick={closeTab}>Close</DOSButton>
@@ -82,7 +89,7 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
         )
       }
       { 
-        (error) && (
+        (hasError) && (
           <>
             <div>{errorMessage}</div>
             <DOSButton onClick={refreshTab}>Refresh</DOSButton>
@@ -91,16 +98,16 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
         )
       }
       { 
-        (!error && !loading) && (
+        (!hasError && !isLoading) && (
           <>
             <span>Bridge Health</span>
             <Panel className='bridge-health'>
-              <RenderBridgeInfo heading="Polkadot -> Ethereum" info={polkadotToEthereum}/>
+              <RenderBridgeInfo heading="Polkadot -> Ethereum" info={polkadotToEthereum} time={now}/>
             </Panel>
             <Panel className='bridge-health'>
-              <RenderBridgeInfo heading="Ethereum -> Polkadot" info={ethereumToPolkadot}/>
+              <RenderBridgeInfo heading="Ethereum -> Polkadot" info={ethereumToPolkadot} time={now}/>
             </Panel>
-            <div>Last updated {lastUpdated.toISOString()}</div>
+            <div>Last updated {formatTime(lastUpdated, false, lastUpdatedRelative, now)}</div>
             <DOSButton onClick={closeTab}>Close</DOSButton>
           </>
         )

@@ -2,24 +2,29 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface BlockInfo {
   latency: number,
-  lastUpdated: Date,
+  lastUpdated: Date | null,
+  lastUpdatedBestGuess: boolean,
 }
 
 export interface MessageInfo {
   unconfirmed: number,
-  lastUpdated: Date,
+  lastUpdated: Date | null,
+  lastUpdatedBestGuess: boolean,
 }
 
 export interface BridgeInfo {
+  blocksRelativeTime: boolean,
+  messagesRelativeTime: boolean,
   blocks: BlockInfo,
   messages: MessageInfo,
 }
 
 export interface BridgeHealthState {
   lastUpdated: Date,
-  error: boolean,
+  lastUpdatedRelative: boolean,
+  hasError: boolean,
   errorMessage: string,
-  loading: boolean,
+  isLoading: boolean,
   isOpen: boolean,
   polkadotToEthereum: BridgeInfo,
   ethereumToPolkadot: BridgeInfo,
@@ -27,31 +32,40 @@ export interface BridgeHealthState {
 
 const initialState: BridgeHealthState = {
   lastUpdated: new Date(0),
-  error: false,
+  lastUpdatedRelative: true,
+  hasError: false,
   errorMessage: "",
-  loading: true,
+  isLoading: true,
   isOpen: false,
   polkadotToEthereum: {
-      blocks: {
-        latency: 0,
-        lastUpdated: new Date(Date.now()),
-      },
-      messages: {
-        unconfirmed: 0,
-        lastUpdated: new Date(Date.now()),
-      }
+    blocksRelativeTime: true,
+    messagesRelativeTime: true,
+    blocks: {
+      latency: 0,
+      lastUpdated: new Date(Date.now()),
+      lastUpdatedBestGuess: false,
     },
-    ethereumToPolkadot: {
-      blocks: {
-        latency: 0,
-        lastUpdated: new Date(Date.now()),
-      },
-      messages: {
-        unconfirmed: 0,
-        lastUpdated: new Date(Date.now()),
-      }
+    messages: {
+      unconfirmed: 0,
+      lastUpdated: new Date(Date.now()),
+      lastUpdatedBestGuess: false,
     }
-  };
+  },
+  ethereumToPolkadot: {
+    blocksRelativeTime: true,
+    messagesRelativeTime: true,
+    blocks: {
+      latency: 0,
+      lastUpdated: new Date(Date.now()),
+      lastUpdatedBestGuess: false,
+    },
+    messages: {
+      unconfirmed: 0,
+      lastUpdated: new Date(Date.now()),
+      lastUpdatedBestGuess: false,
+    }
+  }
+};
 
 export const bridgeHealthSlice = createSlice({
   name: 'bridgeHealth',
@@ -84,19 +98,19 @@ export const bridgeHealthSlice = createSlice({
       },
     setError: 
       (state, action: PayloadAction<string>) => {
-        state.loading = false;
-        state.error = true;
+        state.isLoading = false;
+        state.hasError = true;
         state.errorMessage = action.payload;
         return state;
       },
     setLoading:
       (state, action: PayloadAction<boolean>) => {
         if(action.payload) {
-          state.loading = true;
+          state.isLoading = true;
         } else {
-          state.loading = false;
+          state.isLoading = false;
         }
-        state.error = false;
+        state.hasError = false;
         state.errorMessage = "";
         return state;
       },
