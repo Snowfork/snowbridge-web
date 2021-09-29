@@ -8,6 +8,7 @@ import {
   BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
   HEALTH_CHECK_POLL_INTERVAL_MILLISECONDS,
   HEALTH_CHECK_POLL_MAX_BLOCKS,
+  HEALTH_CHECK_POLL_SKIP_BLOCKS,
 } from '../../config'
 import Web3 from "web3";
 import { ApiPromise } from "@polkadot/api";
@@ -155,7 +156,7 @@ const getParachainMessageInfo = async (polkadotApi: ApiPromise, channel: string,
       }
     }
     changeHash = blockHash;
-    blockNumber -= 50;
+    blockNumber -= HEALTH_CHECK_POLL_SKIP_BLOCKS;
   }
 
   const signedBlock = await polkadotApi.rpc.chain.getBlock(changeHash);
@@ -202,7 +203,7 @@ const getParachainEthInfo = async (polkadotApi: ApiPromise) => {
       }
     }
     changeHash = blockHash;
-    blockNumber -= 50;
+    blockNumber -= HEALTH_CHECK_POLL_SKIP_BLOCKS;
   }
 
   const signedBlock = await polkadotApi.rpc.chain.getBlock(changeHash);
