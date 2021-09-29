@@ -22,6 +22,7 @@ export default {
 
   // Polkadotjs API Provider
   POLKADOT_API_PROVIDER: 'ws://localhost:11144',
+  POLKADOT_RELAY_API_PROVIDER: 'ws://localhost:9944',
 
   // Minimum Number of confirmations required for an ETH transaction
   // to be regarded as a success

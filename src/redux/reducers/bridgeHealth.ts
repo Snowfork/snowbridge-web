@@ -96,7 +96,7 @@ export const bridgeHealthSlice = createSlice({
         state.lastUpdated = action.payload;
         return state;
       },
-    setError: 
+    setError:
       (state, action: PayloadAction<string>) => {
         state.isLoading = false;
         state.hasError = true;
@@ -105,7 +105,7 @@ export const bridgeHealthSlice = createSlice({
       },
     setLoading:
       (state, action: PayloadAction<boolean>) => {
-        if(action.payload) {
+        if (action.payload) {
           state.isLoading = true;
         } else {
           state.isLoading = false;

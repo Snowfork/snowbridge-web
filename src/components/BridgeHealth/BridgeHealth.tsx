@@ -49,6 +49,7 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
     net: {
       web3,
       polkadotApi,
+      polkadotRelayApi,
     },
     bridgeHealth: {
       lastUpdated,
@@ -68,12 +69,12 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
 
   const refreshTab = () => {
     dispatch(bridgeHealthSlice.actions.setLoading(true));
-    dispatch(startHealthCheckPoll(web3, polkadotApi));
+    dispatch(startHealthCheckPoll(web3, polkadotApi, polkadotRelayApi));
   };
 
   const dispatch = useDispatch();
   useEffect(()=>{
-    dispatch(startHealthCheckPoll(web3, polkadotApi));
+    dispatch(startHealthCheckPoll(web3, polkadotApi, polkadotRelayApi));
   }, []);
 
   const now = new Date(Date.now());

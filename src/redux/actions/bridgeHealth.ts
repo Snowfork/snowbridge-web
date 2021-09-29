@@ -13,19 +13,19 @@ import { ApiPromise } from "@polkadot/api";
 import { Contract } from "web3-eth-contract";
 import { SignedBlock } from '@polkadot/types/interfaces'
 
-export const startHealthCheckPoll = (web3: Web3 | undefined, polkadotApi: ApiPromise | undefined):
+export const startHealthCheckPoll = (web3: Web3 | undefined, polkadotApi: ApiPromise | undefined, polkadotRelayApi: ApiPromise | undefined):
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
     dispatch: ThunkDispatch<{}, {}, AnyAction>,
   ): Promise<void> => {
-    pollHealth(web3, polkadotApi, dispatch);
+    pollHealth(web3!, polkadotApi!, polkadotRelayApi!, dispatch);
   }
 
-export const pollHealth = async (web3: Web3 | undefined, polkadotApi: ApiPromise | undefined, dispatch: ThunkDispatch<{}, {}, AnyAction>): Promise<void> => {
+export const pollHealth = async (web3: Web3, polkadotApi: ApiPromise, polkadotRelayApi: ApiPromise, dispatch: ThunkDispatch<{}, {}, AnyAction>): Promise<void> => {
   const delay = (delay: number): Promise<void> => new Promise(r => setTimeout(r, delay));
   while (true) {
     try {
-      await updateHealthCheck(web3, polkadotApi, dispatch);
-      await delay(HEALTH_CHECK_POLL_INTERVAL_MILLISECONDS);
+      await updateHealthCheck(web3, polkadotApi, polkadotRelayApi, dispatch);
+      //await delay(HEALTH_CHECK_POLL_INTERVAL_MILLISECONDS);
     } catch (err) {
       console.error("Failed to get bridge health.", err);
       dispatch(bridgeHealthSlice.actions.setError("Bridge health unavailable."));
@@ -34,39 +34,49 @@ export const pollHealth = async (web3: Web3 | undefined, polkadotApi: ApiPromise
   }
 }
 
-export const updateHealthCheck = async (web3: Web3 | undefined, polkadotApi: ApiPromise | undefined, dispatch: ThunkDispatch<{}, {}, AnyAction>): Promise<void> => {
-
-  const ethInfo = await getLatestEthInfo(web3!);
-
-  const basicOutboundChannelContract = new web3!.eth.Contract(
-    BasicOutboundChannel.abi as any,
-    BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
-  );
-  const basicOutboundEth = await getEthMessageInfo(web3!, basicOutboundChannelContract, 'Message', ethInfo.latest_block);
-
-  const basicInboundChannelContract = new web3!.eth.Contract(
-    BasicInboundChannel.abi as any,
-    BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-  );
-  const basicInboundEth = await getEthMessageInfo(web3!, basicInboundChannelContract, 'MessageDispatched', ethInfo.latest_block);
-  const beefyContractAddress = await basicInboundChannelContract.methods.beefyLightClient().call();
-
-  const ethBeefyInfo = await getLatestBeefyInfo(web3!, ethInfo.latest_block, beefyContractAddress);
-
-  const polkadotFinalizedHash = await polkadotApi!.rpc.chain.getFinalizedHead();
-  const polkadotFinalizedHeader = await polkadotApi!.rpc.chain.getHeader(polkadotFinalizedHash);
-  const relaychainLatestBlock = polkadotFinalizedHeader.number.toNumber();
-
+export const updateHealthCheck = async (web3: Web3, polkadotApi: ApiPromise, polkadotRelayApi: ApiPromise, dispatch: ThunkDispatch<{}, {}, AnyAction>): Promise<void> => {
   // BasicOutboundModule.Nonce
   const basicOutboundNonceKey = "0x29909c5f848a36dfe9c61eb048e04aab718368a0ace36e2b1b8b6dbd7f8093c0";
-
-  const basicOutboundParachain = await getParachainMessageInfo(polkadotApi!, 'basicOutboundChannel', basicOutboundNonceKey);
-
   // BasicInboundModule.Nonce
   const basicInboundNonceKey = "0xc7e938b4500e324f906783aa6070fba7718368a0ace36e2b1b8b6dbd7f8093c0";
 
-  const basicInboundParachain = await getParachainMessageInfo(polkadotApi!, 'basicInboundChannel', basicInboundNonceKey);
-  const parachainEthInfo = await getParachainEthInfo(polkadotApi!);
+  const basicInboundChannelContract = new web3.eth.Contract(
+    BasicInboundChannel.abi as any,
+    BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+  );
+
+  const basicOutboundChannelContract = new web3.eth.Contract(
+    BasicOutboundChannel.abi as any,
+    BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
+  );
+
+  const ethInfoRequest = getLatestEthInfo(web3);
+  const beefyContractAddressRequest = basicInboundChannelContract.methods.beefyLightClient().call();
+  const parachainEthInfoRequest = getParachainEthInfo(polkadotApi);
+  const relaychainLatestBlockRequest = getLatestRelayChainInfo(polkadotRelayApi);
+  const basicOutboundParachainRequest = getParachainMessageInfo(polkadotApi, 'basicOutboundChannel', basicOutboundNonceKey);
+  const basicInboundParachainRequest = getParachainMessageInfo(polkadotApi, 'basicInboundChannel', basicInboundNonceKey);
+
+  const ethInfo = await ethInfoRequest;
+  const beefyContractAddress = await beefyContractAddressRequest;
+
+  const ethBeefyInfoRequest = getLatestBeefyInfo(web3, ethInfo.latest_block, beefyContractAddress);
+  const basicOutboundEthRequest = getEthMessageInfo(web3, basicOutboundChannelContract, 'Message', ethInfo.latest_block);
+  const basicInboundEthRequest = getEthMessageInfo(web3, basicInboundChannelContract, 'MessageDispatched', ethInfo.latest_block);
+
+  const basicOutboundEth = await basicOutboundEthRequest;
+  const basicInboundEth = await basicInboundEthRequest;
+  const ethBeefyInfo = await ethBeefyInfoRequest;
+  const basicOutboundParachain = await basicOutboundParachainRequest;
+  const basicInboundParachain = await basicInboundParachainRequest;
+  const parachainEthInfo = await parachainEthInfoRequest;
+  const relaychainLatestBlock = await relaychainLatestBlockRequest;
+
+  console.log("polk -> eth block", relaychainLatestBlock, ethBeefyInfo.block);
+  console.log("polk -> eth message", basicOutboundParachain.nonce, basicInboundEth.nonce);
+
+  console.log("eth -> polk block", ethInfo.latest_block, parachainEthInfo.block);
+  console.log("eth -> polk message", basicOutboundEth.nonce - basicInboundParachain.nonce);
 
   const polkToEth = {
     blocks: {
@@ -102,7 +112,7 @@ export const updateHealthCheck = async (web3: Web3 | undefined, polkadotApi: Api
   dispatch(bridgeHealthSlice.actions.setLoading(false));
 };
 
-const MaxBlocks = 1000;
+const MaxBlocks = 500;
 
 const getEthMessageInfo = async (web3: Web3, contract: Contract, event: string, blockNumber: number) => {
   let startBlock = (blockNumber - MaxBlocks);
@@ -159,6 +169,12 @@ const getLatestEthInfo = async (web3: Web3) => {
   return { latest_block: blockNumber, date: new Date(Number(block.timestamp) * 1000) };
 }
 
+const getLatestRelayChainInfo = async (polkadotRelayApi: ApiPromise) => {
+  const relayChainFinalizedHash = await polkadotRelayApi.rpc.chain.getFinalizedHead();
+  const relayChainFinalizedHead = await polkadotRelayApi.rpc.chain.getHeader(relayChainFinalizedHash);
+  return relayChainFinalizedHead.number.toNumber();
+}
+
 const getParachainEthInfo = async (polkadotApi: ApiPromise) => {
   const finalizedBlockHash = await polkadotApi.rpc.chain.getFinalizedHead();
   const finalizedBlockHeader = await polkadotApi.rpc.chain.getHeader(finalizedBlockHash);
@@ -193,7 +209,7 @@ const getParachainEthInfo = async (polkadotApi: ApiPromise) => {
   const signedBlock = await polkadotApi.rpc.chain.getBlock(changeHash);
   const timestamp = getTimestampFromParachainBlock(signedBlock)
 
-  return { block: ethBlockNumber , date: timestamp, bestGuess };
+  return { block: ethBlockNumber, date: timestamp, bestGuess };
 }
 
 const getLatestBeefyInfo = async (web3: Web3, blockNumber: number, address: string) => {

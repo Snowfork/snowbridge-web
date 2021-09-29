@@ -24,6 +24,7 @@ export default {
 
   // Polkadotjs API Provider
   POLKADOT_API_PROVIDER: 'wss://parachain-rpc.snowbridge.network',
+  POLKADOT_RELAY_API_PROVIDER: 'wss://polkadot-rpc.snowbridge.network',
 
   // Minimum Number of confirmations required for an ETH transaction
   // to be regarded as a success
