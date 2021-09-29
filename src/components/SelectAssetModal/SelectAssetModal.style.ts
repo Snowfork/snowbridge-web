@@ -3,7 +3,6 @@ import styled from 'styled-components';
 export const TokenList = styled.ul`
   display: flex;
   flex-direction: column;
-  height: 100%;
   list-style: none;
   padding: 0;
   margin: 0;

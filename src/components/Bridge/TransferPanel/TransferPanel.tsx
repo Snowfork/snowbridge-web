@@ -4,9 +4,10 @@ import styled from 'styled-components';
 
 import {
   setShowConfirmTransactionModal, setSwapDirection,
+  updateSelectedAsset,
 } from '../../../redux/actions/bridge';
+import { ethereumProviderSelector, isNetworkPermittedSelector } from '../../../redux/reducers/net';
 import { SwapDirection, Chain } from '../../../types/types';
-import { updateSelectedAsset } from '../../../redux/actions/bridge';
 
 import {
   dotSelector,
@@ -30,6 +31,8 @@ import TransactionListButton from '../../Button/TransactionListButton';
 import SwitchButton from '../../Button/SwitchButton';
 import FungibleTokenBalance from './FungibleTokenBalance';
 
+import { PERMITTED_METAMASK_NETWORK, PERMITTED_METAMASK_NETWORK_ID } from '../../../config';
+
 const INSUFFICIENT_GAS_ERROR = 'Insufficient gas';
 
 type Props = {
@@ -42,6 +45,8 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
   const tokenBalances = useAppSelector(tokenBalancesByNetwork);
   const dot = useAppSelector(dotSelector);
   const ether = useAppSelector(etherSelector);
+  const isMetamaskNetworkPermitted = useAppSelector(isNetworkPermittedSelector);
+  const ethereumProvider = useAppSelector(ethereumProviderSelector);
 
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethereumGasBalance = ether?.balance?.eth;
@@ -55,7 +60,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
     selectedAsset,
     depositAmount,
     swapDirection,
-    assets
+    assets,
   } = useAppSelector((state) => state.bridge);
 
   const dispatch = useDispatch();
@@ -63,7 +68,6 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
 
   // check the user has enough gas for the transaction
   useEffect(() => {
-
     if (!selectedAsset) {
       dispatch(updateSelectedAsset(assets[0]));
     }
@@ -89,7 +93,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
 
   const setAssetError = (assetError: string) => {
     setErrors((errors) => ({ ...errors, asset: assetError }));
-  }
+  };
 
   const handleTransferClicked = () => {
     dispatch(setShowConfirmTransactionModal(true));
@@ -103,9 +107,30 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
     }
   };
 
+  const switchNetwork = async () => {
+    if (ethereumProvider) {
+      try {
+        await ethereumProvider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: PERMITTED_METAMASK_NETWORK_ID }],
+        });
+      } catch (error) {
+        // Silent catch
+      }
+    }
+  };
+
+  const handleAssetSelect = () => {
+    if (isMetamaskNetworkPermitted) {
+      setShowAssetSelector(true);
+    } else {
+      switchNetwork();
+    }
+  };
+
   const selectedAssetSourceChain = selectedAsset?.chain === Chain.ETHEREUM ? 0 : 1;
-  const selectedAssetValid = selectedAsset?.type === 0 ||
-    (selectedAsset?.type === 1 && selectedAssetSourceChain === swapDirection);
+  const selectedAssetValid = selectedAsset?.type === 0
+    || (selectedAsset?.type === 1 && selectedAssetSourceChain === swapDirection);
   const errorText = (selectedAsset?.type === AssetType.ERC20 && errors.asset) || errors.balance;
 
   const isDepositDisabled = !!errorText
@@ -113,45 +138,69 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
 
   const chains = getChainsFromDirection(swapDirection);
 
+  const renderActionButton = () => {
+    if (!isMetamaskNetworkPermitted) {
+      return (
+        <DOSButton
+          onClick={switchNetwork}
+        >
+          {`Switch to ${PERMITTED_METAMASK_NETWORK} network`}
+        </DOSButton>
+      );
+    }
+
+    return (
+      <DOSButton
+        onClick={handleTransferClicked}
+        disabled={isDepositDisabled}
+      >
+        Transfer Asset(s)
+      </DOSButton>
+    );
+  };
+
   return (
     <Panel className={className}>
-      <div className='selected-asset-section'>
-        {selectedAsset?.type === 0 &&
-          <SelectedFungibleToken setShowAssetSelector={setShowAssetSelector} setError={setAssetError} />}
-        {selectedAsset?.type === 1 &&
-          <SelectedNFT setShowAssetSelector={setShowAssetSelector} />}
+      <div className="selected-asset-section">
+        {selectedAsset?.type === 0
+          && <SelectedFungibleToken openAssetSelector={handleAssetSelect} setError={setAssetError} />}
+        {selectedAsset?.type === 1
+          && <SelectedNFT openAssetSelector={handleAssetSelect} />}
       </div>
-      <Panel className='chain-direction-display-panel'>
-        <div className='chain-direction-display'>
+      <Panel className="chain-direction-display-panel">
+        <div className="chain-direction-display">
           <DirectionBadge direction="From" />
           <ChainDisplay chain={chains.from} />
-          <AddressDisplay className={'address-display'} chain={chains.from} />
+          <AddressDisplay className="address-display" chain={chains.from} />
         </div>
-        {selectedAsset?.type === 0 && <FungibleTokenBalance amount={tokenBalances.sourceNetwork}
-          decimals={decimalMap.from} />}
+        {selectedAsset?.type === 0 && (
+        <FungibleTokenBalance
+          amount={tokenBalances.sourceNetwork}
+          decimals={decimalMap.from}
+        />
+)}
       </Panel>
 
       <div>
         <SwitchButton onClick={changeTransactionDirection} />
       </div>
 
-      <Panel className='chain-direction-display-panel'>
-        <div className='chain-direction-display'>
+      <Panel className="chain-direction-display-panel">
+        <div className="chain-direction-display">
           <DirectionBadge direction="To" />
           <ChainDisplay chain={chains.to} />
-          <AddressDisplay className={'address-display'} chain={chains.to} />
+          <AddressDisplay className="address-display" chain={chains.to} />
         </div>
-        {selectedAsset?.type === 0 &&
-          <FungibleTokenBalance amount={tokenBalances.destinationNetwork}
-            decimals={decimalMap.to} />}
+        {selectedAsset?.type === 0
+          && (
+          <FungibleTokenBalance
+            amount={tokenBalances.destinationNetwork}
+            decimals={decimalMap.to}
+          />
+)}
       </Panel>
 
-      <DOSButton
-        onClick={handleTransferClicked}
-        disabled={isDepositDisabled}
-      >
-        {errorText ? errorText : 'Transfer Asset(s)'}
-      </DOSButton>
+      {renderActionButton()}
       <TransactionListButton />
     </Panel>
   );
@@ -162,8 +211,8 @@ export default styled(TransferPanel)`
   align-items: center;
   gap: 15px;
 
-  border: 1px solid ${props => props.theme.colors.transferPanelBorder};
-  background: ${props => props.theme.colors.transferPanelBackground};
+  border: 1px solid ${(props) => props.theme.colors.transferPanelBorder};
+  background: ${(props) => props.theme.colors.transferPanelBackground};
 
   .selected-asset-section {
     margin-bottom: 10px;

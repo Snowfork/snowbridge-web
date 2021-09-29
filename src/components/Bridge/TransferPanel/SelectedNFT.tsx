@@ -7,11 +7,10 @@ import { NonFungibleToken } from '../../../types/Asset';
 import { Chain } from '../../../types/types';
 
 type Props = {
-  setShowAssetSelector: (show: boolean) => void,
+  openAssetSelector: () => void,
 }
 
-export const SelectedNFT = ({ setShowAssetSelector }: Props) => {
-
+export const SelectedNFT = ({ openAssetSelector }: Props) => {
   const {
     selectedAsset,
     swapDirection,
@@ -25,7 +24,9 @@ export const SelectedNFT = ({ setShowAssetSelector }: Props) => {
     ? `${selectedAsset?.name}:${token.subId || token?.ethId}`
     : 'Select an asset';
 
-  return <ExpandButton onClick={() => setShowAssetSelector(true)}>
-    {selectedAssetText}
-  </ExpandButton>;
+  return (
+    <ExpandButton onClick={() => openAssetSelector()}>
+      {selectedAssetText}
+    </ExpandButton>
+  );
 };

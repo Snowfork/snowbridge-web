@@ -23,11 +23,11 @@ const AMOUNT_NOT_SET_ERROR = 'Set transfer amount';
 
 type Props = {
   className?: string;
-  setShowAssetSelector: (show: boolean) => void,
+  openAssetSelector: () => void,
   setError: (error: string) => void,
 }
 
-const SelectedFungibleToken = ({ className, setShowAssetSelector, setError }: Props) => {
+const SelectedFungibleToken = ({ className, openAssetSelector, setError }: Props) => {
   // state
   const tokenBalances = useAppSelector(tokenBalancesByNetwork);
 
@@ -94,7 +94,7 @@ const SelectedFungibleToken = ({ className, setShowAssetSelector, setError }: Pr
             type="number"
             onPillClick={handleMaxClicked}
           />
-          <ExpandButton onClick={() => setShowAssetSelector(true)}>
+          <ExpandButton onClick={() => openAssetSelector()}>
             {selectedAsset?.symbol}
           </ExpandButton>
         </div>
