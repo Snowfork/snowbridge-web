@@ -17,7 +17,6 @@ import {
   BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
   APP_DOT_CONTRACT_ADDRESS,
   APP_ERC721_CONTRACT_ADDRESS,
-  BASIC_CHANNEL_ID,
 } from '../config';
 
 /* tslint:disable */
@@ -47,6 +46,8 @@ import {
   Asset, isEther, isNonFungible, NonFungibleToken,
 } from '../types/Asset';
 import { fetchEthAddress } from '../redux/actions/EthTransactions';
+import { Channel } from '../types/types';
+import { getChannelID } from '../utils/common';
 
 export default class Eth extends Api {
   public static loadContracts(dispatch: Dispatch<any>, web3: Web3): void {
@@ -221,11 +222,14 @@ export default class Eth extends Api {
     ethContract: Contract,
     erc20Contract: Contract,
     erc721AppContract: Contract,
+    channel: Channel,
   ): PromiEvent<Contract> {
     try {
       const polkadotRecipientBytes: Uint8Array = ss58ToU8(
         polkadotRecipient!,
       );
+
+      const channelId = getChannelID(channel);
 
       // call ERC721 app for nfts
       if (isNonFungible(asset)) {
@@ -234,7 +238,7 @@ export default class Eth extends Api {
           asset.contract!.options.address,
           token.ethId.toString(),
           polkadotRecipientBytes,
-          BASIC_CHANNEL_ID,
+          channelId,
         ).send({
           from: sender,
           gas: 500000,
@@ -245,8 +249,7 @@ export default class Eth extends Api {
       // call ether contract for ether
       if (isEther(asset)) {
         return ethContract.methods
-          // TODO: SET incentivized channel ID
-          .lock(polkadotRecipientBytes, BASIC_CHANNEL_ID)
+          .lock(polkadotRecipientBytes, channelId)
           .send({
             from: sender,
             gas: 500000,
@@ -256,12 +259,11 @@ export default class Eth extends Api {
 
       // call the token contract for ERC20
       return erc20Contract.methods
-        // TODO: SET incentivized channel ID
         .lock(
           asset.address,
           polkadotRecipientBytes,
           amount,
-          BASIC_CHANNEL_ID,
+          channelId,
         )
         .send({
           from: sender,
@@ -290,20 +292,21 @@ export default class Eth extends Api {
     sender: string,
     recipient: string,
     polkadotApi: ApiPromise,
+    channel: Channel,
     extrinsicEventCallback: (result: any) => void,
   ): Promise<any> {
     let burnExtrinsic;
+
+    const channelId = getChannelID(channel);
     if (isEther(asset)) {
       burnExtrinsic = polkadotApi.tx.ethApp.burn(
-        // TODO: set incentivized channel ID
-        BASIC_CHANNEL_ID,
+        channelId,
         recipient,
         amount,
       );
     } else {
       burnExtrinsic = polkadotApi.tx.erc20App.burn(
-        // TODO: set incentivized channel ID
-        BASIC_CHANNEL_ID,
+        channelId,
         asset.address,
         recipient,
         amount,

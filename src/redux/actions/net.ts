@@ -11,6 +11,7 @@ import {
 import {
   netSlice,
 } from '../reducers/net';
+import { Channel } from '../../types/types';
 
 export const {
   setAppDotContract,
@@ -41,12 +42,14 @@ export const subscribeEvents = ():
         const dispatchEvents = _.filter(eventRecords, (eR) => eR.event.section === 'dispatch');
         dispatchEvents.forEach(({ event }) => {
           const nonce = (event.data as any)[0].nonce.toString();
+          const channelId = (event.data as any)[0].channelId.toString();
+          const channel = channelId === 'Incentivized' ? Channel.INCENTIVIZED : Channel.BASIC;
           // TODO:
           // const dispatchSuccessNotification = (text: string) => this.dispatch(
           // notify({ text, color: "success" })
           // );
-          console.log('parachain message dispatched', nonce);
-          dispatch(parachainMessageDispatched({ nonce }));
+          console.log(`Parachain message dispatched - Nonce: ${nonce}, Channel: ${channel}`);
+          dispatch(parachainMessageDispatched({ nonce, channel }));
         });
       });
     } else {

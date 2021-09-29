@@ -20,10 +20,13 @@ import {
 } from '../redux/actions/net';
 
 // Config
-import { BASIC_CHANNEL_ID, POLKADOT_API_PROVIDER } from '../config';
+import { POLKADOT_API_PROVIDER } from '../config';
 import Api, { ss58ToU8 } from './api';
 import { Asset, isDot, isErc20 } from '../types/Asset';
 import { updateBalances } from '../redux/actions/bridge';
+
+import { Channel } from '../types/types';
+import { getChannelID } from '../utils/common';
 
 export default class Polkadot extends Api {
   // Get all polkadot addresses
@@ -149,7 +152,7 @@ export default class Polkadot extends Api {
       dispatch(subscribeEvents());
     } catch (err) {
       console.log('error starting polkadot network', err);
-      if (err.message === 'PolkadotJS missing') {
+      if ((err as any).message === 'PolkadotJS missing') {
         dispatch(setPolkadotjsMissing());
       }
       throw new Error('Poldotjs API endpoint not Connected');
@@ -161,6 +164,7 @@ export default class Polkadot extends Api {
     ethAddress: string,
     polkadotAddress: string,
     amount: string,
+    channel: Channel,
     callback: (result: any) => void,
   ): Promise<any> {
     const account = await this.getAccount(polkadotAddress);
@@ -170,8 +174,10 @@ export default class Polkadot extends Api {
       // we can use web3FromSource which will return an InjectedExtension type
       const injector = await web3FromSource(account.meta.source);
 
+      const channelId = getChannelID(channel);
+
       return polkadotApi?.tx.dotApp.lock(
-        BASIC_CHANNEL_ID,
+        channelId,
         ethAddress,
         amount,
       )
@@ -186,16 +192,19 @@ export default class Polkadot extends Api {
     ethAddress: string,
     polkadotAddress: string,
     amount: string,
+    channel: Channel,
   ): PromiEvent<Contract> {
     try {
       const amountWrapped = Web3.utils.toBN(amount);
       const recipientBytes = ss58ToU8(polkadotAddress!);
 
+      const channelId = getChannelID(channel);
+
       return appDotContract?.methods.burn(
         recipientBytes,
         amountWrapped,
         //  TODO: use incentivized channel ID?
-        BASIC_CHANNEL_ID,
+        channelId,
       )
         .send({
           from: ethAddress,
@@ -222,12 +231,14 @@ export default class Polkadot extends Api {
     subTokenId: number,
     polkadotSenderAddress: string,
     ethRecipient: string,
+    channel: Channel,
     callback: (result: any) => void,
   ): Promise<() => void> {
     const account = await this.getAccount(polkadotSenderAddress);
     const injector = await web3FromSource(account.meta.source);
+    const channelId = getChannelID(channel);
 
-    return polkadotApi.tx.erc721App.burn(BASIC_CHANNEL_ID, subTokenId, ethRecipient)
+    return polkadotApi.tx.erc721App.burn(channelId, subTokenId, ethRecipient)
       .signAndSend(account.address, { signer: injector.signer }, callback);
   }
 }

@@ -3,7 +3,7 @@ import { EventData } from 'web3-eth-contract';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { Asset } from '../../types/Asset';
-import { Chain, SwapDirection } from '../../types/types';
+import { Chain, SwapDirection, Channel } from '../../types/types';
 import { RootState } from '../store';
 
 export enum TransactionStatus {
@@ -43,6 +43,7 @@ export interface Transaction {
   error?: string;
   asset: Asset;
   direction: SwapDirection
+  channel: Channel;
 }
 
 // Interface for the Ethereum 'MessageDispatched' event,
@@ -77,7 +78,7 @@ export const transactionsSlice = createSlice({
       // update pending tx
       state.pendingTransaction = action.payload;
     },
-    setConfirmations: (state, action: PayloadAction<{confirmations: number, hash: string}>) => {
+    setConfirmations: (state, action: PayloadAction<{ confirmations: number, hash: string }>) => {
       const getTransactionStatus = (transaction: Transaction): TransactionStatus => {
         // check if the transaction has already been relayed to polkadot
         if (action.payload.confirmations >= REQUIRED_ETH_CONFIRMATIONS) {
@@ -99,7 +100,7 @@ export const transactionsSlice = createSlice({
         }
       }
     },
-    setTransactionStatus: (state, action: PayloadAction<{hash: string, status: TransactionStatus}>) => {
+    setTransactionStatus: (state, action: PayloadAction<{ hash: string, status: TransactionStatus }>) => {
       const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
 
       if (transaction) {
@@ -108,18 +109,21 @@ export const transactionsSlice = createSlice({
         }
       }
     },
-    updateTransaction: (state, action: PayloadAction<{hash: string, update: Partial<Transaction>}>) => {
+    updateTransaction: (state, action: PayloadAction<{ hash: string, update: Partial<Transaction> }>) => {
       state.transactions = state.transactions.map((tx) => (tx.hash === action.payload.hash ? { ...tx, ...action.payload.update } : tx));
     },
-    setNonce: (state, action: PayloadAction<{hash: string, nonce: string}>) => {
+    setNonce: (state, action: PayloadAction<{ hash: string, nonce: string }>) => {
       const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
 
       if (transaction) {
         transaction.nonce = action.payload.nonce;
       }
     },
-    parachainMessageDispatched: (state, action: PayloadAction<{nonce: string}>) => {
-      const transaction = state.transactions.filter((tx) => tx.nonce === action.payload.nonce)[0];
+    parachainMessageDispatched: (state, action: PayloadAction<{ nonce: string, channel: Channel }>) => {
+      const transaction = state.transactions.filter((tx) => {
+        return tx.nonce === action.payload.nonce &&
+          tx.channel === action.payload.channel
+      })[0];
       if (transaction) {
         transaction.isMinted = true;
         transaction.status = TransactionStatus.DISPATCHED;
@@ -132,7 +136,7 @@ export const transactionsSlice = createSlice({
     setPendingTransaction: (state, action: PayloadAction<Transaction>) => {
       state.pendingTransaction = action.payload;
     },
-    ethMessageDispatched: (state, action: PayloadAction<{nonce: string, dispatchTransactionNonce: string}>) => {
+    ethMessageDispatched: (state, action: PayloadAction<{ nonce: string, dispatchTransactionNonce: string }>) => {
       const transaction = state.transactions.filter((tx) => tx.nonce === action.payload.nonce)[0];
       if (transaction) {
         transaction.status = TransactionStatus.DISPATCHED;

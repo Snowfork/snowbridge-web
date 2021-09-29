@@ -13,6 +13,7 @@ import {
 import Polkadot from '../../net/polkadot';
 import { Chain, SwapDirection } from '../../types/types';
 import { isNonFungible, NonFungibleToken } from '../../types/Asset';
+import { ACTIVE_CHANNEL } from '../../config';
 
 /**
  * Locks tokens on Polkadot and mints tokens on Ethereum
@@ -46,13 +47,15 @@ export const lockPolkadotAsset = (
         Chain.POLKADOT,
         selectedAsset!,
         SwapDirection.PolkadotToEthereum,
+        ACTIVE_CHANNEL,
       );
       dispatch(setPendingTransaction(pendingTransaction));
       const token = selectedAsset?.token as NonFungibleToken;
       const subTokenId = Number(token.subId);
 
       if (isNonFungible(selectedAsset!)) {
-        const unsub = await Polkadot.burnERC721(polkadotApi!, subTokenId, polkadotAddress!, ethAddress!,
+        const unsub = await Polkadot.burnERC721(
+          polkadotApi!, subTokenId, polkadotAddress!, ethAddress!, ACTIVE_CHANNEL,
           (res: any) => {
             const tx = handlePolkadotTransactionEvents(
               res,
@@ -82,6 +85,7 @@ export const lockPolkadotAsset = (
           ethAddress!,
           polkadotAddress!,
           amount,
+          ACTIVE_CHANNEL,
           (res: any) => {
             const tx = handlePolkadotTransactionEvents(
               res,
@@ -140,6 +144,7 @@ export const unlockPolkadotAsset = (
         Chain.POLKADOT,
         state.bridge.selectedAsset!,
         state.bridge.swapDirection!,
+        ACTIVE_CHANNEL,
       );
       dispatch(setPendingTransaction(pendingTransaction));
 
@@ -148,6 +153,7 @@ export const unlockPolkadotAsset = (
         ethAddress!,
         polkadotAddress!,
         amount,
+        ACTIVE_CHANNEL,
       );
 
       handleEthereumTransactionEvents(
