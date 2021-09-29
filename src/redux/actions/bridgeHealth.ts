@@ -54,7 +54,6 @@ export const updateHealthCheck = async (web3: Web3, polkadotApi: ApiPromise, pol
   const ethInfoRequest = getLatestEthInfo(web3);
   const beefyContractAddressRequest = basicInboundChannelContract.methods.beefyLightClient().call();
   const parachainEthInfoRequest = getParachainEthInfo(polkadotApi);
-  const relaychainLatestBlockRequest = getLatestRelayChainInfo(polkadotRelayApi);
   const basicOutboundParachainRequest = getParachainMessageInfo(polkadotApi, 'basicOutboundChannel', basicOutboundNonceKey);
   const basicInboundParachainRequest = getParachainMessageInfo(polkadotApi, 'basicInboundChannel', basicInboundNonceKey);
 
@@ -64,6 +63,7 @@ export const updateHealthCheck = async (web3: Web3, polkadotApi: ApiPromise, pol
   const ethBeefyInfoRequest = getLatestBeefyInfo(web3, ethInfo.latest_block, beefyContractAddress);
   const basicOutboundEthRequest = getEthMessageInfo(web3, basicOutboundChannelContract, 'Message', ethInfo.latest_block);
   const basicInboundEthRequest = getEthMessageInfo(web3, basicInboundChannelContract, 'MessageDispatched', ethInfo.latest_block);
+  const relaychainLatestBlockRequest = getLatestRelayChainInfo(polkadotRelayApi);
 
   const basicOutboundEth = await basicOutboundEthRequest;
   const basicInboundEth = await basicInboundEthRequest;
@@ -77,7 +77,7 @@ export const updateHealthCheck = async (web3: Web3, polkadotApi: ApiPromise, pol
   console.log("polk -> eth message", basicOutboundParachain.nonce, basicInboundEth.nonce);
 
   console.log("eth -> polk block", ethInfo.latest_block, parachainEthInfo.block);
-  console.log("eth -> polk message", basicOutboundEth.nonce - basicInboundParachain.nonce);
+  console.log("eth -> polk message", basicOutboundEth.nonce, basicInboundParachain.nonce);
 
   const polkToEth = {
     blocks: {
@@ -116,16 +116,24 @@ export const updateHealthCheck = async (web3: Web3, polkadotApi: ApiPromise, pol
 const getEthMessageInfo = async (web3: Web3, contract: Contract, event: string, blockNumber: number) => {
   let startBlock = (blockNumber - HEALTH_CHECK_POLL_MAX_BLOCKS);
   if (startBlock < 0) startBlock = 0;
-  const nonces = await contract.getPastEvents(event, { fromBlock: startBlock });
-  if (nonces.length > 0) {
-    const lastEvent = nonces[nonces.length - 1];
+
+  const latestNonce = Number(await contract.methods.nonce().call());
+  const prevNonceEvents = await contract.getPastEvents(event, { fromBlock: startBlock });
+  
+  let bestGuess = false;
+  let timestamp = 0;
+  if (prevNonceEvents.length > 0) {
+    const lastEvent = prevNonceEvents[prevNonceEvents.length - 1];
     const blk = await web3.eth.getBlock(lastEvent.blockHash);
-    return { nonce: Number(lastEvent.returnValues.nonce), date: new Date(Number(blk.timestamp) * 1000), bestGuess: false };
+    timestamp = Number(blk.timestamp);
+    bestGuess = false;
   } else {
-    const nonce = Number(await contract.methods.nonce().call());
     const blk = await web3.eth.getBlock(blockNumber);
-    return { nonce, date: new Date(Number(blk.timestamp) * 1000), bestGuess: true };
+    timestamp = Number(blk.timestamp);
+    bestGuess = true;
   }
+
+  return { nonce: latestNonce, date: new Date(timestamp * 1000), bestGuess };
 };
 
 const getParachainMessageInfo = async (polkadotApi: ApiPromise, channel: string, storageKey: string) => {
@@ -153,19 +161,17 @@ const getParachainMessageInfo = async (polkadotApi: ApiPromise, channel: string,
       }
     }
     changeHash = blockHash;
-    blockNumber--;
+    blockNumber -= 50;
   }
 
   const signedBlock = await polkadotApi.rpc.chain.getBlock(changeHash);
   const timestamp = getTimestampFromParachainBlock(signedBlock);
-
   return { nonce, date: timestamp, bestGuess };
 }
 
 const getLatestEthInfo = async (web3: Web3) => {
-  const blockNumber = await web3!.eth.getBlockNumber();
-  const block = await web3.eth.getBlock(blockNumber);
-  return { latest_block: blockNumber, date: new Date(Number(block.timestamp) * 1000) };
+  const blockNumber = await web3.eth.getBlockNumber();
+  return { latest_block: blockNumber };
 }
 
 const getLatestRelayChainInfo = async (polkadotRelayApi: ApiPromise) => {
@@ -202,12 +208,11 @@ const getParachainEthInfo = async (polkadotApi: ApiPromise) => {
       }
     }
     changeHash = blockHash;
-    blockNumber--;
+    blockNumber -= 50;
   }
 
   const signedBlock = await polkadotApi.rpc.chain.getBlock(changeHash);
   const timestamp = getTimestampFromParachainBlock(signedBlock)
-
   return { block: ethBlockNumber, date: timestamp, bestGuess };
 }
 
@@ -220,14 +225,16 @@ const getLatestBeefyInfo = async (web3: Web3, blockNumber: number, address: stri
     address,
   );
 
-  const initialVerifications = await contract.getPastEvents('InitialVerificationSuccessful', { fromBlock: startBlock });
-  if (initialVerifications.length > 0) {
-    const lastInitialVerification = initialVerifications[initialVerifications.length - 1];
-    const blk = await web3.eth.getBlock(lastInitialVerification.blockHash);
-    return { block: Number(lastInitialVerification.returnValues.blockNumber), date: new Date(Number(blk.timestamp) * 1000), bestGuess: false };
-  }
-  const blk = await web3.eth.getBlock(blockNumber);
   const latestBeefyBlock = Number(await contract.methods.latestBeefyBlock().call());
+
+  const events = await contract.getPastEvents("FinalVerificationSuccessful", { fromBlock: startBlock });
+  if (events.length > 0) {
+    const lastEvent = events[events.length - 1];
+    const blk = await web3.eth.getBlock(lastEvent.blockHash);
+    return { block: latestBeefyBlock, date: new Date(Number(blk.timestamp) * 1000), bestGuess: false };
+  }
+
+  const blk = await web3.eth.getBlock(startBlock);
   return { block: latestBeefyBlock, date: new Date(Number(blk.timestamp) * 1000), bestGuess: true };
 }
 

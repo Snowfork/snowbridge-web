@@ -22,7 +22,7 @@ export default {
   // Health check data refresh interval
   HEALTH_CHECK_POLL_INTERVAL_MILLISECONDS: 120_000,
   // Health check will check at most n blocks for time information
-  HEALTH_CHECK_POLL_MAX_BLOCKS: 500,
+  HEALTH_CHECK_POLL_MAX_BLOCKS: 1000,
 
   // Polkadotjs API Provider
   POLKADOT_API_PROVIDER: 'wss://parachain-rpc.snowbridge.network',
