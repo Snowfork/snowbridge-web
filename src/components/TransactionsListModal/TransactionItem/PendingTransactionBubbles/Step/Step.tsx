@@ -14,6 +14,7 @@ export enum StepStatus {
   HOVERING,
   LOADING,
   COMPLETE,
+  ERROR,
 }
 
 const Wrapper = styled.div<StyledProps>`
@@ -22,9 +23,16 @@ const Wrapper = styled.div<StyledProps>`
   width: ${CIRCLE_SIZE}px;
   height: ${CIRCLE_SIZE}px;
   box-sizing: border-box;
-  background-color: ${(props) => (props.status === StepStatus.COMPLETE ?
-    props.theme.colors.stepComplete :
-    'transparent')};
+  background-color: ${(props) => {
+    switch (props.status) {
+      case StepStatus.COMPLETE:
+        return props.theme.colors.stepComplete;
+      case StepStatus.ERROR:
+        return props.theme.colors.stepError;
+      default:
+        return 'transparent';
+    }
+  }};
 `;
 
 const Link = styled.a`

@@ -36,6 +36,7 @@ export const {
   parachainMessageDispatched,
   setConfirmations,
   setNonce,
+  setError,
   setPendingTransaction,
   setTransactionStatus,
   updateTransaction,
@@ -166,8 +167,7 @@ export function handlePolkadotTransactionEvents(
       ),
     );
 
-    const handleChannelMessageDispatched = (event: MessageDispatchedEvent) => {
-      console.log('message dispatched', event);
+    const handleChannelMessageDispatched = (channel: Channel) => (event: MessageDispatchedEvent) => {
       if (
         event.returnValues.nonce === nonce
       ) {
@@ -175,6 +175,7 @@ export function handlePolkadotTransactionEvents(
           ethMessageDispatched({
             nonce: event.returnValues.nonce,
             dispatchTransactionNonce: pendingTransaction.nonce!,
+            channel
           }),
         );
       }
@@ -185,14 +186,14 @@ export function handlePolkadotTransactionEvents(
     incentivizedChannelContract
       .events
       .MessageDispatched({})
-      .on('data', handleChannelMessageDispatched);
+      .on('data', handleChannelMessageDispatched(Channel.INCENTIVIZED));
 
     // TODO: replace with incentivized channel?
     // eslint-disable-next-line no-unused-expressions
     basicChannelContract
       .events
       .MessageDispatched({})
-      .on('data', handleChannelMessageDispatched);
+      .on('data', handleChannelMessageDispatched(Channel.BASIC));
 
     return pendingTransaction;
   }
@@ -355,20 +356,29 @@ export function handleEthereumTransactionEvents(
         }
       },
     )
-    .on('error', (error: Error) => {
+    .on('error', (error: any) => {
+      console.log({ error })
       console.log('error locking tokens', error);
-      // TODO: render error message
-      dispatch(setPendingTransaction({
-        ...pendingTransaction,
-        status: TransactionStatus.REJECTED,
-        error: error.message,
-      }));
+      if (error?.code) {
+        dispatch(setPendingTransaction({
+          ...pendingTransaction,
+          status: TransactionStatus.REJECTED,
+          error: error.message,
+        }));
+      }
+      if (error?.receipt) {
+        dispatch(
+          setError({
+            hash: transactionHash,
+            error: error.receipt
+          }),
+        );
+      }
 
       dispatch(notify({
         text: 'Transaction Error',
         color: 'error',
       }));
-      throw error;
     });
 }
 

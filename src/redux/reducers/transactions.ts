@@ -119,6 +119,14 @@ export const transactionsSlice = createSlice({
         transaction.nonce = action.payload.nonce;
       }
     },
+    setError: (state, action: PayloadAction<{ hash: string, error: string }>) => {
+      const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
+
+      if (transaction) {
+        transaction.error = action.payload.error;
+        transaction.status = TransactionStatus.REJECTED;
+      }
+    },
     parachainMessageDispatched: (state, action: PayloadAction<{ nonce: string, channel: Channel }>) => {
       const transaction = state.transactions.filter((tx) => {
         return tx.nonce === action.payload.nonce &&
@@ -136,8 +144,13 @@ export const transactionsSlice = createSlice({
     setPendingTransaction: (state, action: PayloadAction<Transaction>) => {
       state.pendingTransaction = action.payload;
     },
-    ethMessageDispatched: (state, action: PayloadAction<{ nonce: string, dispatchTransactionNonce: string }>) => {
-      const transaction = state.transactions.filter((tx) => tx.nonce === action.payload.nonce)[0];
+    ethMessageDispatched: (state, action: PayloadAction<{
+      nonce: string, dispatchTransactionNonce: string, channel: Channel,
+    }>) => {
+      const transaction = state.transactions.filter((tx) => {
+        return tx.nonce === action.payload.nonce &&
+          tx.channel === action.payload.channel
+      })[0];
       if (transaction) {
         transaction.status = TransactionStatus.DISPATCHED;
         transaction.dispatchTransactionHash = action.payload.dispatchTransactionNonce;
@@ -151,4 +164,4 @@ export default transactionsSlice.reducer;
 export const transactionsInProgressSelector = (state: RootState): Transaction[] => state
   .transactions
   .transactions
-  .filter((tx) => tx.status < TransactionStatus.DISPATCHED);
+  .filter((tx) => tx.status < TransactionStatus.DISPATCHED && tx.status !== TransactionStatus.REJECTED);
