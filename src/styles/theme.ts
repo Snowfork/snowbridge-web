@@ -3,6 +3,7 @@ import { DefaultTheme } from 'styled-components';
 const colors = {
   shark: '#212226',
   darkGrey: '#1E1E1E',
+  superDarkGrey: 'rgba(0, 0, 0, 0.4)',
   straw: '#CFB97F',
   pitchBlack: '#000000',
   white: 'rgba(255, 255, 255, 1)',
@@ -32,6 +33,8 @@ const basic: DefaultTheme = {
     statusGood: colors.green,
     statusBad: colors.red,
   },
+
+  boxShadow: `8px 8px 0px ${colors.superDarkGrey}`,
 };
 
 export { basic };

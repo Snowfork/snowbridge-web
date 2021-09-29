@@ -28,7 +28,7 @@ export default styled(Button)`
 
   color: ${props => props.theme.colors.panelBackground};
 
-  box-shadow: 8px 8px 0px ${props => props.theme.colors.transferPanelBorder};
+  box-shadow: ${props => props.theme.boxShadow};
   border-radius: ${props => props.theme.borderRadius};
   border: none;
 
