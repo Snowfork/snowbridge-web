@@ -26,7 +26,7 @@ export const pollHealth = async (web3: Web3, polkadotApi: ApiPromise, polkadotRe
   while (true) {
     try {
       await updateHealthCheck(web3, polkadotApi, polkadotRelayApi, dispatch);
-      //await delay(HEALTH_CHECK_POLL_INTERVAL_MILLISECONDS);
+      await delay(HEALTH_CHECK_POLL_INTERVAL_MILLISECONDS);
     } catch (err) {
       console.error("Failed to get bridge health.", err);
       dispatch(bridgeHealthSlice.actions.setError("Bridge health unavailable."));
