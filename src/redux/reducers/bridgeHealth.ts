@@ -13,7 +13,6 @@ export interface MessageInfo {
 }
 
 export interface BridgeInfo {
-  blocksRelativeTime: boolean,
   messagesRelativeTime: boolean,
   blocks: BlockInfo,
   messages: MessageInfo,
@@ -21,7 +20,6 @@ export interface BridgeInfo {
 
 export interface BridgeHealthState {
   lastUpdated: Date,
-  lastUpdatedRelative: boolean,
   hasError: boolean,
   errorMessage: string,
   isLoading: boolean,
@@ -32,13 +30,11 @@ export interface BridgeHealthState {
 
 const initialState: BridgeHealthState = {
   lastUpdated: new Date(0),
-  lastUpdatedRelative: true,
   hasError: false,
   errorMessage: "",
   isLoading: true,
   isOpen: false,
   polkadotToEthereum: {
-    blocksRelativeTime: true,
     messagesRelativeTime: true,
     blocks: {
       latency: 0,
@@ -52,7 +48,6 @@ const initialState: BridgeHealthState = {
     }
   },
   ethereumToPolkadot: {
-    blocksRelativeTime: true,
     messagesRelativeTime: true,
     blocks: {
       latency: 0,

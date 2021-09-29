@@ -73,12 +73,6 @@ export const updateHealthCheck = async (web3: Web3, polkadotApi: ApiPromise, pol
   const parachainEthInfo = await parachainEthInfoRequest;
   const relaychainLatestBlock = await relaychainLatestBlockRequest;
 
-  console.log("polk -> eth block", relaychainLatestBlock, ethBeefyInfo.block);
-  console.log("polk -> eth message", basicOutboundParachain.nonce, basicInboundEth.nonce);
-
-  console.log("eth -> polk block", ethInfo.latest_block, parachainEthInfo.block);
-  console.log("eth -> polk message", basicOutboundEth.nonce, basicInboundParachain.nonce);
-
   const polkToEth = {
     blocks: {
       latency: relaychainLatestBlock - ethBeefyInfo.block,

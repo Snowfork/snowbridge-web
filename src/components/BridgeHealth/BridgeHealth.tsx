@@ -7,16 +7,25 @@ import { RootState } from '../../redux/store';
 import { bridgeHealthSlice, BridgeInfo } from '../../redux/reducers/bridgeHealth';
 import DOSButton from '../Button/DOSButton';
 import Modal from '../Modal';
+import { formatRelativeTimeToString } from '../../utils/relativeTime';
 
 type BridgeHealthProps = {
   className?: string
 }
 
-const formatTime = (time: Date | null, bestGuess: boolean, relative: boolean, now: Date) => {
- return time?.toISOString() ?? "unavailable";
+const formatTime = (time: Date | null, bestGuess: boolean, now: Date) => {
+  if(time == null) {
+    return "unavailable";
+  }
+
+  const relativeTime = formatRelativeTimeToString(now, time);
+  if(bestGuess) {
+    return "more than " + relativeTime;
+  }
+  return relativeTime;
 }
 
-const RenderBridgeInfo = (props:{heading: string, info: BridgeInfo, time: Date}) => {
+const RenderBridgeInfo = (props: { heading: string, info: BridgeInfo, time: Date }) => {
   return (
     <div>
       <span>{props.heading}</span>
@@ -28,7 +37,7 @@ const RenderBridgeInfo = (props:{heading: string, info: BridgeInfo, time: Date})
           </tr>
           <tr>
             <td>Last Block Update:</td>
-            <td>{formatTime(props.info.blocks.lastUpdated, props.info.blocks.lastUpdatedBestGuess, props.info.blocksRelativeTime, props.time)}</td>
+            <td>{formatTime(props.info.blocks.lastUpdated, props.info.blocks.lastUpdatedBestGuess, props.time)}</td>
           </tr>
           <tr>
             <td>Unconfirmed Messages:</td>
@@ -36,7 +45,7 @@ const RenderBridgeInfo = (props:{heading: string, info: BridgeInfo, time: Date})
           </tr>
           <tr>
             <td>Last Message Update:</td>
-            <td>{formatTime(props.info.messages.lastUpdated, props.info.messages.lastUpdatedBestGuess, props.info.messagesRelativeTime, props.time)}</td>
+            <td>{formatTime(props.info.messages.lastUpdated, props.info.messages.lastUpdatedBestGuess, props.time)}</td>
           </tr>
         </tbody>
       </table>
@@ -53,7 +62,6 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
     },
     bridgeHealth: {
       lastUpdated,
-      lastUpdatedRelative,
       isOpen,
       hasError,
       errorMessage,
@@ -73,7 +81,7 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
   };
 
   const dispatch = useDispatch();
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(startHealthCheckPoll(web3, polkadotApi, polkadotRelayApi));
   }, []);
 
@@ -81,7 +89,7 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
 
   return (
     <Modal isOpen={isOpen} onRequestClose={closeTab} className={className}>
-      { 
+      {
         (!hasError && isLoading) && (
           <>
             <div>Loading...</div>
@@ -89,7 +97,7 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
           </>
         )
       }
-      { 
+      {
         (hasError) && (
           <>
             <div>{errorMessage}</div>
@@ -98,17 +106,17 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
           </>
         )
       }
-      { 
+      {
         (!hasError && !isLoading) && (
           <>
             <span>Bridge Health</span>
             <Panel className='bridge-health'>
-              <RenderBridgeInfo heading="Polkadot -> Ethereum" info={polkadotToEthereum} time={now}/>
+              <RenderBridgeInfo heading="Polkadot -> Ethereum" info={polkadotToEthereum} time={now} />
             </Panel>
             <Panel className='bridge-health'>
-              <RenderBridgeInfo heading="Ethereum -> Polkadot" info={ethereumToPolkadot} time={now}/>
+              <RenderBridgeInfo heading="Ethereum -> Polkadot" info={ethereumToPolkadot} time={now} />
             </Panel>
-            <div>Last updated {formatTime(lastUpdated, false, lastUpdatedRelative, now)}</div>
+            <div>Last updated {lastUpdated.toTimeString()}</div>
             <DOSButton onClick={closeTab}>Close</DOSButton>
           </>
         )
