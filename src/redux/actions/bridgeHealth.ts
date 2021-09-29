@@ -7,6 +7,7 @@ import {
   BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
   BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
   HEALTH_CHECK_POLL_INTERVAL_MILLISECONDS,
+  HEALTH_CHECK_POLL_MAX_BLOCKS,
 } from '../../config'
 import Web3 from "web3";
 import { ApiPromise } from "@polkadot/api";
@@ -112,10 +113,8 @@ export const updateHealthCheck = async (web3: Web3, polkadotApi: ApiPromise, pol
   dispatch(bridgeHealthSlice.actions.setLoading(false));
 };
 
-const MaxBlocks = 500;
-
 const getEthMessageInfo = async (web3: Web3, contract: Contract, event: string, blockNumber: number) => {
-  let startBlock = (blockNumber - MaxBlocks);
+  let startBlock = (blockNumber - HEALTH_CHECK_POLL_MAX_BLOCKS);
   if (startBlock < 0) startBlock = 0;
   const nonces = await contract.getPastEvents(event, { fromBlock: startBlock });
   if (nonces.length > 0) {
@@ -134,7 +133,7 @@ const getParachainMessageInfo = async (polkadotApi: ApiPromise, channel: string,
   const finalizedBlockHeader = await polkadotApi.rpc.chain.getHeader(finalizedBlockHash);
 
   const startBlockNumber = finalizedBlockHeader.number.toNumber();
-  let stopBlockNumber = finalizedBlockHeader.number.toNumber() - MaxBlocks;
+  let stopBlockNumber = finalizedBlockHeader.number.toNumber() - HEALTH_CHECK_POLL_MAX_BLOCKS;
   if (stopBlockNumber < 0) stopBlockNumber = 0;
 
   const nonce = Number(await polkadotApi.query[channel].nonce());
@@ -180,7 +179,7 @@ const getParachainEthInfo = async (polkadotApi: ApiPromise) => {
   const finalizedBlockHeader = await polkadotApi.rpc.chain.getHeader(finalizedBlockHash);
 
   const startBlockNumber = finalizedBlockHeader.number.toNumber();
-  let stopBlockNumber = finalizedBlockHeader.number.toNumber() - MaxBlocks;
+  let stopBlockNumber = finalizedBlockHeader.number.toNumber() - HEALTH_CHECK_POLL_MAX_BLOCKS;
   if (stopBlockNumber < 0) stopBlockNumber = 0;
 
   const header: any = await polkadotApi.query.ethereumLightClient.finalizedBlock();
@@ -213,7 +212,7 @@ const getParachainEthInfo = async (polkadotApi: ApiPromise) => {
 }
 
 const getLatestBeefyInfo = async (web3: Web3, blockNumber: number, address: string) => {
-  let startBlock = (blockNumber - MaxBlocks);
+  let startBlock = (blockNumber - HEALTH_CHECK_POLL_MAX_BLOCKS);
   if (startBlock < 0) startBlock = 0;
 
   const contract = new web3!.eth.Contract(
