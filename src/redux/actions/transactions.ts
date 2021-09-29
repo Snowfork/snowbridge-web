@@ -357,8 +357,6 @@ export function handleEthereumTransactionEvents(
       },
     )
     .on('error', (error: any) => {
-      console.log({ error })
-      console.log('error locking tokens', error);
       if (error?.code) {
         dispatch(setPendingTransaction({
           ...pendingTransaction,
