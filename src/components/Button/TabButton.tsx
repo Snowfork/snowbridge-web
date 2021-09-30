@@ -24,18 +24,13 @@ export default styled(TabButton)`
   flex-direction: column;
   align-items: flex-start;
   padding: 4px;
-  gap: 10px;
 
-  box-sizing: border-box;
-  box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.4);
-  border-radius: ${props => props.theme.borderRadius};
-  border: 1px solid ${props => props.theme.colors.panelBorder};
-  background: ${props => props.selected ? props.theme.colors.secondary : props.theme.colors.panelBackground };
+  background: ${props => props.selected ? props.theme.colors.main : 'transparent'};
 
-  width: 100%;
+  color: ${props => props.selected ? props.theme.colors.panelBackground : props.theme.colors.secondary};
 
-  color: ${props => props.selected ? props.theme.colors.panelBackground : props.theme.colors.secondary };
-
+  border-radius: 0px;
+  border: none;
   border-bottom: ${props => props.selected ? 'none' : 'solid 2px red'}
 
   font-family: Menlo;
