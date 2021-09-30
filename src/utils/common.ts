@@ -1,6 +1,6 @@
-import { REQUIRED_ETH_CONFIRMATIONS } from '../config';
+import { BASIC_CHANNEL_ID, INCENTIVIZED_CHANNEL_ID, REQUIRED_ETH_CONFIRMATIONS } from '../config';
 import { Transaction } from '../redux/reducers/transactions';
-import { SwapDirection, Chain } from '../types/types';
+import { SwapDirection, Chain, Channel } from '../types/types';
 import { isNonFungible, NonFungibleToken, Asset } from '../types/Asset';
 
 /**
@@ -89,3 +89,12 @@ export const assetToString = (asset: Asset, amount?: string): string => {
     `${asset.name} [${(asset.token as NonFungibleToken).ethId}]` :
     `${amount} ${asset.name}`
 };
+
+export const getChannelID = (channel: Channel): number => {
+  switch (channel) {
+    case Channel.BASIC:
+      return BASIC_CHANNEL_ID;
+    case Channel.INCENTIVIZED:
+      return INCENTIVIZED_CHANNEL_ID;
+  }
+}

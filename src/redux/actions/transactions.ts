@@ -7,7 +7,7 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
-import { REQUIRED_ETH_CONFIRMATIONS, BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS } from '../../config';
+import { REQUIRED_ETH_CONFIRMATIONS, BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS, INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS } from '../../config';
 import {
   Asset,
   decimals,
@@ -15,7 +15,7 @@ import {
   isNonFungible,
   symbols,
 } from '../../types/Asset';
-import { Chain, SwapDirection } from '../../types/types';
+import { Chain, SwapDirection, Channel } from '../../types/types';
 import { AssetType } from '../../types/Asset';
 import { RootState } from '../store';
 import {
@@ -36,6 +36,7 @@ export const {
   parachainMessageDispatched,
   setConfirmations,
   setNonce,
+  setError,
   setPendingTransaction,
   setTransactionStatus,
   updateTransaction,
@@ -87,6 +88,7 @@ export function createTransaction(
   chain: Chain,
   asset: Asset,
   direction: SwapDirection,
+  channel: Channel,
 ): Transaction {
   const pendingTransaction: Transaction = {
     hash: '',
@@ -103,6 +105,7 @@ export function createTransaction(
     dispatchTransactionHash: '',
     error: '',
     nonce: '',
+    channel,
   };
 
   return pendingTransaction;
@@ -164,8 +167,7 @@ export function handlePolkadotTransactionEvents(
       ),
     );
 
-    const handleChannelMessageDispatched = (event: MessageDispatchedEvent) => {
-      console.log('message dispatched', event);
+    const handleChannelMessageDispatched = (channel: Channel) => (event: MessageDispatchedEvent) => {
       if (
         event.returnValues.nonce === nonce
       ) {
@@ -173,6 +175,7 @@ export function handlePolkadotTransactionEvents(
           ethMessageDispatched({
             nonce: event.returnValues.nonce,
             dispatchTransactionNonce: pendingTransaction.nonce!,
+            channel
           }),
         );
       }
@@ -183,14 +186,14 @@ export function handlePolkadotTransactionEvents(
     incentivizedChannelContract
       .events
       .MessageDispatched({})
-      .on('data', handleChannelMessageDispatched);
+      .on('data', handleChannelMessageDispatched(Channel.INCENTIVIZED));
 
     // TODO: replace with incentivized channel?
     // eslint-disable-next-line no-unused-expressions
     basicChannelContract
       .events
       .MessageDispatched({})
-      .on('data', handleChannelMessageDispatched);
+      .on('data', handleChannelMessageDispatched(Channel.BASIC));
 
     return pendingTransaction;
   }
@@ -266,7 +269,7 @@ export function handleEthereumTransactionEvents(
     })
     .on('receipt', async (receipt: any) => {
       console.log('Transaction receipt received', receipt);
-      const outChannelLogFields = [
+      const basicOutChannelLogFields = [
         {
           type: 'address',
           name: 'source',
@@ -280,21 +283,50 @@ export function handleEthereumTransactionEvents(
           name: 'payload',
         },
       ];
-      const logIndex = Object.keys(receipt.events).find(index => {
-        return receipt.events[index].address === BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS;
+      const incentivizedOutChannelLogFields = [
+        {
+          type: 'address',
+          name: 'source',
+        },
+        {
+          type: 'uint64',
+          name: 'nonce',
+        },
+        {
+          type: 'uint256',
+          name: 'fee',
+        },
+        {
+          type: 'bytes',
+          name: 'payload',
+        },
+      ];
+      let nonce;
+
+      Object.keys(receipt.events).forEach((eventKey: any) => {
+        const event = receipt.events[eventKey];
+        if (event.address === BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS) {
+          const decodedEvent = web3.eth.abi.decodeLog(
+            basicOutChannelLogFields,
+            event.raw.data,
+            event.raw.topics,
+          );
+          nonce = decodedEvent.nonce;
+        }
+        if (event.address === INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS) {
+          const decodedEvent = web3.eth.abi.decodeLog(
+            incentivizedOutChannelLogFields,
+            event.raw.data,
+            event.raw.topics,
+          );
+          nonce = decodedEvent.nonce;
+        }
       })
 
-      if (!logIndex) {
+      if (!nonce) {
         return
       }
 
-      const channelEvent = receipt.events[logIndex];
-      const decodedEvent = web3.eth.abi.decodeLog(
-        outChannelLogFields,
-        channelEvent.raw.data,
-        channelEvent.raw.topics,
-      );
-      const { nonce } = decodedEvent;
       dispatch(
         setNonce({
           hash: transactionHash,
@@ -324,20 +356,27 @@ export function handleEthereumTransactionEvents(
         }
       },
     )
-    .on('error', (error: Error) => {
-      console.log('error locking tokens', error);
-      // TODO: render error message
-      dispatch(setPendingTransaction({
-        ...pendingTransaction,
-        status: TransactionStatus.REJECTED,
-        error: error.message,
-      }));
+    .on('error', (error: any) => {
+      if (error?.code) {
+        dispatch(setPendingTransaction({
+          ...pendingTransaction,
+          status: TransactionStatus.REJECTED,
+          error: error.message,
+        }));
+      }
+      if (error?.receipt) {
+        dispatch(
+          setError({
+            hash: transactionHash,
+            error: error.receipt
+          }),
+        );
+      }
 
       dispatch(notify({
         text: 'Transaction Error',
         color: 'error',
       }));
-      throw error;
     });
 }
 
@@ -365,11 +404,12 @@ export function handlePolkadotTransactionErrors(
       }),
     );
   } else {
-    // display error message in modal
-    setPendingTransaction({
-      ...pendingTransaction,
-      status: TransactionStatus.REJECTED,
-      error: error.message,
-    });
+    dispatch(
+      setPendingTransaction({
+        ...pendingTransaction,
+        status: TransactionStatus.REJECTED,
+        error: error.message,
+      })
+    );
   }
 }

@@ -1,3 +1,5 @@
+import { Channel } from './types/types';
+
 export default {
   // Contract Addresses
   APP_ETH_CONTRACT_ADDRESS: '0xB1185EDE04202fE62D38F5db72F71e38Ff3E8305',
@@ -31,5 +33,6 @@ export default {
 
   BASIC_CHANNEL_ID: 0,
   INCENTIVIZED_CHANNEL_ID: 1,
+  ACTIVE_CHANNEL: Channel.INCENTIVIZED
 
 };

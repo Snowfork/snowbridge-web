@@ -29,6 +29,7 @@ const basic: DefaultTheme = {
     errorBackground: colors.thunderbird,
 
     stepComplete: colors.green,
+    stepError: colors.red,
 
     statusGood: colors.green,
     statusBad: colors.red,

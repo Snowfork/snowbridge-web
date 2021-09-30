@@ -40,6 +40,7 @@ export function notify(
       break;
     default:
       toast.info(notification.text);
+      break;
   }
 
   return {

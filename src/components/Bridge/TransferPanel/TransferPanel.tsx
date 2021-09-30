@@ -22,6 +22,7 @@ import { SelectedNFT } from './SelectedNFT';
 
 import Panel from '../../Panel/Panel';
 import ChainDisplay from './ChainDisplay';
+import FeeInfo from './FeeInfo';
 import AddressDisplay from './AddressDisplay/AddressDisplay';
 import DirectionBadge from './DirectionBadge';
 
@@ -51,9 +52,10 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
   const polkadotGasBalance = dot?.balance?.polkadot;
   const ethereumGasBalance = ether?.balance?.eth;
 
-  const [errors, setErrors] = useState<{ balance?: string, asset?: string }>({
+  const [errors, setErrors] = useState<{ balance?: string, asset?: string, fee?: string }>({
     balance: undefined,
     asset: undefined,
+    fee: undefined,
   });
 
   const {
@@ -95,6 +97,10 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
     setErrors((errors) => ({ ...errors, asset: assetError }));
   };
 
+  const setFeeError = (feeError: string) => {
+    setErrors((errors) => ({ ...errors, fee: feeError }));
+  };
+
   const handleTransferClicked = () => {
     dispatch(setShowConfirmTransactionModal(true));
   };
@@ -131,7 +137,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
   const selectedAssetSourceChain = selectedAsset?.chain === Chain.ETHEREUM ? 0 : 1;
   const selectedAssetValid = selectedAsset?.type === 0
     || (selectedAsset?.type === 1 && selectedAssetSourceChain === swapDirection);
-  const errorText = (selectedAsset?.type === AssetType.ERC20 && errors.asset) || errors.balance;
+  const errorText = (selectedAsset?.type === AssetType.ERC20 && errors.asset) || errors.balance || errors.fee;
 
   const isDepositDisabled = !!errorText
     || (selectedAsset?.type === AssetType.ERC20 && Number.parseFloat(depositAmount) <= 0) || !selectedAssetValid;
@@ -154,7 +160,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
         onClick={handleTransferClicked}
         disabled={isDepositDisabled}
       >
-        Transfer Asset(s)
+        {errorText || 'Transfer Asset(s)'}
       </DOSButton>
     );
   };
@@ -174,11 +180,11 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
           <AddressDisplay className="address-display" chain={chains.from} />
         </div>
         {selectedAsset?.type === 0 && (
-        <FungibleTokenBalance
-          amount={tokenBalances.sourceNetwork}
-          decimals={decimalMap.from}
-        />
-)}
+          <FungibleTokenBalance
+            amount={tokenBalances.sourceNetwork}
+            decimals={decimalMap.from}
+          />
+        )}
       </Panel>
 
       <div>
@@ -193,13 +199,13 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
         </div>
         {selectedAsset?.type === 0
           && (
-          <FungibleTokenBalance
-            amount={tokenBalances.destinationNetwork}
-            decimals={decimalMap.to}
-          />
-)}
+            <FungibleTokenBalance
+              amount={tokenBalances.destinationNetwork}
+              decimals={decimalMap.to}
+            />
+          )}
       </Panel>
-
+      <FeeInfo setError={setFeeError} />
       {renderActionButton()}
       <TransactionListButton />
     </Panel>

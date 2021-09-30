@@ -40,4 +40,9 @@ export enum SwapDirection {
   PolkadotToEthereum
 }
 
+export enum Channel {
+  BASIC = 'basic',
+  INCENTIVIZED = 'incentivized'
+}
+
 export type IconKeys = keyof typeof icons;
