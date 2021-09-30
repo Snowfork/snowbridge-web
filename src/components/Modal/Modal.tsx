@@ -5,13 +5,13 @@ import styled from 'styled-components';
 
 import Panel from '../Panel/Panel';
 
-type Props = {
+export interface IModalProps {
   children: ReactNode;
   isOpen: boolean;
   onRequestClose: () => void;
   className?: string;
   type?: string | undefined;
-};
+}
 
 const customStyles = {
   content: {
@@ -26,8 +26,8 @@ const customStyles = {
     border: 'none',
   },
   overlay: {
-    backgroundColor: 'rgba(255, 255, 255, 0.25)'
-  }
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
 };
 
 function Modal({
@@ -35,7 +35,7 @@ function Modal({
   isOpen,
   onRequestClose,
   className,
-}: Props): JSX.Element {
+}: IModalProps): JSX.Element {
   return (
     <ReactModal
       isOpen={isOpen}
@@ -54,8 +54,8 @@ export default styled(Modal)`
   align-items: flex-start;
   justify-content: center;
 
-  border: 1px solid ${props => props.theme.colors.transferPanelBorder};
-  background: ${props => props.type === 'error' ?
-    props.theme.colors.errorBackground :
-    props.theme.colors.transferPanelBackground};
+  border: 1px solid ${(props) => props.theme.colors.transferPanelBorder};
+  background: ${(props) => (props.type === 'error'
+    ? props.theme.colors.errorBackground
+    : props.theme.colors.transferPanelBackground)};
 `;

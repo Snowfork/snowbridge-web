@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import Modal from '../Modal/Modal';
 import Icon from '../Icon/Icon';
 import ToolTip from '../ToolTip/ToolTip';
+import FaqModal from '../FaqModal/FaqModal';
 
 const Wrapper = styled.div`
   padding: 30px 18px;
@@ -14,6 +15,7 @@ const Wrapper = styled.div`
 const Info = styled.div`
   color: ${({ theme }) => theme.colors.main};
   font-size: 12px;
+  margin-right: 32px;
 `;
 
 const Actions = styled.div`
@@ -22,13 +24,14 @@ const Actions = styled.div`
 `;
 
 const Links = styled.div`
+  flex-wrap: wrap;
   display: flex;
   align-items: center;
-  margin-right: -10px;
+  margin: 0 -10px -10px 0;
 `;
 
 const LinkWrapper = styled.div`
-  margin-right: 10px;
+  margin: 0 10px 10px 0;
   display: flex;
   align-items: center;
 `;
@@ -83,7 +86,8 @@ const BlogModal = styled.div`
 `;
 
 enum FooterModalsEnum {
-  blog = 'blog'
+  blog = 'blog',
+  faq = 'faq'
 }
 
 const Footer = () => {
@@ -141,7 +145,8 @@ const Footer = () => {
             </LinkWrapper>
             <LinkWrapper>
               <LinkNumber>8</LinkNumber>
-              <Link href="">FAQ</Link>
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+              <Link as="button" onClick={() => setOpenedModal(FooterModalsEnum.faq)}>FAQ</Link>
             </LinkWrapper>
           </Links>
         </Actions>
@@ -157,6 +162,7 @@ const Footer = () => {
           />
         </BlogModal>
       </Modal>
+      <FaqModal isOpen={openedModal === FooterModalsEnum.faq} onRequestClose={closeModal} />
     </>
   );
 };
