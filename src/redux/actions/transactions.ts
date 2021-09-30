@@ -404,11 +404,12 @@ export function handlePolkadotTransactionErrors(
       }),
     );
   } else {
-    // display error message in modal
-    setPendingTransaction({
-      ...pendingTransaction,
-      status: TransactionStatus.REJECTED,
-      error: error.message,
-    });
+    dispatch(
+      setPendingTransaction({
+        ...pendingTransaction,
+        status: TransactionStatus.REJECTED,
+        error: error.message,
+      })
+    );
   }
 }
