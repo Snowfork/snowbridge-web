@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import Modal from '../Modal/Modal';
+import { useHistory } from 'react-router-dom';
 import Icon from '../Icon/Icon';
 import ToolTip from '../ToolTip/ToolTip';
-import FaqModal from '../FaqModal/FaqModal';
 
-const Wrapper = styled.div`
+const FooterWrapper = styled.div`
   padding: 30px 18px;
   display: flex;
   align-items: center;
@@ -76,94 +75,64 @@ const StyledTooltip = styled(ToolTip)`
   }
 `;
 
-const BlogModal = styled.div`
-  width: 320px;
-  height: 320px;
-  
-  .balance-text {
-    color: ${({ theme }) => theme.colors.secondary} !important;
-  };
-`;
-
-enum FooterModalsEnum {
-  blog = 'blog',
-  faq = 'faq'
-}
-
 const Footer = () => {
-  const [openedModal, setOpenedModal] = useState<FooterModalsEnum | null>(null);
-
-  const closeModal = () => setOpenedModal(null);
+  const history = useHistory();
+  const openFaq = () => history.push('/faq');
 
   return (
-    <>
-      <Wrapper>
-        <Info>Copyright © 2021. Snowbridge ✲´*。.❄¨¯`*✲。❄。*。</Info>
-        <Actions>
-          <Links>
-            <LinkWrapper>
-              <LinkNumber>1</LinkNumber>
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <Link as="button" onClick={() => setOpenedModal(FooterModalsEnum.blog)}>Blog</Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <LinkNumber>2</LinkNumber>
-              <Link href="https://snowbridge-docs.snowfork.com/" target="_blank" rel="noopener noreferrer">Docs</Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <LinkNumber>3</LinkNumber>
-              <Link href="https://twitter.com/snowfork_inc" target="_blank" rel="noopener noreferrer">
-                <LinkIcon name="twitter" size="12px" />
-                <span>Twitter</span>
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <LinkNumber>4</LinkNumber>
-              <Link href="https://discord.com/channels/880940859997184050/880940859997184053" target="_blank" rel="noopener noreferrer">
-                <LinkIcon name="discord" size="12px" />
-                <span>Discord</span>
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <LinkNumber>5</LinkNumber>
-              <Link href="https://github.com/Snowfork/snowbridge" target="_blank" rel="noopener noreferrer">
-                <LinkIcon name="github" size="12px" />
-                <span>Github</span>
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <LinkNumber>6</LinkNumber>
-              <Link href="https://discord.com/channels/880940859997184050/880940859997184053" target="_blank" rel="noopener noreferrer">Community</Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <LinkNumber>7</LinkNumber>
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <Link as="button" disabled>
-                <StyledTooltip text="Coming soon" size="18px" />
-                <span>Governance</span>
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <LinkNumber>8</LinkNumber>
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <Link as="button" onClick={() => setOpenedModal(FooterModalsEnum.faq)}>FAQ</Link>
-            </LinkWrapper>
-          </Links>
-        </Actions>
-      </Wrapper>
-      <Modal isOpen={openedModal === FooterModalsEnum.blog} onRequestClose={closeModal}>
-        <BlogModal>
-          <iframe
-            title="blog"
-            src="https://snowfork.substack.com/embed"
-            height="320"
-            frameBorder="0"
-            scrolling="no"
-          />
-        </BlogModal>
-      </Modal>
-      <FaqModal isOpen={openedModal === FooterModalsEnum.faq} onRequestClose={closeModal} />
-    </>
+    <FooterWrapper>
+      <Info>Copyright © 2021. Snowbridge ✲´*。.❄¨¯`*✲。❄。*。</Info>
+      <Actions>
+        <Links>
+          <LinkWrapper>
+            <LinkNumber>1</LinkNumber>
+            <Link href="https://snowfork.substack.com" target="_blank" rel="noopener noreferrer">Blog</Link>
+          </LinkWrapper>
+          <LinkWrapper>
+            <LinkNumber>2</LinkNumber>
+            <Link href="https://snowbridge-docs.snowfork.com/" target="_blank" rel="noopener noreferrer">Docs</Link>
+          </LinkWrapper>
+          <LinkWrapper>
+            <LinkNumber>3</LinkNumber>
+            <Link href="https://twitter.com/snowfork_inc" target="_blank" rel="noopener noreferrer">
+              <LinkIcon name="twitter" size="12px" />
+              <span>Twitter</span>
+            </Link>
+          </LinkWrapper>
+          <LinkWrapper>
+            <LinkNumber>4</LinkNumber>
+            <Link href="https://discord.com/channels/880940859997184050/880940859997184053" target="_blank" rel="noopener noreferrer">
+              <LinkIcon name="discord" size="12px" />
+              <span>Discord</span>
+            </Link>
+          </LinkWrapper>
+          <LinkWrapper>
+            <LinkNumber>5</LinkNumber>
+            <Link href="https://github.com/Snowfork/snowbridge" target="_blank" rel="noopener noreferrer">
+              <LinkIcon name="github" size="12px" />
+              <span>Github</span>
+            </Link>
+          </LinkWrapper>
+          <LinkWrapper>
+            <LinkNumber>6</LinkNumber>
+            <Link href="https://discord.gg/9WHQUX7PT8" target="_blank" rel="noopener noreferrer">Community</Link>
+          </LinkWrapper>
+          <LinkWrapper>
+            <LinkNumber>7</LinkNumber>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+            <Link as="button" disabled>
+              <StyledTooltip text="Coming soon" size="18px" />
+              <span>Governance</span>
+            </Link>
+          </LinkWrapper>
+          <LinkWrapper>
+            <LinkNumber>8</LinkNumber>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+            <Link as="button" onClick={openFaq}>FAQ</Link>
+          </LinkWrapper>
+        </Links>
+      </Actions>
+    </FooterWrapper>
   );
 };
 
