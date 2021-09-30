@@ -1,4 +1,5 @@
 import { Contract } from 'web3-eth-contract';
+import icons from '../components/Icon';
 
 // ERC20 interface for tokens in the token list
 export interface Token {
@@ -38,3 +39,5 @@ export enum SwapDirection {
   EthereumToPolkadot,
   PolkadotToEthereum
 }
+
+export type IconKeys = keyof typeof icons;
