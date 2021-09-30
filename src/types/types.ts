@@ -1,4 +1,5 @@
 import { Contract } from 'web3-eth-contract';
+import icons from '../components/Icon';
 
 // ERC20 interface for tokens in the token list
 export interface Token {
@@ -43,3 +44,5 @@ export enum Channel {
   BASIC = 'basic',
   INCENTIVIZED = 'incentivized'
 }
+
+export type IconKeys = keyof typeof icons;

@@ -24,5 +24,7 @@ declare module 'styled-components' {
       statusWarning?: string;
       statusBad: string;
     };
+
+    boxShadow: string;
   }
 }

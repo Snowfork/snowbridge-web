@@ -1,27 +1,27 @@
 import React, { useEffect } from 'react';
 import ReactModal from 'react-modal';
 import { useDispatch } from 'react-redux';
-import styled from 'styled-components';
-
 import { ToastContainer } from 'react-toastify';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+} from 'react-router-dom';
 
 import Bridge from './components/Bridge/Bridge';
-import Nav from './components/Nav';
 import Net from './net';
 
 import 'react-toastify/dist/ReactToastify.css';
 
 import { initializeTokens } from './redux/actions/bridge';
 import { useAppSelector } from './utils/hooks';
+import Layout from './components/Layout/Layout';
+import FaqModal from './components/FaqModal/FaqModal';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
 
-type Props = {
-  className?: string;
-}
-
-const BridgeApp = ({ className }: Props) => {
+const BridgeApp = () => {
   const dispatch = useDispatch();
   const {
     isNetworkConnected,
@@ -85,16 +85,20 @@ const BridgeApp = ({ className }: Props) => {
   }
 
   return (
-    <main className={className}>
-      <Nav />
-      <Bridge />
+    <Router>
+      <Layout>
+        <Switch>
+          <Route path="/">
+            <Bridge />
+          </Route>
+        </Switch>
+        <Route path="/faq">
+          <FaqModal />
+        </Route>
+      </Layout>
       <ToastContainer autoClose={10000} />
-    </main>
+    </Router>
   );
 };
 
-export default styled(BridgeApp)`
-  height: 100%;
-  min-height: 100vh;
-  background: ${(props) => props.theme.colors.background};
-`;
+export default BridgeApp;

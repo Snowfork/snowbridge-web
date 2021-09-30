@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import Icon from '../Icon/Icon';
 
 type Props = {
   text: string;
   className?: string;
+  size?: string;
 };
 
 function ToolTip({
   text,
   className,
+  size = '18px',
 }: Props): React.ReactElement<Props> {
   const [showToolTip, setShowToolTip] = useState(false);
 
@@ -16,24 +19,26 @@ function ToolTip({
     <div
       className={className}
     >
-      <img
-        className='tooltip-icon'
+      <Icon
+        size={size}
+        name="info"
+        className="tooltip-icon"
         onMouseOver={() => setShowToolTip(true)}
         onMouseOut={() => setShowToolTip(false)}
-        alt='info' style={{ width: 18, height: 18 }} src='/images/icons/info.svg' />
-      <div style={{ opacity: showToolTip ? 1 : 0 }} className="tooltip-overlay">
+        alt="info"
+      />
+      {showToolTip
+      && (
+      <div className="tooltip-overlay">
         <span>{text}</span>
       </div>
+      )}
     </div>
   );
 }
 
 export default styled(ToolTip)`
   position: relative;
-
-  .tooltip-icon {
-
-  }
 
   .tooltip-overlay {
     position: absolute;
