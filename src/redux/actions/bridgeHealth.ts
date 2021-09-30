@@ -14,11 +14,13 @@ import Web3 from "web3";
 import { ApiPromise } from "@polkadot/api";
 import { Contract } from "web3-eth-contract";
 import { SignedBlock } from '@polkadot/types/interfaces'
+import { RootState } from "../store";
 
-export const startHealthCheckPoll = (web3: Web3 | undefined, polkadotApi: ApiPromise | undefined, polkadotRelayApi: ApiPromise | undefined):
+export const startHealthCheckPoll = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
-    dispatch: ThunkDispatch<{}, {}, AnyAction>,
+    dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
   ): Promise<void> => {
+    const { net: { web3, polkadotApi, polkadotRelayApi } } = getState() as RootState;
     pollHealth(web3!, polkadotApi!, polkadotRelayApi!, dispatch);
   }
 

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'; // we need this to make JSX compile
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import Panel from '../Panel/Panel';
@@ -8,6 +8,12 @@ import { bridgeHealthSlice, BridgeInfo } from '../../redux/reducers/bridgeHealth
 import DOSButton from '../Button/DOSButton';
 import Modal from '../Modal';
 import moment from 'moment';
+import { useHistory } from 'react-router-dom';
+
+const StyledModal = styled(Modal)`
+  height: 100vh;
+  max-height: 560px;
+`;
 
 type BridgeHealthProps = {
   className?: string
@@ -55,45 +61,32 @@ const RenderBridgeInfo = (props: { heading: string, info: BridgeInfo, time: Date
 
 export const BridgeHealth = ({ className }: BridgeHealthProps) => {
   const {
-    net: {
-      web3,
-      polkadotApi,
-      polkadotRelayApi,
-    },
-    bridgeHealth: {
-      lastUpdated,
-      isOpen,
-      hasError,
-      errorMessage,
-      isLoading,
-      polkadotToEthereum,
-      ethereumToPolkadot
-    }
-  } = useSelector((state: RootState) => state);
+    lastUpdated,
+    hasError,
+    errorMessage,
+    isLoading,
+    polkadotToEthereum,
+    ethereumToPolkadot,
+  } = useSelector((state: RootState) => state.bridgeHealth);
 
-  const closeTab = () => {
-    dispatch(bridgeHealthSlice.actions.setOpen(false));
-  }
-
-  const refreshTab = () => {
-    dispatch(bridgeHealthSlice.actions.setLoading(true));
-    dispatch(startHealthCheckPoll(web3, polkadotApi, polkadotRelayApi));
-  };
+  const history = useHistory();
+  const onRequestClose = () => history.push('/');
 
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(startHealthCheckPoll(web3, polkadotApi, polkadotRelayApi));
-  }, []);
+  const refreshTab = () => {
+    dispatch(bridgeHealthSlice.actions.setLoading(true));
+    dispatch(startHealthCheckPoll());
+  };
 
   const now = new Date(Date.now());
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={closeTab} className={className}>
+    <StyledModal isOpen onRequestClose={onRequestClose} className={className}>
       {
         (!hasError && isLoading) && (
           <>
             <div>Loading...</div>
-            <DOSButton onClick={closeTab}>Close</DOSButton>
+            <DOSButton onClick={onRequestClose}>Close</DOSButton>
           </>
         )
       }
@@ -102,7 +95,7 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
           <>
             <div>{errorMessage}</div>
             <DOSButton onClick={refreshTab}>Refresh</DOSButton>
-            <DOSButton onClick={closeTab}>Close</DOSButton>
+            <DOSButton onClick={onRequestClose}>Close</DOSButton>
           </>
         )
       }
@@ -117,11 +110,11 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
               <RenderBridgeInfo heading="Ethereum -> Polkadot" info={ethereumToPolkadot} time={now} />
             </Panel>
             <div>Last updated {lastUpdated.toTimeString()}</div>
-            <DOSButton onClick={closeTab}>Close</DOSButton>
+            <DOSButton onClick={onRequestClose}>Close</DOSButton>
           </>
         )
       }
-    </Modal>
+    </StyledModal>
   );
 }
 

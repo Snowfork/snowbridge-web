@@ -78,6 +78,7 @@ const StyledTooltip = styled(ToolTip)`
 const Footer = () => {
   const history = useHistory();
   const openFaq = () => history.push('/faq');
+  const openStatus = () => history.push('/status');
 
   return (
     <FooterWrapper>
@@ -125,6 +126,11 @@ const Footer = () => {
             <LinkNumber>7</LinkNumber>
             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <Link as="button" onClick={openFaq}>FAQ</Link>
+          </LinkWrapper>
+          <LinkWrapper>
+            <LinkNumber>8</LinkNumber>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+            <Link as="button" onClick={openStatus}>Status</Link>
           </LinkWrapper>
         </Links>
       </Actions>

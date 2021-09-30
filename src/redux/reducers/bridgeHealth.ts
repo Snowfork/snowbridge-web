@@ -23,7 +23,6 @@ export interface BridgeHealthState {
   hasError: boolean,
   errorMessage: string,
   isLoading: boolean,
-  isOpen: boolean,
   polkadotToEthereum: BridgeInfo,
   ethereumToPolkadot: BridgeInfo,
 }
@@ -33,7 +32,6 @@ const initialState: BridgeHealthState = {
   hasError: false,
   errorMessage: "",
   isLoading: true,
-  isOpen: false,
   polkadotToEthereum: {
     messagesRelativeTime: true,
     blocks: {
@@ -107,11 +105,6 @@ export const bridgeHealthSlice = createSlice({
         }
         state.hasError = false;
         state.errorMessage = "";
-        return state;
-      },
-    setOpen:
-      (state, action: PayloadAction<boolean>) => {
-        state.isOpen = action.payload;
         return state;
       },
   },
