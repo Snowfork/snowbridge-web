@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
 import Icon from '../Icon/Icon';
@@ -115,10 +115,6 @@ const Footer = () => {
           </LinkWrapper>
           <LinkWrapper>
             <LinkNumber>6</LinkNumber>
-            <Link href="https://discord.gg/9WHQUX7PT8" target="_blank" rel="noopener noreferrer">Community</Link>
-          </LinkWrapper>
-          <LinkWrapper>
-            <LinkNumber>7</LinkNumber>
             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <Link as="button" disabled>
               <StyledTooltip text="Coming soon" size="18px" />
@@ -126,7 +122,7 @@ const Footer = () => {
             </Link>
           </LinkWrapper>
           <LinkWrapper>
-            <LinkNumber>8</LinkNumber>
+            <LinkNumber>7</LinkNumber>
             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <Link as="button" onClick={openFaq}>FAQ</Link>
           </LinkWrapper>
