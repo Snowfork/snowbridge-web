@@ -19,6 +19,7 @@ const toETHCurrency = { symbol: 'ETH', text: 'Parachain ETH' };
 const TRANSFER_FEE_ERROR = 'Not enough balance to pay for transfer fee';
 
 const UNISWAP_DOT_LINK = `https://app.uniswap.org/#/swap?inputCurrency=ETH&outputCurrency=0x31256d975eea532992c26a8e8af332bfc98cfe41`
+const SNOWBRIDGE_DISCORD_LINK = `https://discord.gg/9WHQUX7PT8`;
 
 type Props = {
   className?: string;
@@ -98,9 +99,13 @@ const FeeInfo = ({ className, setError }: Props) => {
         </span>
       </div>
       {balanceError && <div className='fee-error-section'>
-        You don't have enough {currency.text} in your {fromName} wallet to pay for this transfer. The best way to get some is to transfer over some from your {toName} wallet. If you can't, come ask for some on our Discord Support channel. {currency.symbol === toDotCurrency.symbol && <span>
-          You can also get some <a rel="noopener noreferrer" className='uniswap-link' target='_blank' href={UNISWAP_DOT_LINK}>here</a> from Uniswap <i> (Make sure you're on {PERMITTED_METAMASK_NETWORK}!)</i>
-        </span>}
+        <p>You don't have enough {currency.text} in your {fromName} wallet to pay for this transfer.</p>
+        {currency.symbol === toDotCurrency.symbol && <p>
+          If this is your first time using the bridge, you can get some <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={UNISWAP_DOT_LINK}>here</a> from Uniswap <i> (Make sure you're on {PERMITTED_METAMASK_NETWORK}!)</i>, but the best way to get it is to bridge it over from {toName} yourself. You can also ask for some in our <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={SNOWBRIDGE_DISCORD_LINK}>Discord Support channel</a>.
+        </p>}
+        {currency.symbol === toETHCurrency.symbol && <p>
+          If this is your first time using the bridge, you should bridge it over from {toName} yourself! You can also ask for some in our <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={SNOWBRIDGE_DISCORD_LINK}>Discord Support channel</a>.
+        </p>}
       </div>}
     </div>
   );
@@ -136,7 +141,7 @@ export default styled(FeeInfo)`
     color: ${({ theme }) => theme.colors.errorBackground};
     margin-top: 10px;
 
-    .uniswap-link {
+    .feeinfo-link {
       font-family: SF UI Text Bold;
       color ${({ theme }) => theme.colors.stepComplete};
     }
