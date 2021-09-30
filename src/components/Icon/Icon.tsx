@@ -10,6 +10,7 @@ interface IIconProps {
   color?: string;
   name?: IconKeys;
   className?: string;
+  [prop: string]: any;
 }
 
 const defaultSize = '24px';

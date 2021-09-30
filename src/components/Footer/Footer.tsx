@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import Modal from '../Modal/Modal';
 import Icon from '../Icon/Icon';
+import ToolTip from '../ToolTip/ToolTip';
 
 const Wrapper = styled.div`
   padding: 30px 18px;
@@ -39,6 +40,7 @@ const LinkNumber = styled.p`
 `;
 
 const Link = styled.a`
+  max-height: 28px;
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -49,10 +51,26 @@ const Link = styled.a`
   border: 1px solid ${({ theme }) => theme.colors.main};
   padding: 6px;
   box-shadow: ${({ theme }) => theme.boxShadow};
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
 `;
 
 const LinkIcon = styled(Icon)`
   margin-right: 6px;
+`;
+
+const StyledTooltip = styled(ToolTip)`
+  display: flex;
+  margin-right: 6px;
+
+  .tooltip-overlay {
+    bottom: 24px;
+    right: 0;
+    transform: translateX(50%);
+  }
 `;
 
 const BlogModal = styled.div`
@@ -110,16 +128,20 @@ const Footer = () => {
               </Link>
             </LinkWrapper>
             <LinkWrapper>
-              <LinkNumber>3</LinkNumber>
-              <Link href="">Terms</Link>
+              <LinkNumber>6</LinkNumber>
+              <Link href="https://discord.com/channels/880940859997184050/880940859997184053" target="_blank" rel="noopener noreferrer">Community</Link>
             </LinkWrapper>
             <LinkWrapper>
-              <LinkNumber>4</LinkNumber>
-              <Link href="">Blog</Link>
+              <LinkNumber>7</LinkNumber>
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+              <Link as="button" disabled>
+                <StyledTooltip text="Coming soon" size="18px" />
+                <span>Governance</span>
+              </Link>
             </LinkWrapper>
             <LinkWrapper>
-              <LinkNumber>5</LinkNumber>
-              <Link href="">Contact</Link>
+              <LinkNumber>8</LinkNumber>
+              <Link href="">FAQ</Link>
             </LinkWrapper>
           </Links>
         </Actions>
