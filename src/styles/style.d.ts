@@ -18,6 +18,7 @@ declare module 'styled-components' {
       errorBackground: string;
 
       stepComplete: string;
+      stepError: string;
 
       statusGood: string;
       statusWarning?: string;

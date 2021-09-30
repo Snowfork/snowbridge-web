@@ -80,13 +80,20 @@ const calculateNumberOfConfirmations = (transaction: Transaction) => {
 function createSteps(transaction: Transaction) {
   const chains = getChainsFromDirection(transaction.direction);
   const chain = chains.from;
+  let status;
+  if (transaction.status > TransactionStatus.CONFIRMING) {
+    status = StepStatus.COMPLETE;
+  } else if (transaction.status === TransactionStatus.REJECTED) {
+    status = StepStatus.ERROR;
+  } else {
+    status = StepStatus.LOADING;
+  }
+
   return [{
     link: getTransactionLink(chain, transaction),
     toolTip: getSourceTransactionTooltip(chain),
     subtext: getSourceTransactionSubtext(chain, transaction),
-    status: transaction.status > TransactionStatus.CONFIRMING
-      ? StepStatus.COMPLETE
-      : StepStatus.LOADING,
+    status,
   }, {
     toolTip: `A relayer is picking up the finalized transaction and relaying it across`,
     status: getStepStatus(

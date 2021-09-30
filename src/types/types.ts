@@ -38,3 +38,8 @@ export enum SwapDirection {
   EthereumToPolkadot,
   PolkadotToEthereum
 }
+
+export enum Channel {
+  BASIC = 'basic',
+  INCENTIVIZED = 'incentivized'
+}

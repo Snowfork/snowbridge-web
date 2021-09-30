@@ -69,6 +69,7 @@ function SelectAssetModal({
     <Modal
       isOpen={isOpen}
       onRequestClose={closeModal}
+      className={className}
     >
       <Heading>Select Asset</Heading>
       <Panel>
