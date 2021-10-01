@@ -47,7 +47,7 @@ const RenderBridgeInfo = (props: { heading: string, info: BridgeInfo, time: Date
           </tr>
           <tr>
             <td>Unconfirmed Messages:</td>
-            <td>{props.info.messages.unconfirmed} messages</td>
+            <td>{props.info.messages.unconfirmed > 0 ? props.info.messages.unconfirmed + ' messages' : 'All up to date'}</td>
           </tr>
           <tr>
             <td>Last Message Update:</td>
@@ -109,7 +109,7 @@ export const BridgeHealth = ({ className }: BridgeHealthProps) => {
             <Panel className='bridge-health'>
               <RenderBridgeInfo heading="Ethereum -> Polkadot" info={ethereumToPolkadot} time={now} />
             </Panel>
-            <div>Last updated {lastUpdated.toTimeString()}</div>
+            <div>Last updated {formatTime(lastUpdated, false, now)}</div>
             <DOSButton onClick={onRequestClose}>Close</DOSButton>
           </>
         )
