@@ -25,6 +25,7 @@ export const {
   setMetamaskNetwork,
   setNetworkConnected,
   setPolkadotApi,
+  setPolkadotRelayApi,
   setPolkadotjsMissing,
   setWeb3,
   setErc721AppContract,

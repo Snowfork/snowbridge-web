@@ -19,6 +19,7 @@ export interface NetState {
   appDotContract?: Contract,
   polkadotApi?: ApiPromise,
   polkadotAddress?: string,
+  polkadotRelayApi?: ApiPromise,
   ethAddress?: string,
   isNetworkConnected: boolean,
 }
@@ -78,6 +79,9 @@ export const netSlice = createSlice({
     },
     setPolkadotApi: (state, action: PayloadAction<ApiPromise>) => {
       state.polkadotApi = action.payload;
+    },
+    setPolkadotRelayApi: (state, action: PayloadAction<ApiPromise>) => {
+      state.polkadotRelayApi = action.payload;
     },
     setNetworkConnected: (state, action: PayloadAction<boolean>) => {
       state.isNetworkConnected = action.payload;

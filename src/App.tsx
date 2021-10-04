@@ -8,6 +8,7 @@ import {
   Route,
 } from 'react-router-dom';
 
+import BridgeHealth from './components/BridgeHealth/BridgeHealth';
 import Bridge from './components/Bridge/Bridge';
 import Net from './net';
 
@@ -17,6 +18,7 @@ import { initializeTokens } from './redux/actions/bridge';
 import { useAppSelector } from './utils/hooks';
 import Layout from './components/Layout/Layout';
 import FaqModal from './components/FaqModal/FaqModal';
+import { startHealthCheckPoll } from './redux/actions/bridgeHealth';
 
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 ReactModal.setAppElement('#root');
@@ -32,15 +34,15 @@ const BridgeApp = () => {
   // Start Network
   useEffect(() => {
     const start = async () => {
-      Net.start(dispatch)
-        .then(() => {
-          dispatch(initializeTokens());
-        })
-        .catch((e) => {
-          console.log('error starting network', e);
-        });
+      try {
+        await Net.start(dispatch)
+        dispatch(initializeTokens());
+        dispatch(startHealthCheckPoll());
+      } catch(e) {
+        console.log('error starting network', e);
+      }
     };
-
+        
     start();
   }, [dispatch]);
 
@@ -94,6 +96,9 @@ const BridgeApp = () => {
         </Switch>
         <Route path="/faq">
           <FaqModal />
+        </Route>
+        <Route path="/status">
+          <BridgeHealth />
         </Route>
       </Layout>
       <ToastContainer autoClose={10000} />

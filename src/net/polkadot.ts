@@ -16,11 +16,12 @@ import {
   setPolkadotAddress,
   setPolkadotApi,
   setPolkadotjsMissing,
+  setPolkadotRelayApi,
   subscribeEvents,
 } from '../redux/actions/net';
 
 // Config
-import { POLKADOT_API_PROVIDER } from '../config';
+import { POLKADOT_API_PROVIDER, POLKADOT_RELAY_API_PROVIDER } from '../config';
 import Api, { ss58ToU8 } from './api';
 import { Asset, isDot, isErc20 } from '../types/Asset';
 import { updateBalances } from '../redux/actions/bridge';
@@ -132,7 +133,7 @@ export default class Polkadot extends Api {
 
       // set polkadot api
       dispatch(setPolkadotApi(api));
-      console.log('- Polkadot API endpoint connected');
+      console.log('- Polkadot Parachain API endpoint connected');
 
       // set default polkadot address to first address
       const polkadotAddresses = await Polkadot.getAddresses();
@@ -145,12 +146,22 @@ export default class Polkadot extends Api {
         throw new Error('Failed fetching polkadot address');
       }
 
+      const relayProvider = new WsProvider(POLKADOT_RELAY_API_PROVIDER);
+
+      const relayApi = await ApiPromise.create({
+        provider: relayProvider,
+        typesBundle: bundle as any,
+      });
+
+      dispatch(setPolkadotRelayApi(relayApi));
+      console.log('- Polkadot Relay Chain API endpoint connected');
+
       // fetch polkadot account details
       dispatch(updateBalances());
 
       // Here we subscribe to the parachain events
       dispatch(subscribeEvents());
-    } catch (err) {
+    } catch (err: any) {
       console.log('error starting polkadot network', err);
       if ((err as any).message === 'PolkadotJS missing') {
         dispatch(setPolkadotjsMissing());

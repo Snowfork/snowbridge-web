@@ -17,8 +17,18 @@ export default {
   // Fetch chain data interval
   REFRESH_INTERVAL_MILLISECONDS: 10000,
 
+  // Health check data refresh interval
+  HEALTH_CHECK_POLL_INTERVAL_MILLISECONDS: 120_000,
+  // Health check will check at most n blocks from ethereum for time information
+  HEALTH_CHECK_ETHEREUM_POLL_MAX_BLOCKS: 2000,
+  // Health check will check at most n blocks from polkadot for time information
+  HEALTH_CHECK_POLKADOT_POLL_MAX_BLOCKS: 20000,
+  // Allow health check to skip blocks for performance
+  HEALTH_CHECK_POLKADOT_POLL_SKIP_BLOCKS: 500,
+
   // Polkadotjs API Provider
   POLKADOT_API_PROVIDER: 'ws://localhost:11144',
+  POLKADOT_RELAY_API_PROVIDER: 'ws://localhost:9944',
 
   // Minimum Number of confirmations required for an ETH transaction
   // to be regarded as a success
