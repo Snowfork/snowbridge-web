@@ -32,7 +32,6 @@ export default styled(Button)`
   border-radius: ${props => props.theme.borderRadius};
   border: none;
 
-  font-family: Menlo;
   font-style: normal;
   font-weight: normal;
   font-size: 14px;
