@@ -33,7 +33,6 @@ export default styled(Select)`
   background: ${props => props.theme.colors.transferPanelBackground};
   border: 1px solid ${props => props.theme.colors.main};
   box-shadow: none;
-  font-family: Menlo;
   font-style: normal;
   font-weight: normal;
   font-size: 15px;

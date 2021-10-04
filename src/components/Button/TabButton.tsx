@@ -33,7 +33,6 @@ export default styled(TabButton)`
   border: none;
   border-bottom: ${props => props.selected ? 'none' : 'solid 2px red'}
 
-  font-family: Menlo;
   font-style: normal;
   font-weight: normal;
   font-size: 18px;

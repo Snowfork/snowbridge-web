@@ -46,7 +46,6 @@ export default styled(Input)`
   border: 1px solid ${props => props.theme.colors.main};
   border-radius:  ${props => props.theme.borderRadius};
 
-  font-family: Menlo;
   font-style: normal;
   font-weight: normal;
   font-size: 18px;
