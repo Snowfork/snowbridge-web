@@ -2,7 +2,7 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
-import { Chain, NonFungibleTokenContract, Token } from '../../types/types';
+import { Chain, NonFungibleTokenContract, SwapDirection, Token } from '../../types/types';
 import { RootState } from '../store';
 import * as ERC20 from '../../contracts/TestToken.json';
 import * as WrappedToken from '../../contracts/WrappedToken.json';
@@ -25,6 +25,7 @@ export const {
   setShowConfirmTransactionModal,
   setShowTransactionListModal,
   setSwapDirection,
+  setFee,
   setNonFungibleTokenList,
   resetOwnedNonFungibleAssets,
   addOwnedEthereumNonFungibleAsset,
@@ -151,7 +152,38 @@ export const updateBalances = ():
     }
 
     dispatch(updateGasBalances());
+    dispatch(updateFees());
   };
+
+// update fees for selected swap direction
+export const updateFees = ():
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+    dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
+  ): Promise<void> => {
+
+    // TODO: Load fee dynamically from on-chain state
+    const toDotFee = '1';
+    const toETHFee = '0.01';
+
+    const {
+      bridge: {
+        swapDirection,
+      },
+      net: {
+        web3,
+        polkadotApi,
+      },
+    } = getState() as RootState;
+
+    switch(swapDirection) {
+      case SwapDirection.EthereumToPolkadot:
+        dispatch(setFee(toDotFee));
+        break;
+      case SwapDirection.PolkadotToEthereum:
+        dispatch(setFee(toETHFee));
+        break;
+    }
+  }
 
 function initCollectibles(web3: Web3) {
   return Erc721TokenList
