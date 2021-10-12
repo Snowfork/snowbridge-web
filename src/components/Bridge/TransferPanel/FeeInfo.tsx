@@ -9,10 +9,6 @@ import { ACTIVE_CHANNEL, PERMITTED_METAMASK_NETWORK } from '../../../config';
 
 import ToolTip from '../../ToolTip/ToolTip';
 
-// TODO: Load fee dynamically from on-chain state
-const toDotFee = '1';
-const toETHFee = '0.01';
-
 const toDotCurrency = { symbol: 'DOT', text: 'ERC20 DOT' };
 const toETHCurrency = { symbol: 'ETH', text: 'Parachain ETH' };
 
@@ -28,21 +24,19 @@ type Props = {
 
 const FeeInfo = ({ className, setError }: Props) => {
   const {
-    assets, swapDirection,
+    assets, swapDirection, fee
   } = useAppSelector((state) => state.bridge);
 
   const chains = getChainsFromDirection(swapDirection);
   const fromName = getChainName(chains.from)
   const toName = getChainName(chains.to)
 
-  let fee, currency: any;
+  let currency: any;
   switch (chains.to) {
     case Chain.POLKADOT:
-      fee = toDotFee;
       currency = toDotCurrency;
       break;
     case Chain.ETHEREUM:
-      fee = toETHFee;
       currency = toETHCurrency;
       break;
   }
@@ -58,14 +52,11 @@ const FeeInfo = ({ className, setError }: Props) => {
     const checkFeeBalance = (assets: Asset[], swapDirection: SwapDirection) => {
       const chains = getChainsFromDirection(swapDirection);
 
-      let fee, currency: any;
       switch (chains.to) {
         case Chain.POLKADOT:
-          fee = toDotFee;
           currency = toDotCurrency;
           break;
         case Chain.ETHEREUM:
-          fee = toETHFee;
           currency = toETHCurrency;
           break;
       }
@@ -80,7 +71,7 @@ const FeeInfo = ({ className, setError }: Props) => {
       }
     }
     checkFeeBalance(assets, swapDirection);
-  }, [assets, swapDirection]);
+  }, [assets, swapDirection, fee]);
 
 
   const toolTip = `To make transfers to ${toName}, you need to pay ${fee} ${currency.text} from your ${fromName} wallet`

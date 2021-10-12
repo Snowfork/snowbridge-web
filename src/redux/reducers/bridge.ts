@@ -8,6 +8,10 @@ import {
 } from '../../types/types';
 import { PARACHAIN_LIST } from '../../config';
 
+// TODO: Load fee dynamically from on-chain state
+const toDotFee = '1';
+const toETHFee = '0.01';
+
 export interface BridgeState {
   assets: Asset[],
   selectedAsset?: Asset,
@@ -25,6 +29,7 @@ export interface BridgeState {
     }
   },
   parachainId: number
+  fee: string,
 }
 
 const initialState: BridgeState = {
@@ -36,7 +41,8 @@ const initialState: BridgeState = {
   showTransactionListModal: false,
   nonFungibleAssets: [],
   ownedNonFungibleAssets: { polkadot: {}, ethereum: {} },
-  parachainId: PARACHAIN_LIST ? PARACHAIN_LIST[0].parachainId : 0
+  parachainId: PARACHAIN_LIST ? PARACHAIN_LIST[0].parachainId : 0,
+  fee: toDotFee,
 };
 
 // export default bridgeReducer;
@@ -53,6 +59,7 @@ export const bridgeSlice = createSlice({
     setSwapDirection:
       (state, action: PayloadAction<SwapDirection>) => {
         state.swapDirection = action.payload;
+        state.fee = action.payload === SwapDirection.EthereumToPolkadot ? toDotFee : toETHFee;
       },
     setParaChainId:
       (state, action: PayloadAction<number>) => {
