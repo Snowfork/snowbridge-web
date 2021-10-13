@@ -167,7 +167,7 @@ export const updateFees = ():
         swapDirection,
       },
       net: {
-        incentivizedChannelContract,
+        incentivizedOutboundChannelContract,
         polkadotApi,
       },
     } = getState() as RootState;
@@ -176,7 +176,7 @@ export const updateFees = ():
       case SwapDirection.EthereumToPolkadot:
         // TODO: Load fee dynamically from on-chain state
         const erc20DotFee = '1';
-        console.log(incentivizedChannelContract);
+        console.log('here', await incentivizedOutboundChannelContract!.methods.fee().call());
         dispatch(setERC20DotFee(erc20DotFee));
         return;
       case SwapDirection.PolkadotToEthereum:

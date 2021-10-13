@@ -23,6 +23,7 @@ import {
 import * as ETHApp from '../contracts/ETHApp.json';
 import * as ERC20App from '../contracts/ERC20App.json';
 import * as IncentivizedInboundChannel from '../contracts/IncentivizedInboundChannel.json';
+import * as IncentivizedOutboundChannel from '../contracts/IncentivizedOutboundChannel.json';
 import * as BasicInboundChannel from '../contracts/BasicInboundChannel.json';
 import * as DotApp from '../contracts/DOTApp.json';
 import * as ERC721App from '../contracts/ERC721App.json';
@@ -34,7 +35,8 @@ import {
   setERC20Contract,
   setEthAddress,
   setEthContract,
-  setIncentivizedChannelContract,
+  setIncentivizedInboundChannelContract,
+  setIncentivizedOutboundChannelContract,
   setMetamaskMissing,
   setMetamaskNetwork,
   setWeb3,
@@ -67,7 +69,13 @@ export default class Eth extends Api {
       IncentivizedInboundChannel.abi as any,
       INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
     );
-    dispatch(setIncentivizedChannelContract(incentivizedChannelContract));
+    dispatch(setIncentivizedInboundChannelContract(incentivizedChannelContract));
+
+    const incentivizedOutboundChannelContract = new web3.eth.Contract(
+      IncentivizedOutboundChannel.abi as any,
+      INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+    );
+    dispatch(setIncentivizedOutboundChannelContract(incentivizedOutboundChannelContract));
 
     const basicChannelContract = new web3.eth.Contract(
       BasicInboundChannel.abi as any,
