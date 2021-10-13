@@ -174,10 +174,11 @@ export const updateFees = ():
 
     switch(swapDirection) {
       case SwapDirection.EthereumToPolkadot:
-        // TODO: Load fee dynamically from on-chain state
+        // TODO: LProper handling of conversion
         const erc20DotFee = '1';
-        console.log('here', await incentivizedOutboundChannelContract!.methods.fee().call());
-        dispatch(setERC20DotFee(erc20DotFee));
+        const erc20Dot = Number(await incentivizedOutboundChannelContract!.methods.fee().call());
+        const erc20DotFormatted = String(erc20Dot/1000000000000000000);;
+        dispatch(setERC20DotFee(erc20DotFormatted));
         return;
       case SwapDirection.PolkadotToEthereum:
         //TODO: Proper handling of conversion from gwei to Eth
