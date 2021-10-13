@@ -25,8 +25,8 @@ export const {
   setShowConfirmTransactionModal,
   setShowTransactionListModal,
   setSwapDirection,
-  setDotFee,
-  setEthFee,
+  setERC20DotFee,
+  setParachainEthFee,
   setFeeError,
   setNonFungibleTokenList,
   resetOwnedNonFungibleAssets,
@@ -162,27 +162,29 @@ export const updateFees = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
     dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
   ): Promise<void> => {
-    // TODO: Load fee dynamically from on-chain state
-    const toDotFee = '1';
-    const toETHFee = '0.01';
-
     const {
       bridge: {
         swapDirection,
       },
       net: {
-        web3,
+        incentivizedChannelContract,
         polkadotApi,
       },
     } = getState() as RootState;
 
     switch(swapDirection) {
       case SwapDirection.EthereumToPolkadot:
-        dispatch(setDotFee(toDotFee));
-        break;
+        // TODO: Load fee dynamically from on-chain state
+        const erc20DotFee = '1';
+        console.log(incentivizedChannelContract);
+        dispatch(setERC20DotFee(erc20DotFee));
+        return;
       case SwapDirection.PolkadotToEthereum:
-        dispatch(setEthFee(toETHFee));
-        break;
+        //TODO: Proper handling of conversion from gwei to Eth
+        const parachainEthInGwei = Number(await polkadotApi!.query.incentivizedOutboundChannel.fee())
+        const parachainEth = String(parachainEthInGwei/1000000000000000000);
+        dispatch(setParachainEthFee(parachainEth));
+        return;
     }
   }
 

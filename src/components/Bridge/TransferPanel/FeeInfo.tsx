@@ -39,11 +39,11 @@ const FeeInfo = ({ className, setError }: Props) => {
   let currency: any;
   switch (chains.to) {
     case Chain.POLKADOT:
-      fee = fees.dot;
+      fee = fees.erc20dot;
       currency = toDotCurrency;
       break;
     case Chain.ETHEREUM:
-      fee = fees.eth;
+      fee = fees.parachainEth;
       currency = toETHCurrency;
       break;
   }
@@ -63,11 +63,11 @@ const FeeInfo = ({ className, setError }: Props) => {
       let currency: any;
       switch (chains.to) {
         case Chain.POLKADOT:
-          fee = fees.dot;
+          fee = fees.erc20dot;
           currency = toDotCurrency;
           break;
         case Chain.ETHEREUM:
-          fee = fees.eth;
+          fee = fees.parachainEth;
           currency = toETHCurrency;
           break;
       }
@@ -83,7 +83,7 @@ const FeeInfo = ({ className, setError }: Props) => {
     };
 
     checkFeeBalance(assets, swapDirection);
-  }, [assets, swapDirection, fees.dot, fees.eth]);
+  }, [assets, swapDirection, fees.erc20dot, fees.parachainEth]);
 
   useEffect(() => {
     dispatch(updateFees());
