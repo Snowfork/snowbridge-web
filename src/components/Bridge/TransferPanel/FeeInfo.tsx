@@ -51,7 +51,7 @@ const FeeInfo = ({ className, setError }: Props) => {
   const asset = assets.find((asset) => asset.symbol === currency.symbol);
   const balance = asset ? asset.balance[chains.from] : 0;
   let balanceError = false;
-  if (fee !== null && balance < fee) {
+  if (fee !== null && Number(balance) < Number(fee)) {
     balanceError = true;
   }
 
@@ -74,7 +74,7 @@ const FeeInfo = ({ className, setError }: Props) => {
 
       const asset = assets.find((asset) => asset.symbol === currency.symbol);
       const balance = asset ? asset.balance[chains.from] : 0;
-      if (fee !== null && balance < fee) {
+      if (fee !== null && Number(balance) < Number(fee)) {
         setError(TRANSFER_FEE_ERROR);
       }
       else {

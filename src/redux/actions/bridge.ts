@@ -172,18 +172,19 @@ export const updateFees = ():
       },
     } = getState() as RootState;
 
-    switch(swapDirection) {
+    const denomination = 10**18;
+
+    switch (swapDirection) {
       case SwapDirection.EthereumToPolkadot:
-        // TODO: LProper handling of conversion
-        const erc20DotFee = '1';
-        const erc20Dot = Number(await incentivizedOutboundChannelContract!.methods.fee().call());
-        const erc20DotFormatted = String(erc20Dot/1000000000000000000);;
+        // TODO: Proper handling of conversion
+        const erc20Dot : any = await incentivizedOutboundChannelContract!.methods.fee().call();
+        console.log(erc20Dot);
+        const erc20DotFormatted = (Number(erc20Dot) / denomination).toString();
         dispatch(setERC20DotFee(erc20DotFormatted));
         return;
       case SwapDirection.PolkadotToEthereum:
-        //TODO: Proper handling of conversion from gwei to Eth
-        const parachainEthInGwei = Number(await polkadotApi!.query.incentivizedOutboundChannel.fee())
-        const parachainEth = String(parachainEthInGwei/1000000000000000000);
+        const parachainEthInGwei : any = await polkadotApi!.query.incentivizedOutboundChannel.fee();
+        const parachainEth = (Number(parachainEthInGwei) / denomination).toString();
         dispatch(setParachainEthFee(parachainEth));
         return;
     }
