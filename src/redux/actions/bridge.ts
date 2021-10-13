@@ -172,21 +172,27 @@ export const updateFees = ():
       },
     } = getState() as RootState;
 
-    const denomination = 10**18;
+    const denomination = 10 ** 18;
 
-    switch (swapDirection) {
-      case SwapDirection.EthereumToPolkadot:
-        // TODO: Proper handling of conversion
-        const erc20Dot : any = await incentivizedOutboundChannelContract!.methods.fee().call();
-        console.log(erc20Dot);
-        const erc20DotFormatted = (Number(erc20Dot) / denomination).toString();
-        dispatch(setERC20DotFee(erc20DotFormatted));
-        return;
-      case SwapDirection.PolkadotToEthereum:
-        const parachainEthInGwei : any = await polkadotApi!.query.incentivizedOutboundChannel.fee();
-        const parachainEth = (Number(parachainEthInGwei) / denomination).toString();
-        dispatch(setParachainEthFee(parachainEth));
-        return;
+    try {
+      switch (swapDirection) {
+        case SwapDirection.EthereumToPolkadot:
+          // TODO: Proper handling of conversion
+          const erc20Dot: any = await incentivizedOutboundChannelContract!.methods.fee().call();
+          console.log(erc20Dot);
+          const erc20DotFormatted = (Number(erc20Dot) / denomination).toString();
+          dispatch(setERC20DotFee(erc20DotFormatted));
+          return;
+        case SwapDirection.PolkadotToEthereum:
+          const parachainEthInGwei: any = await polkadotApi!.query.incentivizedOutboundChannel.fee();
+          const parachainEth = (Number(parachainEthInGwei) / denomination).toString();
+          dispatch(setParachainEthFee(parachainEth));
+          return;
+      }
+    }
+    catch (e: any) {
+      console.error(e);
+      dispatch(setFeeError("Could not fetch fees."));
     }
   }
 
