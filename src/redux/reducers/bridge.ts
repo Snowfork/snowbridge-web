@@ -25,7 +25,11 @@ export interface BridgeState {
     }
   },
   parachainId: number
-  fee: string,
+  fees: {
+    dot: string | null,
+    eth: string | null,
+    error: string | null,
+  },
 }
 
 const initialState: BridgeState = {
@@ -38,7 +42,11 @@ const initialState: BridgeState = {
   nonFungibleAssets: [],
   ownedNonFungibleAssets: { polkadot: {}, ethereum: {} },
   parachainId: PARACHAIN_LIST ? PARACHAIN_LIST[0].parachainId : 0,
-  fee: '0',
+  fees: {
+    dot: null,
+    eth: null,
+    error: null,
+  },
 };
 
 // export default bridgeReducer;
@@ -56,9 +64,19 @@ export const bridgeSlice = createSlice({
       (state, action: PayloadAction<SwapDirection>) => {
         state.swapDirection = action.payload;
       },
-    setFee:
+    setDotFee:
       (state, action: PayloadAction<string>) => {
-        state.fee = action.payload;
+        state.fees.error = null;
+        state.fees.dot = action.payload;
+      },
+    setEthFee:
+      (state, action: PayloadAction<string>) => {
+        state.fees.error = null;
+        state.fees.eth = action.payload;
+      },    
+    setFeeError:
+      (state, action: PayloadAction<string>) => {
+        state.fees.error = action.payload;
       },
     setParaChainId:
       (state, action: PayloadAction<number>) => {

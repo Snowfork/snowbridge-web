@@ -25,7 +25,9 @@ export const {
   setShowConfirmTransactionModal,
   setShowTransactionListModal,
   setSwapDirection,
-  setFee,
+  setDotFee,
+  setEthFee,
+  setFeeError,
   setNonFungibleTokenList,
   resetOwnedNonFungibleAssets,
   addOwnedEthereumNonFungibleAsset,
@@ -160,7 +162,6 @@ export const updateFees = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
     dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
   ): Promise<void> => {
-
     // TODO: Load fee dynamically from on-chain state
     const toDotFee = '1';
     const toETHFee = '0.01';
@@ -177,10 +178,10 @@ export const updateFees = ():
 
     switch(swapDirection) {
       case SwapDirection.EthereumToPolkadot:
-        dispatch(setFee(toDotFee));
+        dispatch(setDotFee(toDotFee));
         break;
       case SwapDirection.PolkadotToEthereum:
-        dispatch(setFee(toETHFee));
+        dispatch(setEthFee(toETHFee));
         break;
     }
   }
