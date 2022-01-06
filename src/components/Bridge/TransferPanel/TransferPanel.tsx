@@ -21,8 +21,8 @@ import SelectedFungibleToken from './SelectedFungibleToken';
 import { SelectedNFT } from './SelectedNFT';
 
 import Panel from '../../Panel/Panel';
-import ChainDisplay from './ChainDisplay';
-import ParachainDisplay from './ParachainDisplay';
+
+import ChainTypeDisplay from './ChainTypeDisplay';
 import FeeInfo from './FeeInfo';
 import AddressDisplay from './AddressDisplay/AddressDisplay';
 import DirectionBadge from './DirectionBadge';
@@ -178,7 +178,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       <Panel className="chain-direction-display-panel">
         <div className="chain-direction-display">
           <DirectionBadge direction="From" />
-          <ChainDisplay chain={chains.from} />
+          <ChainTypeDisplay chain={chains.from} />
           <AddressDisplay className="address-display" chain={chains.from} />
         </div>
         {selectedAsset?.type === 0 && (
@@ -196,7 +196,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       <Panel className="chain-direction-display-panel">
         <div className="chain-direction-display">
           <DirectionBadge direction="To" />
-          <ParachainDisplay  />
+          <ChainTypeDisplay chain={chains.to} />
           <AddressDisplay className="address-display" chain={chains.to} />
         </div>
         {selectedAsset?.type === 0
