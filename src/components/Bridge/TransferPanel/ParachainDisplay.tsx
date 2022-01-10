@@ -14,12 +14,12 @@ const ParachainDisplay = ({  className }: ChainDisplayProps) => {
   
   return (
     <div className={className}>
-      <Select value={'Parachain'} >
-        <Option value='Parachain'>Parachain</Option>
-        <Option value='Acala' isDisable={true} >Acala coming soon</Option>
-        <Option value='Moonbeam' isDisable={true} >Moonbeam coming soon</Option>
-        <Option value='Bifrost' isDisable={true}>Bifrost coming soon</Option>
-        <Option value='Kusama' isDisable={true}>Kusama coming soon</Option>
+      <Select value={'Snowbridge'} >
+        <Option value='Snowbridge'>Snowbridge</Option>
+        <Option value='Acala' isDisable={true} >Acala (coming soon...)</Option>
+        <Option value='Moonbeam' isDisable={true} >Moonbeam (coming soon...)</Option>
+        <Option value='Bifrost' isDisable={true}>Bifrost (coming soon...)</Option>
+        <Option value='Kusama' isDisable={true}>Kusama (coming soon...)</Option>
       </Select>
     </div>
   );
