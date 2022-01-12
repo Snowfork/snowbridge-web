@@ -21,7 +21,8 @@ import SelectedFungibleToken from './SelectedFungibleToken';
 import { SelectedNFT } from './SelectedNFT';
 
 import Panel from '../../Panel/Panel';
-import ChainDisplay from './ChainDisplay';
+
+import ChainTypeDisplay from './ChainTypeDisplay';
 import FeeInfo from './FeeInfo';
 import AddressDisplay from './AddressDisplay/AddressDisplay';
 import DirectionBadge from './DirectionBadge';
@@ -31,6 +32,7 @@ import TransactionListButton from '../../Button/TransactionListButton';
 
 import SwitchButton from '../../Button/SwitchButton';
 import FungibleTokenBalance from './FungibleTokenBalance';
+
 
 import { PERMITTED_METAMASK_NETWORK, PERMITTED_METAMASK_NETWORK_ID } from '../../../config';
 
@@ -176,7 +178,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       <Panel className="chain-direction-display-panel">
         <div className="chain-direction-display">
           <DirectionBadge direction="From" />
-          <ChainDisplay chain={chains.from} />
+          <ChainTypeDisplay chain={chains.from} />
           <AddressDisplay className="address-display" chain={chains.from} />
         </div>
         {selectedAsset?.type === 0 && (
@@ -194,7 +196,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       <Panel className="chain-direction-display-panel">
         <div className="chain-direction-display">
           <DirectionBadge direction="To" />
-          <ChainDisplay chain={chains.to} />
+          <ChainTypeDisplay chain={chains.to} />
           <AddressDisplay className="address-display" chain={chains.to} />
         </div>
         {selectedAsset?.type === 0
