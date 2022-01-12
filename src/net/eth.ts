@@ -8,7 +8,7 @@ import { web3FromSource } from '@polkadot/extension-dapp';
 import { PromiEvent } from 'web3-core';
 import Api, { ss58ToU8 } from './api';
 import Polkadot from './polkadot';
-
+import Onboard from 'bnc-onboard'
 // Import Contracts
 import {
   APP_ETH_CONTRACT_ADDRESS,
@@ -17,6 +17,9 @@ import {
   BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
   APP_DOT_CONTRACT_ADDRESS,
   APP_ERC721_CONTRACT_ADDRESS,
+  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
+  PERMITTED_ETH_NETWORK_ID,
+  INFURA_KEY
 } from '../config';
 
 /* tslint:disable */
@@ -49,6 +52,14 @@ import { fetchEthAddress } from '../redux/actions/EthTransactions';
 import { Channel } from '../types/types';
 import { getChannelID } from '../utils/common';
 
+const wallets: any[] =[
+    { walletName: "metamask", preferred: true },  
+    {
+        walletName: "walletConnect",
+        infuraKey: INFURA_KEY,
+        preferred: true 
+    },   
+]
 export default class Eth extends Api {
   public static loadContracts(dispatch: Dispatch<any>, web3: Web3): void {
     const ethContract = new web3.eth.Contract(
@@ -91,53 +102,73 @@ export default class Eth extends Api {
 
   // Web3 API connector
   public static async connect(dispatch: Dispatch<any>): Promise<void> {
-    const connectionComplete = async (provider: any) => {
-      const web3 = new Web3(provider);
-      dispatch(setWeb3(web3));
-
-      await provider.request({ method: 'eth_requestAccounts' });
-
-      web3.eth.net
-        .getNetworkType()
-        .then((network: string) => dispatch(setMetamaskNetwork(network)));
-
-      // Set contracts
-      Eth.loadContracts(dispatch, web3);
-
-      // fetch addresses
-      await dispatch(fetchEthAddress());
-
-      console.log('- Eth connected');
-    };
-
-    const provider = await detectEthereumProvider() as any;
-    console.log({ provider });
-    if (provider) {
-      await connectionComplete(provider);
-
-      provider.on('accountsChanged', async (accounts: string[]) => {
-        if (accounts[0]) {
-          await dispatch(setEthAddress(accounts[0]));
-          dispatch(updateBalances());
-        } else {
-          setEthAddress();
+    const connectionComplete = async () => {
+        let web3:any;
+        let provider:any;
+        try{
+            const onboard = Onboard({
+                networkId: parseInt(PERMITTED_ETH_NETWORK_ID),  // [Integer] The Ethereum network ID your Dapp uses.
+                subscriptions: {
+                wallet: (wallet: any) => {
+                    web3= new Web3(wallet.provider)
+                    dispatch(setWeb3(web3));
+                    provider= wallet.provider
+                }
+                },
+                walletSelect: {
+                    wallets: wallets 
+                }
+            });
+            let walletselected = await onboard.walletSelect()
+            while(! walletselected ){
+                walletselected =  await onboard.walletSelect();
+            }
+            let readyToTransact = await onboard.walletCheck();
+            if (!readyToTransact) {
+              window.location.reload();
+            }
+            // Set contracts
+            Eth.loadContracts(dispatch, web3);
+            // fetch addresses
+            await dispatch(fetchEthAddress());
+            console.log('- Eth connected');
         }
-      });
+        catch{
+            throw new Error('Something went wrong');        
+        }
+        return provider;
+    };
+    try{
+        const provider= await connectionComplete();
+        if (provider) {
+            provider.on('accountsChanged', async (accounts: string[]) => {
+                if (accounts[0]) {
+                await dispatch(setEthAddress(accounts[0]));
+                dispatch(updateBalances());
+                } else {
+                setEthAddress();
+                }
+            });
 
-      provider.on('disconnect', async () => {
-        setEthAddress();
-      });
+            provider.on('disconnect', async () => {
+                setEthAddress();
+            });
 
-      provider.on('chainChanged', () => {
-        window.location.reload();
-      });
+            provider.on('chainChanged', () => {
+                window.location.reload();
+            });
 
-      provider.on('disconnect', () => {
-        window.location.reload();
-      });
-    } else {
-      dispatch(setMetamaskMissing());
-      throw new Error('Metamask not found');
+            provider.on('disconnect', () => {
+                window.location.reload();
+            });
+        } else {
+            dispatch(setMetamaskMissing());
+            throw new Error('Metamask not found');
+        }
+    }
+    catch (error)
+    {
+        console.log('error==',error);
     }
   }
 

@@ -5,7 +5,7 @@ import { useAppSelector } from '../../../utils/hooks';
 import { getChainsFromDirection, getChainName } from '../../../utils/common';
 import { Chain, Channel, SwapDirection } from '../../../types/types';
 import { Asset } from '../../../types/Asset';
-import { ACTIVE_CHANNEL, PERMITTED_METAMASK_NETWORK } from '../../../config';
+import { ACTIVE_CHANNEL, PERMITTED_ETH_NETWORK } from '../../../config';
 
 import ToolTip from '../../ToolTip/ToolTip';
 
@@ -101,7 +101,7 @@ const FeeInfo = ({ className, setError }: Props) => {
       {balanceError && <div className='fee-error-section'>
         <p>You don't have enough {currency.text} in your {fromName} wallet to pay for this transfer.</p>
         {currency.symbol === toDotCurrency.symbol && <p>
-          If this is your first time using the bridge, you can get some <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={UNISWAP_DOT_LINK}>here</a> from Uniswap <i> (Make sure you're on {PERMITTED_METAMASK_NETWORK}!)</i>, but the best way to get it is to bridge it over from {toName} yourself. You can also ask for some in our <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={SNOWBRIDGE_DISCORD_LINK}>Discord Support channel</a>.
+          If this is your first time using the bridge, you can get some <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={UNISWAP_DOT_LINK}>here</a> from Uniswap <i> (Make sure you're on {PERMITTED_ETH_NETWORK}!)</i>, but the best way to get it is to bridge it over from {toName} yourself. You can also ask for some in our <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={SNOWBRIDGE_DISCORD_LINK}>Discord Support channel</a>.
         </p>}
         {currency.symbol === toETHCurrency.symbol && <p>
           If this is your first time using the bridge, you should bridge it over from {toName} yourself! You can also ask for some in our <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={SNOWBRIDGE_DISCORD_LINK}>Discord Support channel</a>.

@@ -40,10 +40,13 @@ export default {
   BLOCK_EXPLORER_URL: 'https://ropsten.etherscan.io',
   SNOWBRIDGE_EXPLORER_URL: 'https://polkadot.js.org/apps/?rpc=wss://parachain-rpc.snowbridge.network#/explorer',
 
-  PERMITTED_METAMASK_NETWORK: 'ropsten',
-  PERMITTED_METAMASK_NETWORK_ID: '0x3',
+  PERMITTED_ETH_NETWORK: 'ropsten',
+  PERMITTED_ETH_NETWORK_ID: '0x3',
 
   BASIC_CHANNEL_ID: 0,
   INCENTIVIZED_CHANNEL_ID: 1,
   ACTIVE_CHANNEL: Channel.INCENTIVIZED,
+
+  //Key required for connection with walletconnect
+  INFURA_KEY:'e9d88f4871b04add8ab3dbfd71b70877'
 };
