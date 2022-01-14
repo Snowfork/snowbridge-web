@@ -30,6 +30,8 @@ import * as BasicInboundChannel from '../contracts/BasicInboundChannel.json';
 import * as DotApp from '../contracts/DOTApp.json';
 import * as ERC721App from '../contracts/ERC721App.json';
 
+import { initializeTokens } from '../redux/actions/bridge';
+
 /* tslint:enable */
 import {
   setAppDotContract,
@@ -44,7 +46,6 @@ import {
   setErc721AppContract,
 } from '../redux/actions/net';
 import * as ERC20Api from './ERC20';
-import { updateBalances } from '../redux/actions/bridge';
 import {
   Asset, isEther, isNonFungible, NonFungibleToken,
 } from '../types/Asset';
@@ -144,7 +145,7 @@ export default class Eth extends Api {
             provider.on('accountsChanged', async (accounts: string[]) => {
                 if (accounts[0]) {
                 await dispatch(setEthAddress(accounts[0]));
-                dispatch(updateBalances());
+                dispatch(initializeTokens());
                 } else {
                 setEthAddress();
                 }
