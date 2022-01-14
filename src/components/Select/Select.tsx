@@ -61,7 +61,7 @@ export default styled(Select)`
     cursor: inherit;
     line-height: inherit;
     outline: none;
-    color: ${props => props.theme.colors.secondary};
+    color: ${props => props.theme.colors.main};
 
     padding: 0px 27px;
 

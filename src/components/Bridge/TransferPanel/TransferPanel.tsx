@@ -95,6 +95,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
         (errors) => ({ ...errors, gas: undefined }),
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [swapDirection, selectedAsset, ethereumGasBalance, polkadotGasBalance]);
 
   const setAssetError = (assetError: string) => {

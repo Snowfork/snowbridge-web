@@ -67,6 +67,7 @@ const SelectedFungibleToken = ({ className, openAssetSelector, setError }: Props
       }
     }
     checkDepositAmount(depositAmount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [depositAmount, tokenBalances, decimalMap.from]);
 
   const handleMaxClicked = () => {

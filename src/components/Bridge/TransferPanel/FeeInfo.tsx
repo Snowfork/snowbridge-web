@@ -80,6 +80,7 @@ const FeeInfo = ({ className, setError }: Props) => {
       }
     }
     checkFeeBalance(assets, swapDirection);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assets, swapDirection]);
 
 
