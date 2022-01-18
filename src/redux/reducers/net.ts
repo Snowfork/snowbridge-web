@@ -48,7 +48,6 @@ export const netSlice = createSlice({
       state.metamaskNetwork = action.payload;
     },
     setWeb3: (state, action: PayloadAction<Web3>) => {
-      console.log('action.payload==',action.payload);
       state.web3 = action.payload;
     },
     setEthContract: (state, action: PayloadAction<Contract>) => {

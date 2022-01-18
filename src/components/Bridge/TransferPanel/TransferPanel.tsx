@@ -186,7 +186,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
           && <SelectedNFT openAssetSelector={handleAssetSelect} />}
       </div>
       <Panel className="chain-direction-display-panel">
-        {!ethAddress &&<button className="button-frame connetwallet" onClick={handleClick}> Connect Wallet</button> }
+        {!ethAddress &&<button className="button-frame connect-wallet" onClick={handleClick}> Connect Wallet</button> }
         <div className="chain-direction-display">
           <DirectionBadge direction="From" />
           <ChainTypeDisplay chain={chains.from} />
@@ -253,7 +253,7 @@ export default styled(TransferPanel)`
   .address-display {
     margin-left: 5px;
   }
-  .connetwallet
+  .connect-wallet
   {
     width:120px
   }
