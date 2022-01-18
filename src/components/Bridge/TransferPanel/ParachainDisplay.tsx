@@ -10,6 +10,7 @@ type ChainDisplayProps = {
  
 }
 const  onchange = () => {
+  //used for change of chain during the dropdown selection
 }
 const ParachainDisplay = ({  className }: ChainDisplayProps) => {
   

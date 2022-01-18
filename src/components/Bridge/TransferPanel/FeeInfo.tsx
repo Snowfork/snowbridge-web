@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useCallback } from 'react';
 import styled from 'styled-components';
 
 import { useAppSelector } from '../../../utils/hooks';
@@ -53,7 +53,7 @@ const FeeInfo = ({ className, setError }: Props) => {
   if (balance < fee) {
     balanceError = true;
   }
-
+  const setCBError = useCallback(setError,[]);
   useEffect(() => {
     const checkFeeBalance = (assets: Asset[], swapDirection: SwapDirection) => {
       const chains = getChainsFromDirection(swapDirection);
@@ -73,15 +73,15 @@ const FeeInfo = ({ className, setError }: Props) => {
       const asset = assets.find((asset) => asset.symbol === currency.symbol);
       const balance = asset ? asset.balance[chains.from] : 0;
       if (balance < fee) {
-        setError(TRANSFER_FEE_ERROR);
+        setCBError(TRANSFER_FEE_ERROR);
       }
       else {
-        setError('');
+        setCBError('');
       }
     }
     checkFeeBalance(assets, swapDirection);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assets, swapDirection]);
+    
+  }, [setCBError,assets, swapDirection]);
 
 
   const toolTip = `To make transfers to ${toName}, you need to pay ${fee} ${currency.text} from your ${fromName} wallet`

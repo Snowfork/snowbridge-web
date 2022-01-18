@@ -21,7 +21,6 @@ import SelectedFungibleToken from './SelectedFungibleToken';
 import { SelectedNFT } from './SelectedNFT';
 
 import Panel from '../../Panel/Panel';
-import ParachainDisplay from './ParachainDisplay';
 
 import ChainTypeDisplay from './ChainTypeDisplay';
 import FeeInfo from './FeeInfo';
@@ -95,8 +94,8 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
         (errors) => ({ ...errors, gas: undefined }),
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [swapDirection, selectedAsset, ethereumGasBalance, polkadotGasBalance]);
+    
+  }, [assets,dispatch,swapDirection, selectedAsset, ethereumGasBalance, polkadotGasBalance]);
 
   const setAssetError = (assetError: string) => {
     setErrors((errors) => ({ ...errors, asset: assetError }));

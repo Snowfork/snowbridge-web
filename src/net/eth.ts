@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import Web3 from 'web3';
-import detectEthereumProvider from '@metamask/detect-provider';
 import { Dispatch } from 'redux';
 import { Contract } from 'web3-eth-contract';
 import { ApiPromise } from '@polkadot/api';
@@ -17,7 +16,6 @@ import {
   BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
   APP_DOT_CONTRACT_ADDRESS,
   APP_ERC721_CONTRACT_ADDRESS,
-  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
   PERMITTED_ETH_NETWORK_ID,
   INFURA_KEY
 } from '../config';
@@ -40,8 +38,6 @@ import {
   setEthAddress,
   setEthContract,
   setIncentivizedChannelContract,
-  setMetamaskMissing,
-  setMetamaskNetwork,
   setWeb3,
   setErc721AppContract,
 } from '../redux/actions/net';
@@ -163,8 +159,7 @@ export default class Eth extends Api {
                 window.location.reload();
             });
         } else {
-            dispatch(setMetamaskMissing());
-            throw new Error('Metamask not found');
+            throw new Error('Please connect wallet');
         }
     }
     catch (error)

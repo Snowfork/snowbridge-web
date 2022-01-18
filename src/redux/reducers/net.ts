@@ -7,7 +7,6 @@ import { RootState } from '../store';
 import { PERMITTED_ETH_NETWORK } from '../../config';
 
 export interface NetState {
-  metamaskMissing: boolean,
   polkadotJSMissing: boolean,
   metamaskNetwork: string,
   web3?: Web3,
@@ -25,7 +24,6 @@ export interface NetState {
 }
 
 const initialState: NetState = {
-  metamaskMissing: false,
   polkadotJSMissing: false,
   metamaskNetwork: '',
   web3: undefined,
@@ -45,7 +43,6 @@ export const netSlice = createSlice({
   name: 'net',
   initialState,
   reducers: {
-    setMetamaskMissing: (state) => { state.metamaskMissing = true; },
     setPolkadotjsMissing: (state) => { state.polkadotJSMissing = true; },
     setMetamaskNetwork: (state, action: PayloadAction<string>) => {
       state.metamaskNetwork = action.payload;

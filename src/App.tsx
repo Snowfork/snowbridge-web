@@ -27,8 +27,7 @@ const BridgeApp = () => {
   const dispatch = useDispatch();
   const {
     isNetworkConnected,
-    polkadotJSMissing,
-    metamaskMissing,
+    polkadotJSMissing,    
   } = useAppSelector((state) => state.net);
 
   // Start Network
