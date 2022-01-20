@@ -66,7 +66,7 @@ export default class Polkadot extends Api {
     polkadotApi: ApiPromise, polkadotAddress: string,
   ): Promise<string> {
     try {
-      const account = await polkadotApi.query.system.account(polkadotAddress);
+      const account:any = await polkadotApi.query.system.account(polkadotAddress);
       if (account.data.free) {
         return account.data.free.toString();
       }

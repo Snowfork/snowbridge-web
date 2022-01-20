@@ -14,7 +14,7 @@ import {
 import EthApi from '../../net/eth';
 import { setEthAddress } from './net';
 import { Chain, SwapDirection } from '../../types/types';
-import { ACTIVE_CHANNEL } from '../../config';
+import { ACTIVE_CHANNEL, PARACHAIN_ID } from '../../config';
 
 /**
  * Locks tokens on Ethereum and mints tokens on Polkadot
@@ -57,6 +57,7 @@ export const lockEthAsset = (
 
           const transactionEvent: any = EthApi.lock(
             amount,
+            PARACHAIN_ID,
             selectedAsset!,
             ethAddress!,
             polkadotAddress!,

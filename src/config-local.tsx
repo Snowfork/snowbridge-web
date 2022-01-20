@@ -1,6 +1,7 @@
 import { Channel } from './types/types';
 
 export default {
+  PARACHAIN_ID : '0',
   // Contract Addresses
   APP_ETH_CONTRACT_ADDRESS: '0xB1185EDE04202fE62D38F5db72F71e38Ff3E8305',
   APP_ERC20_CONTRACT_ADDRESS: '0x3f0839385DB9cBEa8E73AdA6fa0CFe07E321F61d',
