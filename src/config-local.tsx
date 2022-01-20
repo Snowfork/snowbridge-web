@@ -1,7 +1,6 @@
 import { Channel } from './types/types';
 
 export default {
-  PARACHAIN_ID : '0',
   // Contract Addresses
   APP_ETH_CONTRACT_ADDRESS: '0xB1185EDE04202fE62D38F5db72F71e38Ff3E8305',
   APP_ERC20_CONTRACT_ADDRESS: '0x3f0839385DB9cBEa8E73AdA6fa0CFe07E321F61d',
@@ -44,6 +43,15 @@ export default {
 
   BASIC_CHANNEL_ID: 0,
   INCENTIVIZED_CHANNEL_ID: 1,
-  ACTIVE_CHANNEL: Channel.INCENTIVIZED
+  ACTIVE_CHANNEL: Channel.INCENTIVIZED,
 
+  PARACHAIN_LIST: [
+    { "parachainName":'Snowbridge', "parachainId": '0', 'isDisabled':false },
+    { "parachainName":'Snowbridge-test', "parachainId": '1001','isDisabled':false },
+    { "parachainName":'Acala', "parachainId": '1010','isDisabled':true },
+    { "parachainName":'Moonbeam', "parachainId": '1027','isDisabled':true },
+    { "parachainName":'Bifrost', "parachainId": '1102','isDisabled':true },
+    { "parachainName":'Kusama', "parachainId": '1085', 'isDisabled':true },
+    { "parachainName":'Snowbridge', "parachainId": '1028','isDisabled':true }
+ ]
 };

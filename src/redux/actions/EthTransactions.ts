@@ -14,7 +14,7 @@ import {
 import EthApi from '../../net/eth';
 import { setEthAddress } from './net';
 import { Chain, SwapDirection } from '../../types/types';
-import { ACTIVE_CHANNEL, PARACHAIN_ID } from '../../config';
+import { ACTIVE_CHANNEL } from '../../config';
 
 /**
  * Locks tokens on Ethereum and mints tokens on Polkadot
@@ -29,6 +29,7 @@ export const lockEthAsset = (
     getState,
   ): Promise<void> => {
     const state = getState() as RootState;
+    const PARACHAIN_ID = state.bridge.parachainId;
     const {
       ethContract,
       erc20Contract,

@@ -22,7 +22,8 @@ export interface BridgeState {
     ethereum: {
       [contractAddress: string]: OwnedNft[],
     }
-  }
+  },
+  parachainId:string
 }
 
 const initialState: BridgeState = {
@@ -34,6 +35,7 @@ const initialState: BridgeState = {
   showTransactionListModal: false,
   nonFungibleAssets: [],
   ownedNonFungibleAssets: { polkadot: {}, ethereum: {} },
+  parachainId: '0'
 };
 
 // export default bridgeReducer;
@@ -50,6 +52,9 @@ export const bridgeSlice = createSlice({
     setSwapDirection:
       (state, action: PayloadAction<SwapDirection>) => {
         state.swapDirection = action.payload;
+      },
+    setParaChainId: (state,action:PayloadAction<string>) => {
+      state.parachainId = action.payload;
       },
     setShowConfirmTransactionModal:
       (state, action: PayloadAction<boolean>) => {
