@@ -40,6 +40,7 @@ import {
   setIncentivizedChannelContract,
   setWeb3,
   setErc721AppContract,
+  setMetamaskNetwork,
 } from '../redux/actions/net';
 import * as ERC20Api from './ERC20';
 import {
@@ -110,6 +111,9 @@ export default class Eth extends Api {
                     web3= new Web3(wallet.provider)
                     dispatch(setWeb3(web3));
                     provider= wallet.provider
+
+                    web3.eth.net.getNetworkType()
+                    .then((network: string) => dispatch(setMetamaskNetwork(network)));
                 }
                 },
                 walletSelect: {
