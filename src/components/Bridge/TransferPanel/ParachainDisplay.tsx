@@ -7,7 +7,7 @@ import Option from '../../Select/Option';
 
 import { useAppSelector } from '../../../utils/hooks';
 import { setParaChainId } from '../../../redux/actions/bridge';
-import { PARACHAIN_LIST} from '../../../config';
+import { PARACHAIN_LIST } from '../../../config';
 
 type ChainDisplayProps = {
   className?: string;
@@ -19,7 +19,7 @@ const ParachainDisplay = ({  className }: ChainDisplayProps) => {
   
   const dispatch = useDispatch();
 
-  const {parachainId} = useAppSelector((state) => state.bridge);
+  const { parachainId } = useAppSelector((state) => state.bridge);
 
   const selectParachain = (event:any) => {
     dispatch(setParaChainId(event.target.value));
@@ -28,7 +28,6 @@ const ParachainDisplay = ({  className }: ChainDisplayProps) => {
   return (
     <div className={className}>
       <Select value={parachainId} onChange={selectParachain} >
-        {console.log("parachain ",parachainId)}
         {PARACHAIN_LIST.map((chain,index) => <Option key={index} value={chain.parachainId} isDisable={chain.isDisabled}>{chain.parachainName}</Option>)}
         
       </Select>

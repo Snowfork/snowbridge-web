@@ -48,12 +48,12 @@ export default {
   ACTIVE_CHANNEL: Channel.INCENTIVIZED,
 
   PARACHAIN_LIST: [
-    { "parachainName":'Snowbridge', "parachainId": '0', 'isDisabled':false },
-    { "parachainName":'Snowbridge-test', "parachainId": '1001','isDisabled':false },
-    { "parachainName":'Acala', "parachainId": '1010','isDisabled':true },
-    { "parachainName":'Moonbeam', "parachainId": '1027','isDisabled':true },
-    { "parachainName":'Bifrost', "parachainId": '1102','isDisabled':true },
-    { "parachainName":'Kusama', "parachainId": '1085', 'isDisabled':true },
-    { "parachainName":'Snowbridge', "parachainId": '1028','isDisabled':true }
- ]
+    { "parachainName":'Snowbridge', "parachainId": 0, 'isDisabled':false },
+    { "parachainName":'Snowbridge-test', "parachainId": 1001,'isDisabled':false },
+    { "parachainName":'Acala', "parachainId": 1010,'isDisabled':true },
+    { "parachainName":'Moonbeam', "parachainId": 1027,'isDisabled':true },
+    { "parachainName":'Bifrost', "parachainId": 1102,'isDisabled':true },
+    { "parachainName":'Kusama', "parachainId": 1085, 'isDisabled':true },
+    { "parachainName":'Snowbridge', "parachainId": 1028,'isDisabled':true }
+  ]
 };

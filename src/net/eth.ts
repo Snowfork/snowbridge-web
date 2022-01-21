@@ -216,7 +216,7 @@ export default class Eth extends Api {
  */
   public static lock(
     amount: string,
-    parachainId:string,
+    parachainId:number,
     asset: Asset,
     sender: string,
     polkadotRecipient: string,

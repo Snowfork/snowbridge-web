@@ -29,7 +29,7 @@ export const lockEthAsset = (
     getState,
   ): Promise<void> => {
     const state = getState() as RootState;
-    const PARACHAIN_ID = state.bridge.parachainId;
+    const parachainId = state.bridge.parachainId;
     const {
       ethContract,
       erc20Contract,
@@ -58,7 +58,7 @@ export const lockEthAsset = (
 
           const transactionEvent: any = EthApi.lock(
             amount,
-            PARACHAIN_ID,
+            parachainId,
             selectedAsset!,
             ethAddress!,
             polkadotAddress!,

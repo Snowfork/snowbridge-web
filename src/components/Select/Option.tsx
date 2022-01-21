@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 type Props = {
-  value: string;
+  value: string | number;
   className?: string;
   isDisable?:boolean;
 }
