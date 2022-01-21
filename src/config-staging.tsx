@@ -50,10 +50,10 @@ export default {
   PARACHAIN_LIST: [
     { "parachainName":'Snowbridge', "parachainId": 0, 'isDisabled':false },
     { "parachainName":'Snowbridge-test', "parachainId": 1001,'isDisabled':false },
-    { "parachainName":'Acala', "parachainId": 1010,'isDisabled':true },
-    { "parachainName":'Moonbeam', "parachainId": 1027,'isDisabled':true },
-    { "parachainName":'Bifrost', "parachainId": 1102,'isDisabled':true },
-    { "parachainName":'Kusama', "parachainId": 1085, 'isDisabled':true },
-    { "parachainName":'Snowbridge', "parachainId": 1028,'isDisabled':true }
+    { "parachainName":'Acala (coming soon...)', "parachainId": 1010,'isDisabled':true },
+    { "parachainName":'Moonbeam (coming soon...)', "parachainId": 1027,'isDisabled':true },
+    { "parachainName":'Bifrost (coming soon...)', "parachainId": 1102,'isDisabled':true },
+    { "parachainName":'Kusama (coming soon...)', "parachainId": 1085, 'isDisabled':true },
+    { "parachainName":'Snowbridge (coming soon...)', "parachainId": 1028,'isDisabled':true }
   ]
 };
