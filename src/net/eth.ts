@@ -266,6 +266,7 @@ export default class Eth extends Api {
           polkadotRecipientBytes,
           amount,
           channelId,
+          parachainId
         )
         .send({
           from: sender,
