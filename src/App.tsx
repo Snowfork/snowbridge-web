@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import ReactModal from 'react-modal';
 import { useDispatch } from 'react-redux';
-import { ToastContainer } from 'react-toastify';
+import { StyledContainer } from './styles/toastStyle';
 import {
   BrowserRouter as Router,
   Switch,
@@ -101,7 +101,7 @@ const BridgeApp = () => {
           <BridgeHealth />
         </Route>
       </Layout>
-      <ToastContainer autoClose={10000} />
+      <StyledContainer autoClose={10000} />
     </Router>
   );
 };
