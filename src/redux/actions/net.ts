@@ -39,7 +39,7 @@ export const subscribeEvents = ():
     const state = getState() as RootState;
     const { polkadotApi } = state.net;
     if (polkadotApi) {
-      polkadotApi.query.system.events((eventRecords) => {
+      polkadotApi.query.system.events((eventRecords:any) => {
         const dispatchEvents = _.filter(eventRecords, (eR) => eR.event.section === 'dispatch');
         dispatchEvents.forEach(({ event }) => {
           const nonce = (event.data as any)[0].nonce.toString();

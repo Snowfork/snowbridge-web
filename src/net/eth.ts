@@ -216,6 +216,7 @@ export default class Eth extends Api {
  */
   public static lock(
     amount: string,
+    parachainId: number,
     asset: Asset,
     sender: string,
     polkadotRecipient: string,
@@ -249,7 +250,7 @@ export default class Eth extends Api {
       // call ether contract for ether
       if (isEther(asset)) {
         return ethContract.methods
-          .lock(polkadotRecipientBytes, channelId)
+          .lock(polkadotRecipientBytes, channelId, parachainId)
           .send({
             from: sender,
             gas: 500000,
@@ -264,6 +265,7 @@ export default class Eth extends Api {
           polkadotRecipientBytes,
           amount,
           channelId,
+          parachainId
         )
         .send({
           from: sender,

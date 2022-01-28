@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 type Props = {
   className?: string;
-  value: string;
+  value: string | number;
   onChange?: any;
 }
 
