@@ -47,13 +47,13 @@ export default {
   INCENTIVIZED_CHANNEL_ID: 1,
   ACTIVE_CHANNEL: Channel.INCENTIVIZED,
 
-  PARACHAIN_LIST: [
+  PARACHAIN_LIST : [
     { "parachainName":'Snowbridge', "parachainId": 0, 'isDisabled':false },
     { "parachainName":'Snowbridge-test', "parachainId": 1001,'isDisabled':false },
-    { "parachainName":'Acala (coming soon...)', "parachainId": 1010,'isDisabled':true },
-    { "parachainName":'Moonbeam (coming soon...)', "parachainId": 1027,'isDisabled':true },
-    { "parachainName":'Bifrost (coming soon...)', "parachainId": 1102,'isDisabled':true },
-    { "parachainName":'Kusama (coming soon...)', "parachainId": 1085, 'isDisabled':true },
-    { "parachainName":'Snowbridge (coming soon...)', "parachainId": 1028,'isDisabled':true }
+    { "parachainName":'Acala (coming soon...)', "parachainId": 0,'isDisabled':true },
+    { "parachainName":'Moonbeam (coming soon...)', "parachainId": 0,'isDisabled':true },
+    { "parachainName":'Bifrost (coming soon...)', "parachainId": 0,'isDisabled':true },
+    { "parachainName":'Kusama (coming soon...)', "parachainId": 0, 'isDisabled':true },
+    { "parachainName":'Snowbridge (coming soon...)', "parachainId": 0,'isDisabled':true }
   ]
 };
