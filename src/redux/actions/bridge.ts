@@ -179,7 +179,6 @@ export const updateFees = ():
         case SwapDirection.EthereumToPolkadot:
           // TODO: Proper handling of conversion
           const erc20Dot: any = await incentivizedOutboundChannelContract!.methods.fee().call();
-          console.log(erc20Dot);
           const erc20DotFormatted = (Number(erc20Dot) / denomination).toString();
           dispatch(setERC20DotFee(erc20DotFormatted));
           return;
