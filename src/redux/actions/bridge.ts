@@ -2,6 +2,8 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
+import { commify, formatEther } from 'ethers/lib/utils';
+import { BN , formatBalance } from '@polkadot/util'
 import { Chain, NonFungibleTokenContract, SwapDirection, Token } from '../../types/types';
 import { RootState } from '../store';
 import * as ERC20 from '../../contracts/TestToken.json';
@@ -172,19 +174,19 @@ export const updateFees = ():
       },
     } = getState() as RootState;
 
-    const denomination = 10 ** 18;
-
     try {
       switch (swapDirection) {
         case SwapDirection.EthereumToPolkadot:
-          // TODO: Proper handling of conversion
-          const erc20Dot: any = await incentivizedOutboundChannelContract!.methods.fee().call();
-          const erc20DotFormatted = (Number(erc20Dot) / denomination).toString();
+          const erc20Dot = new BN(await incentivizedOutboundChannelContract!.methods.fee().call());
+          const erc20DotFormatted = formatBalance(erc20Dot, {
+              decimals: 18,
+              withSi: false,
+          })
           dispatch(setERC20DotFee(erc20DotFormatted));
           return;
         case SwapDirection.PolkadotToEthereum:
-          const parachainEthInGwei: any = await polkadotApi!.query.incentivizedOutboundChannel.fee();
-          const parachainEth = (Number(parachainEthInGwei) / denomination).toString();
+          const value = (await polkadotApi!.query.incentivizedOutboundChannel.fee()).toString();
+          const parachainEth = commify(formatEther(value));
           dispatch(setParachainEthFee(parachainEth));
           return;
       }
