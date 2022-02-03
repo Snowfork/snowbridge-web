@@ -29,6 +29,7 @@ export const {
   resetOwnedNonFungibleAssets,
   addOwnedEthereumNonFungibleAsset,
   addOwnedPolkadotNonFungibleAssets,
+  setParaChainId
 } = bridgeSlice.actions;
 
 // async middleware actions

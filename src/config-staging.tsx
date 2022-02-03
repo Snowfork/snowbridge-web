@@ -48,5 +48,14 @@ export default {
   ACTIVE_CHANNEL: Channel.INCENTIVIZED,
 
   //Key required for connection with walletconnect
-  INFURA_KEY:'e9d88f4871b04add8ab3dbfd71b70877'
+  INFURA_KEY:'e9d88f4871b04add8ab3dbfd71b70877',
+  PARACHAIN_LIST : [
+    { "parachainName":'Snowbridge', "parachainId": 0, 'isDisabled':false },
+    { "parachainName":'Snowbridge-test', "parachainId": 1001,'isDisabled':false },
+    { "parachainName":'Acala (coming soon...)', "parachainId": 0,'isDisabled':true },
+    { "parachainName":'Moonbeam (coming soon...)', "parachainId": 0,'isDisabled':true },
+    { "parachainName":'Bifrost (coming soon...)', "parachainId": 0,'isDisabled':true },
+    { "parachainName":'Kusama (coming soon...)', "parachainId": 0, 'isDisabled':true },
+    { "parachainName":'Snowbridge (coming soon...)', "parachainId": 0,'isDisabled':true }
+  ]
 };

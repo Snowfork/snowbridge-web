@@ -1,27 +1,35 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useDispatch } from 'react-redux';
 
 import Select from '../../Select/Select';
 import Option from '../../Select/Option';
+
+import { useAppSelector } from '../../../utils/hooks';
+import { setParaChainId } from '../../../redux/actions/bridge';
+import { PARACHAIN_LIST } from '../../../config';
 
 type ChainDisplayProps = {
   className?: string;
   mini?: boolean;
  
 }
-const  onchange = () => {
-  //used for change of chain during the dropdown selection
-}
+
 const ParachainDisplay = ({  className }: ChainDisplayProps) => {
   
+  const dispatch = useDispatch();
+
+  const { parachainId } = useAppSelector((state) => state.bridge);
+
+  const selectParachain = (event:any) => {
+    dispatch(setParaChainId(event.target.value));
+  }
+
   return (
     <div className={className}>
-      <Select value={'Snowbridge'} onChange={onchange} >
-        <Option value='Snowbridge'>Snowbridge</Option>
-        <Option value='Acala' isDisable={true} >Acala (coming soon...)</Option>
-        <Option value='Moonbeam' isDisable={true} >Moonbeam (coming soon...)</Option>
-        <Option value='Bifrost' isDisable={true}>Bifrost (coming soon...)</Option>
-        <Option value='Kusama' isDisable={true}>Kusama (coming soon...)</Option>
+      <Select value={parachainId} onChange={selectParachain} >
+        {PARACHAIN_LIST.map((chain,index) => <Option key={index} value={chain.parachainId} isDisable={chain.isDisabled}>{chain.parachainName}</Option>)}
+        
       </Select>
     </div>
   );

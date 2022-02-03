@@ -5,5 +5,10 @@ module.exports = function override(webpackConfig) {
     type: "javascript/auto"
   });
 
+  webpackConfig.module.rules.push({
+    test: /\.js$/,
+    loader: require.resolve('@open-wc/webpack-import-meta-loader'),
+  });
+
   return webpackConfig;
 }

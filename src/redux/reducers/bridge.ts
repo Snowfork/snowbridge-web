@@ -6,6 +6,7 @@ import { Asset, isDot, isEther } from '../../types/Asset';
 import {
   NonFungibleTokenContract, OwnedNft, SwapDirection,
 } from '../../types/types';
+import { PARACHAIN_LIST } from '../../config';
 
 export interface BridgeState {
   assets: Asset[],
@@ -22,7 +23,8 @@ export interface BridgeState {
     ethereum: {
       [contractAddress: string]: OwnedNft[],
     }
-  }
+  },
+  parachainId: number
 }
 
 const initialState: BridgeState = {
@@ -34,6 +36,7 @@ const initialState: BridgeState = {
   showTransactionListModal: false,
   nonFungibleAssets: [],
   ownedNonFungibleAssets: { polkadot: {}, ethereum: {} },
+  parachainId: PARACHAIN_LIST ? PARACHAIN_LIST[0].parachainId : 0
 };
 
 // export default bridgeReducer;
@@ -50,6 +53,10 @@ export const bridgeSlice = createSlice({
     setSwapDirection:
       (state, action: PayloadAction<SwapDirection>) => {
         state.swapDirection = action.payload;
+      },
+    setParaChainId:
+      (state, action: PayloadAction<number>) => {
+        state.parachainId = action.payload;
       },
     setShowConfirmTransactionModal:
       (state, action: PayloadAction<boolean>) => {
