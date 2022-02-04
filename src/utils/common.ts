@@ -1,5 +1,5 @@
 import { BASIC_CHANNEL_ID, INCENTIVIZED_CHANNEL_ID, REQUIRED_ETH_CONFIRMATIONS } from '../config';
-import { Transaction } from '../redux/reducers/transactions';
+import { Transaction,TransactionStatus } from '../redux/reducers/transactions';
 import { SwapDirection, Chain, Channel } from '../types/types';
 import { isNonFungible, NonFungibleToken, Asset } from '../types/Asset';
 
@@ -58,6 +58,11 @@ export function formatToDecimalString(
 export const pendingTransactions = (transactions: Transaction[])
   : number => transactions.filter(
     (t) => t.confirmations < REQUIRED_ETH_CONFIRMATIONS,
+  ).length;
+
+export const pendingEventTransactions = (transactions: Transaction[])
+  : number => transactions.filter(
+    (t) => t.status !== TransactionStatus.DISPATCHED,
   ).length;
 
 export const getChainsFromDirection = (swapDirection: SwapDirection): { from: Chain, to: Chain } => (

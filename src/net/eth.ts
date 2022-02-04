@@ -8,7 +8,8 @@ import { web3FromSource } from '@polkadot/extension-dapp';
 import { PromiEvent } from 'web3-core';
 import Api, { ss58ToU8 } from './api';
 import Polkadot from './polkadot';
-
+import { store } from '../redux/store';
+import { pendingEventTransactions } from '../utils/common';
 // Import Contracts
 import {
   APP_ETH_CONTRACT_ADDRESS,
@@ -48,7 +49,7 @@ import {
 import { fetchEthAddress } from '../redux/actions/EthTransactions';
 import { Channel } from '../types/types';
 import { getChannelID } from '../utils/common';
-
+import { handleTransaction, handlePolkadotMissedEvents } from '../redux/actions/transactions';
 export default class Eth extends Api {
   public static loadContracts(dispatch: Dispatch<any>, web3: Web3): void {
     const ethContract = new web3.eth.Contract(
@@ -106,7 +107,24 @@ export default class Eth extends Api {
 
       // fetch addresses
       await dispatch(fetchEthAddress());
+      
+      //Obtain transaction list
+      let transactions = store.getState().transactions.transactions;
+      let pendingTxCount = pendingEventTransactions(transactions);
 
+      if (pendingTxCount > 0) {
+        // Handelling transaction callback and events
+        let interval = setInterval(() => {
+          transactions = store.getState().transactions.transactions;
+          pendingTxCount = pendingEventTransactions(transactions);
+
+          if (pendingTxCount === 0)
+            clearInterval(interval);
+
+          dispatch(handleTransaction(web3));
+          dispatch(handlePolkadotMissedEvents());
+        }, 5000);
+      }
       console.log('- Eth connected');
     };
 

@@ -17,7 +17,7 @@ import {
 } from '../../types/Asset';
 import { Chain, SwapDirection, Channel } from '../../types/types';
 import { AssetType } from '../../types/Asset';
-import { RootState } from '../store';
+import { RootState, persistor } from '../store';
 import {
   MessageDispatchedEvent,
   Transaction,
@@ -40,6 +40,7 @@ export const {
   setPendingTransaction,
   setTransactionStatus,
   updateTransaction,
+  updateTransactionNotifyConfirmation
 } = transactionsSlice.actions;
 
 export const updateConfirmations = (
@@ -106,6 +107,7 @@ export function createTransaction(
     error: '',
     nonce: '',
     channel,
+    isNotifyConfirmed: false,
   };
 
   return pendingTransaction;
@@ -267,93 +269,20 @@ export function handleEthereumTransactionEvents(
         ),
       );
     })
+
     .on('receipt', async (receipt: any) => {
-      console.log('Transaction receipt received', receipt);
-      const basicOutChannelLogFields = [
-        {
-          type: 'address',
-          name: 'source',
-        },
-        {
-          type: 'uint64',
-          name: 'nonce',
-        },
-        {
-          type: 'bytes',
-          name: 'payload',
-        },
-      ];
-      const incentivizedOutChannelLogFields = [
-        {
-          type: 'address',
-          name: 'source',
-        },
-        {
-          type: 'uint64',
-          name: 'nonce',
-        },
-        {
-          type: 'uint256',
-          name: 'fee',
-        },
-        {
-          type: 'bytes',
-          name: 'payload',
-        },
-      ];
-      let nonce;
-
-      Object.keys(receipt.events).forEach((eventKey: any) => {
-        const event = receipt.events[eventKey];
-        if (event.address === BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS) {
-          const decodedEvent = web3.eth.abi.decodeLog(
-            basicOutChannelLogFields,
-            event.raw.data,
-            event.raw.topics,
-          );
-          nonce = decodedEvent.nonce;
-        }
-        if (event.address === INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS) {
-          const decodedEvent = web3.eth.abi.decodeLog(
-            incentivizedOutChannelLogFields,
-            event.raw.data,
-            event.raw.topics,
-          );
-          nonce = decodedEvent.nonce;
-        }
-      })
-
-      if (!nonce) {
-        return
-      }
-
-      dispatch(
-        setNonce({
-          hash: transactionHash,
-          nonce,
-        }),
-      );
+      console.log('------6------Transaction receipt received receipt', receipt);
+      dispatch(handleTransaction(web3));
     })
+
     .on(
       'confirmation',
       (
         confirmation: number,
         receipt: any,
       ) => {
-        // update transaction confirmations
-        dispatch(
-          updateConfirmations(receipt.transactionHash, confirmation),
-        );
-
-        if (confirmation === REQUIRED_ETH_CONFIRMATIONS) {
-          dispatch(notify({
-            text: `Transactions confirmed after ${confirmation} confirmations`,
-            color: 'success',
-          }));
-          console.log('call transactionEvent.off()');
-          // TODO: call this
-          // transactionEvent.off('confirmation');
-        }
+        console.log("--inside.-confirmation--event---", confirmation, receipt)
+        dispatch(handleTransaction(web3));
       },
     )
     .on('error', (error: any) => {
@@ -413,3 +342,177 @@ export function handlePolkadotTransactionErrors(
     );
   }
 }
+
+export async function handleEthTransaction(
+  state: any,
+  hash: string,
+  web3: Web3,
+  dispatch: Dispatch<any>,
+  fReceiptstatus: any
+) {
+  //get the transaction receipt
+  let txReceipt = await web3.eth.getTransactionReceipt(hash);
+
+  //if pending then return
+  if (!txReceipt)
+    return -1;
+
+  //status-FALSE when EVM reverted the transaction.
+  if (!txReceipt.status)
+    return -1;
+
+  //Fetch current block number
+  let currentBlock = await web3.eth.getBlockNumber()
+  let confirmation = txReceipt.blockNumber === null ? 0 : currentBlock - txReceipt.blockNumber
+
+  //@todo only once add fReceiptstatus in state.
+  if (!fReceiptstatus) {
+    handleEthTxRecipt(txReceipt, dispatch, web3)  //only once..
+  }
+
+  if (confirmation > 0)
+    handleEthTxConfirmation(state, confirmation, txReceipt, dispatch, web3)
+}
+
+
+export function handleEthTxRecipt(receipt: any, dispatch: Dispatch<any>,
+  web3: Web3) {
+
+  const basicOutChannelLogFields = [
+    {
+      type: 'address',
+      name: 'source',
+    },
+    {
+      type: 'uint64',
+      name: 'nonce',
+    },
+    {
+      type: 'bytes',
+      name: 'payload',
+    },
+  ];
+  const incentivizedOutChannelLogFields = [
+    {
+      type: 'address',
+      name: 'source',
+    },
+    {
+      type: 'uint64',
+      name: 'nonce',
+    },
+    {
+      type: 'uint256',
+      name: 'fee',
+    },
+    {
+      type: 'bytes',
+      name: 'payload',
+    },
+  ];
+  let nonce;
+  (receipt.logs).forEach((log: any) => {
+    const event = log;
+
+    if (event.address === BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS) {
+      const decodedEvent = web3.eth.abi.decodeLog(
+        basicOutChannelLogFields,
+        event.data,
+        event.topics,
+      );
+      nonce = decodedEvent.nonce;
+    }
+    if (event.address === INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS) {
+      const decodedEvent = web3.eth.abi.decodeLog(
+        incentivizedOutChannelLogFields,
+        event.data,
+        event.topics,
+      );
+      nonce = decodedEvent.nonce;
+    }
+  })
+  if (!nonce) {
+    return
+  }
+  console.log("nonce", nonce)
+
+  dispatch(
+    setNonce({
+      hash: receipt.transactionHash,
+      nonce,
+    }),
+  );
+}
+
+export function handleEthTxConfirmation(state: any, confirmation: number,
+  receipt: any, dispatch: Dispatch<any>,
+  web3: Web3) {
+  // update transaction confirmations
+  dispatch(
+    updateConfirmations(receipt.transactionHash, confirmation),
+  );
+
+  if (confirmation === REQUIRED_ETH_CONFIRMATIONS) {
+
+    const tranasaction = state.transactions.transactions.filter((transaction: any) => {
+      return transaction.hash === receipt.transactionHash
+    });
+
+    if (tranasaction.length > 0) {
+
+      if (!tranasaction[0].isNotifyConfirmed) {
+
+        dispatch(updateTransactionNotifyConfirmation({
+          hash: tranasaction[0].hash
+        }))
+
+        dispatch(notify({
+          text: `Transactions confirmed after ${confirmation} confirmations`,
+          color: 'success',
+        }));
+
+      }
+    }
+  }
+}
+
+export const handleTransaction = (
+  web3: Web3
+):
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+    dispatch: ThunkDispatch<{}, {}, AnyAction>,
+    getState,
+  ): Promise<void> => {
+
+    const state = getState() as RootState;
+    let pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status != TransactionStatus.DISPATCHED && transaction.chain === 'eth');
+    if (pendingTransactions.length == 0) {
+      persistor.purge();
+    }
+    if (pendingTransactions.length > 0) {
+      pendingTransactions.map((tx: any) => handleEthTransaction(state, tx.hash, web3, dispatch, tx.fReceiptstatus ? true : false))
+    }
+  }
+
+
+export const handlePolkadotMissedEvents = ():
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+    dispatch: ThunkDispatch<{}, {}, AnyAction>,
+    getState,
+  ): Promise<void> => {
+    const state = getState() as RootState;
+    const { polkadotApi } = state.net;
+    if (polkadotApi) {
+      const incentivizeLatestNonce = Number(await polkadotApi.query['incentivizedInboundChannel'].nonce());
+      const basicLatestNonce = Number(await polkadotApi.query['basicInboundChannel'].nonce());
+      const pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.chain == 'eth' && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeLatestNonce : basicLatestNonce));
+
+      pendingTransactions.map((tx: Transaction) => {
+        const nonce = tx.nonce ? tx.nonce : ''
+        const channel = tx.channel === Channel.BASIC ? Channel.BASIC : Channel.INCENTIVIZED
+
+        dispatch(parachainMessageDispatched({ nonce, channel })
+        )
+      })
+    }
+  }

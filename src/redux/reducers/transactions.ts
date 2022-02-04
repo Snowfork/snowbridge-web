@@ -44,6 +44,7 @@ export interface Transaction {
   asset: Asset;
   direction: SwapDirection
   channel: Channel;
+  isNotifyConfirmed: boolean;
 }
 
 // Interface for the Ethereum 'MessageDispatched' event,
@@ -111,6 +112,13 @@ export const transactionsSlice = createSlice({
     },
     updateTransaction: (state, action: PayloadAction<{ hash: string, update: Partial<Transaction> }>) => {
       state.transactions = state.transactions.map((tx) => (tx.hash === action.payload.hash ? { ...tx, ...action.payload.update } : tx));
+    },
+    updateTransactionNotifyConfirmation: (state, action: PayloadAction<{ hash: string }>) => {
+      const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
+
+      if (transaction) {
+        transaction.isNotifyConfirmed = true;
+      }
     },
     setNonce: (state, action: PayloadAction<{ hash: string, nonce: string }>) => {
       const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
