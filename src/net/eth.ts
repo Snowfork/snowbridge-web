@@ -17,13 +17,15 @@ import {
   APP_DOT_CONTRACT_ADDRESS,
   APP_ERC721_CONTRACT_ADDRESS,
   PERMITTED_ETH_NETWORK_ID,
-  INFURA_KEY
+  INFURA_KEY,
+  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS
 } from '../config';
 
 /* tslint:disable */
 import * as ETHApp from '../contracts/ETHApp.json';
 import * as ERC20App from '../contracts/ERC20App.json';
 import * as IncentivizedInboundChannel from '../contracts/IncentivizedInboundChannel.json';
+import * as IncentivizedOutboundChannel from '../contracts/IncentivizedOutboundChannel.json';
 import * as BasicInboundChannel from '../contracts/BasicInboundChannel.json';
 import * as DotApp from '../contracts/DOTApp.json';
 import * as ERC721App from '../contracts/ERC721App.json';
@@ -37,10 +39,11 @@ import {
   setERC20Contract,
   setEthAddress,
   setEthContract,
-  setIncentivizedChannelContract,
+  setIncentivizedInboundChannelContract,
+  setIncentivizedOutboundChannelContract,
+  setMetamaskNetwork,
   setWeb3,
   setErc721AppContract,
-  setMetamaskNetwork,
 } from '../redux/actions/net';
 import * as ERC20Api from './ERC20';
 import {
@@ -72,11 +75,17 @@ export default class Eth extends Api {
     );
     dispatch(setERC20Contract(erc20contract));
 
-    const incentivizedChannelContract = new web3.eth.Contract(
+    const incentivizedInboundChannelContract = new web3.eth.Contract(
       IncentivizedInboundChannel.abi as any,
       INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
     );
-    dispatch(setIncentivizedChannelContract(incentivizedChannelContract));
+    dispatch(setIncentivizedInboundChannelContract(incentivizedInboundChannelContract));
+
+    const incentivizedOutboundChannelContract = new web3.eth.Contract(
+      IncentivizedOutboundChannel.abi as any,
+      INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
+    );
+    dispatch(setIncentivizedOutboundChannelContract(incentivizedOutboundChannelContract));
 
     const basicChannelContract = new web3.eth.Contract(
       BasicInboundChannel.abi as any,

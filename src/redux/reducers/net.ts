@@ -13,7 +13,8 @@ export interface NetState {
   ethContract?: Contract,
   erc20Contract?: Contract,
   erc721AppContract?: Contract,
-  incentivizedChannelContract?: Contract,
+  incentivizedInboundChannelContract?: Contract,
+  incentivizedOutboundChannelContract?: Contract,
   basicChannelContract?: Contract,
   appDotContract?: Contract,
   polkadotApi?: ApiPromise,
@@ -29,7 +30,8 @@ const initialState: NetState = {
   web3: undefined,
   ethContract: undefined,
   erc20Contract: undefined,
-  incentivizedChannelContract: undefined,
+  incentivizedInboundChannelContract: undefined,
+  incentivizedOutboundChannelContract: undefined,
   appDotContract: undefined,
   polkadotApi: undefined,
   polkadotAddress: undefined,
@@ -56,8 +58,11 @@ export const netSlice = createSlice({
     setERC20Contract: (state, action: PayloadAction<Contract>) => {
       state.erc20Contract = action.payload;
     },
-    setIncentivizedChannelContract: (state, action: PayloadAction<Contract>) => {
-      state.incentivizedChannelContract = action.payload;
+    setIncentivizedInboundChannelContract: (state, action: PayloadAction<Contract>) => {
+      state.incentivizedInboundChannelContract = action.payload;
+    },
+    setIncentivizedOutboundChannelContract: (state, action: PayloadAction<Contract>) => {
+      state.incentivizedOutboundChannelContract = action.payload;
     },
     setBasicChannelContract: (state, action: PayloadAction<Contract>) => {
       state.basicChannelContract = action.payload;

@@ -94,7 +94,7 @@ export const unlockEthAsset = (amount: string):
     const {
       polkadotApi,
       polkadotAddress,
-      incentivizedChannelContract,
+      incentivizedInboundChannelContract,
       ethAddress,
       basicChannelContract,
     } = state.net;
@@ -128,7 +128,7 @@ export const unlockEthAsset = (amount: string):
             unsub,
             pendingTransaction,
             dispatch,
-            incentivizedChannelContract!,
+            incentivizedInboundChannelContract!,
             basicChannelContract!,
           );
 

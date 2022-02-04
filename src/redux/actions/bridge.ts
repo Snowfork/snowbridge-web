@@ -2,7 +2,9 @@
 import { AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import Web3 from 'web3';
-import { Chain, NonFungibleTokenContract, Token } from '../../types/types';
+import { commify, formatEther } from 'ethers/lib/utils';
+import { BN , formatBalance } from '@polkadot/util'
+import { Chain, NonFungibleTokenContract, SwapDirection, Token } from '../../types/types';
 import { RootState } from '../store';
 import * as ERC20 from '../../contracts/TestToken.json';
 import * as WrappedToken from '../../contracts/WrappedToken.json';
@@ -25,6 +27,9 @@ export const {
   setShowConfirmTransactionModal,
   setShowTransactionListModal,
   setSwapDirection,
+  setERC20DotFee,
+  setParachainEthFee,
+  setFeeError,
   setNonFungibleTokenList,
   resetOwnedNonFungibleAssets,
   addOwnedEthereumNonFungibleAsset,
@@ -151,7 +156,46 @@ export const updateBalances = ():
     }
 
     dispatch(updateGasBalances());
+    dispatch(updateFees());
   };
+
+// update fees for selected swap direction
+export const updateFees = ():
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+    dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
+  ): Promise<void> => {
+    const {
+      bridge: {
+        swapDirection,
+      },
+      net: {
+        incentivizedOutboundChannelContract,
+        polkadotApi,
+      },
+    } = getState() as RootState;
+
+    try {
+      switch (swapDirection) {
+        case SwapDirection.EthereumToPolkadot:
+          const erc20Dot = new BN(await incentivizedOutboundChannelContract!.methods.fee().call());
+          const erc20DotFormatted = formatBalance(erc20Dot, {
+              decimals: 18,
+              withSi: false,
+          })
+          dispatch(setERC20DotFee(erc20DotFormatted));
+          return;
+        case SwapDirection.PolkadotToEthereum:
+          const value = (await polkadotApi!.query.incentivizedOutboundChannel.fee()).toString();
+          const parachainEth = commify(formatEther(value));
+          dispatch(setParachainEthFee(parachainEth));
+          return;
+      }
+    }
+    catch (e: any) {
+      console.error(e);
+      dispatch(setFeeError("Could not fetch fees."));
+    }
+  }
 
 function initCollectibles(web3: Web3) {
   return Erc721TokenList
