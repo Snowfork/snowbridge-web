@@ -33,7 +33,7 @@ export const lockPolkadotAsset = (
       polkadotApi,
       polkadotAddress,
       basicChannelContract,
-      incentivizedChannelContract,
+      incentivizedInboundChannelContract,
     } = state.net;
     const {
       selectedAsset,
@@ -62,7 +62,7 @@ export const lockPolkadotAsset = (
               unsub!,
               pendingTransaction,
               dispatch,
-              incentivizedChannelContract!,
+              incentivizedInboundChannelContract!,
               basicChannelContract!,
             );
 
@@ -92,7 +92,7 @@ export const lockPolkadotAsset = (
               unsub!,
               pendingTransaction,
               dispatch,
-              incentivizedChannelContract!,
+              incentivizedInboundChannelContract!,
               basicChannelContract!,
             );
 
