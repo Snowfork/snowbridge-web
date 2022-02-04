@@ -48,7 +48,7 @@ export default {
   ACTIVE_CHANNEL: Channel.INCENTIVIZED,
 
   //Key required for connection with walletconnect
-  INFURA_KEY:'e9d88f4871b04add8ab3dbfd71b70877',
+  INFURA_KEY:process.env.REACT_APP_INFURA_KEY,
   PARACHAIN_LIST : [
     { "parachainName":'Snowbridge', "parachainId": 0, 'isDisabled':false },
     { "parachainName":'Snowbridge-test', "parachainId": 1001,'isDisabled':false },
