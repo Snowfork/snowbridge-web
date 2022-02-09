@@ -25,6 +25,11 @@ export interface BridgeState {
     }
   },
   parachainId: number
+  fees: {
+    erc20dot: string | null,
+    parachainEth: string | null,
+    error: string | null,
+  },
 }
 
 const initialState: BridgeState = {
@@ -36,7 +41,12 @@ const initialState: BridgeState = {
   showTransactionListModal: false,
   nonFungibleAssets: [],
   ownedNonFungibleAssets: { polkadot: {}, ethereum: {} },
-  parachainId: PARACHAIN_LIST ? PARACHAIN_LIST[0].parachainId : 0
+  parachainId: PARACHAIN_LIST ? PARACHAIN_LIST[0].parachainId : 0,
+  fees: {
+    erc20dot: null,
+    parachainEth: null,
+    error: null,
+  },
 };
 
 // export default bridgeReducer;
@@ -53,6 +63,20 @@ export const bridgeSlice = createSlice({
     setSwapDirection:
       (state, action: PayloadAction<SwapDirection>) => {
         state.swapDirection = action.payload;
+      },
+    setERC20DotFee:
+      (state, action: PayloadAction<string>) => {
+        state.fees.error = null;
+        state.fees.erc20dot = action.payload;
+      },
+    setParachainEthFee:
+      (state, action: PayloadAction<string>) => {
+        state.fees.error = null;
+        state.fees.parachainEth = action.payload;
+      },    
+    setFeeError:
+      (state, action: PayloadAction<string>) => {
+        state.fees.error = action.payload;
       },
     setParaChainId:
       (state, action: PayloadAction<number>) => {

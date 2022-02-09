@@ -8,10 +8,8 @@ import { Asset } from '../../../types/Asset';
 import { ACTIVE_CHANNEL, PERMITTED_METAMASK_NETWORK } from '../../../config';
 
 import ToolTip from '../../ToolTip/ToolTip';
-
-// TODO: Load fee dynamically from on-chain state
-const toDotFee = '1';
-const toETHFee = '0.01';
+import { updateFees } from '../../../redux/actions/bridge';
+import { useDispatch } from 'react-redux';
 
 const toDotCurrency = { symbol: 'DOT', text: 'ERC20 DOT' };
 const toETHCurrency = { symbol: 'ETH', text: 'Parachain ETH' };
@@ -28,60 +26,92 @@ type Props = {
 
 const FeeInfo = ({ className, setError }: Props) => {
   const {
-    assets, swapDirection,
+    assets, swapDirection, fees
   } = useAppSelector((state) => state.bridge);
+
+  const dispatch = useDispatch();
 
   const chains = getChainsFromDirection(swapDirection);
   const fromName = getChainName(chains.from)
   const toName = getChainName(chains.to)
 
-  let fee, currency: any;
+  let fee: string | null;
+  let currency: any;
   switch (chains.to) {
     case Chain.POLKADOT:
-      fee = toDotFee;
+      fee = fees.erc20dot;
       currency = toDotCurrency;
       break;
     case Chain.ETHEREUM:
-      fee = toETHFee;
+      fee = fees.parachainEth;
       currency = toETHCurrency;
       break;
   }
-
+  
   const asset = assets.find((asset) => asset.symbol === currency.symbol);
   const balance = asset ? asset.balance[chains.from] : 0;
   let balanceError = false;
-  if (balance < fee) {
+  if (fee !== null && Number(balance) < Number(fee)) {
     balanceError = true;
   }
 
   useEffect(() => {
     const checkFeeBalance = (assets: Asset[], swapDirection: SwapDirection) => {
       const chains = getChainsFromDirection(swapDirection);
-
-      let fee, currency: any;
+     
+      let fee: string | null;
+      let currency: any;
       switch (chains.to) {
         case Chain.POLKADOT:
-          fee = toDotFee;
+          fee = fees.erc20dot;
           currency = toDotCurrency;
           break;
         case Chain.ETHEREUM:
-          fee = toETHFee;
+          fee = fees.parachainEth;
           currency = toETHCurrency;
           break;
       }
 
       const asset = assets.find((asset) => asset.symbol === currency.symbol);
       const balance = asset ? asset.balance[chains.from] : 0;
-      if (balance < fee) {
+      if (fee !== null && Number(balance) < Number(fee)) {
         setError(TRANSFER_FEE_ERROR);
       }
       else {
         setError('');
       }
-    }
-    checkFeeBalance(assets, swapDirection);
-  }, [assets, swapDirection]);
+    };
 
+    checkFeeBalance(assets, swapDirection);
+  }, [assets, swapDirection, fees.erc20dot, fees.parachainEth]);
+
+  useEffect(() => {
+    dispatch(updateFees());
+  }, [swapDirection]);
+
+  useEffect(() => {
+    if(fees.error) {
+      setError(fees.error);
+    } else {
+      setError('');
+    }
+  }, [fees.error]);
+
+  if(fee === null) {
+    return (
+      <div className={className}>
+        {!fees.error && <div className='fee-display-section'>
+        <span>Transfer fee</span>
+        <span className='fee-amount'>
+          Loading...
+        </span>
+        </div>}
+        {fees.error && <div className='fee-error-section'>
+          {fees.error}
+        </div>}
+      </div>
+    );
+  }
 
   const toolTip = `To make transfers to ${toName}, you need to pay ${fee} ${currency.text} from your ${fromName} wallet`
 
