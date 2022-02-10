@@ -173,7 +173,6 @@ export const fetchEthAddress = ():
   ): Promise<void> => {
     const state = getState() as RootState;
     const web3: Web3 = state.net.web3!;
-
     const address = await EthApi.getAddress(web3);
     dispatch(setEthAddress(address));
   };

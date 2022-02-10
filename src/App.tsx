@@ -27,8 +27,7 @@ const BridgeApp = () => {
   const dispatch = useDispatch();
   const {
     isNetworkConnected,
-    polkadotJSMissing,
-    metamaskMissing,
+    polkadotJSMissing,    
   } = useAppSelector((state) => state.net);
 
   // Start Network
@@ -61,19 +60,7 @@ const BridgeApp = () => {
     );
   }
 
-  if (metamaskMissing) {
-    return (
-      <div>
-        <h2 style={{ color: 'white' }}>
-          Please install the
-          {' '}
-          <a href="https://metamask.io/">
-            Metamask extension
-          </a>
-        </h2>
-      </div>
-    );
-  }
+
 
   // Check if Network has been started
   if (!isNetworkConnected) {

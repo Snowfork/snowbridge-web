@@ -22,7 +22,6 @@ export const {
   setIncentivizedOutboundChannelContract,
   setEthAddress,
   setPolkadotAddress,
-  setMetamaskMissing,
   setMetamaskNetwork,
   setNetworkConnected,
   setPolkadotApi,

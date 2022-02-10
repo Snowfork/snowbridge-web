@@ -4,10 +4,9 @@ import Web3 from 'web3';
 import { ApiPromise } from '@polkadot/api';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
-import { PERMITTED_METAMASK_NETWORK } from '../../config';
+import { PERMITTED_ETH_NETWORK } from '../../config';
 
 export interface NetState {
-  metamaskMissing: boolean,
   polkadotJSMissing: boolean,
   metamaskNetwork: string,
   web3?: Web3,
@@ -26,7 +25,6 @@ export interface NetState {
 }
 
 const initialState: NetState = {
-  metamaskMissing: false,
   polkadotJSMissing: false,
   metamaskNetwork: '',
   web3: undefined,
@@ -47,7 +45,6 @@ export const netSlice = createSlice({
   name: 'net',
   initialState,
   reducers: {
-    setMetamaskMissing: (state) => { state.metamaskMissing = true; },
     setPolkadotjsMissing: (state) => { state.polkadotJSMissing = true; },
     setMetamaskNetwork: (state, action: PayloadAction<string>) => {
       state.metamaskNetwork = action.payload;
@@ -98,7 +95,7 @@ export default netSlice.reducer;
 
 // selectors
 export const isNetworkPermittedSelector = (state: RootState):
-  boolean => state.net.metamaskNetwork.toLowerCase() === PERMITTED_METAMASK_NETWORK;
+  boolean => state.net.metamaskNetwork.toLowerCase() === PERMITTED_ETH_NETWORK;
 
 export const ethereumProviderSelector = (state: RootState):
   any => (state.net.web3?.currentProvider as any);

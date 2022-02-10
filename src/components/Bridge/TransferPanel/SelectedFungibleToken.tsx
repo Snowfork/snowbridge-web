@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -42,7 +42,7 @@ const SelectedFungibleToken = ({ className, openAssetSelector, setError }: Props
 
   useEffect(() => {
   }, [dispatch]);
-
+  const setStableError = useCallback(setError,[]);
   useEffect(() => {
     const checkDepositAmount = (amount: string) => {
       const amountParsed = amount
@@ -58,16 +58,16 @@ const SelectedFungibleToken = ({ className, openAssetSelector, setError }: Props
       );
       const amountTooLow = amountParsed && amountParsed.isEqualTo(0);
       if (amountTooHigh) {
-        setError(INSUFFICIENT_BALANCE_ERROR);
+        setStableError(INSUFFICIENT_BALANCE_ERROR);
       } else if (amountTooLow) {
-        setError(AMOUNT_NOT_SET_ERROR);
+        setStableError(AMOUNT_NOT_SET_ERROR);
       }
       else {
-        setError('');
+        setStableError('');
       }
     }
     checkDepositAmount(depositAmount);
-  }, [depositAmount, tokenBalances, decimalMap.from]);
+  }, [setStableError,depositAmount, tokenBalances, decimalMap.from]);
 
   const handleMaxClicked = () => {
     const amount = tokenBalances.sourceNetwork;
