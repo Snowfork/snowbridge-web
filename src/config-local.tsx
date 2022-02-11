@@ -38,22 +38,24 @@ export default {
   BLOCK_EXPLORER_URL: 'https://ropsten.etherscan.io',
   SNOWBRIDGE_EXPLORER_URL: 'https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A11144#/explorer',
 
-  PERMITTED_METAMASK_NETWORK: 'private',
-  PERMITTED_METAMASK_NETWORK_ID: '0x???',
+  PERMITTED_ETH_NETWORK: 'private',
+  PERMITTED_ETH_NETWORK_ID: '0x???',
 
   BASIC_CHANNEL_ID: 0,
   INCENTIVIZED_CHANNEL_ID: 1,
   ACTIVE_CHANNEL: Channel.INCENTIVIZED,
 
-  PARACHAIN_LIST: [
-    { "parachainName": 'Snowbridge', "parachainId": 0, 'isDisabled': false },
-    { "parachainName": 'Snowbridge-test', "parachainId": 1001, 'isDisabled': false },
-    { "parachainName": 'Acala (coming soon...)', "parachainId": 0, 'isDisabled': true },
-    { "parachainName": 'Moonbeam (coming soon...)', "parachainId": 0, 'isDisabled': true },
-    { "parachainName": 'Bifrost (coming soon...)', "parachainId": 0, 'isDisabled': true },
-    { "parachainName": 'Kusama (coming soon...)', "parachainId": 0, 'isDisabled': true },
-    { "parachainName": 'Snowbridge (coming soon...)', "parachainId": 0, 'isDisabled': true }
-  ],
   //Asset id for wrapped Ether  
-  PARACHAIN_ETHER_ASSET_ID: 0
+  PARACHAIN_ETHER_ASSET_ID: 0,
+  //Key required for connection with walletconnect
+  INFURA_KEY: process.env.REACT_APP_INFURA_KEY,
+  PARACHAIN_LIST : [
+    { "parachainName":'Snowbridge', "parachainId": 0, 'isDisabled':false },
+    { "parachainName":'Snowbridge-test', "parachainId": 1001,'isDisabled':false },
+    { "parachainName":'Acala (coming soon...)', "parachainId": 0,'isDisabled':true },
+    { "parachainName":'Moonbeam (coming soon...)', "parachainId": 0,'isDisabled':true },
+    { "parachainName":'Bifrost (coming soon...)', "parachainId": 0,'isDisabled':true },
+    { "parachainName":'Kusama (coming soon...)', "parachainId": 0, 'isDisabled':true },
+    { "parachainName":'Snowbridge (coming soon...)', "parachainId": 0,'isDisabled':true }
+  ]
 };

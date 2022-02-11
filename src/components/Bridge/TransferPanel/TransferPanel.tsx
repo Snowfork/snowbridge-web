@@ -34,8 +34,9 @@ import SwitchButton from '../../Button/SwitchButton';
 import FungibleTokenBalance from './FungibleTokenBalance';
 
 
-import { PERMITTED_METAMASK_NETWORK, PERMITTED_METAMASK_NETWORK_ID } from '../../../config';
+import { PERMITTED_ETH_NETWORK, PERMITTED_ETH_NETWORK_ID } from '../../../config';
 
+import Eth from '../../../net/eth';
 const INSUFFICIENT_GAS_ERROR = 'Insufficient gas';
 
 type Props = {
@@ -93,7 +94,8 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
         (errors) => ({ ...errors, gas: undefined }),
       );
     }
-  }, [swapDirection, selectedAsset, ethereumGasBalance, polkadotGasBalance]);
+    
+  }, [assets,dispatch,swapDirection, selectedAsset, ethereumGasBalance, polkadotGasBalance]);
 
   const setAssetError = (assetError: string) => {
     setErrors((errors) => ({ ...errors, asset: assetError }));
@@ -120,7 +122,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       try {
         await ethereumProvider.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: PERMITTED_METAMASK_NETWORK_ID }],
+          params: [{ chainId: PERMITTED_ETH_NETWORK_ID }],
         });
       } catch (error) {
         // Silent catch
@@ -135,7 +137,15 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       switchNetwork();
     }
   };
-
+ 
+  const  handleClick =  async() => {
+    try {
+      // connect to ethereum
+      await Eth.connect(dispatch);
+    } catch (e) {
+      throw new Error('failed starting the network!');
+    }
+  }
   const selectedAssetSourceChain = selectedAsset?.chain === Chain.ETHEREUM ? 0 : 1;
   const selectedAssetValid = selectedAsset?.type === 0
     || (selectedAsset?.type === 1 && selectedAssetSourceChain === swapDirection);
@@ -152,7 +162,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
         <DOSButton
           onClick={switchNetwork}
         >
-          {`Switch to ${PERMITTED_METAMASK_NETWORK} network`}
+          {`Switch to ${PERMITTED_ETH_NETWORK} network`}
         </DOSButton>
       );
     }
@@ -166,7 +176,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       </DOSButton>
     );
   };
-
+  const { ethAddress } = useAppSelector((state) => state.net);
   return (
     <Panel className={className}>
       <div className="selected-asset-section">
@@ -176,6 +186,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
           && <SelectedNFT openAssetSelector={handleAssetSelect} />}
       </div>
       <Panel className="chain-direction-display-panel">
+        {!ethAddress &&<button className="button-frame connect-wallet" onClick={handleClick}> Connect Wallet</button> }
         <div className="chain-direction-display">
           <DirectionBadge direction="From" />
           <ChainTypeDisplay chain={chains.from} />
@@ -196,7 +207,7 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
       <Panel className="chain-direction-display-panel">
         <div className="chain-direction-display">
           <DirectionBadge direction="To" />
-          <ChainTypeDisplay chain={chains.to} />
+          <ChainTypeDisplay chain={chains.to} />          
           <AddressDisplay className="address-display" chain={chains.to} />
         </div>
         {selectedAsset?.type === 0
@@ -241,5 +252,9 @@ export default styled(TransferPanel)`
 
   .address-display {
     margin-left: 5px;
+  }
+  .connect-wallet
+  {
+    width:120px
   }
 `;
