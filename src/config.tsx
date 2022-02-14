@@ -1,10 +1,38 @@
 import localConfig from './config-local';
 import stagingConfig from './config-staging';
 
+import {
+  providerName,
+  APP_ETH_CONTRACT_Address,
+  APP_ERC20_CONTRACT_Address,
+  APP_DOT_CONTRACT_Address,
+  APP_ERC721_CONTRACT_Address,
+  SNOW_DOT_Address,
+  BASIC_INBOUND_CHANNEL_CONTRACT_Address,
+  BASIC_OUTBOUND_CHANNEL_CONTRACT_Address,
+  INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_Address,
+  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_Address,
+} from './contractAddresses.json';
+
 let config = stagingConfig;
 
 if (process.env.REACT_APP_NODE_CONFIG_ENV === 'local') {
-  config = localConfig;
+  if(providerName === 'localhost') {
+    config = localConfig;
+  }
+}
+
+//Fetching and updating contract address from contractAddresses.json file as per env
+config = {...config,
+  APP_ETH_CONTRACT_ADDRESS: APP_ETH_CONTRACT_Address,
+  APP_ERC20_CONTRACT_ADDRESS: APP_ERC20_CONTRACT_Address,
+  APP_DOT_CONTRACT_ADDRESS: APP_DOT_CONTRACT_Address,
+  APP_ERC721_CONTRACT_ADDRESS: APP_ERC721_CONTRACT_Address,
+  SNOW_DOT_ADDRESS: SNOW_DOT_Address,
+  BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS: BASIC_INBOUND_CHANNEL_CONTRACT_Address,
+  BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS: BASIC_OUTBOUND_CHANNEL_CONTRACT_Address,
+  INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS: INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_Address,
+  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS: INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_Address
 }
 
 export const {
