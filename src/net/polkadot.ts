@@ -91,8 +91,7 @@ export default class Polkadot extends Api {
       if (isDot(asset)) {
         const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
         return { isAssetFound:false, amount:balance };
-      }
-      account = await polkadotApi.query.assets.account(PARACHAIN_ETHER_ASSET_ID, polkadotAddress);
+      }      
       if (isErc20(asset)) {
         let assetId: any = await polkadotApi.query.erc20App.assetId(asset.address);
         if (assetId.isNone) {
@@ -100,6 +99,9 @@ export default class Polkadot extends Api {
         }
         assetId = assetId.unwrap()
         account = await polkadotApi.query.assets.account(assetId, polkadotAddress);
+      }
+      else {
+        account = await polkadotApi.query.assets.account(PARACHAIN_ETHER_ASSET_ID, polkadotAddress);
       }
       return { isAssetFound:true,amount:account.balance.toString() };      
     } catch (err) {
