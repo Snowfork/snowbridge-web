@@ -21,13 +21,15 @@ import {
 } from '../redux/actions/net';
 
 // Config
-import { POLKADOT_API_PROVIDER, POLKADOT_RELAY_API_PROVIDER } from '../config';
+import { POLKADOT_API_PROVIDER, POLKADOT_RELAY_API_PROVIDER, PARACHAIN_ETHER_ASSET_ID } from '../config';
 import Api, { ss58ToU8 } from './api';
 import { Asset, isDot, isErc20 } from '../types/Asset';
 import { updateBalances } from '../redux/actions/bridge';
 
 import { Channel } from '../types/types';
 import { getChannelID } from '../utils/common';
+
+import { AssetBalance } from '../types/types';
 
 export default class Polkadot extends Api {
   // Get all polkadot addresses
@@ -82,32 +84,26 @@ export default class Polkadot extends Api {
     polkadotApi: ApiPromise,
     polkadotAddress: string,
     asset: Asset,
-  ): Promise<string> {
+  ): Promise<AssetBalance> {
     try {
-      if (polkadotApi) {
-        // check if the asset is the native DOT asset and return DOT balance
-        if (isDot(asset)) {
-          const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
-          return balance;
+      let account: any;
+      // check if the asset is the native DOT asset and return DOT balance
+      if (isDot(asset)) {
+        const balance = await Polkadot.getGasCurrencyBalance(polkadotApi, polkadotAddress);
+        return { isAssetFound:false, amount:balance };
+      }      
+      if (isErc20(asset)) {
+        let assetId: any = await polkadotApi.query.erc20App.assetId(asset.address);
+        if (assetId.isNone) {
+          return { isAssetFound:false, amount:'0' };
         }
-
-        let ethAssetID = polkadotApi.createType('AssetId', 'ETH');
-        // create asset ID for tokens
-        if (isErc20(asset)) {
-          ethAssetID = polkadotApi.createType('AssetId', { Token: asset.address });
-        }
-        if (polkadotAddress) {
-          const balance = await polkadotApi.query.assets.balances(
-            ethAssetID,
-            polkadotAddress,
-          );
-
-          return balance.toString();
-        }
-
-        throw new Error('Default account not found');
+        assetId = assetId.unwrap()
+        account = await polkadotApi.query.assets.account(assetId, polkadotAddress);
       }
-      throw new Error('PolkadotApi not found');
+      else {
+        account = await polkadotApi.query.assets.account(PARACHAIN_ETHER_ASSET_ID, polkadotAddress);
+      }
+      return { isAssetFound:true,amount:account.balance.toString() };      
     } catch (err) {
       console.log('caught get eth balance', err);
       throw err;

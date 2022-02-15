@@ -47,8 +47,10 @@ export default {
   INCENTIVIZED_CHANNEL_ID: 1,
   ACTIVE_CHANNEL: Channel.INCENTIVIZED,
 
+  //Asset id for wrapped Ether
+  PARACHAIN_ETHER_ASSET_ID: 0,
   //Key required for connection with walletconnect
-  INFURA_KEY:process.env.REACT_APP_INFURA_KEY,
+  INFURA_KEY: process.env.REACT_APP_INFURA_KEY,
   PARACHAIN_LIST : [
     { "parachainName":'Snowbridge', "parachainId": 0, 'isDisabled':false },
     { "parachainName":'Snowbridge-test', "parachainId": 1001,'isDisabled':false },

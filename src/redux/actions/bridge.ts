@@ -139,17 +139,16 @@ export const updateBalances = ():
     if (selectedAsset) {
       // fetch updated balances
       const ethBalance = await EthApi.getTokenBalance(web3!, ethAddress!, selectedAsset);
-      const polkadotBalance = await Polkadot.getAssetBalance(
+      const polkadotBalance:any = await Polkadot.getAssetBalance(
         polkadotApi!,
         polkadotAddress!,
         selectedAsset,
       );
-
       const updatedTokenData = {
         ...selectedAsset,
         balance: {
           eth: ethBalance,
-          polkadot: polkadotBalance,
+          polkadot: polkadotBalance.amount,
         },
       };
       dispatch(updateTokenData(updatedTokenData as Asset));
@@ -299,20 +298,20 @@ export const initializeTokens = ():
 
         // fetch token balances on substrate
         try {
-          const polkadotBalance = await Polkadot.getAssetBalance(
+          const polkadotBalance:any = await Polkadot.getAssetBalance(
             polkadotApi!,
             polkadotAddress!,
             asset,
           );
-
           newTokenData = {
             ...newTokenData,
             balance: {
               ...newTokenData.balance,
-              polkadot: polkadotBalance,
+              polkadot: polkadotBalance.amount,
             },
           };
           dispatch(updateTokenData(newTokenData));
+          
         } catch (e) {
           console.log('failed reading polkadot balance', e);
         }
