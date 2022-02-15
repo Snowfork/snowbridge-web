@@ -2,6 +2,7 @@ import { BASIC_CHANNEL_ID, INCENTIVIZED_CHANNEL_ID, REQUIRED_ETH_CONFIRMATIONS }
 import { Transaction,TransactionStatus } from '../redux/reducers/transactions';
 import { SwapDirection, Chain, Channel } from '../types/types';
 import { isNonFungible, NonFungibleToken, Asset } from '../types/Asset';
+import {  PayloadAction } from '@reduxjs/toolkit';
 
 /**
  * Shortens a wallet address, showing X number of letters, an ellipsis, and
@@ -62,7 +63,7 @@ export const pendingTransactions = (transactions: Transaction[])
 
 export const pendingEventTransactions = (transactions: Transaction[])
   : number => transactions.filter(
-    (t) => t.status !== TransactionStatus.DISPATCHED,
+    (t) => t.status !== TransactionStatus.DISPATCHED && t.status !== TransactionStatus.REJECTED,
   ).length;
 
 export const getChainsFromDirection = (swapDirection: SwapDirection): { from: Chain, to: Chain } => (
@@ -102,4 +103,20 @@ export const getChannelID = (channel: Channel): number => {
     case Channel.INCENTIVIZED:
       return INCENTIVIZED_CHANNEL_ID;
   }
+}
+
+//Remove property named as pipes causing circular JSON issue in redux persist
+export const nonCircularPayload = (action: PayloadAction<Transaction>): Transaction => {
+  action.payload = JSON.parse(JSON.stringify(action.payload,(key,value) => {
+    return key === 'pipes' ? null : value;
+  }))
+  return action.payload;
+}
+
+//Remove property named as pipes causing circular JSON issue in redux persist for the case of update transaction
+export const nonCircularUpdateTxPayload = (update: Partial<Transaction>): any => {
+  update = JSON.parse(JSON.stringify(update,(key,value) => {
+    return key === 'pipes' ? null : value;
+  }))
+  return update;
 }

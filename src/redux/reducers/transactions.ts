@@ -5,7 +5,7 @@ import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { Asset } from '../../types/Asset';
 import { Chain, SwapDirection, Channel } from '../../types/types';
 import { RootState } from '../store';
-
+import { nonCircularPayload,nonCircularUpdateTxPayload } from '../../utils/common'
 export enum TransactionStatus {
   // used for error states
   REJECTED = -1,
@@ -74,10 +74,11 @@ export const transactionsSlice = createSlice({
   initialState,
   reducers: {
     addTransaction: (state, action: PayloadAction<Transaction>) => {
+      const payload = nonCircularPayload(action);
       // append to tx list
-      state.transactions.push(action.payload);
+      state.transactions.push(payload);
       // update pending tx
-      state.pendingTransaction = action.payload;
+      state.pendingTransaction = payload;
     },
     setConfirmations: (state, action: PayloadAction<{ confirmations: number, hash: string }>) => {
       const getTransactionStatus = (transaction: Transaction): TransactionStatus => {
@@ -111,7 +112,8 @@ export const transactionsSlice = createSlice({
       }
     },
     updateTransaction: (state, action: PayloadAction<{ hash: string, update: Partial<Transaction> }>) => {
-      state.transactions = state.transactions.map((tx) => (tx.hash === action.payload.hash ? { ...tx, ...action.payload.update } : tx));
+      const payload = nonCircularUpdateTxPayload(action.payload.update);
+      state.transactions = state.transactions.map((tx) => (tx.hash === action.payload.hash ? { ...tx, ...payload } : tx));
     },
     updateTransactionNotifyConfirmation: (state, action: PayloadAction<{ hash: string }>) => {
       const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
@@ -150,7 +152,8 @@ export const transactionsSlice = createSlice({
     //   // const transaction = state.transactions.filter((tx) => tx.nonce === action.payload.nonce)[0];
     // },
     setPendingTransaction: (state, action: PayloadAction<Transaction>) => {
-      state.pendingTransaction = action.payload;
+      const payload = nonCircularPayload(action);
+      state.pendingTransaction = payload;
     },
     ethMessageDispatched: (state, action: PayloadAction<{
       nonce: string, dispatchTransactionNonce: string, channel: Channel,

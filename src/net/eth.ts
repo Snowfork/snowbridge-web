@@ -55,7 +55,7 @@ import { fetchEthAddress } from '../redux/actions/EthTransactions';
 import { Channel } from '../types/types';
 import { getChannelID } from '../utils/common';
 import { handleTransaction, handlePolkadotMissedEvents } from '../redux/actions/transactions';
-
+import { persistor } from '../redux/store';
 const wallets: any[] =[
     { walletName: "metamask", preferred: true },  
     {
@@ -147,10 +147,12 @@ export default class Eth extends Api {
             
             //Obtain transaction list
             let stateData:any = store.getState();
-            if(stateData && stateData.transactions && stateData.transactions.transactions.length>0)
-            {
+            if(stateData && stateData.transactions && stateData.transactions.transactions.length>0) {
               let pendingTxCount = pendingEventTransactions(stateData.transactions.transactions);
-              if (pendingTxCount > 0) {
+              if (pendingTxCount == 0) {
+                persistor.purge();
+              }
+              else {
                 // Handelling transaction callback and events
                 let interval = setInterval(() => {
                   let transactions = store.getState().transactions.transactions;

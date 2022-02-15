@@ -17,7 +17,7 @@ import {
 } from '../../types/Asset';
 import { Chain, SwapDirection, Channel } from '../../types/types';
 import { AssetType } from '../../types/Asset';
-import { RootState, persistor } from '../store';
+import { RootState } from '../store';
 import {
   MessageDispatchedEvent,
   Transaction,
@@ -486,9 +486,6 @@ export const handleTransaction = (
 
     const state = getState() as RootState;
     let pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status != TransactionStatus.DISPATCHED && transaction.direction === 0);
-    if (pendingTransactions.length == 0) {
-      persistor.purge();
-    }
     if (pendingTransactions.length > 0) {
       pendingTransactions.map((tx: any) => handleEthTransaction(state, tx.hash, web3, dispatch, tx.fReceiptstatus ? true : false))
     }
