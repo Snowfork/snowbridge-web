@@ -112,13 +112,13 @@ function PendingTransactionBubbles({ className, transaction }: Props): JSX.Eleme
     <div className={className}>
       {steps.map((step, index) => {
         const line = index !== steps.length - 1 ? <Line key={`l${index}`} /> : null;
-        return <><Step
+        return <div key={index}><Step
           key={index}
           link={step.link}
           toolTip={step.toolTip}
           subtext={step.subtext}
           status={step.status}
-        />{line}</>
+        />{line}</div>
       })}
     </div>
   );

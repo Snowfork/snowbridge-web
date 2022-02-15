@@ -4,17 +4,17 @@ import Web3 from 'web3';
 import { ApiPromise } from '@polkadot/api';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
-import { PERMITTED_METAMASK_NETWORK } from '../../config';
+import { PERMITTED_ETH_NETWORK } from '../../config';
 
 export interface NetState {
-  metamaskMissing: boolean,
   polkadotJSMissing: boolean,
   metamaskNetwork: string,
   web3?: Web3,
   ethContract?: Contract,
   erc20Contract?: Contract,
   erc721AppContract?: Contract,
-  incentivizedChannelContract?: Contract,
+  incentivizedInboundChannelContract?: Contract,
+  incentivizedOutboundChannelContract?: Contract,
   basicChannelContract?: Contract,
   appDotContract?: Contract,
   polkadotApi?: ApiPromise,
@@ -25,13 +25,13 @@ export interface NetState {
 }
 
 const initialState: NetState = {
-  metamaskMissing: false,
   polkadotJSMissing: false,
   metamaskNetwork: '',
   web3: undefined,
   ethContract: undefined,
   erc20Contract: undefined,
-  incentivizedChannelContract: undefined,
+  incentivizedInboundChannelContract: undefined,
+  incentivizedOutboundChannelContract: undefined,
   appDotContract: undefined,
   polkadotApi: undefined,
   polkadotAddress: undefined,
@@ -45,7 +45,6 @@ export const netSlice = createSlice({
   name: 'net',
   initialState,
   reducers: {
-    setMetamaskMissing: (state) => { state.metamaskMissing = true; },
     setPolkadotjsMissing: (state) => { state.polkadotJSMissing = true; },
     setMetamaskNetwork: (state, action: PayloadAction<string>) => {
       state.metamaskNetwork = action.payload;
@@ -59,8 +58,11 @@ export const netSlice = createSlice({
     setERC20Contract: (state, action: PayloadAction<Contract>) => {
       state.erc20Contract = action.payload;
     },
-    setIncentivizedChannelContract: (state, action: PayloadAction<Contract>) => {
-      state.incentivizedChannelContract = action.payload;
+    setIncentivizedInboundChannelContract: (state, action: PayloadAction<Contract>) => {
+      state.incentivizedInboundChannelContract = action.payload;
+    },
+    setIncentivizedOutboundChannelContract: (state, action: PayloadAction<Contract>) => {
+      state.incentivizedOutboundChannelContract = action.payload;
     },
     setBasicChannelContract: (state, action: PayloadAction<Contract>) => {
       state.basicChannelContract = action.payload;
@@ -93,7 +95,7 @@ export default netSlice.reducer;
 
 // selectors
 export const isNetworkPermittedSelector = (state: RootState):
-  boolean => state.net.metamaskNetwork.toLowerCase() === PERMITTED_METAMASK_NETWORK;
+  boolean => state.net.metamaskNetwork.toLowerCase() === PERMITTED_ETH_NETWORK;
 
 export const ethereumProviderSelector = (state: RootState):
   any => (state.net.web3?.currentProvider as any);

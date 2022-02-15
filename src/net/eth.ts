@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import Web3 from 'web3';
-import detectEthereumProvider from '@metamask/detect-provider';
 import { Dispatch } from 'redux';
 import { Contract } from 'web3-eth-contract';
 import { ApiPromise } from '@polkadot/api';
@@ -10,6 +9,7 @@ import Api, { ss58ToU8 } from './api';
 import Polkadot from './polkadot';
 import { store } from '../redux/store';
 import { pendingEventTransactions } from '../utils/common';
+import Onboard from 'bnc-onboard'
 // Import Contracts
 import {
   APP_ETH_CONTRACT_ADDRESS,
@@ -18,15 +18,21 @@ import {
   BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
   APP_DOT_CONTRACT_ADDRESS,
   APP_ERC721_CONTRACT_ADDRESS,
+  PERMITTED_ETH_NETWORK_ID,
+  INFURA_KEY,
+  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS
 } from '../config';
 
 /* tslint:disable */
 import * as ETHApp from '../contracts/ETHApp.json';
 import * as ERC20App from '../contracts/ERC20App.json';
 import * as IncentivizedInboundChannel from '../contracts/IncentivizedInboundChannel.json';
+import * as IncentivizedOutboundChannel from '../contracts/IncentivizedOutboundChannel.json';
 import * as BasicInboundChannel from '../contracts/BasicInboundChannel.json';
 import * as DotApp from '../contracts/DOTApp.json';
 import * as ERC721App from '../contracts/ERC721App.json';
+
+import { initializeTokens } from '../redux/actions/bridge';
 
 /* tslint:enable */
 import {
@@ -35,14 +41,13 @@ import {
   setERC20Contract,
   setEthAddress,
   setEthContract,
-  setIncentivizedChannelContract,
-  setMetamaskMissing,
+  setIncentivizedInboundChannelContract,
+  setIncentivizedOutboundChannelContract,
   setMetamaskNetwork,
   setWeb3,
   setErc721AppContract,
 } from '../redux/actions/net';
 import * as ERC20Api from './ERC20';
-import { updateBalances } from '../redux/actions/bridge';
 import {
   Asset, isEther, isNonFungible, NonFungibleToken,
 } from '../types/Asset';
@@ -50,6 +55,15 @@ import { fetchEthAddress } from '../redux/actions/EthTransactions';
 import { Channel } from '../types/types';
 import { getChannelID } from '../utils/common';
 import { handleTransaction, handlePolkadotMissedEvents } from '../redux/actions/transactions';
+
+const wallets: any[] =[
+    { walletName: "metamask", preferred: true },  
+    {
+        walletName: "walletConnect",
+        infuraKey: INFURA_KEY,
+        preferred: true 
+    },   
+]
 export default class Eth extends Api {
   public static loadContracts(dispatch: Dispatch<any>, web3: Web3): void {
     const ethContract = new web3.eth.Contract(
@@ -64,11 +78,17 @@ export default class Eth extends Api {
     );
     dispatch(setERC20Contract(erc20contract));
 
-    const incentivizedChannelContract = new web3.eth.Contract(
+    const incentivizedInboundChannelContract = new web3.eth.Contract(
       IncentivizedInboundChannel.abi as any,
       INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
     );
-    dispatch(setIncentivizedChannelContract(incentivizedChannelContract));
+    dispatch(setIncentivizedInboundChannelContract(incentivizedInboundChannelContract));
+
+    const incentivizedOutboundChannelContract = new web3.eth.Contract(
+      IncentivizedOutboundChannel.abi as any,
+      INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
+    );
+    dispatch(setIncentivizedOutboundChannelContract(incentivizedOutboundChannelContract));
 
     const basicChannelContract = new web3.eth.Contract(
       BasicInboundChannel.abi as any,
@@ -92,70 +112,93 @@ export default class Eth extends Api {
 
   // Web3 API connector
   public static async connect(dispatch: Dispatch<any>): Promise<void> {
-    const connectionComplete = async (provider: any) => {
-      const web3 = new Web3(provider);
-      dispatch(setWeb3(web3));
+    const connectionComplete = async () => {
+        let web3:any;
+        let provider:any;
+        try{
+            const onboard = Onboard({
+                networkId: parseInt(PERMITTED_ETH_NETWORK_ID),  // [Integer] The Ethereum network ID your Dapp uses.
+                subscriptions: {
+                wallet: (wallet: any) => {
+                    web3= new Web3(wallet.provider)
+                    dispatch(setWeb3(web3));
+                    provider= wallet.provider
 
-      await provider.request({ method: 'eth_requestAccounts' });
+                    web3.eth.net.getNetworkType()
+                    .then((network: string) => dispatch(setMetamaskNetwork(network)));
+                }
+                },
+                walletSelect: {
+                    wallets: wallets 
+                }
+            });
+            let walletselected = await onboard.walletSelect()
+            while(! walletselected ){
+                walletselected =  await onboard.walletSelect();
+            }
+            let readyToTransact = await onboard.walletCheck();
+            if (!readyToTransact) {
+              window.location.reload();
+            }
+            // Set contracts
+            Eth.loadContracts(dispatch, web3);
+            // fetch addresses
+            await dispatch(fetchEthAddress());
 
-      web3.eth.net
-        .getNetworkType()
-        .then((network: string) => dispatch(setMetamaskNetwork(network)));
+            //Obtain transaction list
+            let transactions = store.getState().transactions.transactions;
+            let pendingTxCount = pendingEventTransactions(transactions);
 
-      // Set contracts
-      Eth.loadContracts(dispatch, web3);
+            if (pendingTxCount > 0) {
+              // Handelling transaction callback and events
+              let interval = setInterval(() => {
+                transactions = store.getState().transactions.transactions;
+                pendingTxCount = pendingEventTransactions(transactions);
 
-      // fetch addresses
-      await dispatch(fetchEthAddress());
-      
-      //Obtain transaction list
-      let transactions = store.getState().transactions.transactions;
-      let pendingTxCount = pendingEventTransactions(transactions);
+                if (pendingTxCount === 0)
+                  clearInterval(interval);
 
-      if (pendingTxCount > 0) {
-        // Handelling transaction callback and events
-        let interval = setInterval(() => {
-          transactions = store.getState().transactions.transactions;
-          pendingTxCount = pendingEventTransactions(transactions);
-
-          if (pendingTxCount === 0)
-            clearInterval(interval);
-
-          dispatch(handleTransaction(web3));
-          dispatch(handlePolkadotMissedEvents());
-        }, 5000);
-      }
-      console.log('- Eth connected');
-    };
-
-    const provider = await detectEthereumProvider() as any;
-    console.log({ provider });
-    if (provider) {
-      await connectionComplete(provider);
-
-      provider.on('accountsChanged', async (accounts: string[]) => {
-        if (accounts[0]) {
-          await dispatch(setEthAddress(accounts[0]));
-          dispatch(updateBalances());
-        } else {
-          setEthAddress();
+                dispatch(handleTransaction(web3));
+                dispatch(handlePolkadotMissedEvents());
+              }, 5000);
+            }
+            console.log('- Eth connected');
         }
-      });
+        catch{
+            throw new Error('Something went wrong');        
+        }
+        return provider;
+    };
+    try{
+        const provider= await connectionComplete();
+        if (provider) {
+            provider.on('accountsChanged', async (accounts: string[]) => {
+                if (accounts[0]) {
+                await dispatch(setEthAddress(accounts[0]));
+                dispatch(initializeTokens());
+                } else {
+                setEthAddress();
+                }
+            });
 
-      provider.on('disconnect', async () => {
-        setEthAddress();
-      });
+            provider.on('disconnect', async () => {
+                setEthAddress();
+            });
 
-      provider.on('chainChanged', () => {
-        window.location.reload();
-      });
+            provider.on('chainChanged', () => {
+                window.location.reload();
+            });
 
-      provider.on('disconnect', () => {
-        window.location.reload();
-      });
-    } else {
-      dispatch(setMetamaskMissing());
-      throw new Error('Metamask not found');
+            provider.on('disconnect', () => {
+                window.location.reload();
+            });
+        } else {
+            throw new Error('Please connect wallet');
+        }
+    }
+    catch (error)
+    {
+        console.log('error==',error);
     }
   }
 

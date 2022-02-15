@@ -46,3 +46,8 @@ export enum Channel {
 }
 
 export type IconKeys = keyof typeof icons;
+
+export interface AssetBalance {
+  isAssetFound: boolean,
+  amount: string
+};

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import ReactModal from 'react-modal';
 import { useDispatch } from 'react-redux';
-import { ToastContainer } from 'react-toastify';
+import { StyledContainer } from './styles/toastStyle';
 import {
   BrowserRouter as Router,
   Switch,
@@ -27,8 +27,7 @@ const BridgeApp = () => {
   const dispatch = useDispatch();
   const {
     isNetworkConnected,
-    polkadotJSMissing,
-    metamaskMissing,
+    polkadotJSMissing,    
   } = useAppSelector((state) => state.net);
 
   // Start Network
@@ -61,19 +60,7 @@ const BridgeApp = () => {
     );
   }
 
-  if (metamaskMissing) {
-    return (
-      <div>
-        <h2 style={{ color: 'white' }}>
-          Please install the
-          {' '}
-          <a href="https://metamask.io/">
-            Metamask extension
-          </a>
-        </h2>
-      </div>
-    );
-  }
+
 
   // Check if Network has been started
   if (!isNetworkConnected) {
@@ -101,7 +88,7 @@ const BridgeApp = () => {
           <BridgeHealth />
         </Route>
       </Layout>
-      <ToastContainer autoClose={10000} />
+      <StyledContainer autoClose={10000} />
     </Router>
   );
 };

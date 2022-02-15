@@ -1,17 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useCallback } from 'react';
 import styled from 'styled-components';
 
 import { useAppSelector } from '../../../utils/hooks';
 import { getChainsFromDirection, getChainName } from '../../../utils/common';
 import { Chain, Channel, SwapDirection } from '../../../types/types';
 import { Asset } from '../../../types/Asset';
-import { ACTIVE_CHANNEL, PERMITTED_METAMASK_NETWORK } from '../../../config';
+import { ACTIVE_CHANNEL, PERMITTED_ETH_NETWORK } from '../../../config';
 
 import ToolTip from '../../ToolTip/ToolTip';
-
-// TODO: Load fee dynamically from on-chain state
-const toDotFee = '1';
-const toETHFee = '0.01';
+import { updateFees } from '../../../redux/actions/bridge';
+import { useDispatch } from 'react-redux';
 
 const toDotCurrency = { symbol: 'DOT', text: 'ERC20 DOT' };
 const toETHCurrency = { symbol: 'ETH', text: 'Parachain ETH' };
@@ -28,60 +26,92 @@ type Props = {
 
 const FeeInfo = ({ className, setError }: Props) => {
   const {
-    assets, swapDirection,
+    assets, swapDirection, fees
   } = useAppSelector((state) => state.bridge);
+
+  const dispatch = useDispatch();
 
   const chains = getChainsFromDirection(swapDirection);
   const fromName = getChainName(chains.from)
   const toName = getChainName(chains.to)
 
-  let fee, currency: any;
+  let fee: string | null;
+  let currency: any;
   switch (chains.to) {
     case Chain.POLKADOT:
-      fee = toDotFee;
+      fee = fees.erc20dot;
       currency = toDotCurrency;
       break;
     case Chain.ETHEREUM:
-      fee = toETHFee;
+      fee = fees.parachainEth;
       currency = toETHCurrency;
       break;
   }
-
+  
   const asset = assets.find((asset) => asset.symbol === currency.symbol);
   const balance = asset ? asset.balance[chains.from] : 0;
   let balanceError = false;
-  if (balance < fee) {
+  if (fee !== null && Number(balance) < Number(fee)) {
     balanceError = true;
   }
-
+  const setCBError = useCallback(setError,[]);
   useEffect(() => {
     const checkFeeBalance = (assets: Asset[], swapDirection: SwapDirection) => {
       const chains = getChainsFromDirection(swapDirection);
-
-      let fee, currency: any;
+     
+      let fee: string | null;
+      let currency: any;
       switch (chains.to) {
         case Chain.POLKADOT:
-          fee = toDotFee;
+          fee = fees.erc20dot;
           currency = toDotCurrency;
           break;
         case Chain.ETHEREUM:
-          fee = toETHFee;
+          fee = fees.parachainEth;
           currency = toETHCurrency;
           break;
       }
 
       const asset = assets.find((asset) => asset.symbol === currency.symbol);
       const balance = asset ? asset.balance[chains.from] : 0;
-      if (balance < fee) {
-        setError(TRANSFER_FEE_ERROR);
+      if (fee !== null && Number(balance) < Number(fee)) {
+        setCBError(TRANSFER_FEE_ERROR);
       }
       else {
-        setError('');
+        setCBError('');
       }
-    }
-    checkFeeBalance(assets, swapDirection);
-  }, [assets, swapDirection]);
+    };
 
+    checkFeeBalance(assets, swapDirection);
+  }, [setCBError, assets, swapDirection, fees.erc20dot, fees.parachainEth]);
+
+  useEffect(() => {
+    dispatch(updateFees());
+  }, [swapDirection, dispatch]);
+
+  useEffect(() => {
+    if(fees.error) {
+      setCBError(fees.error);
+    } else {
+      setCBError('');
+    }
+  }, [setCBError, fees.error]);
+
+  if(fee === null) {
+    return (
+      <div className={className}>
+        {!fees.error && <div className='fee-display-section'>
+        <span>Transfer fee</span>
+        <span className='fee-amount'>
+          Loading...
+        </span>
+        </div>}
+        {fees.error && <div className='fee-error-section'>
+          {fees.error}
+        </div>}
+      </div>
+    );
+  }
 
   const toolTip = `To make transfers to ${toName}, you need to pay ${fee} ${currency.text} from your ${fromName} wallet`
 
@@ -101,7 +131,7 @@ const FeeInfo = ({ className, setError }: Props) => {
       {balanceError && <div className='fee-error-section'>
         <p>You don't have enough {currency.text} in your {fromName} wallet to pay for this transfer.</p>
         {currency.symbol === toDotCurrency.symbol && <p>
-          If this is your first time using the bridge, you can get some <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={UNISWAP_DOT_LINK}>here</a> from Uniswap <i> (Make sure you're on {PERMITTED_METAMASK_NETWORK}!)</i>, but the best way to get it is to bridge it over from {toName} yourself. You can also ask for some in our <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={SNOWBRIDGE_DISCORD_LINK}>Discord Support channel</a>.
+          If this is your first time using the bridge, you can get some <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={UNISWAP_DOT_LINK}>here</a> from Uniswap <i> (Make sure you're on {PERMITTED_ETH_NETWORK}!)</i>, but the best way to get it is to bridge it over from {toName} yourself. You can also ask for some in our <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={SNOWBRIDGE_DISCORD_LINK}>Discord Support channel</a>.
         </p>}
         {currency.symbol === toETHCurrency.symbol && <p>
           If this is your first time using the bridge, you should bridge it over from {toName} yourself! You can also ask for some in our <a rel="noopener noreferrer" className='feeinfo-link' target='_blank' href={SNOWBRIDGE_DISCORD_LINK}>Discord Support channel</a>.

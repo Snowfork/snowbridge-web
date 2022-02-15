@@ -94,7 +94,7 @@ export const unlockEthAsset = (amount: string):
     const {
       polkadotApi,
       polkadotAddress,
-      incentivizedChannelContract,
+      incentivizedInboundChannelContract,
       ethAddress,
       basicChannelContract,
     } = state.net;
@@ -128,7 +128,7 @@ export const unlockEthAsset = (amount: string):
             unsub,
             pendingTransaction,
             dispatch,
-            incentivizedChannelContract!,
+            incentivizedInboundChannelContract!,
             basicChannelContract!,
           );
 
@@ -173,7 +173,6 @@ export const fetchEthAddress = ():
   ): Promise<void> => {
     const state = getState() as RootState;
     const web3: Web3 = state.net.web3!;
-
     const address = await EthApi.getAddress(web3);
     dispatch(setEthAddress(address));
   };
