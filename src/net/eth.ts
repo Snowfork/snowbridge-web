@@ -144,23 +144,24 @@ export default class Eth extends Api {
             Eth.loadContracts(dispatch, web3);
             // fetch addresses
             await dispatch(fetchEthAddress());
-
+            
             //Obtain transaction list
-            let transactions = store.getState().transactions.transactions;
-            let pendingTxCount = pendingEventTransactions(transactions);
+            let stateData:any = store.getState();
+            if(stateData && stateData.transactions && stateData.transactions.transactions.length>0)
+            {
+              let pendingTxCount = pendingEventTransactions(stateData.transactions.transactions);
+              if (pendingTxCount > 0) {
+                // Handelling transaction callback and events
+                let interval = setInterval(() => {
+                  let transactions = store.getState().transactions.transactions;
+                  pendingTxCount = pendingEventTransactions(transactions);
+                  if (pendingTxCount === 0)
+                    clearInterval(interval);
 
-            if (pendingTxCount > 0) {
-              // Handelling transaction callback and events
-              let interval = setInterval(() => {
-                transactions = store.getState().transactions.transactions;
-                pendingTxCount = pendingEventTransactions(transactions);
-
-                if (pendingTxCount === 0)
-                  clearInterval(interval);
-
-                dispatch(handleTransaction(web3));
-                dispatch(handlePolkadotMissedEvents());
-              }, 5000);
+                  dispatch(handleTransaction(web3));
+                  dispatch(handlePolkadotMissedEvents());
+                }, 5000);
+              }
             }
             console.log('- Eth connected');
         }

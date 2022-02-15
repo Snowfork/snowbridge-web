@@ -485,7 +485,7 @@ export const handleTransaction = (
   ): Promise<void> => {
 
     const state = getState() as RootState;
-    let pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status != TransactionStatus.DISPATCHED && transaction.chain === 'eth');
+    let pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status != TransactionStatus.DISPATCHED && transaction.direction === 0);
     if (pendingTransactions.length == 0) {
       persistor.purge();
     }
@@ -505,7 +505,7 @@ export const handlePolkadotMissedEvents = ():
     if (polkadotApi) {
       const incentivizeLatestNonce = Number(await polkadotApi.query['incentivizedInboundChannel'].nonce());
       const basicLatestNonce = Number(await polkadotApi.query['basicInboundChannel'].nonce());
-      const pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.chain == 'eth' && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeLatestNonce : basicLatestNonce));
+      const pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 0 && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeLatestNonce : basicLatestNonce));
 
       pendingTransactions.map((tx: Transaction) => {
         const nonce = tx.nonce ? tx.nonce : ''
