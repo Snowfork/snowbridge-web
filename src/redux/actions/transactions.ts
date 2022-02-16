@@ -7,7 +7,7 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
-import { REQUIRED_ETH_CONFIRMATIONS, BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS, INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS } from '../../config';
+import { REQUIRED_ETH_CONFIRMATIONS, CONTRACT_ADDRESS } from '../../config';
 import {
   Asset,
   decimals,
@@ -305,7 +305,7 @@ export function handleEthereumTransactionEvents(
 
       Object.keys(receipt.events).forEach((eventKey: any) => {
         const event = receipt.events[eventKey];
-        if (event.address === BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS) {
+        if (event.address === CONTRACT_ADDRESS.BasicOutboundChannel) {
           const decodedEvent = web3.eth.abi.decodeLog(
             basicOutChannelLogFields,
             event.raw.data,
@@ -313,7 +313,7 @@ export function handleEthereumTransactionEvents(
           );
           nonce = decodedEvent.nonce;
         }
-        if (event.address === INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS) {
+        if (event.address === CONTRACT_ADDRESS.IncentivizedOutboundChannel) {
           const decodedEvent = web3.eth.abi.decodeLog(
             incentivizedOutChannelLogFields,
             event.raw.data,

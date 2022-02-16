@@ -9,16 +9,10 @@ import Api, { ss58ToU8 } from './api';
 import Polkadot from './polkadot';
 import Onboard from 'bnc-onboard'
 // Import Contracts
-import {
-  APP_ETH_CONTRACT_ADDRESS,
-  APP_ERC20_CONTRACT_ADDRESS,
-  INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-  BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-  APP_DOT_CONTRACT_ADDRESS,
-  APP_ERC721_CONTRACT_ADDRESS,
+import {  
   PERMITTED_ETH_NETWORK_ID,
-  INFURA_KEY,
-  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS
+  INFURA_KEY,  
+  CONTRACT_ADDRESS
 } from '../config';
 
 /* tslint:disable */
@@ -65,43 +59,43 @@ export default class Eth extends Api {
   public static loadContracts(dispatch: Dispatch<any>, web3: Web3): void {
     const ethContract = new web3.eth.Contract(
       ETHApp.abi as any,
-      APP_ETH_CONTRACT_ADDRESS,
+      CONTRACT_ADDRESS.ETHApp,
     );
     dispatch(setEthContract(ethContract));
 
     const erc20contract = new web3.eth.Contract(
       ERC20App.abi as any,
-      APP_ERC20_CONTRACT_ADDRESS,
+      CONTRACT_ADDRESS.ERC20App,
     );
     dispatch(setERC20Contract(erc20contract));
 
     const incentivizedInboundChannelContract = new web3.eth.Contract(
       IncentivizedInboundChannel.abi as any,
-      INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+      CONTRACT_ADDRESS.IncentivizedInboundChannel,
     );
     dispatch(setIncentivizedInboundChannelContract(incentivizedInboundChannelContract));
 
     const incentivizedOutboundChannelContract = new web3.eth.Contract(
       IncentivizedOutboundChannel.abi as any,
-      INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
+      CONTRACT_ADDRESS.IncentivizedOutboundChannel,
     );
     dispatch(setIncentivizedOutboundChannelContract(incentivizedOutboundChannelContract));
 
     const basicChannelContract = new web3.eth.Contract(
       BasicInboundChannel.abi as any,
-      BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+      CONTRACT_ADDRESS.BasicInboundChannel,
     );
     dispatch(setBasicChannelContract(basicChannelContract));
 
     const appDotContract = new web3.eth.Contract(
       DotApp.abi as any,
-      APP_DOT_CONTRACT_ADDRESS,
+      CONTRACT_ADDRESS.DOTApp,
     );
     dispatch(setAppDotContract(appDotContract));
 
     const erc721App = new web3.eth.Contract(
       ERC721App.abi as any,
-      APP_ERC721_CONTRACT_ADDRESS,
+      CONTRACT_ADDRESS.ERC721App,
     );
 
     dispatch(setErc721AppContract(erc721App));

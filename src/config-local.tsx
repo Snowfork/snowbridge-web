@@ -2,18 +2,18 @@ import { Channel } from './types/types';
 
 export default {
   // Contract Addresses
-  APP_ETH_CONTRACT_ADDRESS: '',
-  APP_ERC20_CONTRACT_ADDRESS: '',
-  APP_DOT_CONTRACT_ADDRESS: '',
-  APP_ERC721_CONTRACT_ADDRESS: '',
-
-  SNOW_DOT_ADDRESS: '',
-
-  BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS: '',
-  BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS: '',
-  INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS: '',
-  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS: '',
-
+  CONTRACT_ADDRESS:{
+    BasicInboundChannel:'',
+    IncentivizedInboundChannel:'',
+    BasicOutboundChannel:'',
+    IncentivizedOutboundChannel:'',
+    ETHApp:'',
+    DOTApp:'',
+    ERC20App:'',
+    ERC721App:'',
+    SnowDOTAddress:'',
+  },
+  
   // Fetch chain data interval
   REFRESH_INTERVAL_MILLISECONDS: 10000,
 
