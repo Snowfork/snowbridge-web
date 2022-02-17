@@ -22,6 +22,7 @@ import {
 export const {
   ethMessageDispatched
 } = transactionsSlice.actions;
+
 export const {
   setAppDotContract,
   setBasicChannelContract,
@@ -73,61 +74,52 @@ export const subscribeEthereumEvents = ():
     dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
   ): Promise<void> => {
     try {
-      console.log("insideSubscribeEthereumEents");
-      const state = getState() as RootState;
-
-      var web3 = new Web3(
-        new Web3.providers.WebsocketProvider(ETHEREUM_WEB_SOCKET__PROVIDER)
-      );
-
-      let channel: Channel;
-      let basicInChannelLogFields = [
-        {
-          indexed: false,
-          internalType: "uint64",
-          name: "nonce",
-          type: "uint64",
-        },
-        {
-          indexed: false,
-          internalType: "bool",
-          name: "result",
-          type: "bool",
-        },
-      ];
-      var subscription = web3.eth.subscribe('logs', {
-        address: [BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS, INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS],
-        topics: ['0x504b093d860dc827c72a879d052fd8ac6b4c2af80c5f3a634654f172690bf10a']
-      }, function (error: any, event: any) {
-        if (error) {
-          return ''
-        }
-        console.log("err", error);
-        console.log("event", event);
-        const decodedEvent = web3.eth.abi.decodeLog(
-          basicInChannelLogFields,
-          event.data,
-          event.topics,
-        );
-        console.log('nonce ', decodedEvent.nonce);
-        console.log('decodeEventResult ', decodedEvent.result);
-        if (event.address == BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS)
-          channel = Channel.BASIC
-
-        if (event.address == INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS)
-          channel = Channel.INCENTIVIZED
-
-        dispatch(
-          ethMessageDispatched({
-            nonce: decodedEvent.nonce,
-            channel
-          }),
+        var web3 = new Web3(
+            new Web3.providers.WebsocketProvider(ETHEREUM_WEB_SOCKET__PROVIDER)
         );
 
+        let channel: Channel;
+        let basicInChannelLogFields = [
+            {
+            indexed: false,
+            internalType: "uint64",
+            name: "nonce",
+            type: "uint64",
+            },
+            {
+            indexed: false,
+            internalType: "bool",
+            name: "result",
+            type: "bool",
+            },
+        ];
+        web3.eth.subscribe('logs', {
+            address: [BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS, INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS],
+            topics: ['0x504b093d860dc827c72a879d052fd8ac6b4c2af80c5f3a634654f172690bf10a']
+        }, function (error: any, event: any) {
+            if (error) {
+            return ''
+            }
+            const decodedEvent = web3.eth.abi.decodeLog(
+                basicInChannelLogFields,
+                event.data,
+                event.topics,
+            );
+            if (event.address == BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS)
+            channel = Channel.BASIC
 
-      });
-      
-    } catch (error) {
+            if (event.address == INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS)
+            channel = Channel.INCENTIVIZED
+
+            dispatch(
+            ethMessageDispatched({
+                nonce: decodedEvent.nonce,
+                channel
+            }),
+            );
+        });      
+    } 
+    catch (error) {
       console.error("errorMessage", error);
     }
-  };
+};

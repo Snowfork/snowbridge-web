@@ -23,7 +23,7 @@ import {
 } from '../../types/Asset';
 import { Chain, SwapDirection, Channel } from '../../types/types';
 import { AssetType } from '../../types/Asset';
-import { RootState, persistor } from '../store';
+import { RootState } from '../store';
 import {
   MessageDispatchedEvent,
   Transaction,
@@ -247,7 +247,6 @@ export function handleEthereumTransactionEvents(
     })
 
     .on('receipt', async (receipt: any) => {
-      console.log('------6------Transaction receipt received receipt', receipt);
       dispatch(handleTransaction(web3));
     })
 
@@ -257,7 +256,6 @@ export function handleEthereumTransactionEvents(
         confirmation: number,
         receipt: any,
       ) => {
-        console.log("--inside.-confirmation--event---", confirmation, receipt)
         dispatch(handleTransaction(web3));
       },
     )
@@ -417,7 +415,6 @@ export function handleEthTxRecipt(receipt: any, dispatch: Dispatch<any>,
   if (!nonce) {
     return
   }
-  console.log("nonce", nonce)
 
   dispatch(
     setNonce({
@@ -467,21 +464,21 @@ export const handleTransaction = (
     getState,
   ): Promise<void> => {
 
-    const state = getState() as RootState;
-    const { polkadotApi } = state.net;
+  const state = getState() as RootState;
+  const { polkadotApi } = state.net;
 
-    let pendingEThTransactions = state.transactions.transactions.filter((transaction) => transaction.status != TransactionStatus.DISPATCHED && transaction.direction === 0);
-    let pendingPolkaDotTransactions = state.transactions.transactions.filter((transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY && transaction.direction === 1);
+  let pendingEThTransactions = state.transactions.transactions.filter((transaction) => transaction.status != TransactionStatus.DISPATCHED && transaction.direction === 0);
+  let pendingPolkaDotTransactions = state.transactions.transactions.filter((transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY && transaction.direction === 1);
 
-    if (polkadotApi) {
-      if (pendingPolkaDotTransactions.length > 0) {
-        pendingPolkaDotTransactions.map((tx: any) => handlepolkadotTransaction(state, tx.hash, tx.nearbyBlockNumber, polkadotApi, dispatch))
-      }
-    }
-    if (pendingEThTransactions.length > 0) {
-      pendingEThTransactions.map((tx: any) => handleEthTransaction(state, tx.hash, web3, dispatch, tx.isNotifyConfirmed ? true : false))
+  if (polkadotApi) {
+    if (pendingPolkaDotTransactions.length > 0) {
+      pendingPolkaDotTransactions.map((tx: any) => handlepolkadotTransaction(state, tx.hash, tx.nearbyBlockNumber, polkadotApi, dispatch))
     }
   }
+  if (pendingEThTransactions.length > 0) {
+    pendingEThTransactions.map((tx: any) => handleEthTransaction(state, tx.hash, web3, dispatch, tx.isNotifyConfirmed ? true : false))
+  }
+}
 
 
 export const handlePolkadotMissedEvents = ():
@@ -489,22 +486,22 @@ export const handlePolkadotMissedEvents = ():
     dispatch: ThunkDispatch<{}, {}, AnyAction>,
     getState,
   ): Promise<void> => {
-    const state = getState() as RootState;
-    const { polkadotApi } = state.net;
-    if (polkadotApi) {
-      const incentivizeLatestNonce = Number(await polkadotApi.query['incentivizedInboundChannel'].nonce());
-      const basicLatestNonce = Number(await polkadotApi.query['basicInboundChannel'].nonce());
-      const pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 0 && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeLatestNonce : basicLatestNonce));
+  const state = getState() as RootState;
+  const { polkadotApi } = state.net;
+  if (polkadotApi) {
+    const incentivizeLatestNonce = Number(await polkadotApi.query['incentivizedInboundChannel'].nonce());
+    const basicLatestNonce = Number(await polkadotApi.query['basicInboundChannel'].nonce());
+    const pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 0 && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeLatestNonce : basicLatestNonce));
 
-      pendingTransactions.map((tx: Transaction) => {
-        const nonce = tx.nonce ? tx.nonce : ''
-        const channel = tx.channel === Channel.BASIC ? Channel.BASIC : Channel.INCENTIVIZED
+    pendingTransactions.map((tx: Transaction) => {
+      const nonce = tx.nonce ? tx.nonce : ''
+      const channel = tx.channel === Channel.BASIC ? Channel.BASIC : Channel.INCENTIVIZED
 
-        dispatch(parachainMessageDispatched({ nonce, channel })
-        )
-      })
-    }
+      dispatch(parachainMessageDispatched({ nonce, channel })
+      )
+    })
   }
+}
 
 //Handle the missed event of the inbound channel when user closed the application.
 export const handleEthereumMissedEvents = (
@@ -514,60 +511,54 @@ export const handleEthereumMissedEvents = (
     dispatch: ThunkDispatch<{}, {}, AnyAction>,
     getState,
   ): Promise<void> => {
-    const state = getState() as RootState;
+  const state = getState() as RootState;
 
-    const incentivizeInboundContract = new web3.eth.Contract(
-      IncentivizedInboundChannel.abi as any,
-      INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-    );
+  const incentivizeInboundContract = new web3.eth.Contract(
+    IncentivizedInboundChannel.abi as any,
+    INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+  );
 
-    const basicInboundContract = new web3.eth.Contract(
-      BasicInboundChannel.abi as any,
-      BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-    );
+  const basicInboundContract = new web3.eth.Contract(
+    BasicInboundChannel.abi as any,
+    BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+  );
 
-    const incentivizeInboundLatestNonce = Number(await incentivizeInboundContract.methods.nonce().call());
-    const basicInboundLatestNonce = Number(await basicInboundContract.methods.nonce().call());
-    console.log("-------Inside ----handleEthereumMissedEvents---incentivizeInboundLatestNonce-------",incentivizeInboundLatestNonce)
-
-    const missedEventIncetivizedTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 1 && Number(transaction.nonce) <= incentivizeInboundLatestNonce && transaction.channel === Channel.INCENTIVIZED);
-    const missedEventBasicTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 1 && Number(transaction.nonce) <= basicInboundLatestNonce && transaction.channel === Channel.BASIC);
-    console.log("-------Inside ----handleEthereumMissedEvents---missedEventIncetivizedTransactions-------",missedEventIncetivizedTransactions)
-    
-    if (missedEventBasicTransactions.length > 0) {
-      const events = await basicInboundContract.getPastEvents("MessageDispatched", { fromBlock: 0 });
-      if (events.length > 0) {
-        events.map((event: any) => {
-          missedEventIncetivizedTransactions.map((tx: Transaction) => {
-            if (event.returnValues.nonce == tx.nonce) {
-              console.log("-------Inside ----handleEthereumMissedEvents-----tx--",tx)
-              const nonce = tx.nonce ? tx.nonce : ''
-              const channel = Channel.BASIC
-              dispatch(ethMessageDispatched({ nonce, channel }))
-            }
-          })
+  const incentivizeInboundLatestNonce = Number(await incentivizeInboundContract.methods.nonce().call());
+  const basicInboundLatestNonce = Number(await basicInboundContract.methods.nonce().call());
+  
+  const missedEventIncetivizedTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 1 && Number(transaction.nonce) <= incentivizeInboundLatestNonce && transaction.channel === Channel.INCENTIVIZED);
+  const missedEventBasicTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 1 && Number(transaction.nonce) <= basicInboundLatestNonce && transaction.channel === Channel.BASIC);
+  
+  if (missedEventBasicTransactions.length > 0) {
+    const events = await basicInboundContract.getPastEvents("MessageDispatched", { fromBlock: 0 });
+    if (events.length > 0) {
+      events.map((event: any) => {
+        missedEventIncetivizedTransactions.map((tx: Transaction) => {
+          if (event.returnValues.nonce == tx.nonce) {
+            const nonce = tx.nonce ? tx.nonce : ''
+            const channel = Channel.BASIC
+            dispatch(ethMessageDispatched({ nonce, channel }))
+          }
         })
-      }
-
-    }
-
-    if (missedEventIncetivizedTransactions.length > 0) {
-      const events = await incentivizeInboundContract.getPastEvents("MessageDispatched", { fromBlock: 0 });
-      if (events.length > 0) {
-        events.map((event: any) => {
-          missedEventIncetivizedTransactions.map((tx: Transaction) => {
-            if (event.returnValues.nonce == tx.nonce) {
-              console.log("-------Inside ----handleEthereumMissedEvents-----tx--",tx)
-              const nonce = tx.nonce ? tx.nonce : ''
-              const channel = Channel.INCENTIVIZED
-              dispatch(ethMessageDispatched({ nonce, channel }))
-            }
-          })
-        })
-      }
-
+      })
     }
   }
+
+  if (missedEventIncetivizedTransactions.length > 0) {
+    const events = await incentivizeInboundContract.getPastEvents("MessageDispatched", { fromBlock: 0 });
+    if (events.length > 0) {
+      events.map((event: any) => {
+        missedEventIncetivizedTransactions.map((tx: Transaction) => {
+          if (event.returnValues.nonce == tx.nonce) {
+            const nonce = tx.nonce ? tx.nonce : ''
+            const channel = Channel.INCENTIVIZED
+            dispatch(ethMessageDispatched({ nonce, channel }))
+          }
+        })
+      })
+    }
+  }
+}
 
 
 export async function handlepolkadotTransaction(
@@ -579,10 +570,10 @@ export async function handlepolkadotTransaction(
 ) {
   let isTxconfimed = await Polkadot.getTransactionConfirmation(polkadotApi, hash, blockNumber)
   if (isTxconfimed)
-    dispatch(
-      setTransactionStatus({
-        hash: hash,
-        status: TransactionStatus.WAITING_FOR_RELAY,
-      }),
-    );
+  dispatch(
+    setTransactionStatus({
+      hash: hash,
+      status: TransactionStatus.WAITING_FOR_RELAY,
+    }),
+  );
 }

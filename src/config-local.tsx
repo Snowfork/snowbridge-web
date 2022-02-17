@@ -42,7 +42,7 @@ export default {
   SNOWBRIDGE_EXPLORER_URL: 'https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A11144#/explorer',
 
   PERMITTED_ETH_NETWORK: 'private',
-  PERMITTED_ETH_NETWORK_ID: '0xf',
+  PERMITTED_ETH_NETWORK_ID: '0x???',
 
   BASIC_CHANNEL_ID: 0,
   INCENTIVIZED_CHANNEL_ID: 1,

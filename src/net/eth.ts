@@ -152,24 +152,25 @@ export default class Eth extends Api {
             //Obtain transaction list
             let stateData:any = store.getState();
             if(stateData && stateData.transactions && stateData.transactions.transactions.length>0) {
-              let pendingTxCount = pendingEventTransactions(stateData.transactions.transactions);
-              if (pendingTxCount == 0) {
-                persistor.purge();
-              }
-              else {
-                // Handelling transaction callback and events
-                let interval = setInterval(() => {
-                  let transactions = store.getState().transactions.transactions;
-                  pendingTxCount = pendingEventTransactions(transactions);
-                  if (pendingTxCount === 0)
-                    clearInterval(interval);
+                let pendingTxCount = pendingEventTransactions(stateData.transactions.transactions);
+                if (pendingTxCount == 0) {
+                    persistor.purge();
+                }
+                else {
+                    // Handelling transaction callback and events
+                    let interval = setInterval(() => {
 
-                  dispatch(handleTransaction(web3));
-                  dispatch(handlePolkadotMissedEvents());
-                  dispatch(handleEthereumMissedEvents(web3));
-                 
-                }, 5000);
-              }
+                        let transactions = store.getState().transactions.transactions;
+                        pendingTxCount = pendingEventTransactions(transactions);
+                        if (pendingTxCount === 0)
+                        clearInterval(interval);
+
+                        dispatch(handleTransaction(web3));
+                        dispatch(handlePolkadotMissedEvents());
+                        dispatch(handleEthereumMissedEvents(web3));
+                        
+                    }, 5000);
+                }
             }
             console.log('- Eth connected');
         }
