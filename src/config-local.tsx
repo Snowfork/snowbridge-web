@@ -26,6 +26,9 @@ export default {
   // Allow health check to skip blocks for performance
   HEALTH_CHECK_POLKADOT_POLL_SKIP_BLOCKS: 500,
 
+  //Provider for listening ethereum events
+  ETHEREUM_WEB_SOCKET__PROVIDER: 'ws://localhost:8546',
+
   // Polkadotjs API Provider
   POLKADOT_API_PROVIDER: 'ws://localhost:11144',
   POLKADOT_RELAY_API_PROVIDER: 'ws://localhost:9944',
@@ -39,7 +42,7 @@ export default {
   SNOWBRIDGE_EXPLORER_URL: 'https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A11144#/explorer',
 
   PERMITTED_ETH_NETWORK: 'private',
-  PERMITTED_ETH_NETWORK_ID: '0x???',
+  PERMITTED_ETH_NETWORK_ID: '0xf',
 
   BASIC_CHANNEL_ID: 0,
   INCENTIVIZED_CHANNEL_ID: 1,

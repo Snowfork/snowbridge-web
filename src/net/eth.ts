@@ -54,8 +54,10 @@ import {
 import { fetchEthAddress } from '../redux/actions/EthTransactions';
 import { Channel } from '../types/types';
 import { getChannelID } from '../utils/common';
-import { handleTransaction, handlePolkadotMissedEvents } from '../redux/actions/transactions';
+import { handleTransaction, handlePolkadotMissedEvents, handleEthereumMissedEvents } from '../redux/actions/transactions';
+import { subscribeEthereumEvents } from "../redux/actions/net";
 import { persistor } from '../redux/store';
+
 const wallets: any[] =[
     { walletName: "metamask", preferred: true },  
     {
@@ -144,6 +146,8 @@ export default class Eth extends Api {
             Eth.loadContracts(dispatch, web3);
             // fetch addresses
             await dispatch(fetchEthAddress());
+            // Ethereum event for inbound channel contracts
+            dispatch(subscribeEthereumEvents());
             
             //Obtain transaction list
             let stateData:any = store.getState();
@@ -162,6 +166,8 @@ export default class Eth extends Api {
 
                   dispatch(handleTransaction(web3));
                   dispatch(handlePolkadotMissedEvents());
+                  dispatch(handleEthereumMissedEvents(web3));
+                 
                 }, 5000);
               }
             }

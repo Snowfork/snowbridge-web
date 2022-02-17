@@ -7,7 +7,13 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
-import { REQUIRED_ETH_CONFIRMATIONS, BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS, INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS } from '../../config';
+import {
+  REQUIRED_ETH_CONFIRMATIONS,
+  BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
+  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
+  BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+  INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS
+} from '../../config';
 import {
   Asset,
   decimals,
@@ -17,7 +23,7 @@ import {
 } from '../../types/Asset';
 import { Chain, SwapDirection, Channel } from '../../types/types';
 import { AssetType } from '../../types/Asset';
-import { RootState } from '../store';
+import { RootState, persistor } from '../store';
 import {
   MessageDispatchedEvent,
   Transaction,
@@ -29,6 +35,11 @@ import { doPolkadotTransfer } from './PolkadotTransactions';
 import { notify } from './notifications';
 import { setShowConfirmTransactionModal, setShowTransactionListModal } from './bridge';
 import { updateSelectedAsset } from '../../redux/actions/bridge';
+import { subscribeEthereumEvents } from "../../redux/actions/net";
+import * as BasicInboundChannel from '../../contracts/BasicInboundChannel.json';
+import * as IncentivizedInboundChannel from '../../contracts/IncentivizedInboundChannel.json';
+import { ApiPromise } from '@polkadot/api';
+import Polkadot from '../../net/polkadot';
 
 export const {
   addTransaction,
@@ -126,19 +137,14 @@ export function handlePolkadotTransactionEvents(
   unsub: () => void, // function to unsubscribe from polkadot transaction events
   transaction: Transaction, // the transaction we are updating for each event
   dispatch: Dispatch<any>,
-  incentivizedChannelContract: Contract,
-  basicChannelContract: Contract,
+  blockNumber: number,
 ): Transaction {
   const pendingTransaction = { ...transaction };
 
   if (result.status.isReady) {
-    // result.status.hash - this is the call hash not the tx hash
-    // this is not unique and leads to duplicate keys in our transactions list.
-    // rather than waiting for the tx to be included in the block to read the tx hash
-    // we just generate a random number and treat that as the tx hash instead
-    // so we can track and display the 'submitting to chain' status
-    const hash = (Math.random() * 100).toString();
-    pendingTransaction.hash = hash;
+
+    pendingTransaction.nearbyBlockNumber = blockNumber
+    pendingTransaction.hash = result.txHash.toString();
 
     dispatch(
       addTransaction(
@@ -151,11 +157,7 @@ export function handlePolkadotTransactionEvents(
   }
 
   if (result.status.isInBlock) {
-    let nonce = result.events[0].event.data[0].toString();
-
-    if (isDot(transaction.asset) && !isNonFungible(transaction.asset)) {
-      nonce = result.events[1].event.data[0].toString();
-    }
+    let nonce = result.events[3].event.data[0].toString();
 
     pendingTransaction.nonce = nonce;
     pendingTransaction.status = TransactionStatus.WAITING_FOR_RELAY;
@@ -169,33 +171,7 @@ export function handlePolkadotTransactionEvents(
       ),
     );
 
-    const handleChannelMessageDispatched = (channel: Channel) => (event: MessageDispatchedEvent) => {
-      if (
-        event.returnValues.nonce === nonce
-      ) {
-        dispatch(
-          ethMessageDispatched({
-            nonce: event.returnValues.nonce,
-            dispatchTransactionNonce: pendingTransaction.nonce!,
-            channel
-          }),
-        );
-      }
-    };
-
-    // subscribe to ETH dispatch event
-    // eslint-disable-next-line no-unused-expressions
-    incentivizedChannelContract
-      .events
-      .MessageDispatched({})
-      .on('data', handleChannelMessageDispatched(Channel.INCENTIVIZED));
-
-    // TODO: replace with incentivized channel?
-    // eslint-disable-next-line no-unused-expressions
-    basicChannelContract
-      .events
-      .MessageDispatched({})
-      .on('data', handleChannelMessageDispatched(Channel.BASIC));
+    dispatch(subscribeEthereumEvents());
 
     return pendingTransaction;
   }
@@ -348,26 +324,33 @@ export async function handleEthTransaction(
   hash: string,
   web3: Web3,
   dispatch: Dispatch<any>,
-  fReceiptstatus: any
+  isNotifyConfirmed: any
 ) {
   //get the transaction receipt
   let txReceipt = await web3.eth.getTransactionReceipt(hash);
 
   //if pending then return
   if (!txReceipt)
-    return -1;
+    return '';
 
   //status-FALSE when EVM reverted the transaction.
-  if (!txReceipt.status)
+  if (!txReceipt.status){
+    dispatch(
+      setError({
+        hash: hash,
+        error: 'transaction failed'
+      })
+    );
     return -1;
+  }
 
   //Fetch current block number
   let currentBlock = await web3.eth.getBlockNumber()
   let confirmation = txReceipt.blockNumber === null ? 0 : currentBlock - txReceipt.blockNumber
 
-  //@todo only once add fReceiptstatus in state.
-  if (!fReceiptstatus) {
-    handleEthTxRecipt(txReceipt, dispatch, web3)  //only once..
+  //Should not be called when tx is confirmed
+  if (isNotifyConfirmed) {
+    handleEthTxRecipt(txReceipt, dispatch, web3)
   }
 
   if (confirmation > 0)
@@ -485,9 +468,18 @@ export const handleTransaction = (
   ): Promise<void> => {
 
     const state = getState() as RootState;
-    let pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status != TransactionStatus.DISPATCHED && transaction.direction === 0);
-    if (pendingTransactions.length > 0) {
-      pendingTransactions.map((tx: any) => handleEthTransaction(state, tx.hash, web3, dispatch, tx.fReceiptstatus ? true : false))
+    const { polkadotApi } = state.net;
+
+    let pendingEThTransactions = state.transactions.transactions.filter((transaction) => transaction.status != TransactionStatus.DISPATCHED && transaction.direction === 0);
+    let pendingPolkaDotTransactions = state.transactions.transactions.filter((transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY && transaction.direction === 1);
+
+    if (polkadotApi) {
+      if (pendingPolkaDotTransactions.length > 0) {
+        pendingPolkaDotTransactions.map((tx: any) => handlepolkadotTransaction(state, tx.hash, tx.nearbyBlockNumber, polkadotApi, dispatch))
+      }
+    }
+    if (pendingEThTransactions.length > 0) {
+      pendingEThTransactions.map((tx: any) => handleEthTransaction(state, tx.hash, web3, dispatch, tx.isNotifyConfirmed ? true : false))
     }
   }
 
@@ -513,3 +505,84 @@ export const handlePolkadotMissedEvents = ():
       })
     }
   }
+
+//Handle the missed event of the inbound channel when user closed the application.
+export const handleEthereumMissedEvents = (
+  web3: Web3
+):
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+    dispatch: ThunkDispatch<{}, {}, AnyAction>,
+    getState,
+  ): Promise<void> => {
+    const state = getState() as RootState;
+
+    const incentivizeInboundContract = new web3.eth.Contract(
+      IncentivizedInboundChannel.abi as any,
+      INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+    );
+
+    const basicInboundContract = new web3.eth.Contract(
+      BasicInboundChannel.abi as any,
+      BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+    );
+
+    const incentivizeInboundLatestNonce = Number(await incentivizeInboundContract.methods.nonce().call());
+    const basicInboundLatestNonce = Number(await basicInboundContract.methods.nonce().call());
+    console.log("-------Inside ----handleEthereumMissedEvents---incentivizeInboundLatestNonce-------",incentivizeInboundLatestNonce)
+
+    const missedEventIncetivizedTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 1 && Number(transaction.nonce) <= incentivizeInboundLatestNonce && transaction.channel === Channel.INCENTIVIZED);
+    const missedEventBasicTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 1 && Number(transaction.nonce) <= basicInboundLatestNonce && transaction.channel === Channel.BASIC);
+    console.log("-------Inside ----handleEthereumMissedEvents---missedEventIncetivizedTransactions-------",missedEventIncetivizedTransactions)
+    
+    if (missedEventBasicTransactions.length > 0) {
+      const events = await basicInboundContract.getPastEvents("MessageDispatched", { fromBlock: 0 });
+      if (events.length > 0) {
+        events.map((event: any) => {
+          missedEventIncetivizedTransactions.map((tx: Transaction) => {
+            if (event.returnValues.nonce == tx.nonce) {
+              console.log("-------Inside ----handleEthereumMissedEvents-----tx--",tx)
+              const nonce = tx.nonce ? tx.nonce : ''
+              const channel = Channel.BASIC
+              dispatch(ethMessageDispatched({ nonce, channel }))
+            }
+          })
+        })
+      }
+
+    }
+
+    if (missedEventIncetivizedTransactions.length > 0) {
+      const events = await incentivizeInboundContract.getPastEvents("MessageDispatched", { fromBlock: 0 });
+      if (events.length > 0) {
+        events.map((event: any) => {
+          missedEventIncetivizedTransactions.map((tx: Transaction) => {
+            if (event.returnValues.nonce == tx.nonce) {
+              console.log("-------Inside ----handleEthereumMissedEvents-----tx--",tx)
+              const nonce = tx.nonce ? tx.nonce : ''
+              const channel = Channel.INCENTIVIZED
+              dispatch(ethMessageDispatched({ nonce, channel }))
+            }
+          })
+        })
+      }
+
+    }
+  }
+
+
+export async function handlepolkadotTransaction(
+  state: any,
+  hash: string,
+  blockNumber: number,
+  polkadotApi: ApiPromise,
+  dispatch: Dispatch<any>
+) {
+  let isTxconfimed = await Polkadot.getTransactionConfirmation(polkadotApi, hash, blockNumber)
+  if (isTxconfimed)
+    dispatch(
+      setTransactionStatus({
+        hash: hash,
+        status: TransactionStatus.WAITING_FOR_RELAY,
+      }),
+    );
+}

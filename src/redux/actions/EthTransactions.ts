@@ -115,6 +115,9 @@ export const unlockEthAsset = (amount: string):
       // set pending to open pending tx status modal
       await dispatch(setPendingTransaction(pendingTransaction));
 
+      let latestpolkadotBlock = await polkadotApi.rpc.chain.getBlock();
+      let blockNumber = latestpolkadotBlock.block.header.number.toNumber();
+
       const unsub = await EthApi.unlock(
         amount,
         selectedAsset!,
@@ -128,8 +131,7 @@ export const unlockEthAsset = (amount: string):
             unsub,
             pendingTransaction,
             dispatch,
-            incentivizedInboundChannelContract!,
-            basicChannelContract!,
+            blockNumber
           );
 
           // tx will be updated in handlePolkadotTransactionEvents

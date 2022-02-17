@@ -45,6 +45,9 @@ export interface Transaction {
   direction: SwapDirection
   channel: Channel;
   isNotifyConfirmed: boolean;
+  //@TODO block No near which will be used to fetch polkadot transaction confirmation 
+  nearbyBlockNumber?: number;
+
 }
 
 // Interface for the Ethereum 'MessageDispatched' event,
@@ -156,7 +159,7 @@ export const transactionsSlice = createSlice({
       state.pendingTransaction = payload;
     },
     ethMessageDispatched: (state, action: PayloadAction<{
-      nonce: string, dispatchTransactionNonce: string, channel: Channel,
+      nonce: string, channel: Channel,
     }>) => {
       const transaction = state.transactions.filter((tx) => {
         return tx.nonce === action.payload.nonce &&
@@ -164,7 +167,7 @@ export const transactionsSlice = createSlice({
       })[0];
       if (transaction) {
         transaction.status = TransactionStatus.DISPATCHED;
-        transaction.dispatchTransactionHash = action.payload.dispatchTransactionNonce;
+        transaction.dispatchTransactionHash = transaction.nonce
       }
     },
   },

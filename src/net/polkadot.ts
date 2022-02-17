@@ -248,4 +248,43 @@ export default class Polkadot extends Api {
     return polkadotApi.tx.erc721App.burn(channelId, subTokenId, ethRecipient)
       .signAndSend(account.address, { signer: injector.signer }, callback);
   }
+
+  public static async getTransactionConfirmation(
+    polkadotApi: ApiPromise,
+    transactionHash: string,
+    blockNumber: number
+  ): Promise<boolean> {
+    console.log("-----------txhash----",transactionHash)
+    console.log("-----------blockNumber----",blockNumber)
+
+    let istxFound = false;
+    let blockData;
+    let latestpolkadotBlock = await polkadotApi.rpc.chain.getBlock();
+    let latestblockNumber = latestpolkadotBlock.block.header.number.toNumber();
+    for (let index = blockNumber; index <= latestblockNumber; index++) {
+      const blockHash = await polkadotApi.rpc.chain.getBlockHash(index);
+      const signedBlock = await polkadotApi.rpc.chain.getBlock(blockHash);
+      let txStatus = false;
+      // let nonce = result.events[3].event.data[0].toString();
+      // pendingTransaction.nonce = nonce;
+
+      // the hash for each extrinsic in the block
+      signedBlock.block.extrinsics.forEach((ex, index) => {
+        txStatus = ex.hash.toHex() == transactionHash ? true : false
+        if (txStatus) {
+          istxFound = true
+          console.log("---if-Inside getTransactionConfirmation----ex--------", JSON.stringify(ex))
+          blockData = ex
+          return istxFound;
+        }
+      });
+
+
+      if (istxFound)
+        break;
+
+    }
+    return istxFound;
+  }
+
 }

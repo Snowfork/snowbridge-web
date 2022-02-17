@@ -28,6 +28,9 @@ export default {
   // Allow health check to skip blocks for performance
   HEALTH_CHECK_POLKADOT_POLL_SKIP_BLOCKS: 1000,
 
+  //Provider for listening ethereum events
+  ETHEREUM_WEB_SOCKET__PROVIDER: `wss://ropsten.infura.io/ws/v3/${process.env.REACT_APP_INFURA_KEY}`,
+
   // Polkadotjs API Provider
   POLKADOT_API_PROVIDER: 'wss://parachain-rpc.snowbridge.network',
   POLKADOT_RELAY_API_PROVIDER: 'wss://polkadot-rpc.snowbridge.network',
