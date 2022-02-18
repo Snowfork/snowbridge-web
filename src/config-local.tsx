@@ -60,5 +60,6 @@ export default {
     { "parachainName":'Bifrost (coming soon...)', "parachainId": 0,'isDisabled':true },
     { "parachainName":'Kusama (coming soon...)', "parachainId": 0, 'isDisabled':true },
     { "parachainName":'Snowbridge (coming soon...)', "parachainId": 0,'isDisabled':true }
-  ]
+  ],
+  TRANSACTION_FEES:'0'
 };
