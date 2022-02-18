@@ -143,7 +143,8 @@ export const transactionsSlice = createSlice({
     parachainMessageDispatched: (state, action: PayloadAction<{ nonce: string, channel: Channel }>) => {
       const transaction = state.transactions.filter((tx) => {
         return tx.nonce === action.payload.nonce &&
-          tx.channel === action.payload.channel
+          tx.channel === action.payload.channel &&
+          tx.direction === 0
       })[0];
       if (transaction) {
         transaction.isMinted = true;
@@ -163,11 +164,12 @@ export const transactionsSlice = createSlice({
     }>) => {
       const transaction = state.transactions.filter((tx) => {
         return tx.nonce === action.payload.nonce &&
-          tx.channel === action.payload.channel
+          tx.channel === action.payload.channel &&  
+          tx.direction === 1
       })[0];
       if (transaction) {
         transaction.status = TransactionStatus.DISPATCHED;
-        transaction.dispatchTransactionHash = transaction.nonce
+        transaction.nonce = transaction.nonce
       }
     },
   },

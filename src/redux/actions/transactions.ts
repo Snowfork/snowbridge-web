@@ -322,7 +322,7 @@ export async function handleEthTransaction(
   hash: string,
   web3: Web3,
   dispatch: Dispatch<any>,
-  isNotifyConfirmed: any
+  istxConfirmed: any
 ) {
   //get the transaction receipt
   let txReceipt = await web3.eth.getTransactionReceipt(hash);
@@ -347,11 +347,11 @@ export async function handleEthTransaction(
   let confirmation = txReceipt.blockNumber === null ? 0 : currentBlock - txReceipt.blockNumber
 
   //Should not be called when tx is confirmed
-  if (isNotifyConfirmed) {
+  if (istxConfirmed) {
     handleEthTxRecipt(txReceipt, dispatch, web3)
   }
 
-  if (confirmation > 0)
+  if (confirmation > 0 && istxConfirmed)
     handleEthTxConfirmation(state, confirmation, txReceipt, dispatch, web3)
 }
 
@@ -476,8 +476,8 @@ export const handleTransaction = (
     }
   }
   if (pendingEThTransactions.length > 0) {
-    pendingEThTransactions.map((tx: any) => handleEthTransaction(state, tx.hash, web3, dispatch, tx.isNotifyConfirmed ? true : false))
-  }
+      pendingEThTransactions.map((tx: any) => handleEthTransaction(state, tx.hash, web3, dispatch, tx.status < TransactionStatus.WAITING_FOR_RELAY ? true : false))  
+    }
 }
 
 
@@ -504,6 +504,7 @@ export const handlePolkadotMissedEvents = ():
 }
 
 //Handle the missed event of the inbound channel when user closed the application.
+//@TODO to check if removed
 export const handleEthereumMissedEvents = (
   web3: Web3
 ):
@@ -533,7 +534,7 @@ export const handleEthereumMissedEvents = (
     const events = await basicInboundContract.getPastEvents("MessageDispatched", { fromBlock: 0 });
     if (events.length > 0) {
       events.map((event: any) => {
-        missedEventIncetivizedTransactions.map((tx: Transaction) => {
+        missedEventBasicTransactions.map((tx: Transaction) => {
           if (event.returnValues.nonce == tx.nonce) {
             const nonce = tx.nonce ? tx.nonce : ''
             const channel = Channel.BASIC
@@ -568,12 +569,19 @@ export async function handlepolkadotTransaction(
   polkadotApi: ApiPromise,
   dispatch: Dispatch<any>
 ) {
-  let isTxconfimed = await Polkadot.getTransactionConfirmation(polkadotApi, hash, blockNumber)
-  if (isTxconfimed)
-  dispatch(
-    setTransactionStatus({
-      hash: hash,
-      status: TransactionStatus.WAITING_FOR_RELAY,
-    }),
-  );
+  let TxDetail = await Polkadot.getTransactionConfirmation(polkadotApi, hash, blockNumber)
+  if (TxDetail.istxFound) {
+    dispatch(
+      setNonce({
+        hash: hash,
+        nonce: TxDetail.nonce,
+      }),
+    );
+    dispatch(
+      setTransactionStatus({
+        hash: hash,
+        status: TransactionStatus.WAITING_FOR_RELAY,
+      }),
+    );
+  }
 }
