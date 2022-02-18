@@ -29,7 +29,7 @@ export const lockEthAsset = (
     getState,
   ): Promise<void> => {
     const state = getState() as RootState;
-    const parachainId = state.bridge.parachainId;
+    const { parachainId , transactionFee } = state.bridge;
     const {
       ethContract,
       erc20Contract,
@@ -65,7 +65,8 @@ export const lockEthAsset = (
             ethContract,
             erc20Contract,
             erc721AppContract!,
-            ACTIVE_CHANNEL
+            ACTIVE_CHANNEL,
+            transactionFee.toString()
           );
 
           handleEthereumTransactionEvents(

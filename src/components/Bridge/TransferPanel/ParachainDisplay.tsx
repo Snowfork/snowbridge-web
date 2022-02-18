@@ -6,7 +6,7 @@ import Select from '../../Select/Select';
 import Option from '../../Select/Option';
 
 import { useAppSelector } from '../../../utils/hooks';
-import { setParaChainId } from '../../../redux/actions/bridge';
+import { setParaChainId, setTransactionFee } from '../../../redux/actions/bridge';
 import { PARACHAIN_LIST } from '../../../config';
 
 type ChainDisplayProps = {
@@ -22,6 +22,11 @@ const ParachainDisplay = ({  className }: ChainDisplayProps) => {
   const { parachainId } = useAppSelector((state) => state.bridge);
 
   const selectParachain = (event:any) => {
+    PARACHAIN_LIST.filter((parachain) => {
+      if(parachain.parachainId == event.target.value) {
+        dispatch(setTransactionFee(parachain.transactionFee));
+      }
+    })
     dispatch(setParaChainId(event.target.value));
   }
 
@@ -29,7 +34,6 @@ const ParachainDisplay = ({  className }: ChainDisplayProps) => {
     <div className={className}>
       <Select value={parachainId} onChange={selectParachain} >
         {PARACHAIN_LIST.map((chain,index) => <Option key={index} value={chain.parachainId} isDisable={chain.isDisabled}>{chain.parachainName}</Option>)}
-        
       </Select>
     </div>
   );

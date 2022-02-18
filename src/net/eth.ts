@@ -18,8 +18,7 @@ import {
   APP_ERC721_CONTRACT_ADDRESS,
   PERMITTED_ETH_NETWORK_ID,
   INFURA_KEY,
-  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
-  TRANSACTION_FEES
+  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS
 } from '../config';
 
 /* tslint:disable */
@@ -265,6 +264,7 @@ export default class Eth extends Api {
     erc20Contract: Contract,
     erc721AppContract: Contract,
     channel: Channel,
+    transactionFee:string
   ): PromiEvent<Contract> {
     try {
       const polkadotRecipientBytes: Uint8Array = ss58ToU8(
@@ -291,7 +291,7 @@ export default class Eth extends Api {
       // call ether contract for ether
       if (isEther(asset)) {
         return ethContract.methods
-          .lock(polkadotRecipientBytes, channelId, parachainId,TRANSACTION_FEES)
+          .lock(polkadotRecipientBytes, channelId, parachainId,transactionFee)
           .send({
             from: sender,
             gas: 500000,
@@ -307,7 +307,7 @@ export default class Eth extends Api {
           amount,
           channelId,
           parachainId,
-          TRANSACTION_FEES
+          transactionFee
         )
         .send({
           from: sender,
