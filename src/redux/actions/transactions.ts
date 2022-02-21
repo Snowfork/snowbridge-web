@@ -503,8 +503,7 @@ export const handlePolkadotMissedEvents = ():
   }
 }
 
-//Handle the missed event of the inbound channel when user closed the application.
-//@TODO to check if removed
+// Handle the missed event of the inbound channel when user closed the application.
 export const handleEthereumMissedEvents = (
   web3: Web3
 ):
@@ -512,54 +511,32 @@ export const handleEthereumMissedEvents = (
     dispatch: ThunkDispatch<{}, {}, AnyAction>,
     getState,
   ): Promise<void> => {
-  const state = getState() as RootState;
+    const state = getState() as RootState;
 
-  const incentivizeInboundContract = new web3.eth.Contract(
-    IncentivizedInboundChannel.abi as any,
-    INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-  );
+    const incentivizeInboundContract = new web3.eth.Contract(
+      IncentivizedInboundChannel.abi as any,
+      INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+    );
 
-  const basicInboundContract = new web3.eth.Contract(
-    BasicInboundChannel.abi as any,
-    BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-  );
+    const basicInboundContract = new web3.eth.Contract(
+      BasicInboundChannel.abi as any,
+      BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+    );
 
-  const incentivizeInboundLatestNonce = Number(await incentivizeInboundContract.methods.nonce().call());
-  const basicInboundLatestNonce = Number(await basicInboundContract.methods.nonce().call());
-  
-  const missedEventIncetivizedTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 1 && Number(transaction.nonce) <= incentivizeInboundLatestNonce && transaction.channel === Channel.INCENTIVIZED);
-  const missedEventBasicTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 1 && Number(transaction.nonce) <= basicInboundLatestNonce && transaction.channel === Channel.BASIC);
-  
-  if (missedEventBasicTransactions.length > 0) {
-    const events = await basicInboundContract.getPastEvents("MessageDispatched", { fromBlock: 0 });
-    if (events.length > 0) {
-      events.map((event: any) => {
-        missedEventBasicTransactions.map((tx: Transaction) => {
-          if (event.returnValues.nonce == tx.nonce) {
-            const nonce = tx.nonce ? tx.nonce : ''
-            const channel = Channel.BASIC
-            dispatch(ethMessageDispatched({ nonce, channel }))
-          }
-        })
-      })
-    }
+    const incentivizeInboundLatestNonce = Number(await incentivizeInboundContract.methods.nonce().call());
+    const basicInboundLatestNonce = Number(await basicInboundContract.methods.nonce().call());
+
+    const missedEventTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 1 && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeInboundLatestNonce : basicInboundLatestNonce));
+
+    missedEventTransactions.map((tx: Transaction) => {
+      if (tx.nonce) {
+        const nonce = tx.nonce
+        const channel = tx.channel === Channel.BASIC ? Channel.BASIC : Channel.INCENTIVIZED
+
+        dispatch(ethMessageDispatched({ nonce, channel }))
+      }
+    })
   }
-
-  if (missedEventIncetivizedTransactions.length > 0) {
-    const events = await incentivizeInboundContract.getPastEvents("MessageDispatched", { fromBlock: 0 });
-    if (events.length > 0) {
-      events.map((event: any) => {
-        missedEventIncetivizedTransactions.map((tx: Transaction) => {
-          if (event.returnValues.nonce == tx.nonce) {
-            const nonce = tx.nonce ? tx.nonce : ''
-            const channel = Channel.INCENTIVIZED
-            dispatch(ethMessageDispatched({ nonce, channel }))
-          }
-        })
-      })
-    }
-  }
-}
 
 
 export async function handlepolkadotTransaction(
