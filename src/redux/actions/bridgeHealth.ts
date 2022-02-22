@@ -7,10 +7,7 @@ import * as IncentivizedOutboundChannel from '../../contracts/IncentivizedOutbou
 import * as BeefyLightClient from '../../contracts/BeefyLightClient.json';
 import {
   ACTIVE_CHANNEL,
-  BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-  BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
-  INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-  INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
+  CONTRACT_ADDRESS,
   HEALTH_CHECK_POLL_INTERVAL_MILLISECONDS,
   HEALTH_CHECK_ETHEREUM_POLL_MAX_BLOCKS,
   HEALTH_CHECK_POLKADOT_POLL_MAX_BLOCKS,
@@ -139,12 +136,12 @@ const basicChannelInfo = async (web3: Web3, polkadotApi: ApiPromise, latestEthBl
 
   const inboundContract = new web3.eth.Contract(
     BasicInboundChannel.abi as any,
-    BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+    CONTRACT_ADDRESS.BasicInboundChannel,
   );
 
   const outboundContract = new web3.eth.Contract(
     BasicOutboundChannel.abi as any,
-    BASIC_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
+    CONTRACT_ADDRESS.BasicOutboundChannel,
   );
 
   const beefyContractAddressRequest = inboundContract.methods.beefyLightClient().call();
@@ -176,12 +173,12 @@ const incentivizedChannelInfo = async (web3: Web3, polkadotApi: ApiPromise, late
 
   const inboundContract = new web3.eth.Contract(
     IncentivizedInboundChannel.abi as any,
-    INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+    CONTRACT_ADDRESS.IncentivizedInboundChannel,
   );
 
   const outboundContract = new web3.eth.Contract(
     IncentivizedOutboundChannel.abi as any,
-    INCENTIVIZED_OUTBOUND_CHANNEL_CONTRACT_ADDRESS,
+    CONTRACT_ADDRESS.IncentivizedOutboundChannel,
   );
 
   const beefyContractAddressRequest = inboundContract.methods.beefyLightClient().call();
