@@ -24,7 +24,8 @@ export interface BridgeState {
       [contractAddress: string]: OwnedNft[],
     }
   },
-  parachainId: number
+  parachainId: number,
+  transactionFee: number,
   fees: {
     erc20dot: string | null,
     parachainEth: string | null,
@@ -42,6 +43,7 @@ const initialState: BridgeState = {
   nonFungibleAssets: [],
   ownedNonFungibleAssets: { polkadot: {}, ethereum: {} },
   parachainId: PARACHAIN_LIST ? PARACHAIN_LIST[0].parachainId : 0,
+  transactionFee: PARACHAIN_LIST ? PARACHAIN_LIST[0].transactionFee : 0,
   fees: {
     erc20dot: null,
     parachainEth: null,
@@ -81,6 +83,10 @@ export const bridgeSlice = createSlice({
     setParaChainId:
       (state, action: PayloadAction<number>) => {
         state.parachainId = action.payload;
+      },
+    setTransactionFee: 
+      (state, action: PayloadAction<number>) => {
+        state.transactionFee = action.payload;
       },
     setShowConfirmTransactionModal:
       (state, action: PayloadAction<boolean>) => {

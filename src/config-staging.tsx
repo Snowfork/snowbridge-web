@@ -52,12 +52,12 @@ export default {
   //Key required for connection with walletconnect
   INFURA_KEY: process.env.REACT_APP_INFURA_KEY,
   PARACHAIN_LIST : [
-    { "parachainName":'Snowbridge', "parachainId": 0, 'isDisabled':false },
-    { "parachainName":'Snowbridge-test', "parachainId": 1001,'isDisabled':false },
-    { "parachainName":'Acala (coming soon...)', "parachainId": 0,'isDisabled':true },
-    { "parachainName":'Moonbeam (coming soon...)', "parachainId": 0,'isDisabled':true },
-    { "parachainName":'Bifrost (coming soon...)', "parachainId": 0,'isDisabled':true },
-    { "parachainName":'Kusama (coming soon...)', "parachainId": 0, 'isDisabled':true },
-    { "parachainName":'Snowbridge (coming soon...)', "parachainId": 0,'isDisabled':true }
+    { "parachainName":'Snowbridge', "parachainId": 0, 'isDisabled':false, 'transactionFee': 0 },
+    { "parachainName":'Snowbridge-test', "parachainId": 1001,'isDisabled':false, 'transactionFee': 4000000 },
+    { "parachainName":'Acala (coming soon...)', "parachainId": 0,'isDisabled':true, 'transactionFee': 0 },
+    { "parachainName":'Moonbeam (coming soon...)', "parachainId": 0,'isDisabled':true, 'transactionFee': 0 },
+    { "parachainName":'Bifrost (coming soon...)', "parachainId": 0,'isDisabled':true, 'transactionFee': 0 },
+    { "parachainName":'Kusama (coming soon...)', "parachainId": 0, 'isDisabled':true, 'transactionFee': 0 },
+    { "parachainName":'Snowbridge (coming soon...)', "parachainId": 0,'isDisabled':true, 'transactionFee': 0 }
   ]
 };
