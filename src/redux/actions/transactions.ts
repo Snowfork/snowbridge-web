@@ -316,7 +316,7 @@ export function handlePolkadotTransactionErrors(
     );
   }
 }
-
+//This will be used in handleTransaction to fetch the tx receipt and block confirmation for transaction
 export async function handleEthTransaction(
   state: any,
   hash: string,
@@ -355,7 +355,7 @@ export async function handleEthTransaction(
     handleEthTxConfirmation(state, confirmation, txReceipt, dispatch, web3)
 }
 
-
+//This function is used to obtain and set required nonce from events via use of receipt.
 export function handleEthTxRecipt(receipt: any, dispatch: Dispatch<any>,
   web3: Web3) {
 
@@ -424,6 +424,7 @@ export function handleEthTxRecipt(receipt: any, dispatch: Dispatch<any>,
   );
 }
 
+//This will be used in handleEthTransaction for update the eth tx block confirmation for tx.
 export function handleEthTxConfirmation(state: any, confirmation: number,
   receipt: any, dispatch: Dispatch<any>,
   web3: Web3) {
@@ -456,6 +457,8 @@ export function handleEthTxConfirmation(state: any, confirmation: number,
   }
 }
 
+//This is used for handling the lost callback of Ethereum and Polkadot transactions
+//fetch the tx-receipt, confirmation status, confirmation count,nonce for pending transaction via Hash.
 export const handleTransaction = (
   web3: Web3
 ):
@@ -467,8 +470,8 @@ export const handleTransaction = (
   const state = getState() as RootState;
   const { polkadotApi } = state.net;
 
-  let pendingEThTransactions = state.transactions.transactions.filter((transaction) => transaction.status != TransactionStatus.DISPATCHED && transaction.direction === 0);
-  let pendingPolkaDotTransactions = state.transactions.transactions.filter((transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY && transaction.direction === 1);
+  let pendingEThTransactions = state.transactions.transactions.filter((transaction) => transaction.status != TransactionStatus.WAITING_FOR_RELAY && transaction.direction === SwapDirection.EthereumToPolkadot);
+  let pendingPolkaDotTransactions = state.transactions.transactions.filter((transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY && transaction.direction === SwapDirection.PolkadotToEthereum);
 
   if (polkadotApi) {
     if (pendingPolkaDotTransactions.length > 0) {
@@ -480,7 +483,8 @@ export const handleTransaction = (
     }
 }
 
-
+//Handle the missed Polkadot events (MessageDispatch) for the transactions for the basic/Incentivized channel.
+//and updates the transaction status accordingly.
 export const handlePolkadotMissedEvents = ():
   ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
     dispatch: ThunkDispatch<{}, {}, AnyAction>,
@@ -491,7 +495,7 @@ export const handlePolkadotMissedEvents = ():
   if (polkadotApi) {
     const incentivizeLatestNonce = Number(await polkadotApi.query['incentivizedInboundChannel'].nonce());
     const basicLatestNonce = Number(await polkadotApi.query['basicInboundChannel'].nonce());
-    const pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 0 && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeLatestNonce : basicLatestNonce));
+    const pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction === SwapDirection.EthereumToPolkadot  && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeLatestNonce : basicLatestNonce));
 
     pendingTransactions.map((tx: Transaction) => {
       const nonce = tx.nonce ? tx.nonce : ''
@@ -526,7 +530,7 @@ export const handleEthereumMissedEvents = (
     const incentivizeInboundLatestNonce = Number(await incentivizeInboundContract.methods.nonce().call());
     const basicInboundLatestNonce = Number(await basicInboundContract.methods.nonce().call());
 
-    const missedEventTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == 1 && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeInboundLatestNonce : basicInboundLatestNonce));
+    const missedEventTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == SwapDirection.PolkadotToEthereum && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeInboundLatestNonce : basicInboundLatestNonce));
 
     missedEventTransactions.map((tx: Transaction) => {
       if (tx.nonce) {
@@ -538,7 +542,8 @@ export const handleEthereumMissedEvents = (
     })
   }
 
-
+//This function hanle the lost callback for polkadot transactions and
+//contains logic to fetch the transaction confirmation and nonce state.
 export async function handlepolkadotTransaction(
   state: any,
   hash: string,

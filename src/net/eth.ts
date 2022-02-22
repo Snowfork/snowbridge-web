@@ -166,8 +166,13 @@ export default class Eth extends Api {
                         if (pendingTxCount === 0)
                         clearInterval(interval);
 
+                        //handling the lost callback of Ethereum and Polkadot transactions
                         dispatch(handleTransaction(web3));
+
+                        // handles the missed Polkadot events (MessageDispatch) for the transactions for the basic/Incentivized channel and updates tx-nonce by comaring with latest channel nonce.
                         dispatch(handlePolkadotMissedEvents());
+
+                        // handles the missed Ethereum events (MessgaeDispatched) for the transactions for basic/Incentivized Ethereum contracts and updates tx-nonce by comparing with latest channel nonce.
                         dispatch(handleEthereumMissedEvents(web3));
                         
                     }, 5000);

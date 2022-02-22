@@ -144,7 +144,7 @@ export const transactionsSlice = createSlice({
       const transaction = state.transactions.filter((tx) => {
         return tx.nonce === action.payload.nonce &&
           tx.channel === action.payload.channel &&
-          tx.direction === 0
+          tx.direction === SwapDirection.EthereumToPolkadot
       })[0];
       if (transaction) {
         transaction.isMinted = true;
@@ -165,7 +165,7 @@ export const transactionsSlice = createSlice({
       const transaction = state.transactions.filter((tx) => {
         return tx.nonce === action.payload.nonce &&
           tx.channel === action.payload.channel &&  
-          tx.direction === 1
+          tx.direction === SwapDirection.PolkadotToEthereum
       })[0];
       if (transaction) {
         transaction.status = TransactionStatus.DISPATCHED;

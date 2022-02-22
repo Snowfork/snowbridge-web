@@ -249,6 +249,7 @@ export default class Polkadot extends Api {
       .signAndSend(account.address, { signer: injector.signer }, callback);
   }
 
+  //Fetch the polkadot transaction confirmation status and nonce value via hash.
   public static async getTransactionConfirmation(
     polkadotApi: ApiPromise,
     transactionHash: string,
