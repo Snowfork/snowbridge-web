@@ -52,8 +52,8 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
   const isMetamaskNetworkPermitted = useAppSelector(isNetworkPermittedSelector);
   const ethereumProvider = useAppSelector(ethereumProviderSelector);
 
-  const polkadotGasBalance = dot?.balance?.polkadot;
-  const ethereumGasBalance = ether?.balance?.eth;
+  const polkadotGasBalance:any = dot?.balance?.polkadot;
+  const ethereumGasBalance:any = ether?.balance?.eth;
 
   const [errors, setErrors] = useState<{ balance?: string, asset?: string, fee?: string }>({
     balance: undefined,

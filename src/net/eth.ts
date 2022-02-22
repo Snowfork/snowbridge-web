@@ -258,6 +258,7 @@ export default class Eth extends Api {
     erc20Contract: Contract,
     erc721AppContract: Contract,
     channel: Channel,
+    transactionFee:string
   ): PromiEvent<Contract> {
     try {
       const polkadotRecipientBytes: Uint8Array = ss58ToU8(
@@ -284,7 +285,7 @@ export default class Eth extends Api {
       // call ether contract for ether
       if (isEther(asset)) {
         return ethContract.methods
-          .lock(polkadotRecipientBytes, channelId, parachainId)
+          .lock(polkadotRecipientBytes, channelId, parachainId,transactionFee)
           .send({
             from: sender,
             gas: 500000,
@@ -299,7 +300,8 @@ export default class Eth extends Api {
           polkadotRecipientBytes,
           amount,
           channelId,
-          parachainId
+          parachainId,
+          transactionFee
         )
         .send({
           from: sender,

@@ -287,7 +287,7 @@ const parachainEthInfo = async (polkadotApi: ApiPromise): Promise<BlockInfo> => 
     const blockHash = await polkadotApi.rpc.chain.getBlockHash(blockNumber);
     const blockNonceResult = await polkadotApi.rpc.state.queryStorageAt([storageKey], blockHash) as Array<any>;
     if (blockNonceResult.length > 0 && blockNonceResult[0].isSome) {
-      const ethereumHeader = polkadotApi.registry.createType('EthereumHeaderId' as any, blockNonceResult[0].unwrap());
+      const ethereumHeader = polkadotApi.registry.createType('SnowbridgeEthereumHeaderHeaderId' as any, blockNonceResult[0].unwrap());
       if (Number(ethereumHeader.number) !== ethBlockNumber) {
         bestGuess = false;
         break;
