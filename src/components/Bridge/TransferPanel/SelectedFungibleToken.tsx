@@ -17,8 +17,10 @@ import { useAppSelector } from '../../../utils/hooks';
 
 import ExpandButton from '../../Button/ExpandButton';
 import AmountInput from '../../Input/AmountInput';
+import { notify } from '../../../redux/actions/notifications';
 
 const INSUFFICIENT_BALANCE_ERROR = 'Insufficient funds';
+const FRACTIONAL_DECIMAL_ERROR = "Cross Fractional Decimal Limit";
 const AMOUNT_NOT_SET_ERROR = 'Set transfer amount';
 
 type Props = {
@@ -45,25 +47,45 @@ const SelectedFungibleToken = ({ className, openAssetSelector, setError }: Props
   const setStableError = useCallback(setError,[]);
   useEffect(() => {
     const checkDepositAmount = (amount: string) => {
-      const amountParsed = amount
-        && decimalMap.from
-        && new BigNumber(
-          // make sure we are comparing the same units
-          utils.parseUnits(
-            amount || '0', decimalMap.from,
-          ).toString(),
+      let amountParsed;
+      try {
+        if (amount.length >= decimalMap.from) {
+          dispatch(
+            notify({
+              text: "You Reached MAX Fractional Limit",
+              color: "warning",
+            })
+          );
+          setStableError(FRACTIONAL_DECIMAL_ERROR);
+        } else {
+          amountParsed = amount
+            && decimalMap.from
+            && new BigNumber(
+              // make sure we are comparing the same units
+              utils.parseUnits(
+                amount || '0', decimalMap.from,
+              ).toString(),
+            );
+          const amountTooHigh = amountParsed && amountParsed.isGreaterThan(
+            new BigNumber(tokenBalances.sourceNetwork),
+          );
+          const amountTooLow = amountParsed && amountParsed.isEqualTo(0);
+          if (amountTooHigh) {
+            setStableError(INSUFFICIENT_BALANCE_ERROR);
+          } else if (amountTooLow) {
+            setStableError(AMOUNT_NOT_SET_ERROR);
+          }
+          else {
+            setStableError('');
+          }
+        }
+      } catch (error) {
+        dispatch(
+          notify({
+            text: "Something went wrong",
+            color: "warning",
+          })
         );
-      const amountTooHigh = amountParsed && amountParsed.isGreaterThan(
-        new BigNumber(tokenBalances.sourceNetwork),
-      );
-      const amountTooLow = amountParsed && amountParsed.isEqualTo(0);
-      if (amountTooHigh) {
-        setStableError(INSUFFICIENT_BALANCE_ERROR);
-      } else if (amountTooLow) {
-        setStableError(AMOUNT_NOT_SET_ERROR);
-      }
-      else {
-        setStableError('');
       }
     }
     checkDepositAmount(depositAmount);
