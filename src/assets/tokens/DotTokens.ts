@@ -1,9 +1,9 @@
-import { SNOW_DOT_ADDRESS } from '../../config';
+import { CONTRACT_ADDRESS } from '../../config';
 
 export default [
   {
     name: 'DOT',
-    address: SNOW_DOT_ADDRESS,
+    address: CONTRACT_ADDRESS.SnowDOTAddress,
     symbol: 'DOT',
     decimals: 12,
     chainId: 15,
@@ -11,7 +11,7 @@ export default [
   },
   {
     name: 'DOT',
-    address: SNOW_DOT_ADDRESS,
+    address: CONTRACT_ADDRESS.SnowDOTAddress,
     symbol: 'DOT',
     decimals: 12,
     chainId: 3,

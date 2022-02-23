@@ -3,7 +3,7 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { NonFungibleToken, AssetType } from '../../types/Asset';
 import { RootState } from '../store';
 import * as ERC721Api from '../../net/ERC721';
-import { APP_ERC721_CONTRACT_ADDRESS } from '../../config';
+import { CONTRACT_ADDRESS } from '../../config';
 import { erc721TransactionsSlice } from '../reducers/ERC721Transactions';
 
 export const approveERC721 = ():
@@ -12,7 +12,7 @@ export const approveERC721 = ():
   ): Promise<void> => {
     const state = getState() as RootState;
     const userAddress = state.net.ethAddress!;
-    const erc721BridgeContractAddress = APP_ERC721_CONTRACT_ADDRESS;
+    const erc721BridgeContractAddress = CONTRACT_ADDRESS.ERC721App;
     const { selectedAsset } = state.bridge;
     const token = selectedAsset?.token as NonFungibleToken;
 
