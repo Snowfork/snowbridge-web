@@ -14,8 +14,7 @@ import {
 import { Channel } from '../../types/types';
 import { transactionsSlice } from '../../redux/reducers/transactions';
 import {
-  BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS,
-  INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS,
+  CONTRACT_ADDRESS,
   ETHEREUM_WEB_SOCKET__PROVIDER
 } from '../../config'
 
@@ -94,7 +93,7 @@ export const subscribeEthereumEvents = ():
             },
         ];
         web3.eth.subscribe('logs', {
-            address: [BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS, INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS],
+            address: [CONTRACT_ADDRESS.BasicInboundChannel, CONTRACT_ADDRESS.IncentivizedInboundChannel],
             topics: ['0x504b093d860dc827c72a879d052fd8ac6b4c2af80c5f3a634654f172690bf10a']
         }, function (error: any, event: any) {
             if (error) {
@@ -105,10 +104,10 @@ export const subscribeEthereumEvents = ():
                 event.data,
                 event.topics,
             );
-            if (event.address == BASIC_INBOUND_CHANNEL_CONTRACT_ADDRESS)
+            if (event.address == CONTRACT_ADDRESS.BasicInboundChannel)
             channel = Channel.BASIC
 
-            if (event.address == INCENTIVIZED_INBOUND_CHANNEL_CONTRACT_ADDRESS)
+            if (event.address == CONTRACT_ADDRESS.IncentivizedInboundChannel)
             channel = Channel.INCENTIVIZED
 
             dispatch(
