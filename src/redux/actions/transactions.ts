@@ -151,6 +151,10 @@ export function handlePolkadotTransactionEvents(
   }
 
   if (result.status.isInBlock) {
+
+    if (result && result.dispatchError)
+      return pendingTransaction;
+    
     let nonce = result.events[3].event.data[0].toString();
 
     pendingTransaction.nonce = nonce;
@@ -185,6 +189,12 @@ export function handlePolkadotTransactionEvents(
     }
   }
   if (result.dispatchError) {
+    dispatch(
+      setError({
+        hash: pendingTransaction.hash,
+        error: result.dispatchError
+      })
+    );
     alert("Error with dispatchable - see polkadotjs explorer for more info: " + result.dispatchError)
   }
   return pendingTransaction;
