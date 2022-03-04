@@ -88,7 +88,7 @@ const FeeInfo = ({ className, setError }: Props) => {
           break;
       }
       const asset = assets.find((asset) => asset.symbol === currency.symbol);
-      if (fee !== null && !isFeeSufficient) {
+      if (fee !== null && (!isFeeSufficient || Number(balance) < Number(fee))) {
         setCBError(TRANSFER_FEE_ERROR);
       }
       else {
