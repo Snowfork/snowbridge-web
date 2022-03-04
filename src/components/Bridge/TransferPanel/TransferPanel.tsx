@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import {
+  setDepositAmount,
   setShowConfirmTransactionModal, setSwapDirection,
   updateSelectedAsset,
 } from '../../../redux/actions/bridge';
@@ -20,8 +21,6 @@ import { useAppSelector } from '../../../utils/hooks';
 import SelectedFungibleToken from './SelectedFungibleToken';
 import { SelectedNFT } from './SelectedNFT';
 
-import Panel from '../../Panel/Panel';
-
 import ChainTypeDisplay from './ChainTypeDisplay';
 import FeeInfo from './FeeInfo';
 import AddressDisplay from './AddressDisplay/AddressDisplay';
@@ -29,7 +28,7 @@ import DirectionBadge from './DirectionBadge';
 
 import DOSButton from '../../Button/DOSButton';
 import TransactionListButton from '../../Button/TransactionListButton';
-
+import Panel from '../../Panel/Panel';
 import SwitchButton from '../../Button/SwitchButton';
 import FungibleTokenBalance from './FungibleTokenBalance';
 
@@ -37,6 +36,7 @@ import FungibleTokenBalance from './FungibleTokenBalance';
 import { PERMITTED_ETH_NETWORK, PERMITTED_ETH_NETWORK_ID } from '../../../config';
 
 import Eth from '../../../net/eth';
+
 const INSUFFICIENT_GAS_ERROR = 'Insufficient gas';
 
 type Props = {
@@ -70,6 +70,8 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
 
   const dispatch = useDispatch();
   const decimalMap = decimals(selectedAsset, swapDirection);
+
+  const toggledAmount = '0'
 
   // check the user has enough gas for the transaction
   useEffect(() => {
@@ -112,8 +114,10 @@ const TransferPanel = ({ className, setShowAssetSelector }: Props) => {
   const changeTransactionDirection = () => {
     if (swapDirection === SwapDirection.EthereumToPolkadot) {
       dispatch(setSwapDirection(SwapDirection.PolkadotToEthereum));
+      dispatch(setDepositAmount(toggledAmount));
     } else {
       dispatch(setSwapDirection(SwapDirection.EthereumToPolkadot));
+      dispatch(setDepositAmount(toggledAmount));
     }
   };
 

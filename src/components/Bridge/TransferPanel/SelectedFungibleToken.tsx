@@ -20,7 +20,6 @@ import AmountInput from '../../Input/AmountInput';
 import { notify } from '../../../redux/actions/notifications';
 
 const INSUFFICIENT_BALANCE_ERROR = 'Insufficient funds';
-const FRACTIONAL_DECIMAL_ERROR = "Cross Fractional Decimal Limit";
 const AMOUNT_NOT_SET_ERROR = 'Set transfer amount';
 
 type Props = {
@@ -41,29 +40,19 @@ const SelectedFungibleToken = ({ className, openAssetSelector, setError }: Props
 
   const dispatch = useDispatch();
   const decimalMap = decimals(selectedAsset, swapDirection);
-
   useEffect(() => {
   }, [dispatch]);
   const setStableError = useCallback(setError,[]);
   useEffect(() => {
     const checkDepositAmount = (amount: string) => {
-      let amountParsed;
+      
       try {
-        if (amount.length >= decimalMap.from) {
-          dispatch(
-            notify({
-              text: "You Reached MAX Fractional Limit",
-              color: "warning",
-            })
-          );
-          setStableError(FRACTIONAL_DECIMAL_ERROR);
-        } else {
-          amountParsed = amount
+          const amountParsed = amount
             && decimalMap.from
             && new BigNumber(
               // make sure we are comparing the same units
               utils.parseUnits(
-                amount || '0', decimalMap.from,
+                amount || '0', decimalMap.from
               ).toString(),
             );
           const amountTooHigh = amountParsed && amountParsed.isGreaterThan(
@@ -78,7 +67,6 @@ const SelectedFungibleToken = ({ className, openAssetSelector, setError }: Props
           else {
             setStableError('');
           }
-        }
       } catch (error) {
         dispatch(
           notify({
@@ -99,6 +87,8 @@ const SelectedFungibleToken = ({ className, openAssetSelector, setError }: Props
 
   const handleDepositAmountChanged = (e: any) => {
     if (e.target.value) {
+      const fixInputLimit = new RegExp("(\\.\\d{" + decimalMap.from + "})\\d+", "g");
+      e.target.value = e.target.value.replace(fixInputLimit, '$1');
       dispatch(setDepositAmount(e.target.value));
     } else {
       dispatch(setDepositAmount(''));
