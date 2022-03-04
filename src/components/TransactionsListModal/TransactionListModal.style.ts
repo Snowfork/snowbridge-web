@@ -12,8 +12,7 @@ export const Heading = styled.h2`
 `;
 
 export const List = styled.ul`
-  margin: 53px 0;
-  padding: 15px;
+  padding: 53px 15px;
   width: 100%;
   gap: 25px;
   display: flex;

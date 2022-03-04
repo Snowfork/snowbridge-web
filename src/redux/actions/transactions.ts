@@ -27,7 +27,7 @@ import {
 import { doEthTransfer } from './EthTransactions';
 import { doPolkadotTransfer } from './PolkadotTransactions';
 import { notify } from './notifications';
-import { setShowConfirmTransactionModal, setShowTransactionListModal } from './bridge';
+import { setShowConfirmTransactionModal, setShowTransactionListModal, updateBalances } from './bridge';
 import { updateSelectedAsset } from '../../redux/actions/bridge';
 import { subscribeEthereumEvents } from "../../redux/actions/net";
 import * as BasicInboundChannel from '../../contracts/BasicInboundChannel.json';
@@ -183,6 +183,10 @@ export function handlePolkadotTransactionEvents(
         status: TransactionStatus.WAITING_FOR_RELAY,
       }),
     );
+
+    // updating the token balance 
+    dispatch(updateBalances());
+
     // unsubscribe from transaction events
     if (unsub) {
       unsub();
@@ -355,8 +359,12 @@ export async function handleEthTransaction(
     handleEthTxRecipt(txReceipt, dispatch, web3)
   }
 
-  if (confirmation > 0 && istxConfirmed)
+  if (confirmation > 0 && istxConfirmed) {
+    // updating the token balance on UI
+    dispatch(updateBalances());
+
     handleEthTxConfirmation(state, confirmation, txReceipt, dispatch, web3)
+  }
 }
 
 //This function is used to obtain and set required nonce from events via use of receipt.
@@ -474,8 +482,8 @@ export const handleTransaction = (
   const state = getState() as RootState;
   const { polkadotApi } = state.net;
 
-  let pendingEThTransactions = state.transactions.transactions.filter((transaction) => transaction.status != TransactionStatus.WAITING_FOR_RELAY && transaction.direction === SwapDirection.EthereumToPolkadot);
-  let pendingPolkaDotTransactions = state.transactions.transactions.filter((transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY && transaction.direction === SwapDirection.PolkadotToEthereum);
+  let pendingEThTransactions = state.transactions.transactions.filter((transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY && transaction.status != TransactionStatus.REJECTED &&  transaction.direction === SwapDirection.EthereumToPolkadot);
+  let pendingPolkaDotTransactions = state.transactions.transactions.filter((transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY && transaction.status != TransactionStatus.REJECTED && transaction.direction === SwapDirection.PolkadotToEthereum);
 
   if (polkadotApi) {
     if (pendingPolkaDotTransactions.length > 0) {
