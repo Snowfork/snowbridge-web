@@ -7,6 +7,7 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
+import { ApiPromise } from '@polkadot/api';
 import { REQUIRED_ETH_CONFIRMATIONS, CONTRACT_ADDRESS } from '../../config';
 import {
   Asset,
@@ -14,9 +15,9 @@ import {
   isDot,
   isNonFungible,
   symbols,
+  AssetType,
 } from '../../types/Asset';
 import { Chain, SwapDirection, Channel } from '../../types/types';
-import { AssetType } from '../../types/Asset';
 import { RootState } from '../store';
 import {
   MessageDispatchedEvent,
@@ -27,12 +28,15 @@ import {
 import { doEthTransfer } from './EthTransactions';
 import { doPolkadotTransfer } from './PolkadotTransactions';
 import { notify } from './notifications';
-import { setShowConfirmTransactionModal, setShowTransactionListModal, updateBalances } from './bridge';
-import { updateSelectedAsset } from '../../redux/actions/bridge';
-import { subscribeEthereumEvents } from "../../redux/actions/net";
+import {
+  setShowConfirmTransactionModal,
+  setShowTransactionListModal,
+  updateBalances,
+  updateSelectedAsset,
+} from './bridge';
+import { subscribeEthereumEvents } from './net';
 import * as BasicInboundChannel from '../../contracts/BasicInboundChannel.json';
 import * as IncentivizedInboundChannel from '../../contracts/IncentivizedInboundChannel.json';
-import { ApiPromise } from '@polkadot/api';
 import Polkadot from '../../net/polkadot';
 
 export const {
@@ -45,7 +49,7 @@ export const {
   setPendingTransaction,
   setTransactionStatus,
   updateTransaction,
-  updateTransactionNotifyConfirmation
+  updateTransactionNotifyConfirmation,
 } = transactionsSlice.actions;
 
 export const updateConfirmations = (
@@ -136,6 +140,9 @@ export function handlePolkadotTransactionEvents(
   const pendingTransaction = { ...transaction };
 
   if (result.status.isReady) {
+    window.onbeforeunload = function () {
+      return 'Hello, are you sure you want to leave? You had pending transaction already please wait a while!';
+    };
 
     pendingTransaction.nearbyBlockNumber = blockNumber
     pendingTransaction.hash = result.txHash.toString();
@@ -320,13 +327,12 @@ export function handlePolkadotTransactionErrors(
         ...pendingTransaction,
         status: TransactionStatus.REJECTED,
         error: error.message,
-      })
+      }),
     );
   }
 }
-//This will be used in handleTransaction to fetch the tx receipt and block confirmation for transaction
+// This will be used in handleTransaction to fetch the tx receipt and block confirmation for transaction
 export async function handleEthTransaction(
-  state: any,
   hash: string,
   web3: Web3,
   dispatch: Dispatch<any>,
@@ -363,7 +369,7 @@ export async function handleEthTransaction(
     // updating the token balance on UI
     dispatch(updateBalances());
 
-    handleEthTxConfirmation(state, confirmation, txReceipt, dispatch, web3)
+    handleEthTxConfirmation(txReceipt, dispatch, confirmation);
   }
 }
 
@@ -404,7 +410,7 @@ export function handleEthTxRecipt(receipt: any, dispatch: Dispatch<any>,
     },
   ];
   let nonce;
-  (receipt.logs).forEach((log: any) => {
+  receipt.logs.forEach((log: any) => {
     const event = log;
 
     if (event.address === CONTRACT_ADDRESS.BasicOutboundChannel) {
@@ -436,64 +442,75 @@ export function handleEthTxRecipt(receipt: any, dispatch: Dispatch<any>,
   );
 }
 
-//This will be used in handleEthTransaction for update the eth tx block confirmation for tx.
-export function handleEthTxConfirmation(state: any, confirmation: number,
-  receipt: any, dispatch: Dispatch<any>,
-  web3: Web3) {
+// This will be used in handleEthTransaction for update the eth tx block confirmation for tx.
+export async function handleEthTxConfirmation(
+  receipt: any,
+  dispatch: Dispatch<any>,
+  confirmation: number,
+) {
   // update transaction confirmations
-  dispatch(
-    updateConfirmations(receipt.transactionHash, confirmation),
-  );
-
-  if (confirmation === REQUIRED_ETH_CONFIRMATIONS) {
-
-    const tranasaction = state.transactions.transactions.filter((transaction: any) => {
-      return transaction.hash === receipt.transactionHash
-    });
-
-    if (tranasaction.length > 0) {
-
-      if (!tranasaction[0].isNotifyConfirmed) {
-
-        dispatch(updateTransactionNotifyConfirmation({
-          hash: tranasaction[0].hash
-        }))
-
-        dispatch(notify({
-          text: `Transactions confirmed after ${confirmation} confirmations`,
-          color: 'success',
-        }));
-
-      }
-    }
-  }
+  dispatch(updateConfirmations(receipt.transactionHash, confirmation));
 }
 
-//This is used for handling the lost callback of Ethereum and Polkadot transactions
-//fetch the tx-receipt, confirmation status, confirmation count,nonce for pending transaction via Hash.
-export const handleTransaction = (
-  web3: Web3
-):
-  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
-    dispatch: ThunkDispatch<{}, {}, AnyAction>,
-    getState,
-  ): Promise<void> => {
-
+// This is used for handling the lost callback of Ethereum and Polkadot transactions
+// fetch the tx-receipt, confirmation status, confirmation count,nonce for pending transaction via Hash.
+export const handleTransaction = (web3: Web3): ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  dispatch: ThunkDispatch<{}, {}, AnyAction>,
+  getState,
+): Promise<void> => {
   const state = getState() as RootState;
+
   const { polkadotApi } = state.net;
 
-  let pendingEThTransactions = state.transactions.transactions.filter((transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY && transaction.status != TransactionStatus.REJECTED &&  transaction.direction === SwapDirection.EthereumToPolkadot);
-  let pendingPolkaDotTransactions = state.transactions.transactions.filter((transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY && transaction.status != TransactionStatus.REJECTED && transaction.direction === SwapDirection.PolkadotToEthereum);
+  const pendingEThTransactions = state.transactions.transactions.filter(
+    (transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY
+        && transaction.status != TransactionStatus.REJECTED
+        && transaction.direction === SwapDirection.EthereumToPolkadot,
+  );
+  const pendingPolkaDotTransactions = state.transactions.transactions.filter(
+    (transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY
+        && transaction.status != TransactionStatus.REJECTED
+        && transaction.direction === SwapDirection.PolkadotToEthereum,
+  );
+
+  const confirmationEThTransactions = state.transactions.transactions.filter(
+    (transaction) => transaction.status === TransactionStatus.WAITING_FOR_RELAY
+        && transaction.direction === SwapDirection.EthereumToPolkadot,
+  );
+
+  if (confirmationEThTransactions.length > 0) {
+    confirmationEThTransactions.forEach((tx: any) => {
+      if (tx.isNotifyConfirmed === false) {
+        dispatch(
+          updateTransactionNotifyConfirmation({
+            hash: tx.hash,
+          }),
+        );
+        dispatch(
+          notify({
+            text: `Transactions confirmed after ${tx.confirmations} confirmations`,
+            color: 'success',
+          }),
+        );
+      }
+    });
+  }
 
   if (polkadotApi) {
     if (pendingPolkaDotTransactions.length > 0) {
       pendingPolkaDotTransactions.map((tx: any) => handlepolkadotTransaction(state, tx.hash, tx.nearbyBlockNumber, polkadotApi, dispatch))
     }
   }
+
   if (pendingEThTransactions.length > 0) {
-      pendingEThTransactions.map((tx: any) => handleEthTransaction(state, tx.hash, web3, dispatch, tx.status < TransactionStatus.WAITING_FOR_RELAY ? true : false))  
-    }
-}
+    pendingEThTransactions.map((tx: any) => handleEthTransaction(
+      tx.hash,
+      web3,
+      dispatch,
+      tx.status < TransactionStatus.WAITING_FOR_RELAY,
+    ));
+  }
+};
 
 //Handle the missed Polkadot events (MessageDispatch) for the transactions for the basic/Incentivized channel.
 //and updates the transaction status accordingly.
