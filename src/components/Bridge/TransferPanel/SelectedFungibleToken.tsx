@@ -5,7 +5,8 @@ import styled from 'styled-components';
 import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
 import {
-  setDepositAmount
+  setDepositAmount,
+  initializeTokens
 } from '../../../redux/actions/bridge';
 
 import {
@@ -39,6 +40,11 @@ const SelectedFungibleToken = ({ className, openAssetSelector, setError }: Props
 
   const dispatch = useDispatch();
   const decimalMap = decimals(selectedAsset, swapDirection);
+
+  const handleAssetSelector = () => {
+    openAssetSelector();
+    dispatch(initializeTokens());
+  }
 
   useEffect(() => {
   }, [dispatch]);
@@ -94,7 +100,7 @@ const SelectedFungibleToken = ({ className, openAssetSelector, setError }: Props
             type="number"
             onPillClick={handleMaxClicked}
           />
-          <ExpandButton onClick={() => openAssetSelector()}>
+          <ExpandButton onClick={handleAssetSelector}>
             {selectedAsset?.symbol}
           </ExpandButton>
         </div>

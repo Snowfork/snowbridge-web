@@ -53,6 +53,9 @@ export const lockPolkadotAsset = (
       const token = selectedAsset?.token as NonFungibleToken;
       const subTokenId = Number(token.subId);
 
+      let latestpolkadotBlock = await polkadotApi?.rpc.chain.getBlock();
+      let blockNumber = latestpolkadotBlock?.block.header.number.toNumber();
+
       if (isNonFungible(selectedAsset!)) {
         const unsub = await Polkadot.burnERC721(
           polkadotApi!, subTokenId, polkadotAddress!, ethAddress!, ACTIVE_CHANNEL,
@@ -62,8 +65,7 @@ export const lockPolkadotAsset = (
               unsub!,
               pendingTransaction,
               dispatch,
-              incentivizedInboundChannelContract!,
-              basicChannelContract!,
+              blockNumber!
             );
 
             // tx will be updated in handlePolkadotTransactionEvents
@@ -92,8 +94,7 @@ export const lockPolkadotAsset = (
               unsub!,
               pendingTransaction,
               dispatch,
-              incentivizedInboundChannelContract!,
-              basicChannelContract!,
+              blockNumber!
             );
 
             // tx will be updated in handlePolkadotTransactionEvents

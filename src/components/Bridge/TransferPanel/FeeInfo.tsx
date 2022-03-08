@@ -4,12 +4,13 @@ import styled from 'styled-components';
 import { useAppSelector } from '../../../utils/hooks';
 import { getChainsFromDirection, getChainName } from '../../../utils/common';
 import { Chain, Channel, SwapDirection } from '../../../types/types';
-import { Asset } from '../../../types/Asset';
+import { Asset, decimals } from '../../../types/Asset';
 import { ACTIVE_CHANNEL, PERMITTED_ETH_NETWORK } from '../../../config';
-
+import { utils } from 'ethers';
 import ToolTip from '../../ToolTip/ToolTip';
 import { updateFees } from '../../../redux/actions/bridge';
 import { useDispatch } from 'react-redux';
+import BigNumber from 'bignumber.js';
 
 const toDotCurrency = { symbol: 'DOT', text: 'ERC20 DOT' };
 const toETHCurrency = { symbol: 'ETH', text: 'Parachain ETH' };
@@ -26,7 +27,7 @@ type Props = {
 
 const FeeInfo = ({ className, setError }: Props) => {
   const {
-    assets, swapDirection, fees
+    assets, swapDirection, fees, depositAmount, selectedAsset
   } = useAppSelector((state) => state.bridge);
 
   const dispatch = useDispatch();
@@ -47,10 +48,26 @@ const FeeInfo = ({ className, setError }: Props) => {
       currency = toETHCurrency;
       break;
   }
-  
   const asset = assets.find((asset) => asset.symbol === currency.symbol);
   const balance = asset ? asset.balance[chains.from] : 0;
+
   let balanceError = false;
+  let isFeeSufficient = true;
+  if(selectedAsset?.symbol === asset?.symbol) {
+
+    const decimalMap = decimals(selectedAsset, swapDirection);
+    const depositedAmount = new BigNumber(
+      // make sure we are comparing the same units
+      utils.parseUnits(
+        depositAmount || '0', decimalMap.from,
+      ).toString(),
+    );
+    const transactionFees = utils.parseUnits(
+      fee || '0', decimalMap.from,
+    ).toString();
+    const differenceValue = new BigNumber(balance).minus(depositedAmount);
+    isFeeSufficient = (differenceValue).isGreaterThanOrEqualTo(new BigNumber(transactionFees));
+  }
   if (fee !== null && Number(balance) < Number(fee)) {
     balanceError = true;
   }
@@ -58,7 +75,6 @@ const FeeInfo = ({ className, setError }: Props) => {
   useEffect(() => {
     const checkFeeBalance = (assets: Asset[], swapDirection: SwapDirection) => {
       const chains = getChainsFromDirection(swapDirection);
-     
       let fee: string | null;
       let currency: any;
       switch (chains.to) {
@@ -71,10 +87,8 @@ const FeeInfo = ({ className, setError }: Props) => {
           currency = toETHCurrency;
           break;
       }
-
       const asset = assets.find((asset) => asset.symbol === currency.symbol);
-      const balance = asset ? asset.balance[chains.from] : 0;
-      if (fee !== null && Number(balance) < Number(fee)) {
+      if (fee !== null && (!isFeeSufficient || Number(balance) < Number(fee))) {
         setCBError(TRANSFER_FEE_ERROR);
       }
       else {
@@ -83,7 +97,7 @@ const FeeInfo = ({ className, setError }: Props) => {
     };
 
     checkFeeBalance(assets, swapDirection);
-  }, [setCBError, assets, swapDirection, fees.erc20dot, fees.parachainEth]);
+  }, [setCBError, assets, swapDirection,isFeeSufficient, fees.erc20dot, fees.parachainEth]);
 
   useEffect(() => {
     dispatch(updateFees());

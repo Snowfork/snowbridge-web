@@ -7,6 +7,8 @@ import { web3FromSource } from '@polkadot/extension-dapp';
 import { PromiEvent } from 'web3-core';
 import Api, { ss58ToU8 } from './api';
 import Polkadot from './polkadot';
+import { store } from '../redux/store';
+import { pendingEventTransactions } from '../utils/common';
 import Onboard from 'bnc-onboard'
 // Import Contracts
 import {  
@@ -46,6 +48,9 @@ import {
 import { fetchEthAddress } from '../redux/actions/EthTransactions';
 import { Channel } from '../types/types';
 import { getChannelID } from '../utils/common';
+import { handleTransaction, handlePolkadotMissedEvents, handleEthereumMissedEvents } from '../redux/actions/transactions';
+import { subscribeEthereumEvents } from "../redux/actions/net";
+import { persistor } from '../redux/store';
 
 const wallets: any[] =[
     { walletName: "metamask", preferred: true },  
@@ -135,6 +140,37 @@ export default class Eth extends Api {
             Eth.loadContracts(dispatch, web3);
             // fetch addresses
             await dispatch(fetchEthAddress());
+            // Ethereum event for inbound channel contracts
+            dispatch(subscribeEthereumEvents());
+            
+            //Obtain transaction list
+            let stateData:any = store.getState();
+            if(stateData && stateData.transactions && stateData.transactions.transactions.length>0) {
+                let pendingTxCount = pendingEventTransactions(stateData.transactions.transactions);
+                if (pendingTxCount == 0) {
+                    persistor.purge();
+                }
+                else {
+                    // Handelling transaction callback and events
+                    let interval = setInterval(() => {
+
+                        let transactions = store.getState().transactions.transactions;
+                        pendingTxCount = pendingEventTransactions(transactions);
+                        if (pendingTxCount === 0)
+                        clearInterval(interval);
+
+                        //handling the lost callback of Ethereum and Polkadot transactions
+                        dispatch(handleTransaction(web3));
+
+                        // handles the missed Polkadot events (MessageDispatch) for the transactions for the basic/Incentivized channel and updates tx-nonce by comaring with latest channel nonce.
+                        dispatch(handlePolkadotMissedEvents());
+
+                        // handles the missed Ethereum events (MessgaeDispatched) for the transactions for basic/Incentivized Ethereum contracts and updates tx-nonce by comparing with latest channel nonce.
+                        dispatch(handleEthereumMissedEvents(web3));
+                        
+                    }, 5000);
+                }
+            }
             console.log('- Eth connected');
         }
         catch{

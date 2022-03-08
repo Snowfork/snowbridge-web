@@ -5,14 +5,16 @@ import { ThemeProvider } from 'styled-components';
 import App from './App';
 import GlobalStyle from './styles/globalStyle';
 import { basic } from './styles/theme';
-import store from './redux/store';
-
+import { store, persistor } from './redux/store';
+import { PersistGate } from 'redux-persist/integration/react'
 ReactDOM.render(
   <Provider store={store}>
     <ThemeProvider theme={basic}>
       <GlobalStyle />
       <Suspense fallback="...">
-        <App />
+        <PersistGate persistor={persistor}>
+          <App />
+        </PersistGate>
       </Suspense>
     </ThemeProvider>
   </Provider>,

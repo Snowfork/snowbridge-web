@@ -68,4 +68,5 @@ export default styled(TransactionListModal)`
   min-width: 480px;
   align-items: center;
   width: 100%;
+  max-height: 350px;
 `;

@@ -5,7 +5,7 @@ import { REQUIRED_ETH_CONFIRMATIONS } from '../../config';
 import { Asset } from '../../types/Asset';
 import { Chain, SwapDirection, Channel } from '../../types/types';
 import { RootState } from '../store';
-
+import { nonCircularPayload,nonCircularUpdateTxPayload } from '../../utils/common'
 export enum TransactionStatus {
   // used for error states
   REJECTED = -1,
@@ -44,6 +44,10 @@ export interface Transaction {
   asset: Asset;
   direction: SwapDirection
   channel: Channel;
+  isNotifyConfirmed: boolean;
+  //@TODO block No near which will be used to fetch polkadot transaction confirmation 
+  nearbyBlockNumber?: number;
+
 }
 
 // Interface for the Ethereum 'MessageDispatched' event,
@@ -73,10 +77,11 @@ export const transactionsSlice = createSlice({
   initialState,
   reducers: {
     addTransaction: (state, action: PayloadAction<Transaction>) => {
+      const payload = nonCircularPayload(action);
       // append to tx list
-      state.transactions.push(action.payload);
+      state.transactions.push(payload);
       // update pending tx
-      state.pendingTransaction = action.payload;
+      state.pendingTransaction = payload;
     },
     setConfirmations: (state, action: PayloadAction<{ confirmations: number, hash: string }>) => {
       const getTransactionStatus = (transaction: Transaction): TransactionStatus => {
@@ -110,7 +115,15 @@ export const transactionsSlice = createSlice({
       }
     },
     updateTransaction: (state, action: PayloadAction<{ hash: string, update: Partial<Transaction> }>) => {
-      state.transactions = state.transactions.map((tx) => (tx.hash === action.payload.hash ? { ...tx, ...action.payload.update } : tx));
+      const payload = nonCircularUpdateTxPayload(action.payload.update);
+      state.transactions = state.transactions.map((tx) => (tx.hash === action.payload.hash ? { ...tx, ...payload } : tx));
+    },
+    updateTransactionNotifyConfirmation: (state, action: PayloadAction<{ hash: string }>) => {
+      const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
+
+      if (transaction) {
+        transaction.isNotifyConfirmed = true;
+      }
     },
     setNonce: (state, action: PayloadAction<{ hash: string, nonce: string }>) => {
       const transaction = state.transactions.filter((tx) => tx.hash === action.payload.hash)[0];
@@ -130,7 +143,8 @@ export const transactionsSlice = createSlice({
     parachainMessageDispatched: (state, action: PayloadAction<{ nonce: string, channel: Channel }>) => {
       const transaction = state.transactions.filter((tx) => {
         return tx.nonce === action.payload.nonce &&
-          tx.channel === action.payload.channel
+          tx.channel === action.payload.channel &&
+          tx.direction === SwapDirection.EthereumToPolkadot
       })[0];
       if (transaction) {
         transaction.isMinted = true;
@@ -142,18 +156,20 @@ export const transactionsSlice = createSlice({
     //   // const transaction = state.transactions.filter((tx) => tx.nonce === action.payload.nonce)[0];
     // },
     setPendingTransaction: (state, action: PayloadAction<Transaction>) => {
-      state.pendingTransaction = action.payload;
+      const payload = nonCircularPayload(action);
+      state.pendingTransaction = payload;
     },
     ethMessageDispatched: (state, action: PayloadAction<{
-      nonce: string, dispatchTransactionNonce: string, channel: Channel,
+      nonce: string, channel: Channel,
     }>) => {
       const transaction = state.transactions.filter((tx) => {
         return tx.nonce === action.payload.nonce &&
-          tx.channel === action.payload.channel
+          tx.channel === action.payload.channel &&  
+          tx.direction === SwapDirection.PolkadotToEthereum
       })[0];
       if (transaction) {
         transaction.status = TransactionStatus.DISPATCHED;
-        transaction.dispatchTransactionHash = action.payload.dispatchTransactionNonce;
+        transaction.nonce = transaction.nonce
       }
     },
   },

@@ -51,3 +51,8 @@ export interface AssetBalance {
   isAssetFound: boolean,
   amount: string
 };
+
+export interface PolkadotTxConfirmation {
+  istxFound: boolean,
+  nonce: string
+};

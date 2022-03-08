@@ -26,7 +26,7 @@ import Api, { ss58ToU8 } from './api';
 import { Asset, isDot, isErc20 } from '../types/Asset';
 import { updateBalances } from '../redux/actions/bridge';
 
-import { Channel } from '../types/types';
+import { Channel, PolkadotTxConfirmation } from '../types/types';
 import { getChannelID } from '../utils/common';
 
 import { AssetBalance } from '../types/types';
@@ -247,5 +247,39 @@ export default class Polkadot extends Api {
 
     return polkadotApi.tx.erc721App.burn(channelId, subTokenId, ethRecipient)
       .signAndSend(account.address, { signer: injector.signer }, callback);
+  }
+
+  //Fetch the polkadot transaction confirmation status and nonce value via hash.
+  public static async getTransactionConfirmation(
+    polkadotApi: ApiPromise,
+    transactionHash: string,
+    blockNumber: number
+  ): Promise<PolkadotTxConfirmation> {
+    let nonce: string = '';
+    let istxFound = false;
+    let latestpolkadotBlock = await polkadotApi.rpc.chain.getBlock();
+    let latestblockNumber = latestpolkadotBlock.block.header.number.toNumber();
+    for (let index = blockNumber; index <= latestblockNumber; index++) {
+      const blockHash = await polkadotApi.rpc.chain.getBlockHash(index);
+      const signedBlock = await polkadotApi.rpc.chain.getBlock(blockHash);
+      let txStatus = false;
+
+      // the hash for each extrinsic in the block
+      signedBlock.block.extrinsics.forEach(async (ex) => {
+        txStatus = ex.hash.toHex() == transactionHash ? true : false;
+        if (txStatus) {
+          if (ex.isSigned) {
+            const allRecords: any = await polkadotApi.query.system.events.at(signedBlock.block.header.hash);
+            nonce = allRecords[5].event.data[0].toString();
+            istxFound = true;
+          }
+          return { istxFound: istxFound, nonce: nonce };
+        }
+      });
+
+      if (istxFound)
+        return { istxFound: istxFound, nonce: nonce };
+    }
+    return { istxFound: false, nonce: '' };
   }
 }

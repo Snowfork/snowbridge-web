@@ -7,6 +7,7 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { Contract } from 'web3-eth-contract';
 import { PromiEvent } from 'web3-core';
 import Web3 from 'web3';
+import { ApiPromise } from '@polkadot/api';
 import { REQUIRED_ETH_CONFIRMATIONS, CONTRACT_ADDRESS } from '../../config';
 import {
   Asset,
@@ -14,9 +15,9 @@ import {
   isDot,
   isNonFungible,
   symbols,
+  AssetType,
 } from '../../types/Asset';
 import { Chain, SwapDirection, Channel } from '../../types/types';
-import { AssetType } from '../../types/Asset';
 import { RootState } from '../store';
 import {
   MessageDispatchedEvent,
@@ -27,8 +28,16 @@ import {
 import { doEthTransfer } from './EthTransactions';
 import { doPolkadotTransfer } from './PolkadotTransactions';
 import { notify } from './notifications';
-import { setShowConfirmTransactionModal, setShowTransactionListModal } from './bridge';
-import { updateSelectedAsset } from '../../redux/actions/bridge';
+import {
+  setShowConfirmTransactionModal,
+  setShowTransactionListModal,
+  updateBalances,
+  updateSelectedAsset,
+} from './bridge';
+import { subscribeEthereumEvents } from './net';
+import * as BasicInboundChannel from '../../contracts/BasicInboundChannel.json';
+import * as IncentivizedInboundChannel from '../../contracts/IncentivizedInboundChannel.json';
+import Polkadot from '../../net/polkadot';
 
 export const {
   addTransaction,
@@ -40,6 +49,7 @@ export const {
   setPendingTransaction,
   setTransactionStatus,
   updateTransaction,
+  updateTransactionNotifyConfirmation,
 } = transactionsSlice.actions;
 
 export const updateConfirmations = (
@@ -106,6 +116,7 @@ export function createTransaction(
     error: '',
     nonce: '',
     channel,
+    isNotifyConfirmed: false,
   };
 
   return pendingTransaction;
@@ -124,19 +135,17 @@ export function handlePolkadotTransactionEvents(
   unsub: () => void, // function to unsubscribe from polkadot transaction events
   transaction: Transaction, // the transaction we are updating for each event
   dispatch: Dispatch<any>,
-  incentivizedChannelContract: Contract,
-  basicChannelContract: Contract,
+  blockNumber: number,
 ): Transaction {
   const pendingTransaction = { ...transaction };
 
   if (result.status.isReady) {
-    // result.status.hash - this is the call hash not the tx hash
-    // this is not unique and leads to duplicate keys in our transactions list.
-    // rather than waiting for the tx to be included in the block to read the tx hash
-    // we just generate a random number and treat that as the tx hash instead
-    // so we can track and display the 'submitting to chain' status
-    const hash = (Math.random() * 100).toString();
-    pendingTransaction.hash = hash;
+    window.onbeforeunload = function () {
+      return 'Hello, are you sure you want to leave? You had pending transaction already please wait a while!';
+    };
+
+    pendingTransaction.nearbyBlockNumber = blockNumber
+    pendingTransaction.hash = result.txHash.toString();
 
     dispatch(
       addTransaction(
@@ -149,11 +158,11 @@ export function handlePolkadotTransactionEvents(
   }
 
   if (result.status.isInBlock) {
-    let nonce = result.events[0].event.data[0].toString();
 
-    if (isDot(transaction.asset) && !isNonFungible(transaction.asset)) {
-      nonce = result.events[1].event.data[0].toString();
-    }
+    if (result && result.dispatchError)
+      return pendingTransaction;
+    
+    let nonce = result.events[3].event.data[0].toString();
 
     pendingTransaction.nonce = nonce;
     pendingTransaction.status = TransactionStatus.WAITING_FOR_RELAY;
@@ -167,33 +176,7 @@ export function handlePolkadotTransactionEvents(
       ),
     );
 
-    const handleChannelMessageDispatched = (channel: Channel) => (event: MessageDispatchedEvent) => {
-      if (
-        event.returnValues.nonce === nonce
-      ) {
-        dispatch(
-          ethMessageDispatched({
-            nonce: event.returnValues.nonce,
-            dispatchTransactionNonce: pendingTransaction.nonce!,
-            channel
-          }),
-        );
-      }
-    };
-
-    // subscribe to ETH dispatch event
-    // eslint-disable-next-line no-unused-expressions
-    incentivizedChannelContract
-      .events
-      .MessageDispatched({})
-      .on('data', handleChannelMessageDispatched(Channel.INCENTIVIZED));
-
-    // TODO: replace with incentivized channel?
-    // eslint-disable-next-line no-unused-expressions
-    basicChannelContract
-      .events
-      .MessageDispatched({})
-      .on('data', handleChannelMessageDispatched(Channel.BASIC));
+    dispatch(subscribeEthereumEvents());
 
     return pendingTransaction;
   }
@@ -207,12 +190,22 @@ export function handlePolkadotTransactionEvents(
         status: TransactionStatus.WAITING_FOR_RELAY,
       }),
     );
+
+    // updating the token balance 
+    dispatch(updateBalances());
+
     // unsubscribe from transaction events
     if (unsub) {
       unsub();
     }
   }
   if (result.dispatchError) {
+    dispatch(
+      setError({
+        hash: pendingTransaction.hash,
+        error: result.dispatchError
+      })
+    );
     alert("Error with dispatchable - see polkadotjs explorer for more info: " + result.dispatchError)
   }
   return pendingTransaction;
@@ -267,93 +260,18 @@ export function handleEthereumTransactionEvents(
         ),
       );
     })
+
     .on('receipt', async (receipt: any) => {
-      console.log('Transaction receipt received', receipt);
-      const basicOutChannelLogFields = [
-        {
-          type: 'address',
-          name: 'source',
-        },
-        {
-          type: 'uint64',
-          name: 'nonce',
-        },
-        {
-          type: 'bytes',
-          name: 'payload',
-        },
-      ];
-      const incentivizedOutChannelLogFields = [
-        {
-          type: 'address',
-          name: 'source',
-        },
-        {
-          type: 'uint64',
-          name: 'nonce',
-        },
-        {
-          type: 'uint256',
-          name: 'fee',
-        },
-        {
-          type: 'bytes',
-          name: 'payload',
-        },
-      ];
-      let nonce;
-
-      Object.keys(receipt.events).forEach((eventKey: any) => {
-        const event = receipt.events[eventKey];
-        if (event.address === CONTRACT_ADDRESS.BasicOutboundChannel) {
-          const decodedEvent = web3.eth.abi.decodeLog(
-            basicOutChannelLogFields,
-            event.raw.data,
-            event.raw.topics,
-          );
-          nonce = decodedEvent.nonce;
-        }
-        if (event.address === CONTRACT_ADDRESS.IncentivizedOutboundChannel) {
-          const decodedEvent = web3.eth.abi.decodeLog(
-            incentivizedOutChannelLogFields,
-            event.raw.data,
-            event.raw.topics,
-          );
-          nonce = decodedEvent.nonce;
-        }
-      })
-
-      if (!nonce) {
-        return
-      }
-
-      dispatch(
-        setNonce({
-          hash: transactionHash,
-          nonce,
-        }),
-      );
+      dispatch(handleTransaction(web3));
     })
+
     .on(
       'confirmation',
       (
         confirmation: number,
         receipt: any,
       ) => {
-        // update transaction confirmations
-        dispatch(
-          updateConfirmations(receipt.transactionHash, confirmation),
-        );
-
-        if (confirmation === REQUIRED_ETH_CONFIRMATIONS) {
-          dispatch(notify({
-            text: `Transactions confirmed after ${confirmation} confirmations`,
-            color: 'success',
-          }));
-          console.log('call transactionEvent.off()');
-          // TODO: call this
-          // transactionEvent.off('confirmation');
-        }
+        dispatch(handleTransaction(web3));
       },
     )
     .on('error', (error: any) => {
@@ -409,7 +327,272 @@ export function handlePolkadotTransactionErrors(
         ...pendingTransaction,
         status: TransactionStatus.REJECTED,
         error: error.message,
+      }),
+    );
+  }
+}
+// This will be used in handleTransaction to fetch the tx receipt and block confirmation for transaction
+export async function handleEthTransaction(
+  hash: string,
+  web3: Web3,
+  dispatch: Dispatch<any>,
+  istxConfirmed: any
+) {
+  //get the transaction receipt
+  let txReceipt = await web3.eth.getTransactionReceipt(hash);
+
+  //if pending then return
+  if (!txReceipt)
+    return '';
+
+  //status-FALSE when EVM reverted the transaction.
+  if (!txReceipt.status){
+    dispatch(
+      setError({
+        hash: hash,
+        error: 'transaction failed'
       })
+    );
+    return -1;
+  }
+
+  //Fetch current block number
+  let currentBlock = await web3.eth.getBlockNumber()
+  let confirmation = txReceipt.blockNumber === null ? 0 : currentBlock - txReceipt.blockNumber
+
+  //Should not be called when tx is confirmed
+  if (istxConfirmed) {
+    handleEthTxRecipt(txReceipt, dispatch, web3)
+  }
+
+  if (confirmation > 0 && istxConfirmed) {
+    // updating the token balance on UI
+    dispatch(updateBalances());
+
+    handleEthTxConfirmation(txReceipt, dispatch, confirmation);
+  }
+}
+
+//This function is used to obtain and set required nonce from events via use of receipt.
+export function handleEthTxRecipt(receipt: any, dispatch: Dispatch<any>,
+  web3: Web3) {
+
+  const basicOutChannelLogFields = [
+    {
+      type: 'address',
+      name: 'source',
+    },
+    {
+      type: 'uint64',
+      name: 'nonce',
+    },
+    {
+      type: 'bytes',
+      name: 'payload',
+    },
+  ];
+  const incentivizedOutChannelLogFields = [
+    {
+      type: 'address',
+      name: 'source',
+    },
+    {
+      type: 'uint64',
+      name: 'nonce',
+    },
+    {
+      type: 'uint256',
+      name: 'fee',
+    },
+    {
+      type: 'bytes',
+      name: 'payload',
+    },
+  ];
+  let nonce;
+  receipt.logs.forEach((log: any) => {
+    const event = log;
+
+    if (event.address === CONTRACT_ADDRESS.BasicOutboundChannel) {
+      const decodedEvent = web3.eth.abi.decodeLog(
+        basicOutChannelLogFields,
+        event.data,
+        event.topics,
+      );
+      nonce = decodedEvent.nonce;
+    }
+    if (event.address === CONTRACT_ADDRESS.IncentivizedOutboundChannel) {
+      const decodedEvent = web3.eth.abi.decodeLog(
+        incentivizedOutChannelLogFields,
+        event.data,
+        event.topics,
+      );
+      nonce = decodedEvent.nonce;
+    }
+  })
+  if (!nonce) {
+    return
+  }
+
+  dispatch(
+    setNonce({
+      hash: receipt.transactionHash,
+      nonce,
+    }),
+  );
+}
+
+// This will be used in handleEthTransaction for update the eth tx block confirmation for tx.
+export async function handleEthTxConfirmation(
+  receipt: any,
+  dispatch: Dispatch<any>,
+  confirmation: number,
+) {
+  // update transaction confirmations
+  dispatch(updateConfirmations(receipt.transactionHash, confirmation));
+}
+
+// This is used for handling the lost callback of Ethereum and Polkadot transactions
+// fetch the tx-receipt, confirmation status, confirmation count,nonce for pending transaction via Hash.
+export const handleTransaction = (web3: Web3): ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+  dispatch: ThunkDispatch<{}, {}, AnyAction>,
+  getState,
+): Promise<void> => {
+  const state = getState() as RootState;
+
+  const { polkadotApi } = state.net;
+
+  const pendingEThTransactions = state.transactions.transactions.filter(
+    (transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY
+        && transaction.status != TransactionStatus.REJECTED
+        && transaction.direction === SwapDirection.EthereumToPolkadot,
+  );
+  const pendingPolkaDotTransactions = state.transactions.transactions.filter(
+    (transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY
+        && transaction.status != TransactionStatus.REJECTED
+        && transaction.direction === SwapDirection.PolkadotToEthereum,
+  );
+
+  const confirmationEThTransactions = state.transactions.transactions.filter(
+    (transaction) => transaction.status === TransactionStatus.WAITING_FOR_RELAY
+        && transaction.direction === SwapDirection.EthereumToPolkadot,
+  );
+
+  if (confirmationEThTransactions.length > 0) {
+    confirmationEThTransactions.forEach((tx: any) => {
+      if (tx.isNotifyConfirmed === false) {
+        dispatch(
+          updateTransactionNotifyConfirmation({
+            hash: tx.hash,
+          }),
+        );
+        dispatch(
+          notify({
+            text: `Transactions confirmed after ${tx.confirmations} confirmations`,
+            color: 'success',
+          }),
+        );
+      }
+    });
+  }
+
+  if (polkadotApi) {
+    if (pendingPolkaDotTransactions.length > 0) {
+      pendingPolkaDotTransactions.map((tx: any) => handlepolkadotTransaction(state, tx.hash, tx.nearbyBlockNumber, polkadotApi, dispatch))
+    }
+  }
+
+  if (pendingEThTransactions.length > 0) {
+    pendingEThTransactions.map((tx: any) => handleEthTransaction(
+      tx.hash,
+      web3,
+      dispatch,
+      tx.status < TransactionStatus.WAITING_FOR_RELAY,
+    ));
+  }
+};
+
+//Handle the missed Polkadot events (MessageDispatch) for the transactions for the basic/Incentivized channel.
+//and updates the transaction status accordingly.
+export const handlePolkadotMissedEvents = ():
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+    dispatch: ThunkDispatch<{}, {}, AnyAction>,
+    getState,
+  ): Promise<void> => {
+  const state = getState() as RootState;
+  const { polkadotApi } = state.net;
+  if (polkadotApi) {
+    const incentivizeLatestNonce = Number(await polkadotApi.query['incentivizedInboundChannel'].nonce());
+    const basicLatestNonce = Number(await polkadotApi.query['basicInboundChannel'].nonce());
+    const pendingTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction === SwapDirection.EthereumToPolkadot  && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeLatestNonce : basicLatestNonce));
+
+    pendingTransactions.map((tx: Transaction) => {
+      const nonce = tx.nonce ? tx.nonce : ''
+      const channel = tx.channel === Channel.BASIC ? Channel.BASIC : Channel.INCENTIVIZED
+
+      dispatch(parachainMessageDispatched({ nonce, channel })
+      )
+    })
+  }
+}
+
+// Handle the missed event of the inbound channel when user closed the application.
+export const handleEthereumMissedEvents = (
+  web3: Web3
+):
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+    dispatch: ThunkDispatch<{}, {}, AnyAction>,
+    getState,
+  ): Promise<void> => {
+    const state = getState() as RootState;
+
+    const incentivizeInboundContract = new web3.eth.Contract(
+      IncentivizedInboundChannel.abi as any,
+      CONTRACT_ADDRESS.IncentivizedInboundChannel,
+    );
+
+    const basicInboundContract = new web3.eth.Contract(
+      BasicInboundChannel.abi as any,
+      CONTRACT_ADDRESS.BasicInboundChannel,      
+    );
+
+    const incentivizeInboundLatestNonce = Number(await incentivizeInboundContract.methods.nonce().call());
+    const basicInboundLatestNonce = Number(await basicInboundContract.methods.nonce().call());
+
+    const missedEventTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == SwapDirection.PolkadotToEthereum && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeInboundLatestNonce : basicInboundLatestNonce));
+
+    missedEventTransactions.map((tx: Transaction) => {
+      if (tx.nonce) {
+        const nonce = tx.nonce
+        const channel = tx.channel === Channel.BASIC ? Channel.BASIC : Channel.INCENTIVIZED
+
+        dispatch(ethMessageDispatched({ nonce, channel }))
+      }
+    })
+  }
+
+//This function hanle the lost callback for polkadot transactions and
+//contains logic to fetch the transaction confirmation and nonce state.
+export async function handlepolkadotTransaction(
+  state: any,
+  hash: string,
+  blockNumber: number,
+  polkadotApi: ApiPromise,
+  dispatch: Dispatch<any>
+) {
+  let TxDetail = await Polkadot.getTransactionConfirmation(polkadotApi, hash, blockNumber)
+  if (TxDetail.istxFound) {
+    dispatch(
+      setNonce({
+        hash: hash,
+        nonce: TxDetail.nonce,
+      }),
+    );
+    dispatch(
+      setTransactionStatus({
+        hash: hash,
+        status: TransactionStatus.WAITING_FOR_RELAY,
+      }),
     );
   }
 }

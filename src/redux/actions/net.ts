@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/ban-types */
-
+import Web3 from 'web3';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { AnyAction } from 'redux';
 import _ from 'lodash';
@@ -12,6 +12,15 @@ import {
   netSlice,
 } from '../reducers/net';
 import { Channel } from '../../types/types';
+import { transactionsSlice } from '../../redux/reducers/transactions';
+import {
+  CONTRACT_ADDRESS,
+  ETHEREUM_WEB_SOCKET__PROVIDER
+} from '../../config'
+
+export const {
+  ethMessageDispatched
+} = transactionsSlice.actions;
 
 export const {
   setAppDotContract,
@@ -57,3 +66,59 @@ export const subscribeEvents = ():
       throw new Error('Polkadot API not connected');
     }
   };
+
+//Subscribe to events of Inbound channel ethereum contracts.
+export const subscribeEthereumEvents = ():
+  ThunkAction<Promise<void>, {}, {}, AnyAction> => async (
+    dispatch: ThunkDispatch<{}, {}, AnyAction>, getState,
+  ): Promise<void> => {
+    try {
+        var web3 = new Web3(
+            new Web3.providers.WebsocketProvider(ETHEREUM_WEB_SOCKET__PROVIDER)
+        );
+
+        let channel: Channel;
+        let basicInChannelLogFields = [
+            {
+            indexed: false,
+            internalType: "uint64",
+            name: "nonce",
+            type: "uint64",
+            },
+            {
+            indexed: false,
+            internalType: "bool",
+            name: "result",
+            type: "bool",
+            },
+        ];
+        web3.eth.subscribe('logs', {
+            address: [CONTRACT_ADDRESS.BasicInboundChannel, CONTRACT_ADDRESS.IncentivizedInboundChannel],
+            topics: ['0x504b093d860dc827c72a879d052fd8ac6b4c2af80c5f3a634654f172690bf10a']
+        }, function (error: any, event: any) {
+            if (error) {
+            return ''
+            }
+            const decodedEvent = web3.eth.abi.decodeLog(
+                basicInChannelLogFields,
+                event.data,
+                event.topics,
+            );
+            if (event.address == CONTRACT_ADDRESS.BasicInboundChannel)
+            channel = Channel.BASIC
+
+            if (event.address == CONTRACT_ADDRESS.IncentivizedInboundChannel)
+            channel = Channel.INCENTIVIZED
+
+            dispatch(
+            ethMessageDispatched({
+                nonce: decodedEvent.nonce,
+                channel
+            }),
+            );
+        });      
+    } 
+    catch (error) {
+      console.error("errorMessage", error);
+    }
+};
