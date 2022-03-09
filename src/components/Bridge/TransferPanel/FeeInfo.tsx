@@ -5,7 +5,7 @@ import { useAppSelector } from '../../../utils/hooks';
 import { getChainsFromDirection, getChainName } from '../../../utils/common';
 import { Chain, Channel, SwapDirection } from '../../../types/types';
 import { Asset } from '../../../types/Asset';
-import { ACTIVE_CHANNEL, PERMITTED_ETH_NETWORK } from '../../../config';
+import { ACTIVE_CHANNEL, CONTRACT_ADDRESS, PERMITTED_ETH_NETWORK } from '../../../config';
 
 import ToolTip from '../../ToolTip/ToolTip';
 import { updateFees } from '../../../redux/actions/bridge';
@@ -16,7 +16,7 @@ const toETHCurrency = { symbol: 'ETH', text: 'Parachain ETH' };
 
 const TRANSFER_FEE_ERROR = 'Not enough balance to pay for transfer fee';
 
-const UNISWAP_DOT_LINK = `https://app.uniswap.org/#/swap?inputCurrency=ETH&outputCurrency=0x31256d975eea532992c26a8e8af332bfc98cfe41`
+const UNISWAP_DOT_LINK = `https://app.uniswap.org/#/swap?inputCurrency=ETH&outputCurrency=${CONTRACT_ADDRESS.SnowDOTAddress}`
 const SNOWBRIDGE_DISCORD_LINK = `https://discord.gg/9WHQUX7PT8`;
 
 type Props = {
