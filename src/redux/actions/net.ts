@@ -15,7 +15,7 @@ import { Channel } from '../../types/types';
 import { transactionsSlice } from '../../redux/reducers/transactions';
 import {
   CONTRACT_ADDRESS,
-  ETHEREUM_WEB_SOCKET__PROVIDER
+  ETHEREUM_WEB_SOCKET_PROVIDER
 } from '../../config'
 
 export const {
@@ -74,7 +74,7 @@ export const subscribeEthereumEvents = ():
   ): Promise<void> => {
     try {
         var web3 = new Web3(
-            new Web3.providers.WebsocketProvider(ETHEREUM_WEB_SOCKET__PROVIDER)
+            new Web3.providers.WebsocketProvider(ETHEREUM_WEB_SOCKET_PROVIDER)
         );
 
         let channel: Channel;
@@ -104,10 +104,10 @@ export const subscribeEthereumEvents = ():
                 event.data,
                 event.topics,
             );
-            if (event.address == CONTRACT_ADDRESS.BasicInboundChannel)
+            if (event.address === CONTRACT_ADDRESS.BasicInboundChannel)
             channel = Channel.BASIC
 
-            if (event.address == CONTRACT_ADDRESS.IncentivizedInboundChannel)
+            if (event.address === CONTRACT_ADDRESS.IncentivizedInboundChannel)
             channel = Channel.INCENTIVIZED
 
             dispatch(

@@ -266,7 +266,7 @@ export default class Polkadot extends Api {
 
       // the hash for each extrinsic in the block
       signedBlock.block.extrinsics.forEach(async (ex) => {
-        txStatus = ex.hash.toHex() == transactionHash ? true : false;
+        txStatus = ex.hash.toHex() === transactionHash ? true : false;
         if (txStatus) {
           if (ex.isSigned) {
             const allRecords: any = await polkadotApi.query.system.events.at(signedBlock.block.header.hash);

@@ -11,10 +11,11 @@ import { store } from '../redux/store';
 import { pendingEventTransactions } from '../utils/common';
 import Onboard from 'bnc-onboard'
 // Import Contracts
-import {  
+import {
   PERMITTED_ETH_NETWORK_ID,
-  INFURA_KEY,  
-  CONTRACT_ADDRESS
+  INFURA_KEY,
+  CONTRACT_ADDRESS,
+  SET_INTERVAL_TIME
 } from '../config';
 
 /* tslint:disable */
@@ -52,13 +53,13 @@ import { handleTransaction, handlePolkadotMissedEvents, handleEthereumMissedEven
 import { subscribeEthereumEvents } from "../redux/actions/net";
 import { persistor } from '../redux/store';
 
-const wallets: any[] =[
-    { walletName: "metamask", preferred: true },  
-    {
-        walletName: "walletConnect",
-        infuraKey: INFURA_KEY,
-        preferred: true 
-    },   
+const wallets: any[] = [
+  { walletName: "metamask", preferred: true },
+  {
+    walletName: "walletConnect",
+    infuraKey: INFURA_KEY,
+    preferred: true
+  },
 ]
 export default class Eth extends Api {
   public static loadContracts(dispatch: Dispatch<any>, web3: Web3): void {
@@ -109,105 +110,104 @@ export default class Eth extends Api {
   // Web3 API connector
   public static async connect(dispatch: Dispatch<any>): Promise<void> {
     const connectionComplete = async () => {
-        let web3:any;
-        let provider:any;
-        try{
-            const onboard = Onboard({
-                networkId: parseInt(PERMITTED_ETH_NETWORK_ID),  // [Integer] The Ethereum network ID your Dapp uses.
-                subscriptions: {
-                wallet: (wallet: any) => {
-                    web3= new Web3(wallet.provider)
-                    dispatch(setWeb3(web3));
-                    provider= wallet.provider
+      let web3: any;
+      let provider: any;
+      try {
+        const onboard = Onboard({
+          networkId: parseInt(PERMITTED_ETH_NETWORK_ID),  // [Integer] The Ethereum network ID your Dapp uses.
+          subscriptions: {
+            wallet: (wallet: any) => {
+              web3 = new Web3(wallet.provider)
+              dispatch(setWeb3(web3));
+              provider = wallet.provider
 
-                    web3.eth.net.getNetworkType()
-                    .then((network: string) => dispatch(setMetamaskNetwork(network)));
-                }
-                },
-                walletSelect: {
-                    wallets: wallets 
-                }
-            });
-            let walletselected = await onboard.walletSelect()
-            while(! walletselected ){
-                walletselected =  await onboard.walletSelect();
+              web3.eth.net.getNetworkType()
+                .then((network: string) => dispatch(setMetamaskNetwork(network)));
             }
-            let readyToTransact = await onboard.walletCheck();
-            if (!readyToTransact) {
-              window.location.reload();
-            }
-            // Set contracts
-            Eth.loadContracts(dispatch, web3);
-            // fetch addresses
-            await dispatch(fetchEthAddress());
-            // Ethereum event for inbound channel contracts
-            dispatch(subscribeEthereumEvents());
-            
-            //Obtain transaction list
-            let stateData:any = store.getState();
-            if(stateData && stateData.transactions && stateData.transactions.transactions.length>0) {
-                let pendingTxCount = pendingEventTransactions(stateData.transactions.transactions);
-                if (pendingTxCount == 0) {
-                    persistor.purge();
-                }
-                else {
-                    // Handelling transaction callback and events
-                    let interval = setInterval(() => {
-
-                        let transactions = store.getState().transactions.transactions;
-                        pendingTxCount = pendingEventTransactions(transactions);
-                        if (pendingTxCount === 0)
-                        clearInterval(interval);
-
-                        //handling the lost callback of Ethereum and Polkadot transactions
-                        dispatch(handleTransaction(web3));
-
-                        // handles the missed Polkadot events (MessageDispatch) for the transactions for the basic/Incentivized channel and updates tx-nonce by comaring with latest channel nonce.
-                        dispatch(handlePolkadotMissedEvents());
-
-                        // handles the missed Ethereum events (MessgaeDispatched) for the transactions for basic/Incentivized Ethereum contracts and updates tx-nonce by comparing with latest channel nonce.
-                        dispatch(handleEthereumMissedEvents(web3));
-                        
-                    }, 5000);
-                }
-            }
-            console.log('- Eth connected');
+          },
+          walletSelect: {
+            wallets: wallets
+          }
+        });
+        let walletselected = await onboard.walletSelect()
+        while (!walletselected) {
+          walletselected = await onboard.walletSelect();
         }
-        catch{
-            throw new Error('Something went wrong');        
+        let readyToTransact = await onboard.walletCheck();
+        if (!readyToTransact) {
+          window.location.reload();
         }
-        return provider;
+        // Set contracts
+        Eth.loadContracts(dispatch, web3);
+        // fetch addresses
+        await dispatch(fetchEthAddress());
+        // Ethereum event for inbound channel contracts
+        dispatch(subscribeEthereumEvents());
+
+        //Obtain transaction list
+        let stateData: any = store.getState();
+        if (stateData && stateData.transactions && stateData.transactions.transactions.length > 0) {
+          let pendingTxCount = pendingEventTransactions(stateData.transactions.transactions);
+          if (pendingTxCount === 0) {
+            persistor.purge();
+          }
+          else {
+            // Handelling transaction callback and events
+            let interval = setInterval(() => {
+
+              let transactions = store.getState().transactions.transactions;
+              pendingTxCount = pendingEventTransactions(transactions);
+              if (pendingTxCount === 0)
+                clearInterval(interval);
+
+              //handling the lost callback of Ethereum and Polkadot transactions
+              dispatch(handleTransaction(web3));
+
+              // handles the missed Polkadot events (MessageDispatch) for the transactions for the basic/Incentivized channel and updates tx-nonce by comaring with latest channel nonce.
+              dispatch(handlePolkadotMissedEvents());
+
+              // handles the missed Ethereum events (MessgaeDispatched) for the transactions for basic/Incentivized Ethereum contracts and updates tx-nonce by comparing with latest channel nonce.
+              dispatch(handleEthereumMissedEvents(web3));
+
+            }, SET_INTERVAL_TIME);
+          }
+        }
+        console.log('- Eth connected');
+      }
+      catch {
+        throw new Error('Something went wrong');
+      }
+      return provider;
     };
-    try{
-        const provider= await connectionComplete();
-        if (provider) {
-            provider.on('accountsChanged', async (accounts: string[]) => {
-                if (accounts[0]) {
-                await dispatch(setEthAddress(accounts[0]));
-                dispatch(initializeTokens());
-                } else {
-                setEthAddress();
-                }
-            });
+    try {
+      const provider = await connectionComplete();
+      if (provider) {
+        provider.on('accountsChanged', async (accounts: string[]) => {
+          if (accounts[0]) {
+            await dispatch(setEthAddress(accounts[0]));
+            dispatch(initializeTokens());
+          } else {
+            setEthAddress();
+          }
+        });
 
-            provider.on('disconnect', async () => {
-                setEthAddress();
-            });
+        provider.on('disconnect', async () => {
+          setEthAddress();
+        });
 
-            provider.on('chainChanged', () => {
-                window.location.reload();
-            });
+        provider.on('chainChanged', () => {
+          window.location.reload();
+        });
 
-            provider.on('disconnect', () => {
-                window.location.reload();
-            });
-        } else {
-            throw new Error('Please connect wallet');
-        }
+        provider.on('disconnect', () => {
+          window.location.reload();
+        });
+      } else {
+        throw new Error('Please connect wallet');
+      }
     }
-    catch (error)
-    {
-        console.log('error==',error);
+    catch (error) {
+      console.log('error==', error);
     }
   }
 
@@ -294,7 +294,7 @@ export default class Eth extends Api {
     erc20Contract: Contract,
     erc721AppContract: Contract,
     channel: Channel,
-    transactionFee:string
+    transactionFee: string
   ): PromiEvent<Contract> {
     try {
       const polkadotRecipientBytes: Uint8Array = ss58ToU8(
@@ -321,7 +321,7 @@ export default class Eth extends Api {
       // call ether contract for ether
       if (isEther(asset)) {
         return ethContract.methods
-          .lock(polkadotRecipientBytes, channelId, parachainId,transactionFee)
+          .lock(polkadotRecipientBytes, channelId, parachainId, transactionFee)
           .send({
             from: sender,
             gas: 500000,

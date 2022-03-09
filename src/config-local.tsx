@@ -26,8 +26,11 @@ export default {
   // Allow health check to skip blocks for performance
   HEALTH_CHECK_POLKADOT_POLL_SKIP_BLOCKS: 500,
 
-  //Provider for listening ethereum events
-  ETHEREUM_WEB_SOCKET__PROVIDER: 'ws://localhost:8546',
+  // Time in milliseconds for setInterval 
+  SET_INTERVAL_TIME : 5000,
+
+  // Provider for listening ethereum events
+  ETHEREUM_WEB_SOCKET_PROVIDER: 'ws://localhost:8546',
 
   // Polkadotjs API Provider
   POLKADOT_API_PROVIDER: 'ws://localhost:11144',

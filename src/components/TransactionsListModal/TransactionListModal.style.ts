@@ -7,8 +7,8 @@ export const Wrapper = styled.section`
 
 export const Heading = styled.h2`
   text-align: center;
-  top:0;
-  position:fixed;
+  top: 0;
+  position: fixed;
 `;
 
 export const List = styled.ul`

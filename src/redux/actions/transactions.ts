@@ -13,14 +13,12 @@ import {
   Asset,
   decimals,
   isDot,
-  isNonFungible,
   symbols,
   AssetType,
 } from '../../types/Asset';
 import { Chain, SwapDirection, Channel } from '../../types/types';
 import { RootState } from '../store';
 import {
-  MessageDispatchedEvent,
   Transaction,
   TransactionStatus,
   transactionsSlice,
@@ -140,9 +138,7 @@ export function handlePolkadotTransactionEvents(
   const pendingTransaction = { ...transaction };
 
   if (result.status.isReady) {
-    window.onbeforeunload = function () {
-      return 'Hello, are you sure you want to leave? You had pending transaction already please wait a while!';
-    };
+    window.onbeforeunload = function () { return '' };
 
     pendingTransaction.nearbyBlockNumber = blockNumber
     pendingTransaction.hash = result.txHash.toString();
@@ -177,6 +173,8 @@ export function handlePolkadotTransactionEvents(
     );
 
     dispatch(subscribeEthereumEvents());
+
+    window.onbeforeunload = null;
 
     return pendingTransaction;
   }
@@ -464,12 +462,12 @@ export const handleTransaction = (web3: Web3): ThunkAction<Promise<void>, {}, {}
 
   const pendingEThTransactions = state.transactions.transactions.filter(
     (transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY
-        && transaction.status != TransactionStatus.REJECTED
+        && transaction.status !== TransactionStatus.REJECTED
         && transaction.direction === SwapDirection.EthereumToPolkadot,
   );
   const pendingPolkaDotTransactions = state.transactions.transactions.filter(
     (transaction) => transaction.status < TransactionStatus.WAITING_FOR_RELAY
-        && transaction.status != TransactionStatus.REJECTED
+        && transaction.status !== TransactionStatus.REJECTED
         && transaction.direction === SwapDirection.PolkadotToEthereum,
   );
 
@@ -559,7 +557,7 @@ export const handleEthereumMissedEvents = (
     const incentivizeInboundLatestNonce = Number(await incentivizeInboundContract.methods.nonce().call());
     const basicInboundLatestNonce = Number(await basicInboundContract.methods.nonce().call());
 
-    const missedEventTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction == SwapDirection.PolkadotToEthereum && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeInboundLatestNonce : basicInboundLatestNonce));
+    const missedEventTransactions = state.transactions.transactions.filter((transaction) => transaction.status >= TransactionStatus.WAITING_FOR_RELAY && transaction.status < TransactionStatus.DISPATCHED && transaction.direction === SwapDirection.PolkadotToEthereum && Number(transaction.nonce) <= (transaction.channel === Channel.INCENTIVIZED ? incentivizeInboundLatestNonce : basicInboundLatestNonce));
 
     missedEventTransactions.map((tx: Transaction) => {
       if (tx.nonce) {

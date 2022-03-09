@@ -32,8 +32,6 @@ export const lockPolkadotAsset = (
       ethAddress,
       polkadotApi,
       polkadotAddress,
-      basicChannelContract,
-      incentivizedInboundChannelContract,
     } = state.net;
     const {
       selectedAsset,
