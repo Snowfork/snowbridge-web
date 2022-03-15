@@ -32,7 +32,7 @@ export default {
 
   // Minimum Number of confirmations required for an ETH transaction
   // to be regarded as a success
-  REQUIRED_ETH_CONFIRMATIONS: 8,
+  REQUIRED_ETH_CONFIRMATIONS: 16,
 
   // URL to the block explorer the UI will redirect to
   BLOCK_EXPLORER_URL: 'https://ropsten.etherscan.io',
