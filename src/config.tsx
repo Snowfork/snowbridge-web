@@ -1,19 +1,11 @@
 import localConfig from './config-local';
 import stagingConfig from './config-staging';
-import contractAddresses from './contractAddresses.json'
+
 
 let config = stagingConfig;
-
 if (process.env.REACT_APP_NODE_CONFIG_ENV === 'local') {
-  if(contractAddresses.name === 'localhost') {
-    config = localConfig;
-  }
+  config = localConfig;
 }
-
-config.CONTRACT_ADDRESS = contractAddresses;
-
-//Fetching and updating contract address from contractAddresses.json file as per env
-
 
 export const {
   CONTRACT_ADDRESS,
