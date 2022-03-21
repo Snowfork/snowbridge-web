@@ -11,7 +11,16 @@ A Bridge UI that enables the transfer of ETH and ERC20 tokens from Ethereum to S
 
 ## Development
 
-In the project directory, you can run:
+In the project directory copy and the and edit the `.env-template`. 
+```
+cp .env-template .env
+```
+
+Change the variables. Use `local` for local development.
+```
+REACT_APP_NODE_CONFIG_ENV=staging
+REACT_APP_INFURA_KEY=
+```
 
 ### `yarn start`
 
