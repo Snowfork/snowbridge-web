@@ -1,18 +1,9 @@
 import { Channel } from './types/types';
+import stagingAddresses from './contracts-staging.json'
 
 export default {
   // Contract Addresses
-  CONTRACT_ADDRESS:{
-    BasicInboundChannel:'',
-    IncentivizedInboundChannel:'',
-    BasicOutboundChannel:'',
-    IncentivizedOutboundChannel:'',
-    ETHApp:'',
-    DOTApp:'',
-    ERC20App:'',
-    ERC721App:'',
-    SnowDOTAddress:'',
-  },
+  CONTRACT_ADDRESS: stagingAddresses,
 
   // Fetch chain data interval
   REFRESH_INTERVAL_MILLISECONDS: 10000,

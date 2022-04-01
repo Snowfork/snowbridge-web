@@ -22,8 +22,8 @@ const ParachainDisplay = ({  className }: ChainDisplayProps) => {
   const { parachainId } = useAppSelector((state) => state.bridge);
 
   const selectParachain = (event:any) => {
-    PARACHAIN_LIST.filter((parachain) => {
-      if(parachain.parachainId == event.target.value) {
+    PARACHAIN_LIST.forEach((parachain) => {
+      if(parachain.parachainId === event.target.value) {
         dispatch(setTransactionFee(parachain.transactionFee));
       }
     })
