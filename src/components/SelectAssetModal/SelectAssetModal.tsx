@@ -19,6 +19,7 @@ import { NonFungibleTokens } from './NonFungibleTokens';
 import DOSButton from '../Button/DOSButton';
 import TabButton from '../Button/TabButton';
 import Input from '../Input/Input';
+import { DISABLE_NFT_ASSETS } from '../../config';
 
 type Props = {
   className?: string;
@@ -82,7 +83,7 @@ function SelectAssetModal({
           <TabButton selected={(selectedTab === 0)} onClick={() => setSelectedTab(0)}>
             Fungible
           </TabButton>
-          <TabButton selected={(selectedTab === 1)} onClick={() => setSelectedTab(1)}>
+          <TabButton selected={(selectedTab === 1)} onClick={() => setSelectedTab(1)} hidden={DISABLE_NFT_ASSETS}>
             Non-Fungible
           </TabButton>
         </div>

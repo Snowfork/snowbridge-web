@@ -6,9 +6,10 @@ type Props = {
   selected: boolean;
   onClick?: any;
   disabled?: boolean;
+  hidden?: boolean;
 }
 
-const TabButton = ({ className, selected, onClick, disabled, children }: React.PropsWithChildren<Props>) => {
+const TabButton = ({ className, onClick, disabled, hidden, children }: React.PropsWithChildren<Props>) => {
   return (
     <button
       onClick={onClick}
@@ -39,7 +40,7 @@ export default styled(TabButton)`
   line-height: 100%;
   letter-spacing: -0.04em;
 
-  display: flex;
+  display: ${props => props.hidden === true ? 'none' : 'flex'};
   align-items: center;
   justify-content: center;
 
