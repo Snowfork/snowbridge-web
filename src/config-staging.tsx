@@ -18,7 +18,7 @@ export default {
   HEALTH_CHECK_POLKADOT_POLL_SKIP_BLOCKS: 1000,
 
   // Polkadotjs API Provider
-  POLKADOT_API_PROVIDER: 'wss://parachain-rpc.snowbridge.network',
+  POLKADOT_API_PROVIDER: 'wss://staging-rpc.snowbridge.network',
   POLKADOT_RELAY_API_PROVIDER: 'wss://polkadot-rpc.snowbridge.network',
 
   // Minimum Number of confirmations required for an ETH transaction
