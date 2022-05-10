@@ -9,7 +9,7 @@ type Props = {
   hidden?: boolean;
 }
 
-const TabButton = ({ className, onClick, disabled, hidden, children }: React.PropsWithChildren<Props>) => {
+const TabButton = ({ className, onClick, disabled, children }: React.PropsWithChildren<Props>) => {
   return (
     <button
       onClick={onClick}
