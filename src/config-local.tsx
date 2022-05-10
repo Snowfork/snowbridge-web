@@ -17,6 +17,9 @@ export default {
   // Allow health check to skip blocks for performance
   HEALTH_CHECK_POLKADOT_POLL_SKIP_BLOCKS: 500,
 
+  // Disables the option to transfer nfts.
+  DISABLE_NFT_ASSETS: false,
+
   // Polkadotjs API Provider
   POLKADOT_API_PROVIDER: 'ws://localhost:11144',
   POLKADOT_RELAY_API_PROVIDER: 'ws://localhost:9944',
