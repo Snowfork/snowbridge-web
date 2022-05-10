@@ -27,7 +27,7 @@ export default {
 
   // URL to the block explorer the UI will redirect to
   BLOCK_EXPLORER_URL: 'https://ropsten.etherscan.io',
-  SNOWBRIDGE_EXPLORER_URL: 'https://polkadot.js.org/apps/?rpc=wss://parachain-rpc.snowbridge.network#/explorer',
+  SNOWBRIDGE_EXPLORER_URL: 'https://polkadot.js.org/apps/?rpc=wss://staging-rpc.snowbridge.network#/explorer',
 
   PERMITTED_ETH_NETWORK: 'ropsten',
   PERMITTED_ETH_NETWORK_ID: '0x3',
