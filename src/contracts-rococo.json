@@ -18,7 +18,7 @@
 	"TestToken721": "0x39B1c81bA2D736dfdE5D9dd97944382F3e83CB8F",
 	"TestToken721Enumerable": "0x9233DD6b98fbE0D0D506bd1ebd0B9D9bf2659751",
 	"MaliciousDOTApp": "0x5149DEd3d2e0220d3bec4e329403323a8e10f511",
-	"SnowDOTAddress": "0x95451e30b08fC0aFF52f073aA537f3883f884FC9",
+	"SnowDOTAddress": "0xabeaf9306a24da4c05b5001ba0ae70367c2a0f01",
 	"name": "ropsten",
 	"chainId": "3"
 }
