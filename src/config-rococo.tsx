@@ -1,5 +1,5 @@
 import { Channel } from './types/types';
-import contractAddresses from './contracts-staging.json'
+import contractAddresses from './contracts-rococo.json'
 
 export default {
   // Contract Addresses
@@ -21,8 +21,8 @@ export default {
   DISABLE_NFT_ASSETS: true,
 
   // Polkadotjs API Provider
-  POLKADOT_API_PROVIDER: 'wss://staging-rpc.snowbridge.network',
-  POLKADOT_RELAY_API_PROVIDER: 'wss://polkadot-rpc.snowbridge.network',
+  POLKADOT_API_PROVIDER: 'wss://rococo-rpc.snowbridge.network',
+  POLKADOT_RELAY_API_PROVIDER: 'wss://rococo-rpc.polkadot.io',
 
   // Minimum Number of confirmations required for an ETH transaction
   // to be regarded as a success
@@ -30,7 +30,7 @@ export default {
 
   // URL to the block explorer the UI will redirect to
   BLOCK_EXPLORER_URL: 'https://ropsten.etherscan.io',
-  SNOWBRIDGE_EXPLORER_URL: 'https://polkadot.js.org/apps/?rpc=wss://staging-rpc.snowbridge.network#/explorer',
+  SNOWBRIDGE_EXPLORER_URL: 'https://polkadot.js.org/apps/?rpc=wss://rococo-rpc.snowbridge.network#/explorer',
 
   PERMITTED_ETH_NETWORK: 'ropsten',
   PERMITTED_ETH_NETWORK_ID: '0x3',
@@ -45,11 +45,8 @@ export default {
   INFURA_KEY: process.env.REACT_APP_INFURA_KEY,
   PARACHAIN_LIST : [
     { "parachainName":'Snowbridge', "parachainId": 0, 'isDisabled':false, 'transactionFee': 0 },
-    { "parachainName":'Snowbridge-test', "parachainId": 1001,'isDisabled':false, 'transactionFee': 4000000 },
     { "parachainName":'Acala (coming soon...)', "parachainId": 0,'isDisabled':true, 'transactionFee': 0 },
     { "parachainName":'Moonbeam (coming soon...)', "parachainId": 0,'isDisabled':true, 'transactionFee': 0 },
     { "parachainName":'Bifrost (coming soon...)', "parachainId": 0,'isDisabled':true, 'transactionFee': 0 },
-    { "parachainName":'Kusama (coming soon...)', "parachainId": 0, 'isDisabled':true, 'transactionFee': 0 },
-    { "parachainName":'Snowbridge (coming soon...)', "parachainId": 0,'isDisabled':true, 'transactionFee': 0 }
   ]
 };
