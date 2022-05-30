@@ -1,9 +1,9 @@
 import { Channel } from './types/types';
-import localAddresses from './contracts-local.json'
+import contractAddresses from './contracts-local.json'
 
 export default {
   // Contract Addresses
-  CONTRACT_ADDRESS: localAddresses,
+  CONTRACT_ADDRESS: contractAddresses,
   
   // Fetch chain data interval
   REFRESH_INTERVAL_MILLISECONDS: 10000,

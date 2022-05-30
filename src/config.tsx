@@ -1,10 +1,14 @@
 import localConfig from './config-local';
 import stagingConfig from './config-staging';
+import rococoConfig from './config-rococo';
 
 
 let config = stagingConfig;
 if (process.env.REACT_APP_NODE_CONFIG_ENV === 'local') {
   config = localConfig;
+}
+if (process.env.REACT_APP_NODE_CONFIG_ENV === 'rococo') {
+  config = rococoConfig;
 }
 
 export const {
